@@ -1,0 +1,24 @@
+package com.nearshare.api.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MessageDTO {
+    private UUID id;
+    private UUID senderId;
+    private UUID receiverId;
+    private String content;
+    private String imageUrl;
+    private String timestamp;
+    private boolean isRead;
+}
