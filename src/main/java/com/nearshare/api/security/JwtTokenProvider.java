@@ -20,8 +20,21 @@ public class JwtTokenProvider {
         try {
             keyBytes = Decoders.BASE64.decode(secret);
         } catch (Exception ex) {
+            // If not base64, use the string directly
             keyBytes = secret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
         }
+        
+        // Ensure the key is exactly 256 bits (32 bytes) for HMAC-SHA algorithms
+        if (keyBytes.length != 32) {
+            byte[] paddedKey = new byte[32];
+            System.arraycopy(keyBytes, 0, paddedKey, 0, Math.min(keyBytes.length, 32));
+            // If the original key was shorter, fill the rest with a known pattern
+            for (int i = keyBytes.length; i < 32; i++) {
+                paddedKey[i] = (byte) (i % 256);
+            }
+            keyBytes = paddedKey;
+        }
+        
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.validityInMs = validityInMs;
     }
