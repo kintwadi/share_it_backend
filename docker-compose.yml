@@ -1,59 +1,56 @@
 version: '3.8'
 
 services:
-  nearshare-backend:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: nearshare-postgres
+    environment:
+      POSTGRES_DB: nearshare
+      POSTGRES_USER: nearshare_user
+      POSTGRES_PASSWORD: nearshare_password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - nearshare-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nearshare_user -d nearshare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Application
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: nearshare-backend:latest
     container_name: nearshare-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/nearshare
+      DB_USERNAME: nearshare_user
+      DB_PASSWORD: nearshare_password
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-here-change-in-production}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
     ports:
       - "8081:8081"
-    environment:
-      - DB_URL=${DB_URL}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
-      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
-      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
-      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
-      - R2_ENDPOINT=${R2_ENDPOINT}
-      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
-      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - nearshare-network
+    restart: unless-stopped
 
-  # Optional: PostgreSQL database (if you want to run database in container)
-  # postgres:
-  #   image: postgres:15-alpine
-  #   container_name: nearshare-postgres
-  #   environment:
-  #     - POSTGRES_DB=nearshare
-  #     - POSTGRES_USER=nearshare_user
-  #     - POSTGRES_PASSWORD=your_password_here
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   restart: unless-stopped
-  #   networks:
-  #     - nearshare-network
+volumes:
+  postgres_data:
+    driver: local
 
 networks:
   nearshare-network:
     driver: bridge
-
-# volumes:
-#   postgres_data:
