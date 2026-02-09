@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Spring Boot Application Only (without PostgreSQL)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nearshare-backend
+    environment:
+      # Use your remote PostgreSQL from Render
+      DB_URL: jdbc:postgresql://dpg-d5hp4v15pdvs73bk16g0-a.oregon-postgres.render.com:5432/nearshare
+      DB_USERNAME: nearshare_user
+      DB_PASSWORD: G33WBllaEvyNfdU0h7ecPCWhIvbppvuk
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-here-change-in-production}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+networks:
+  nearshare-network:
+    driver: bridge

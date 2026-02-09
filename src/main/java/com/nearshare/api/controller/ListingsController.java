@@ -2,6 +2,7 @@ package com.nearshare.api.controller;
 
 import com.nearshare.api.dto.CreateListingRequest;
 import com.nearshare.api.dto.ListingDTO;
+import com.nearshare.api.dto.ReportRequest;
 import com.nearshare.api.model.User;
 import com.nearshare.api.service.ListingService;
 import org.springframework.data.domain.Page;
@@ -100,6 +101,16 @@ public class ListingsController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ListingDTO> block(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(listingService.block(id));
+    }
+
+    @PostMapping("/{id}/report")
+    public ResponseEntity<Map<String, String>> report(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("id") UUID id,
+            @RequestBody ReportRequest req) {
+        User reporter = userService.getByEmail(principal.getUsername());
+        listingService.report(id, reporter, req.getReason(), req.getDetails());
+        return ResponseEntity.ok(Map.of("status", "reported"));
     }
 
     @PostMapping("/{id}/dismiss")
