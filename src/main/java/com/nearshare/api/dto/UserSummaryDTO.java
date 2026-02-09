@@ -18,4 +18,5 @@ public class UserSummaryDTO {
     private String name;
     private int trustScore;
     private String avatarUrl;
+    private String address;
 }

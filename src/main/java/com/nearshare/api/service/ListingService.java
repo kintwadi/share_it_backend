@@ -6,10 +6,12 @@ import com.nearshare.api.dto.LocationDTO;
 import com.nearshare.api.dto.UserSummaryDTO;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.User;
+import com.nearshare.api.model.Report;
 import com.nearshare.api.model.embeddable.Location;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.UserRepository;
+import com.nearshare.api.repository.ReportRepository;
 import com.nearshare.api.util.DistanceUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,13 +29,15 @@ public class ListingService {
     private final com.nearshare.api.repository.RecommendationDismissRepository dismissRepository;
     private final com.nearshare.api.payment.PaymentManager paymentManager;
     private final com.nearshare.api.repository.TransactionRepository transactionRepository;
+    private final ReportRepository reportRepository;
 
-    public ListingService(ListingRepository listingRepository, UserRepository userRepository, com.nearshare.api.repository.RecommendationDismissRepository dismissRepository, com.nearshare.api.payment.PaymentManager paymentManager, com.nearshare.api.repository.TransactionRepository transactionRepository) {
+    public ListingService(ListingRepository listingRepository, UserRepository userRepository, com.nearshare.api.repository.RecommendationDismissRepository dismissRepository, com.nearshare.api.payment.PaymentManager paymentManager, com.nearshare.api.repository.TransactionRepository transactionRepository, ReportRepository reportRepository) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.dismissRepository = dismissRepository;
         this.paymentManager = paymentManager;
         this.transactionRepository = transactionRepository;
+        this.reportRepository = reportRepository;
     }
 
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
@@ -196,6 +200,22 @@ public class ListingService {
         return scored.stream().limit(Math.max(1, size)).map(s -> toDTO(s.l, current)).toList();
     }
 
+    public void report(UUID id, User reporter, String reason, String details) {
+        if (reportRepository.existsByReporterIdAndListingIdAndReason(reporter.getId(), id, reason)) {
+            throw new RuntimeException("already_reported_for_reason");
+        }
+        Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        Report r = Report.builder()
+            .id(UUID.randomUUID())
+            .listing(l)
+            .reporter(reporter)
+            .reason(reason)
+            .details(details)
+            .timestamp(java.time.LocalDateTime.now())
+            .build();
+        reportRepository.save(r);
+    }
+
     public void dismiss(User current, UUID listingId) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (dismissRepository.existsByUserAndListing(current, l)) return;
@@ -208,7 +228,7 @@ public class ListingService {
         if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
             dist = DistanceUtil.haversineMiles(current.getLocation().getLat(), current.getLocation().getLng(), l.getLocation().getLat(), l.getLocation().getLng());
         }
-        return ListingDTO.builder().id(l.getId()).ownerId(l.getOwner() != null ? l.getOwner().getId() : null).borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null).title(l.getTitle()).description(l.getDescription()).type(l.getType()).category(l.getCategory()).imageUrl(l.getImageUrl()).distanceMiles(dist).status(l.getStatus()).hourlyRate(l.getHourlyRate()).location(LocationDTO.builder().x(l.getLocation() != null ? l.getLocation().getLat() : null).y(l.getLocation() != null ? l.getLocation().getLng() : null).build()).owner(l.getOwner() != null ? UserSummaryDTO.builder().id(l.getOwner().getId()).name(l.getOwner().getName()).trustScore(l.getOwner().getTrustScore()).avatarUrl(l.getOwner().getAvatarUrl()).build() : null).borrower(l.getBorrower() != null ? UserSummaryDTO.builder().id(l.getBorrower().getId()).name(l.getBorrower().getName()).trustScore(l.getBorrower().getTrustScore()).avatarUrl(l.getBorrower().getAvatarUrl()).build() : null).gallery(l.getGallery()).autoApprove(l.isAutoApprove()).build();
+        return ListingDTO.builder().id(l.getId()).ownerId(l.getOwner() != null ? l.getOwner().getId() : null).borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null).title(l.getTitle()).description(l.getDescription()).type(l.getType()).category(l.getCategory()).imageUrl(l.getImageUrl()).distanceMiles(dist).status(l.getStatus()).hourlyRate(l.getHourlyRate()).location(LocationDTO.builder().x(l.getLocation() != null ? l.getLocation().getLat() : null).y(l.getLocation() != null ? l.getLocation().getLng() : null).build()).owner(l.getOwner() != null ? UserSummaryDTO.builder().id(l.getOwner().getId()).name(l.getOwner().getName()).trustScore(l.getOwner().getTrustScore()).avatarUrl(l.getOwner().getAvatarUrl()).address(l.getOwner().getAddress()).build() : null).borrower(l.getBorrower() != null ? UserSummaryDTO.builder().id(l.getBorrower().getId()).name(l.getBorrower().getName()).trustScore(l.getBorrower().getTrustScore()).avatarUrl(l.getBorrower().getAvatarUrl()).build() : null).gallery(l.getGallery()).autoApprove(l.isAutoApprove()).build();
     }
 
     @org.springframework.transaction.annotation.Transactional
