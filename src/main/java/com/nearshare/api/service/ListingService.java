@@ -167,7 +167,11 @@ public class ListingService {
 
     public ListingDTO block(UUID id) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
-        l.setStatus(AvailabilityStatus.BLOCKED);
+        if (l.getStatus() == AvailabilityStatus.BLOCKED) {
+            l.setStatus(AvailabilityStatus.AVAILABLE);
+        } else {
+            l.setStatus(AvailabilityStatus.BLOCKED);
+        }
         listingRepository.save(l);
         return toDTO(l, null);
     }
@@ -202,7 +206,7 @@ public class ListingService {
 
     public void report(UUID id, User reporter, String reason, String details) {
         if (reportRepository.existsByReporterIdAndListingIdAndReason(reporter.getId(), id, reason)) {
-            throw new RuntimeException("already_reported_for_reason");
+            throw new IllegalArgumentException("already_reported_for_reason");
         }
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         Report r = Report.builder()

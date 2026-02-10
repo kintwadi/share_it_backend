@@ -34,7 +34,7 @@ public class SecurityConfig {
             .sessionManagement(mgmt -> mgmt.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/config/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payment/webhook").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/config/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payment/webhook", "/api/health").permitAll()
                 .requestMatchers("/api/auth/verify-2fa-login").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
                 .anyRequest().hasAnyRole("ADMIN", "LENDER", "BORROWER", "MEMBER"));

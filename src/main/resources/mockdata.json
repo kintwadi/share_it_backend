@@ -1,0 +1,148 @@
+{
+  "users": [
+    {
+      "name": "Alice Admin",
+      "email": "admin@nearshare.local",
+      "password": "password123",
+      "role": "ADMIN",
+      "phone": "+1 (800) 555-9999",
+      "address": "NearShare HQ",
+      "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
+      "trustScore": 100,
+      "vouchCount": 500,
+      "verificationStatus": "VERIFIED",
+      "joinedDate": "2020-01-01T00:00:00",
+      "location": { "lat": 0.0, "lng": 0.0 }
+    },
+    {
+      "name": "Linda Lender",
+      "email": "linda.lender@example.com",
+      "password": "password123",
+      "role": "LENDER",
+      "phone": "123-456-7890",
+      "address": "1 Main St",
+      "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+      "trustScore": 98,
+      "vouchCount": 156,
+      "verificationStatus": "VERIFIED",
+      "joinedDate": "2021-05-15T00:00:00",
+      "location": { "lat": 0.002, "lng": 0.002 }
+    },
+    {
+      "name": "Bob Borrower",
+      "email": "bob.borrower@example.com",
+      "password": "password123",
+      "role": "BORROWER",
+      "phone": "987-654-3210",
+      "address": "2 Main St",
+      "avatarUrl": "https://images.unsplash.com/photo-1502767089025-6572583495b0",
+      "trustScore": 75,
+      "vouchCount": 45,
+      "verificationStatus": "UNVERIFIED",
+      "joinedDate": "2022-01-10T00:00:00",
+      "location": { "lat": 0.003, "lng": 0.003 }
+    },
+    {
+      "name": "Sarah Smith",
+      "email": "sarah.smith@example.com",
+      "password": "password123",
+      "role": "MEMBER",
+      "phone": "555-123-4567",
+      "address": "3 Oak Ave",
+      "avatarUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+      "trustScore": 60,
+      "vouchCount": 10,
+      "verificationStatus": "VERIFIED",
+      "joinedDate": "2023-03-20T00:00:00",
+      "location": { "lat": 0.004, "lng": 0.004 }
+    }
+  ],
+  "listings": [
+    {
+      "ownerEmail": "linda.lender@example.com",
+      "title": "Professional Tile Cutter",
+      "description": "Heavy duty manual tile cutter, perfect for ceramic and porcelain tiles up to 24 inches. Easy to use and precise.",
+      "type": "GOODS",
+      "category": "Tools",
+      "hourlyRate": 15.0,
+      "imageUrl": "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f",
+      "gallery": ["https://images.unsplash.com/photo-1504148455328-c376907d081c"],
+      "autoApprove": false,
+      "status": "AVAILABLE",
+      "location": { "lat": 0.002, "lng": 0.002 }
+    },
+    {
+      "ownerEmail": "linda.lender@example.com",
+      "title": "Pressure Washer 3000 PSI",
+      "description": "Gas powered pressure washer. Great for cleaning driveways, decks, and siding. Comes with 4 different nozzles.",
+      "type": "GOODS",
+      "category": "Tools",
+      "hourlyRate": 25.0,
+      "imageUrl": "https://plus.unsplash.com/premium_photo-1664302152996-53c07925e5f3?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "gallery": [],
+      "autoApprove": true,
+      "status": "AVAILABLE",
+      "location": { "lat": 0.002, "lng": 0.002 }
+    },
+    {
+      "ownerEmail": "sarah.smith@example.com",
+      "title": "Camping Tent (4 Person)",
+      "description": "Spacious 4-person dome tent. Waterproof and easy to set up. Perfect for weekend getaways.",
+      "type": "GOODS",
+      "category": "Outdoors",
+      "hourlyRate": 10.0,
+      "imageUrl": "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d",
+      "gallery": ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4"],
+      "autoApprove": true,
+      "status": "AVAILABLE",
+      "location": { "lat": 0.004, "lng": 0.004 }
+    },
+    {
+      "ownerEmail": "sarah.smith@example.com",
+      "title": "DSLR Camera Kit",
+      "description": "Canon DSLR with 18-55mm and 50mm lenses. Includes bag, memory card, and extra battery. Great for beginners.",
+      "type": "GOODS",
+      "category": "Electronics",
+      "hourlyRate": 35.0,
+      "imageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+      "gallery": [],
+      "autoApprove": false,
+      "status": "AVAILABLE",
+      "location": { "lat": 0.004, "lng": 0.004 }
+    }
+  ],
+  "reviews": [
+    {
+      "authorEmail": "bob.borrower@example.com",
+      "targetEmail": "linda.lender@example.com",
+      "listingTitle": "Professional Tile Cutter",
+      "rating": 5,
+      "comment": "Great tool! Saved me a lot of money compared to buying one. Linda was very helpful showing me how to use it.",
+      "timestamp": "2023-10-15T14:30:00"
+    },
+    {
+      "authorEmail": "sarah.smith@example.com",
+      "targetEmail": "linda.lender@example.com",
+      "listingTitle": "Pressure Washer 3000 PSI",
+      "rating": 4,
+      "comment": "Worked well, but was a bit hard to start initially. Once running it was powerful.",
+      "timestamp": "2023-11-05T09:15:00"
+    }
+  ],
+  "messages": [
+    {
+      "senderEmail": "bob.borrower@example.com",
+      "receiverEmail": "linda.lender@example.com",
+      "content": "Hi Linda, is the tile cutter available this weekend?",
+      "timestamp": "2023-10-10T10:00:00",
+      "isRead": true
+    },
+    {
+      "senderEmail": "linda.lender@example.com",
+      "receiverEmail": "bob.borrower@example.com",
+      "content": "Yes, it is! You can book it through the app.",
+      "timestamp": "2023-10-10T10:05:00",
+      "isRead": true
+    }
+  ]
+}

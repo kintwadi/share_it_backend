@@ -44,7 +44,7 @@ public class AdminController {
     }
     
     @DeleteMapping("/reports/{id}")
-    public ResponseEntity<Map<String, String>> deleteReport(@PathVariable UUID id) {
+    public ResponseEntity<Map<String, String>> deleteReport(@PathVariable("id") UUID id) {
         reportRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("status", "deleted"));
     }

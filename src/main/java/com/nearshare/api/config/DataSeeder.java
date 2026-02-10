@@ -1,5 +1,7 @@
 package com.nearshare.api.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.Message;
 import com.nearshare.api.model.Review;
@@ -17,53 +19,188 @@ import com.nearshare.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.io.InputStream;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Configuration
 public class DataSeeder {
+
     @Bean
     CommandLineRunner seed(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, PasswordEncoder encoder) {
         return args -> {
-            User linda = users.findByEmail("linda.lender@example.com").orElseGet(() -> users.save(
-                User.builder().id(UUID.randomUUID()).name("Linda Lender").email("linda.lender@example.com").password(encoder.encode("password123")).phone("123-456-7890").address("1 Main St").avatarUrl("https://images.unsplash.com/photo-1544005313-94ddf0286df2").trustScore(98).vouchCount(156).verificationStatus(VerificationStatus.VERIFIED).location(Location.builder().lat(0.002).lng(0.002).build()).joinedDate(LocalDateTime.of(2021, 5, 15, 0, 0)).status(UserStatus.ACTIVE).role(UserRole.LENDER).build()
-            ));
-            linda.setPassword(encoder.encode("password123"));
-            linda.setTwoFactorEnabled(false);
-            users.save(linda);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.findAndRegisterModules(); // Support for Java 8 Time, etc.
 
-            User bob = users.findByEmail("bob.borrower@example.com").orElseGet(() -> users.save(
-                User.builder().id(UUID.randomUUID()).name("Bob Borrower").email("bob.borrower@example.com").password(encoder.encode("password123")).phone("987-654-3210").address("2 Main St").avatarUrl("https://images.unsplash.com/photo-1502767089025-6572583495b0").trustScore(75).vouchCount(45).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(0.003).lng(0.003).build()).joinedDate(LocalDateTime.of(2022, 1, 10, 0, 0)).status(UserStatus.ACTIVE).role(UserRole.BORROWER).build()
-            ));
-            bob.setPassword(encoder.encode("password123"));
-            bob.setTwoFactorEnabled(false);
-            users.save(bob);
+            try {
+                ClassPathResource resource = new ClassPathResource("mockdata.json");
+                if (resource.exists()) {
+                    InputStream inputStream = resource.getInputStream();
+                    MockData mockData = mapper.readValue(inputStream, MockData.class);
 
-            User admin = users.findByEmail("admin@nearshare.local").orElseGet(() -> users.save(
-                User.builder().id(UUID.randomUUID()).name("Alice Admin").email("admin@nearshare.local").password(encoder.encode("password123")).phone("+1 (800) 555-9999").address("NearShare HQ").avatarUrl("https://images.unsplash.com/photo-1573496359142-b8d87734a5a2").trustScore(100).vouchCount(500).verificationStatus(VerificationStatus.VERIFIED).location(Location.builder().lat(0.0).lng(0.0).build()).joinedDate(LocalDateTime.of(2020, 1, 1, 0, 0)).status(UserStatus.ACTIVE).role(UserRole.ADMIN).build()
-            ));
-            admin.setPassword(encoder.encode("password123"));
-            admin.setTwoFactorEnabled(false);
-            users.save(admin);
+                    // Seed Users
+                    if (mockData.users != null) {
+                        for (MockUser u : mockData.users) {
+                            if (users.findByEmail(u.email).isEmpty()) {
+                                User user = User.builder()
+                                        .id(UUID.randomUUID())
+                                        .name(u.name)
+                                        .email(u.email)
+                                        .password(encoder.encode(u.password))
+                                        .role(UserRole.valueOf(u.role))
+                                        .phone(u.phone)
+                                        .address(u.address)
+                                        .avatarUrl(u.avatarUrl)
+                                        .trustScore(u.trustScore)
+                                        .vouchCount(u.vouchCount)
+                                        .verificationStatus(VerificationStatus.valueOf(u.verificationStatus))
+                                        .joinedDate(LocalDateTime.parse(u.joinedDate))
+                                        .status(UserStatus.ACTIVE)
+                                        .location(Location.builder().lat(u.location.lat).lng(u.location.lng).build())
+                                        .twoFactorEnabled(false)
+                                        .build();
+                                users.save(user);
+                            }
+                        }
+                    }
 
-            User newNeighbor = users.findByEmail("new.neighbor@example.com").orElseGet(() -> users.save(
-                User.builder().id(UUID.randomUUID()).name("New Neighbor").email("new.neighbor@example.com").password(encoder.encode("password123")).phone("").address("").avatarUrl("https://images.unsplash.com/photo-1599566150163-29194dcaad36").trustScore(10).vouchCount(0).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(0.005).lng(-0.005).build()).joinedDate(LocalDateTime.of(2023, 11, 1, 0, 0)).status(UserStatus.ACTIVE).role(UserRole.MEMBER).build()
-            ));
-            newNeighbor.setPassword(encoder.encode("password123"));
-            newNeighbor.setTwoFactorEnabled(false);
-            users.save(newNeighbor);
+                    // Seed Listings
+                    if (mockData.listings != null) {
+                        for (MockListing l : mockData.listings) {
+                            User owner = users.findByEmail(l.ownerEmail).orElse(null);
+                            if (owner != null && listings.findByTitle(l.title).isEmpty()) {
+                                Listing listing = Listing.builder()
+                                        .id(UUID.randomUUID())
+                                        .owner(owner)
+                                        .title(l.title)
+                                        .description(l.description)
+                                        .type(ListingType.valueOf(l.type))
+                                        .category(l.category)
+                                        .hourlyRate(BigDecimal.valueOf(l.hourlyRate))
+                                        .imageUrl(l.imageUrl)
+                                        .gallery(l.gallery)
+                                        .autoApprove(l.autoApprove)
+                                        .status(AvailabilityStatus.valueOf(l.status))
+                                        .location(Location.builder().lat(l.location.lat).lng(l.location.lng).build())
+                                        .build();
+                                listings.save(listing);
+                            }
+                        }
+                    }
 
-            if (listings.count() == 0) {
-                Listing tileCutter = Listing.builder().id(UUID.randomUUID()).title("Professional Tile Cutter").description("Manual tile cutter").type(ListingType.GOODS).category("Tools").imageUrl("https://example.com/tile-cutter.jpg").gallery(List.of()).hourlyRate(new java.math.BigDecimal("15.0")).autoApprove(false).status(AvailabilityStatus.AVAILABLE).location(Location.builder().lat(10.0).lng(10.0).build()).owner(linda).borrower(null).build();
-                listings.save(tileCutter);
-                Message m = Message.builder().id(UUID.randomUUID()).content("Hi, is this available?").timestamp(LocalDateTime.now()).isRead(true).sender(bob).receiver(linda).build();
-                messages.save(m);
-                Review r = Review.builder().id(UUID.randomUUID()).rating(5).comment("Great experience!").timestamp(LocalDateTime.now()).author(bob).targetUser(linda).listing(tileCutter).build();
-                reviews.save(r);
+                    // Seed Reviews
+                    if (mockData.reviews != null) {
+                        for (MockReview r : mockData.reviews) {
+                            User author = users.findByEmail(r.authorEmail).orElse(null);
+                            User target = users.findByEmail(r.targetEmail).orElse(null);
+                            Listing listing = listings.findByTitle(r.listingTitle).stream().findFirst().orElse(null);
+
+                            if (author != null && target != null && listing != null) {
+                                Review review = Review.builder()
+                                        .id(UUID.randomUUID())
+                                        .author(author)
+                                        .targetUser(target)
+                                        .listing(listing)
+                                        .rating(r.rating)
+                                        .comment(r.comment)
+                                        .timestamp(LocalDateTime.parse(r.timestamp))
+                                        .build();
+                                reviews.save(review);
+                            }
+                        }
+                    }
+
+                    // Seed Messages
+                    if (mockData.messages != null) {
+                        for (MockMessage m : mockData.messages) {
+                            User sender = users.findByEmail(m.senderEmail).orElse(null);
+                            User receiver = users.findByEmail(m.receiverEmail).orElse(null);
+
+                            if (sender != null && receiver != null) {
+                                Message message = Message.builder()
+                                        .id(UUID.randomUUID())
+                                        .sender(sender)
+                                        .receiver(receiver)
+                                        .content(m.content)
+                                        .timestamp(LocalDateTime.parse(m.timestamp))
+                                        .isRead(m.isRead)
+                                        .build();
+                                messages.save(message);
+                            }
+                        }
+                    }
+                    
+                    System.out.println("Mock data seeded successfully from mockdata.json");
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to seed mock data: " + e.getMessage());
+                e.printStackTrace();
             }
         };
+    }
+
+    // Helper classes for JSON mapping
+    private static class MockData {
+        public List<MockUser> users;
+        public List<MockListing> listings;
+        public List<MockReview> reviews;
+        public List<MockMessage> messages;
+    }
+
+    private static class MockUser {
+        public String name;
+        public String email;
+        public String password;
+        public String role;
+        public String phone;
+        public String address;
+        public String avatarUrl;
+        public int trustScore;
+        public int vouchCount;
+        public String verificationStatus;
+        public String joinedDate;
+        public MockLocation location;
+    }
+
+    private static class MockListing {
+        public String ownerEmail;
+        public String title;
+        public String description;
+        public String type;
+        public String category;
+        public double hourlyRate;
+        public String imageUrl;
+        public List<String> gallery;
+        public boolean autoApprove;
+        public String status;
+        public MockLocation location;
+    }
+
+    private static class MockReview {
+        public String authorEmail;
+        public String targetEmail;
+        public String listingTitle;
+        public int rating;
+        public String comment;
+        public String timestamp;
+    }
+
+    private static class MockMessage {
+        public String senderEmail;
+        public String receiverEmail;
+        public String content;
+        public String timestamp;
+        public boolean isRead;
+    }
+
+    private static class MockLocation {
+        public double lat;
+        public double lng;
     }
 }
