@@ -98,8 +98,13 @@ Users can report listings that violate community guidelines or appear suspicious
   - The system records the report with the reporter's ID, the listing ID, and the timestamp.
 - **Constraint**:
   - A user can report the same item multiple times, but **only for different reasons**.
-  - Duplicate reports (same user, same listing, same reason) are rejected to prevent spam.
-- **Effect**:
-  - The report is stored for Admin review.
-  - No automatic action (like hiding the listing) is taken immediately to prevent abuse, but Admins can subsequently block the listing based on reports.
-- **Code Reference**: `ListingService.report()`, `ListingController.report()`
+  - **Duplicate Prevention**: If a user attempts to report the same listing for the same reason again, the system rejects the request with a 400 Bad Request error.
+
+### 5.2 Admin Report Management
+Admins have access to a dashboard grouping reports by listing.
+- **Grouped Display**: Reports for the same listing are grouped together.
+- **Actions**:
+  - **Block/Unblock Listing**: Toggles the listing status between `AVAILABLE` (or previous state) and `BLOCKED`. When `BLOCKED`, the listing is removed from search results and cannot be booked.
+  - **Dismiss Reports**: Removes the reports from the active view, effectively "closing" the case.
+  - **Delete Listing**: Permanently removes the listing.
+  - **Cancel**: Closes the detail view without taking action.
