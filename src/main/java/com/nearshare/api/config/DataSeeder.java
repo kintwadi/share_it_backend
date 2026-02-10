@@ -17,6 +17,7 @@ import com.nearshare.api.repository.MessageRepository;
 import com.nearshare.api.repository.ReviewRepository;
 import com.nearshare.api.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -33,6 +34,7 @@ import java.util.UUID;
 public class DataSeeder {
 
     @Bean
+    @ConditionalOnProperty(name = "seeding.enabled", havingValue = "true")
     CommandLineRunner seed(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, PasswordEncoder encoder) {
         return args -> {
             ObjectMapper mapper = new ObjectMapper();
