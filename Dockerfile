@@ -32,8 +32,8 @@ EXPOSE 8081
 
 # Environment variables
 ENV DB_URL=jdbc:postgresql://localhost:5432/nearshare
-ENV DB_USERNAME=nearshare_user
-ENV DB_PASSWORD=nearshare_password
+ENV DB_USERNAME=${DB_USERNAME}
+ENV DB_PASSWORD=${DB_PASSWORD}
 ENV DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
 
 # Other ENV variables preserved
