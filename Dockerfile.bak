@@ -10,33 +10,20 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Install PostgreSQL
-RUN apk update && apk add postgresql postgresql-contrib
-
 # Copy the built JAR file from the build stage
 COPY --from=build /app/target/nearshare-back-end-0.0.1-SNAPSHOT.jar app.jar
-COPY src/main/resources/entrypoint.sh /app/entrypoint.sh
 
 # Create a non-root user to run the application
 RUN addgroup -S spring && adduser -S spring -G spring
-
-# Setup PostgreSQL directories and permissions
-RUN mkdir -p /run/postgresql /var/lib/postgresql/data && \
-    chown -R spring:spring /run/postgresql /var/lib/postgresql && \
-    chmod +x /app/entrypoint.sh
-
 USER spring
 
 # Expose the application port
 EXPOSE 8081
 
-# Environment variables
-ENV DB_URL=jdbc:postgresql://localhost:5432/nearshare
-ENV DB_USERNAME=nearshare_user
-ENV DB_PASSWORD=nearshare_password
-ENV DB_DIALECT=org.hibernate.dialect.PostgreSQLDialect
-
-# Other ENV variables preserved
+# Environment variables (can be overridden at runtime)
+ENV DB_URL=${DB_URL}
+ENV DB_USERNAME=${DB_USERNAME}
+ENV DB_PASSWORD=${DB_PASSWORD}
 ENV JWT_SECRET=${JWT_SECRET}
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -55,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:8081/actuator/health || exit 1
 
 # Run the application
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
