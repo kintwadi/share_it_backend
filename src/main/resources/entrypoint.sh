@@ -16,7 +16,16 @@ if [ -z "$(ls -A "$PGDATA")" ]; then
     pg_ctl start -D "$PGDATA" -l /var/lib/postgresql/log.log
     
     # Wait for PostgreSQL to start
-    sleep 5
+    echo "Waiting for PostgreSQL to start..."
+    timeout=30
+    while ! pg_isready -h localhost -p 5432 > /dev/null 2>&1; do
+        timeout=$((timeout - 1))
+        if [ $timeout -eq 0 ]; then
+            echo "Timed out waiting for PostgreSQL to start"
+            exit 1
+        fi
+        sleep 1
+    done
     
     echo "Creating user and database..."
     # Check if user already exists (unlikely in fresh init, but good practice)
@@ -32,8 +41,18 @@ fi
 echo "Starting PostgreSQL..."
 pg_ctl start -D "$PGDATA" -l /var/lib/postgresql/log.log
 
-# Wait for DB to be ready
-sleep 5
+echo "Waiting for PostgreSQL to be ready..."
+timeout=30
+while ! pg_isready -h localhost -p 5432 > /dev/null 2>&1; do
+    timeout=$((timeout - 1))
+    if [ $timeout -eq 0 ]; then
+        echo "Timed out waiting for PostgreSQL to start"
+        exit 1
+    fi
+    sleep 1
+done
+
+echo "PostgreSQL is ready."
 
 echo "Starting Application..."
 exec java -jar /app/app.jar
