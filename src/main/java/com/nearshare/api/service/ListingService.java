@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -40,9 +41,16 @@ public class ListingService {
         this.reportRepository = reportRepository;
     }
 
+    @Transactional(readOnly = true)
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
         List<Listing> all = listingRepository.findAll();
-        List<Listing> filtered = all.stream().filter(l -> l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN).filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase()))).filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category))).filter(l -> type == null || l.getType().name().equalsIgnoreCase(type)).filter(l -> minPrice == null || l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0).toList();
+        List<Listing> filtered = all.stream()
+            .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
+            .filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase())))
+            .filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category)))
+            .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
+            .filter(l -> minPrice == null || (l.getHourlyRate() != null && l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0))
+            .toList();
         int start = Math.min(page * size, filtered.size());
         int end = Math.min(start + size, filtered.size());
         List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current)).toList();
@@ -176,6 +184,7 @@ public class ListingService {
         return toDTO(l, null);
     }
 
+    @Transactional(readOnly = true)
     public List<ListingDTO> recommended(User current, int size) {
         if (current == null) return List.of();
         var dismissed = dismissRepository.findByUser(current).stream().map(d -> d.getListing().getId()).toList();
@@ -232,7 +241,38 @@ public class ListingService {
         if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
             dist = DistanceUtil.haversineMiles(current.getLocation().getLat(), current.getLocation().getLng(), l.getLocation().getLat(), l.getLocation().getLng());
         }
-        return ListingDTO.builder().id(l.getId()).ownerId(l.getOwner() != null ? l.getOwner().getId() : null).borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null).title(l.getTitle()).description(l.getDescription()).type(l.getType()).category(l.getCategory()).imageUrl(l.getImageUrl()).distanceMiles(dist).status(l.getStatus()).hourlyRate(l.getHourlyRate()).location(LocationDTO.builder().x(l.getLocation() != null ? l.getLocation().getLat() : null).y(l.getLocation() != null ? l.getLocation().getLng() : null).build()).owner(l.getOwner() != null ? UserSummaryDTO.builder().id(l.getOwner().getId()).name(l.getOwner().getName()).trustScore(l.getOwner().getTrustScore()).avatarUrl(l.getOwner().getAvatarUrl()).address(l.getOwner().getAddress()).build() : null).borrower(l.getBorrower() != null ? UserSummaryDTO.builder().id(l.getBorrower().getId()).name(l.getBorrower().getName()).trustScore(l.getBorrower().getTrustScore()).avatarUrl(l.getBorrower().getAvatarUrl()).build() : null).gallery(l.getGallery()).autoApprove(l.isAutoApprove()).build();
+        return ListingDTO.builder()
+            .id(l.getId())
+            .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
+            .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
+            .title(l.getTitle())
+            .description(l.getDescription())
+            .type(l.getType())
+            .category(l.getCategory())
+            .imageUrl(l.getImageUrl())
+            .distanceMiles(dist)
+            .status(l.getStatus())
+            .hourlyRate(l.getHourlyRate())
+            .location(LocationDTO.builder()
+                .x(l.getLocation() != null ? l.getLocation().getLat() : null)
+                .y(l.getLocation() != null ? l.getLocation().getLng() : null)
+                .build())
+            .owner(l.getOwner() != null ? UserSummaryDTO.builder()
+                .id(l.getOwner().getId())
+                .name(l.getOwner().getName())
+                .trustScore(l.getOwner().getTrustScore())
+                .avatarUrl(l.getOwner().getAvatarUrl())
+                .address(l.getOwner().getAddress())
+                .build() : null)
+            .borrower(l.getBorrower() != null ? UserSummaryDTO.builder()
+                .id(l.getBorrower().getId())
+                .name(l.getBorrower().getName())
+                .trustScore(l.getBorrower().getTrustScore())
+                .avatarUrl(l.getBorrower().getAvatarUrl())
+                .build() : null)
+            .gallery(l.getGallery() != null ? new java.util.ArrayList<>(l.getGallery()) : null)
+            .autoApprove(l.isAutoApprove())
+            .build();
     }
 
     @org.springframework.transaction.annotation.Transactional
