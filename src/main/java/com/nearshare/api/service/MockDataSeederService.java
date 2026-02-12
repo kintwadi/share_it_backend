@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,7 +95,7 @@ public class MockDataSeederService {
                                     .category(l.category)
                                     .hourlyRate(BigDecimal.valueOf(l.hourlyRate))
                                     .imageUrl(l.imageUrl)
-                                    .gallery(l.gallery)
+                                    .gallery(l.gallery != null ? l.gallery : Collections.emptyList())
                                     .autoApprove(l.autoApprove)
                                     .status(AvailabilityStatus.valueOf(l.status))
                                     .location(Location.builder().lat(l.location.lat).lng(l.location.lng).build())
