@@ -57,17 +57,20 @@ public class ListingService {
         return new PageImpl<>(content, PageRequest.of(page, size), filtered.size());
     }
 
+    @Transactional(readOnly = true)
     public ListingDTO getById(UUID id, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         return toDTO(l, current);
     }
 
+    @Transactional
     public ListingDTO create(User owner, CreateListingRequest req) {
         Listing l = Listing.builder().id(UUID.randomUUID()).title(req.getTitle()).description(req.getDescription()).category(req.getCategory()).type(req.getType()).imageUrl(req.getImageUrl()).gallery(req.getGallery()).hourlyRate(req.getHourlyRate()).autoApprove(req.isAutoApprove()).status(AvailabilityStatus.AVAILABLE).location(Location.builder().lat(req.getX()).lng(req.getY()).build()).owner(owner).borrower(null).build();
         listingRepository.save(l);
         return toDTO(l, owner);
     }
 
+    @Transactional
     public ListingDTO update(UUID id, CreateListingRequest req, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         l.setTitle(req.getTitle());
@@ -83,10 +86,12 @@ public class ListingService {
         return toDTO(l, current);
     }
 
+    @Transactional
     public void delete(UUID id) {
         listingRepository.deleteById(id);
     }
 
+    @Transactional
     public ListingDTO borrow(UUID id, User borrower, com.nearshare.api.dto.BorrowRequest request) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         
@@ -150,6 +155,7 @@ public class ListingService {
         return toDTO(l, borrower);
     }
 
+    @Transactional
     public ListingDTO approve(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         l.setStatus(AvailabilityStatus.BORROWED);
@@ -157,6 +163,7 @@ public class ListingService {
         return toDTO(l, owner);
     }
 
+    @Transactional
     public ListingDTO deny(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         l.setStatus(AvailabilityStatus.AVAILABLE);
@@ -165,6 +172,7 @@ public class ListingService {
         return toDTO(l, owner);
     }
 
+    @Transactional
     public ListingDTO returnItem(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         l.setStatus(AvailabilityStatus.AVAILABLE);
@@ -173,6 +181,7 @@ public class ListingService {
         return toDTO(l, owner);
     }
 
+    @Transactional
     public ListingDTO block(UUID id) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getStatus() == AvailabilityStatus.BLOCKED) {
