@@ -1,0 +1,29 @@
+<div *ngIf="loading" class="min-h-[60vh] flex items-center justify-center">
+  <div class="flex flex-col items-center gap-3 text-gray-500">
+    <lucide-icon [img]="Shield" [size]="32" class="text-brand-600"></lucide-icon>
+    <span class="text-sm font-medium">{{ i18n.t('borrowerSub.loading') }}</span>
+  </div>
+</div>
+
+<div *ngIf="!loading && user" class="max-w-2xl mx-auto">
+  <button type="button" (click)="goBack()" class="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-800">
+    <lucide-icon [img]="ArrowLeft" [size]="16" class="mr-1"></lucide-icon>
+    {{ i18n.t('borrowerSub.back') }}
+  </button>
+
+  <div class="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
+    {{ i18n.t('borrowerSub.step_badge') }}
+  </div>
+
+  <h1 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+    <lucide-icon [img]="Shield" [size]="24" class="text-brand-600"></lucide-icon>
+    {{ i18n.t('borrowerSub.title') }}
+  </h1>
+  <p class="text-sm text-gray-600 mb-8">
+    {{ i18n.t('borrowerSub.subtitle') }}
+  </p>
+
+  <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm text-sm text-gray-700">
+    {{ i18n.t('borrowerSub.placeholder') }}
+  </div>
+</div>

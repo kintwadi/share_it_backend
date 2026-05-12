@@ -1,0 +1,95 @@
+<div *ngIf="loading" class="min-h-[70vh] flex items-center justify-center">
+  <div class="flex items-center gap-2 text-gray-600">
+    <lucide-icon [img]="Loader2" class="animate-spin" size="18"></lucide-icon>
+    <span class="text-sm font-medium">{{ i18n.t('rate.loading') }}</span>
+  </div>
+</div>
+
+<div *ngIf="!loading && error" class="min-h-[70vh] flex items-center justify-center px-4">
+  <div class="max-w-lg w-full bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+    <div class="text-lg font-extrabold text-gray-900">{{ i18n.t('rate.link_title') }}</div>
+    <div class="mt-2 text-sm text-gray-700">{{ error }}</div>
+    <div class="mt-5 flex gap-3">
+      <app-button variant="dark" (onClick)="navToDashboard()">{{ i18n.t('rate.go_to_dashboard') }}</app-button>
+      <app-button variant="secondary" (onClick)="navToHome()">{{ i18n.t('rate.back_to_home') }}</app-button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!loading && !error && submitted" class="min-h-[70vh] flex items-center justify-center px-4">
+  <div class="max-w-lg w-full bg-white border border-emerald-200 rounded-2xl p-6 shadow-sm">
+    <div class="flex items-center gap-2 text-emerald-700">
+      <lucide-icon [img]="CheckCircle2" size="20"></lucide-icon>
+      <div class="text-lg font-extrabold">{{ i18n.t('rate.thanks_title') }}</div>
+    </div>
+    <div class="mt-2 text-sm text-gray-700">
+      {{ i18n.t('rate.thanks_help') }}
+    </div>
+    <div class="mt-5 flex gap-3">
+      <app-button *ngIf="invite?.listingId" variant="dark" (onClick)="navToListing()">{{ i18n.t('rate.view_listing') }}</app-button>
+      <app-button *ngIf="!invite?.listingId" variant="dark" (onClick)="navToDashboard()">{{ i18n.t('rate.go_to_dashboard') }}</app-button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!loading && !error && !submitted" class="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white py-10 px-4 md:px-6">
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-md p-6 md:p-8">
+      <div class="text-sm font-semibold text-gray-600">{{ i18n.t('rate.handover_completed') }}</div>
+      <h1 class="mt-1 text-2xl md:text-3xl font-extrabold text-gray-900">{{ i18n.t('rate.title') }}</h1>
+      <div class="mt-2 text-sm text-gray-700">
+        <ng-container *ngIf="invite?.targetUserName">
+          {{ i18n.t('rate.question_with') }} <span class="font-bold">{{ invite.targetUserName }}</span>?
+        </ng-container>
+        <ng-container *ngIf="!invite?.targetUserName">
+          {{ i18n.t('rate.question_generic') }}
+        </ng-container>
+      </div>
+      <div *ngIf="invite?.listingTitle" class="mt-2 text-xs text-gray-500">{{ i18n.t('rate.listing_label') }} {{ invite.listingTitle }}</div>
+
+      <div class="mt-6">
+        <div class="text-xs font-bold text-gray-900 mb-2">{{ i18n.t('rate.rating_label') }}</div>
+        <div class="flex items-center gap-2">
+          <button
+            *ngFor="let v of stars"
+            type="button"
+            (click)="setRating(v)"
+            class="p-1 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <lucide-icon
+              [img]="Star"
+              size="26"
+              [ngClass]="v <= rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'"
+            ></lucide-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <div class="text-xs font-bold text-gray-900 mb-2">{{ i18n.t('rate.comment_label') }}</div>
+        <textarea
+          [(ngModel)]="comment"
+          rows="4"
+          class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-shadow"
+          [placeholder]="i18n.t('rate.comment_placeholder')"
+        ></textarea>
+      </div>
+
+      <div class="mt-6 flex items-center justify-between gap-3">
+        <app-button variant="secondary" (onClick)="navToDashboard()">{{ i18n.t('rate.skip') }}</app-button>
+        <app-button 
+          variant="primary" 
+          [disabled]="submitting" 
+          [isLoading]="submitting"
+          (onClick)="handleSubmit()"
+        >
+          {{ i18n.t('rate.submit') }}
+        </app-button>
+      </div>
+
+      <div class="mt-4 text-[11px] text-gray-500">
+        {{ i18n.t('rate.footer') }}
+      </div>
+    </div>
+  </div>
+</div>

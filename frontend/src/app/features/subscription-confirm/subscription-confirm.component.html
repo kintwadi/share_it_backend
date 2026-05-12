@@ -1,0 +1,163 @@
+<div class="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white">
+  <div class="max-w-4xl mx-auto">
+    <button
+      type="button"
+      (click)="handleSecondary()"
+      class="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-800"
+    >
+      <lucide-icon [img]="ArrowLeft" size="16" class="mr-1"></lucide-icon>
+      {{ i18n.t('subscription.back_to_plans') }}
+    </button>
+
+    <div class="bg-white border rounded-2xl shadow-lg p-6 md:p-8"
+      [ngClass]="isPro ? 'border-purple-200 shadow-purple-100' : 'border-blue-200 shadow-blue-100'">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3"
+          [ngClass]="isPro ? 'bg-purple-50' : 'bg-blue-50'">
+          <lucide-icon [img]="ShieldCheck" [size]="28" [ngClass]="isPro ? 'text-purple-600' : 'text-blue-600'"></lucide-icon>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-1">
+          {{ i18n.t(contentKeyPrefix + (isPaidPlan ? 'congrats' : 'confirmed')) }}
+        </h1>
+        <p class="text-sm md:text-base text-gray-700">
+          {{ i18n.t(contentKeyPrefix + (isPaidPlan ? 'selected' : 'selected')) }}
+        </p>
+      </div>
+
+      <div *ngIf="error" class="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
+        {{error}}
+      </div>
+
+      <ng-container *ngIf="isPaidPlan; else freePlan">
+        <div class="border rounded-xl px-4 py-3 mb-6 text-sm"
+          [ngClass]="isPro ? 'bg-purple-50 border-purple-200 text-purple-900' : 'bg-blue-50 border-blue-200 text-blue-900'">
+          <div class="font-semibold">{{ i18n.t(contentKeyPrefix + 'trial_title') }}</div>
+          <div class="text-xs md:text-sm mt-1">{{ i18n.t(contentKeyPrefix + 'trial_text') }}</div>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 p-4 md:p-5 mb-6">
+          <div class="text-sm font-bold text-gray-900 mb-3">{{ i18n.t(contentKeyPrefix + 'benefits_title') }}</div>
+          <div class="grid md:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit1_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'benefit1_text') }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit2_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'benefit2_text') }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit3_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'benefit3_text') }}</p>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-600">
+            {{ i18n.t(contentKeyPrefix + 'stats_hint') }}
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-4 text-xs text-amber-900">
+          <div class="font-bold">{{ i18n.t(contentKeyPrefix + 'warning_label') }}</div>
+          <div class="mt-1">{{ i18n.t(contentKeyPrefix + 'warning_text') }}</div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3 mt-6">
+          <button
+            type="button"
+            (click)="handlePrimary()"
+            [disabled]="processing"
+            class="flex-1 inline-flex items-center justify-center py-2.5 rounded-xl text-white text-sm font-bold shadow-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            [ngClass]="isPro ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'"
+          >
+            <lucide-icon *ngIf="processing" [img]="Loader2" [size]="16" class="mr-2 animate-spin"></lucide-icon>
+            <lucide-icon *ngIf="!processing" [img]="CheckCircle2" [size]="16" class="mr-2"></lucide-icon>
+            {{ i18n.t('lenderPost.primary_cta') }}
+          </button>
+          <button
+            type="button"
+            (click)="handleSecondary()"
+            class="flex-1 inline-flex items-center justify-center py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            {{ i18n.t('lenderPost.secondary_cta') }}
+          </button>
+        </div>
+
+        <div class="mt-5 flex items-start gap-2 text-[11px] text-gray-500">
+          <lucide-icon [img]="Shield" [size]="13" class="mt-0.5 text-gray-400"></lucide-icon>
+          <span>{{ i18n.t('lenderPost.privacy_note') }}</span>
+        </div>
+      </ng-container>
+
+      <ng-template #freePlan>
+        <div class="rounded-xl border border-gray-200 p-4 md:p-5 mb-6">
+          <div class="text-sm font-bold text-gray-900 mb-3">{{ i18n.t(contentKeyPrefix + 'benefits_title') }}</div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit1_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'benefit1_text') }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit2_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'benefit2_text') }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 p-4 md:p-5 mb-4">
+          <div class="text-sm font-bold text-gray-900 mb-3">{{ i18n.t(contentKeyPrefix + 'limits_title') }}</div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="Info" [size]="14" class="text-gray-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'limit1_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'limit1_text') }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 text-xs text-gray-800">
+              <div class="flex items-center gap-2 mb-2 font-semibold">
+                <lucide-icon [img]="Info" [size]="14" class="text-gray-500"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'limit2_title') }}
+              </div>
+              <p class="leading-snug">{{ i18n.t(contentKeyPrefix + 'limit2_text') }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3 mt-6">
+          <button
+            type="button"
+            (click)="handlePrimary()"
+            [disabled]="processing"
+            class="flex-1 inline-flex items-center justify-center py-2.5 rounded-xl text-white text-sm font-bold shadow-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed bg-gray-900 hover:bg-black active:bg-black"
+          >
+            <lucide-icon *ngIf="processing" [img]="Loader2" [size]="16" class="mr-2 animate-spin"></lucide-icon>
+            <lucide-icon *ngIf="!processing" [img]="CheckCircle2" [size]="16" class="mr-2"></lucide-icon>
+            {{ i18n.t(contentKeyPrefix + 'primary_cta') }}
+          </button>
+          <button
+            type="button"
+            (click)="handleSecondary()"
+            class="flex-1 inline-flex items-center justify-center py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          >
+            {{ i18n.t(contentKeyPrefix + 'secondary_cta') }}
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

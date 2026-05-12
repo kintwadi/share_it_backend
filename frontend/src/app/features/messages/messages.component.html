@@ -1,0 +1,116 @@
+<div class="flex h-[calc(100vh-8rem)] bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      
+  <!-- Sidebar List -->
+  <div class="w-full md:w-80 border-r border-gray-100 flex-col bg-gray-50" [ngClass]="{'hidden md:flex': activeUser, 'flex': !activeUser}">
+    <div class="p-4 border-b border-gray-200 bg-white">
+      <h2 class="font-bold text-gray-800">Messages</h2>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto">
+      <div *ngIf="loadingList" class="flex justify-center p-8">
+        <lucide-icon [img]="Loader2" class="animate-spin text-brand-500"></lucide-icon>
+      </div>
+      
+      <div *ngIf="!loadingList" class="divide-y divide-gray-100">
+        <button
+          *ngFor="let user of sortedUsers"
+          (click)="setActiveUser(user)"
+          [ngClass]="activeUser?.id === user.id ? 'bg-white border-l-4 border-l-brand-500 shadow-sm' : ''"
+          class="w-full p-4 flex items-center space-x-3 hover:bg-white transition-colors text-left"
+        >
+          <div class="relative">
+            <img [src]="user.avatarUrl || 'https://picsum.photos/seed/' + user.id + '/80/80'" (error)="onAvatarError($event, user.id, 80)" [alt]="user.name" class="w-10 h-10 rounded-full bg-gray-200" />
+            <span [ngClass]="onlineIds.has(user.id) ? 'bg-emerald-500' : 'bg-red-500'" class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate flex items-center">
+              {{user.name}}
+              <lucide-icon [img]="BadgeCheck" class="text-blue-500 ml-1" size="14"></lucide-icon>
+            </p>
+            <p class="text-xs text-brand-600 font-medium">
+              {{user.trustScore}}% Trust Score{{borrowedOwnerIds.has(user.id) ? ' • Borrowed' : ''}}
+            </p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="flex-1 flex-col bg-white" [ngClass]="{'hidden md:flex': !activeUser, 'flex': activeUser}">
+    
+    <div *ngIf="!activeUser" class="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
+      <lucide-icon [img]="MessageSquare" size="48" class="mb-4 opacity-20"></lucide-icon>
+      <p>Select a neighbor to start chatting</p>
+    </div>
+
+    <ng-container *ngIf="activeUser">
+      <!-- Mailbox Header -->
+      <div class="p-4 border-b border-gray-100 flex items-center space-x-3 shadow-sm z-10">
+        <button (click)="activeUser = null" class="md:hidden text-gray-500">
+          <lucide-icon [img]="ChevronLeft"></lucide-icon>
+        </button>
+        <img [src]="activeUser.avatarUrl || 'https://picsum.photos/seed/' + activeUser.id + '/80/80'" (error)="onAvatarError($event, activeUser.id, 80)" [alt]="activeUser.name" class="w-8 h-8 rounded-full" />
+        <div>
+          <h3 class="font-bold text-gray-900 text-sm flex items-center">
+            {{activeUser.name}}
+            <lucide-icon [img]="BadgeCheck" class="text-blue-500 ml-1" size="16"></lucide-icon>
+          </h3>
+          <span class="text-xs text-green-600 flex items-center">
+            Verified Neighbor
+          </span>
+        </div>
+      </div>
+
+      <!-- Messages List -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+        <div *ngIf="loadingChat" class="flex justify-center p-4">
+          <lucide-icon [img]="Loader2" class="animate-spin text-brand-500"></lucide-icon>
+        </div>
+        
+        <ng-container *ngIf="!loadingChat">
+          <div *ngFor="let msg of visibleMessages" [ngClass]="isMe(msg) ? 'justify-end' : 'justify-start'" class="flex items-end gap-2">
+            
+            <div *ngIf="msg.imageUrl" [ngClass]="isMe(msg) ? 'bg-brand-600 border-brand-500' : 'bg-white border-gray-100'" class="rounded-2xl p-1 shadow-sm border">
+              <img [src]="msg.imageUrl" alt="attachment" class="max-w-[60vw] max-h-[50vh] rounded-xl" />
+              <p *ngIf="msg.content" [ngClass]="isMe(msg) ? 'text-white' : 'text-gray-800'" class="mt-2 text-sm">{{msg.content}}</p>
+              <p [ngClass]="isMe(msg) ? 'text-white/70' : 'text-gray-400'" class="text-[10px] mt-1 text-right">{{formatTime(msg.timestamp)}}</p>
+            </div>
+            
+            <div *ngIf="!msg.imageUrl" [ngClass]="isMe(msg) ? 'bg-brand-600 text-white' : 'bg-white text-gray-800 border border-gray-100'" class="max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm">
+              <p>{{msg.content}}</p>
+              <p [ngClass]="isMe(msg) ? 'text-white/70' : 'text-gray-400'" class="text-[10px] mt-1 text-right">{{formatTime(msg.timestamp)}}</p>
+            </div>
+
+            <button *ngIf="isMe(msg)" (click)="deleteMessage(msg.id)" class="p-1 text-gray-500 hover:text-red-600">
+              <lucide-icon [img]="Trash2" size="16"></lucide-icon>
+            </button>
+          </div>
+        </ng-container>
+        <div #messagesEnd></div>
+      </div>
+
+      <!-- Input Area -->
+      <form (submit)="handleSend($event)" class="p-4 border-t border-gray-100 bg-white">
+        <div class="flex items-center gap-2">
+          <input #fileInput type="file" accept="image/*" class="hidden" (change)="handleAttachImage($event)" />
+          <button type="button" (click)="fileInput.click()" class="p-2 border border-gray-200 rounded-full bg-white hover:bg-gray-50" [attr.aria-label]="i18n.t('messages.attach')" [attr.title]="i18n.t('messages.attach')">📎</button>
+          <input
+            type="text"
+            [(ngModel)]="inputText"
+            name="inputText"
+            [placeholder]="i18n.t('messages.input_placeholder')"
+            class="flex-1 border border-gray-200 rounded-full px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
+          />
+          <button 
+            type="submit" 
+            [disabled]="!inputText.trim()"
+            class="p-2 bg-brand-600 text-white rounded-full hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <lucide-icon [img]="Send" size="18"></lucide-icon>
+          </button>
+        </div>
+      </form>
+    </ng-container>
+  </div>
+</div>

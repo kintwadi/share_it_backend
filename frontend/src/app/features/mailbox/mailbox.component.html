@@ -1,0 +1,187 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="text-lg font-bold text-gray-900">Mailbox</div>
+          <div class="hidden md:flex items-center gap-2 text-xs text-gray-500">
+            <span class="font-semibold text-gray-700">{{ currentTab() === 'inbox' ? 'Inbox' : 'Outbox' }}</span>
+            <span class="text-gray-300">•</span>
+            <span>{{ messages().length }}</span>
+          </div>
+        </div>
+        <button (click)="openCompose()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
+          <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
+          Compose
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] min-h-[520px]">
+        <div class="border-b md:border-b-0 md:border-r border-gray-200 bg-gray-50">
+          <div class="p-3 border-b border-gray-200 bg-white">
+            <input
+              type="text"
+              [ngModel]="filterText()"
+              (ngModelChange)="filterText.set($event)"
+              placeholder="Search mail…"
+              class="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+            />
+          </div>
+          <div class="p-2">
+            <button (click)="setTab('inbox')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold" [ngClass]="currentTab() === 'inbox' ? 'bg-white border border-gray-200 text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-white'">
+              <span class="flex items-center gap-2">
+                <lucide-icon [img]="InboxIcon" [size]="16" class="text-gray-400"></lucide-icon>
+                Inbox
+              </span>
+              <span *ngIf="inboxMessages().length" class="text-[11px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{{ inboxMessages().length }}</span>
+            </button>
+            <button (click)="setTab('outbox')" class="mt-1 w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold" [ngClass]="currentTab() === 'outbox' ? 'bg-white border border-gray-200 text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-white'">
+              <span class="flex items-center gap-2">
+                <lucide-icon [img]="SendIcon" [size]="16" class="text-gray-400"></lucide-icon>
+                Sent
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[360px_1fr]">
+          <div class="border-b lg:border-b-0 lg:border-r border-gray-200">
+            <div *ngIf="isLoading()" class="p-8 text-center text-gray-400">
+              <div class="w-7 h-7 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin mx-auto mb-3"></div>
+              <div class="text-sm">Loading…</div>
+            </div>
+
+            <div *ngIf="!isLoading() && messages().length === 0" class="p-10 text-center text-gray-500">
+              <div class="text-sm font-semibold">No messages</div>
+              <div class="text-xs text-gray-400 mt-1">This folder is empty.</div>
+            </div>
+
+            <div *ngIf="!isLoading() && messages().length" class="divide-y divide-gray-100">
+              <button
+                *ngFor="let msg of messages()"
+                type="button"
+                (click)="selectMessage(msg)"
+                class="w-full text-left px-4 py-3 hover:bg-gray-50"
+                [ngClass]="selectedMessageId() === msg.id ? 'bg-brand-50/40 border-l-4 border-brand-600 pl-3' : ''"
+              >
+                <div class="flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-sm font-bold text-gray-900 truncate">
+                      <ng-container *ngIf="currentTab() === 'inbox'">{{ msg.senderEmail || msg.senderId }}</ng-container>
+                      <ng-container *ngIf="currentTab() === 'outbox'">{{ msg.receiverEmail || msg.receiverId }}</ng-container>
+                    </div>
+                    <div class="text-xs text-gray-500 truncate mt-0.5">{{ (msg.content || '').split('\n')[0] || '(no subject)' }}</div>
+                  </div>
+                  <div class="text-[11px] text-gray-400 whitespace-nowrap">{{ msg.timestamp | date:'shortDate' }}</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-gray-900 truncate">{{ selectedTitle() || 'Select a message' }}</div>
+                <div class="text-xs text-gray-500 truncate" *ngIf="selectedPeerLabel()">
+                  <ng-container *ngIf="currentTab() === 'inbox'">From: {{ selectedPeerLabel() }}</ng-container>
+                  <ng-container *ngIf="currentTab() === 'outbox'">To: {{ selectedPeerLabel() }}</ng-container>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" *ngIf="currentTab() === 'inbox' && selectedMessage()" (click)="replyToSelected()" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-sm font-semibold flex items-center gap-2">
+                  <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
+                  Reply
+                </button>
+                <button type="button" [disabled]="!selectedMessage()" (click)="selectedMessage() ? openDeleteConfirm(selectedMessage()!.id) : null" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-white text-sm font-semibold flex items-center gap-2">
+                  <lucide-icon [img]="TrashIcon" [size]="16"></lucide-icon>
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 p-6 overflow-auto">
+              <div *ngIf="!selectedMessage()" class="text-center text-gray-400 py-16">
+                <div class="text-sm font-semibold">Select a message to read</div>
+                <div class="text-xs mt-1">Choose a message from the list.</div>
+              </div>
+
+              <div *ngIf="selectedMessage()" class="max-w-2xl">
+                <div class="text-xs text-gray-500 mb-3">{{ selectedMessage()!.timestamp | date:'medium' }}</div>
+                <div class="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed">{{ selectedMessage()!.content }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  [isOpen]="deleteConfirmOpen()"
+  title="Delete message"
+  message="Are you sure you want to delete this message? This cannot be undone."
+  confirmLabel="Delete"
+  variant="danger"
+  [confirmDisabled]="deletingMessage()"
+  (cancel)="closeDeleteConfirm()"
+  (confirm)="confirmDeleteMessage()"
+></app-confirmation-modal>
+
+<!-- Compose Modal -->
+<div *ngIf="showComposeModal()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <h3 class="text-lg font-bold text-gray-900">New Message</h3>
+      <button (click)="closeCompose()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <div class="p-6 overflow-y-auto">
+      <div *ngIf="composeError()" class="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">
+        {{composeError()}}
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">To (Email)</label>
+          <input 
+            type="text" 
+            [ngModel]="composeReceiverId()"
+            (ngModelChange)="composeReceiverId.set($event)"
+            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm outline-none"
+            placeholder="Enter recipient email..."
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Message</label>
+          <textarea 
+            [ngModel]="composeContent()"
+            (ngModelChange)="composeContent.set($event)"
+            rows="6"
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm outline-none resize-none"
+            placeholder="Write your message here..."
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+      <button 
+        (click)="closeCompose()" 
+        class="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors text-sm"
+      >
+        Cancel
+      </button>
+      <button 
+        (click)="sendMessage()" 
+        class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl transition-colors shadow-sm flex items-center gap-2 text-sm"
+      >
+        <lucide-icon [img]="SendIcon" [size]="16"></lucide-icon>
+        Send Message
+      </button>
+    </div>
+  </div>
+</div>

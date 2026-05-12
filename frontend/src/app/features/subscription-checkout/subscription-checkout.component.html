@@ -1,0 +1,76 @@
+<div *ngIf="loading" class="min-h-[70vh] flex items-center justify-center text-gray-500">
+  <lucide-icon [img]="Loader2" class="animate-spin text-brand-600" size="28"></lucide-icon>
+</div>
+
+<div *ngIf="!loading" class="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white py-10 px-4 md:px-6">
+  <div class="max-w-2xl mx-auto">
+    <app-button
+      (onClick)="goBack()"
+      variant="tertiary"
+      size="sm"
+      class="mb-6"
+    >
+      <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon>
+      {{ i18n.t('common.back') }}
+    </app-button>
+
+    <div [ngClass]="isPro ? 'border-purple-200 shadow-purple-100' : 'border-blue-200 shadow-blue-100'" class="bg-white border rounded-2xl shadow-lg p-6 md:p-8">
+      <div class="text-center mb-6">
+        <div [ngClass]="isPro ? 'bg-purple-50' : 'bg-blue-50'" class="inline-flex items-center justify-center w-12 h-12 rounded-full text-2xl mb-3">
+          {{ isPro ? '🌟' : '🛡️' }}
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
+          {{ isPro ? i18n.t('subscription.pro.name') : i18n.t('subscription.plus.name') }} {{ i18n.t('subscription.checkout.title_suffix') }}
+        </h1>
+        <p class="text-sm md:text-base text-gray-700">
+          {{ i18n.t('subscription.checkout.subtitle') }}
+        </p>
+      </div>
+
+      <div [ngClass]="isPro ? 'border-purple-100 bg-white/80' : 'border-blue-100 bg-white/80'" class="rounded-xl border p-4 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-800">
+            <div class="font-semibold">{{ isPro ? i18n.t('subscription.pro.name') : i18n.t('subscription.plus.name') }} {{ i18n.t('subscription.checkout.plan_suffix') }}</div>
+            <div class="text-xs text-gray-600">{{ i18n.t('subscription.checkout.monthly_billing') }}</div>
+          </div>
+          <div class="text-lg font-extrabold text-gray-900">{{ priceLabel }}</div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-700">
+          <div [ngClass]="isPro ? 'border-purple-100 bg-purple-50/60' : 'border-blue-100 bg-blue-50/60'" class="rounded-lg border p-3">
+            <div [ngClass]="isPro ? 'text-purple-900' : 'text-blue-900'" class="flex items-center gap-2 font-semibold">
+              <lucide-icon [img]="CheckCircle2" size="14" class="text-emerald-600"></lucide-icon>
+              {{ i18n.t('subscription.checkout.benefit1') }}
+            </div>
+          </div>
+          <div [ngClass]="isPro ? 'border-purple-100 bg-purple-50/60' : 'border-blue-100 bg-blue-50/60'" class="rounded-lg border p-3">
+            <div [ngClass]="isPro ? 'text-purple-900' : 'text-blue-900'" class="flex items-center gap-2 font-semibold">
+              <lucide-icon [img]="CheckCircle2" size="14" class="text-emerald-600"></lucide-icon>
+              {{ i18n.t('subscription.checkout.benefit2') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+        {{ error }}
+      </div>
+
+      <app-button
+        (onClick)="handleCheckout()"
+        [disabled]="!stripeAvailable || redirecting"
+        [isLoading]="redirecting"
+        variant="primary"
+        [fullWidth]="true"
+        [ngClass]="isPro ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'"
+      >
+        <lucide-icon *ngIf="!redirecting" [img]="CreditCard" size="16" class="mr-2"></lucide-icon>
+        {{ redirecting ? i18n.t('subscription.checkout.redirecting') : i18n.t('subscription.checkout.cta') }}
+      </app-button>
+
+      <div class="mt-5 flex items-start gap-2 text-[11px] text-gray-500">
+        <lucide-icon [img]="Shield" size="13" class="mt-0.5 text-gray-400"></lucide-icon>
+        <span>{{ i18n.t('subscription.checkout.stripe_footer') }}</span>
+      </div>
+    </div>
+  </div>
+</div>

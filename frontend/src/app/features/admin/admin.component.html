@@ -1,0 +1,372 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+        <lucide-icon [img]="Shield" [size]="24" class="text-brand-600"></lucide-icon>
+        {{ i18n.t('admin.title') }}
+      </h1>
+      <p class="text-gray-600 mt-1">{{ i18n.t('admin.desc') }}</p>
+    </div>
+    <button
+      type="button"
+      (click)="refreshActive()"
+      [disabled]="loading"
+      class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60 flex items-center gap-2"
+    >
+      <lucide-icon *ngIf="loading" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
+      <lucide-icon *ngIf="!loading" [img]="RefreshCcw" [size]="18"></lucide-icon>
+      {{ i18n.t('admin.refresh') }}
+    </button>
+  </div>
+
+  <div class="mt-6 rounded-xl border border-gray-200 overflow-hidden bg-white">
+    <div class="bg-gray-50 p-3 border-b border-gray-200 flex flex-wrap gap-2">
+      <button (click)="setTab('OVERVIEW')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'OVERVIEW' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.overview') }}</button>
+      <button (click)="setTab('USERS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'USERS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.users') }}</button>
+      <button (click)="setTab('LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.listings') }}</button>
+      <button (click)="setTab('TRANSACTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'TRANSACTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.transactions') }}</button>
+      <button (click)="setTab('SUBSCRIPTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SUBSCRIPTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.subscriptions') }}</button>
+      <button (click)="setTab('DISPUTES')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'DISPUTES' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.disputes') }}</button>
+      <button (click)="setTab('REPORTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'REPORTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.reports') }}</button>
+    </div>
+
+    <div *ngIf="error" class="p-4 bg-red-50 border-b border-red-100 text-red-700 text-sm flex items-start gap-2">
+      <lucide-icon [img]="AlertTriangle" [size]="18" class="mt-0.5"></lucide-icon>
+      <div>{{error}}</div>
+    </div>
+
+    <div *ngIf="activeTab === 'OVERVIEW'" class="p-4 space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.users') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.users ?? '-'}}</div>
+        </div>
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.transactions') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.transactions ?? '-'}}</div>
+        </div>
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.subscriptions') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.subscriptions ?? '-'}}</div>
+        </div>
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.disputed_listings') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.disputedListings ?? '-'}}</div>
+        </div>
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.disputed_returns') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.disputedReturns ?? '-'}}</div>
+        </div>
+        <div class="p-4 bg-white border border-gray-200 rounded-xl">
+          <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.release_failed') }}</div>
+          <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.releaseFailedTransactions ?? '-'}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'USERS'" class="p-4 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <div class="flex-1">
+          <input [(ngModel)]="usersQ" placeholder="Search users by name/email" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none" />
+        </div>
+        <button type="button" (click)="loadUsers(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">
+          Search
+        </button>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full text-xs">
+          <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Name</th>
+              <th class="px-3 py-2 font-semibold">Email</th>
+              <th class="px-3 py-2 font-semibold">Role</th>
+              <th class="px-3 py-2 font-semibold">Status</th>
+              <th class="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let u of users">
+              <td class="px-3 py-2 text-gray-900 font-semibold">{{u.displayName || u.name || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{u.email || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{u.role || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{u.status || '-'}}</td>
+              <td class="px-3 py-2 text-right">
+                <div class="inline-flex gap-2">
+                  <button type="button" (click)="confirmUserStatus(u, ('' + (u.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                    {{ ('' + (u.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
+                  </button>
+                  <button type="button" (click)="confirmDeleteUser(u)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No users found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{usersTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="usersPage <= 0" (click)="loadUsers(usersPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(usersPage + 1) * pageSize >= usersTotal" (click)="loadUsers(usersPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'LISTINGS'" class="p-4 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <select [(ngModel)]="listingsStatus" class="px-4 py-2 rounded-xl border border-gray-200 bg-white">
+          <option *ngFor="let s of listingsStatusOptions" [value]="s">{{s ? s : 'ALL' }}</option>
+        </select>
+        <button type="button" (click)="loadListings(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full text-xs">
+          <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Title</th>
+              <th class="px-3 py-2 font-semibold">Type</th>
+              <th class="px-3 py-2 font-semibold">Status</th>
+              <th class="px-3 py-2 font-semibold">Owner</th>
+              <th class="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let l of listings">
+              <td class="px-3 py-2 text-gray-900 font-semibold">{{l.title}}</td>
+              <td class="px-3 py-2 text-gray-700">{{l.type || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{l.status || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || '-'}}</td>
+              <td class="px-3 py-2 text-right">
+                <div class="inline-flex gap-2">
+                  <button type="button" (click)="confirmBlockListing(l, l.status !== 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                    {{l.status === 'BLOCKED' ? 'Unblock' : 'Block'}}
+                  </button>
+                  <button type="button" (click)="confirmDeleteListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="listings.length === 0">
+              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No listings found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{listingsTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="listingsPage <= 0" (click)="loadListings(listingsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(listingsPage + 1) * pageSize >= listingsTotal" (click)="loadListings(listingsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'TRANSACTIONS'" class="p-4 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <select [(ngModel)]="transactionsStatus" class="px-4 py-2 rounded-xl border border-gray-200 bg-white">
+          <option *ngFor="let s of txStatusOptions" [value]="s">{{s ? s : 'ALL'}}</option>
+        </select>
+        <button type="button" (click)="loadTransactions(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full text-xs">
+          <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Date</th>
+              <th class="px-3 py-2 font-semibold">Listing</th>
+              <th class="px-3 py-2 font-semibold">Amount</th>
+              <th class="px-3 py-2 font-semibold">Status</th>
+              <th class="px-3 py-2 font-semibold">Payer</th>
+              <th class="px-3 py-2 font-semibold">Payee</th>
+              <th class="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let t of transactions">
+              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.timestamp ? (t.timestamp | date:'short') : '-'}}</td>
+              <td class="px-3 py-2 text-gray-900 font-semibold">{{t.listingTitle || t.listingId || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.amount}} {{(t.currency || 'USD') | uppercase}}</td>
+              <td class="px-3 py-2 text-gray-700">
+                <div class="font-semibold">{{t.status || '-'}}</div>
+                <div *ngIf="t.releaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="t.releaseError">{{t.releaseError}}</div>
+              </td>
+              <td class="px-3 py-2 text-gray-700">{{t.payerEmail || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{t.payeeEmail || '-'}}</td>
+              <td class="px-3 py-2 text-right">
+                <div class="inline-flex gap-2">
+                  <button *ngIf="t.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(t)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                    Retry
+                  </button>
+                  <button type="button" (click)="confirmDeleteTransaction(t)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="transactions.length === 0">
+              <td colspan="7" class="px-3 py-8 text-center text-gray-500">No transactions found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{transactionsTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="transactionsPage <= 0" (click)="loadTransactions(transactionsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(transactionsPage + 1) * pageSize >= transactionsTotal" (click)="loadTransactions(transactionsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'SUBSCRIPTIONS'" class="p-4 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center gap-3">
+        <select [(ngModel)]="subscriptionsStatus" class="px-4 py-2 rounded-xl border border-gray-200 bg-white">
+          <option *ngFor="let s of subStatusOptions" [value]="s">{{s ? s : 'ALL'}}</option>
+        </select>
+        <button type="button" (click)="loadSubscriptions(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full text-xs">
+          <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Created</th>
+              <th class="px-3 py-2 font-semibold">User</th>
+              <th class="px-3 py-2 font-semibold">Plan</th>
+              <th class="px-3 py-2 font-semibold">Status</th>
+              <th class="px-3 py-2 font-semibold">Stripe</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let s of subscriptions">
+              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{s.createdAt ? (s.createdAt | date:'short') : '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{s.userEmail || s.userId || '-'}}</td>
+              <td class="px-3 py-2 text-gray-900 font-semibold">{{s.planType || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{s.status || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{s.stripeSubscriptionId || '-'}}</td>
+            </tr>
+            <tr *ngIf="subscriptions.length === 0">
+              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No subscriptions found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{subscriptionsTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="subscriptionsPage <= 0" (click)="loadSubscriptions(subscriptionsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(subscriptionsPage + 1) * pageSize >= subscriptionsTotal" (click)="loadSubscriptions(subscriptionsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'DISPUTES'" class="p-4 space-y-4">
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="min-w-full text-xs">
+          <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr>
+              <th class="px-3 py-2 font-semibold">Created</th>
+              <th class="px-3 py-2 font-semibold">Listing</th>
+              <th class="px-3 py-2 font-semibold">Owner</th>
+              <th class="px-3 py-2 font-semibold">Borrower</th>
+              <th class="px-3 py-2 font-semibold">Return</th>
+              <th class="px-3 py-2 font-semibold">Payment</th>
+              <th class="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let d of disputes">
+              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{d.createdAt ? (d.createdAt | date:'short') : '-'}}</td>
+              <td class="px-3 py-2 text-gray-900 font-semibold">{{d.listingTitle || d.listingId || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{d.ownerEmail || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{d.borrowerEmail || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">
+                <div class="font-semibold">{{d.returnStatus || '-'}}</div>
+                <div *ngIf="d.disputeReason" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="d.disputeReason">{{d.disputeReason}}</div>
+              </td>
+              <td class="px-3 py-2 text-gray-700">
+                <div class="font-semibold">{{d.latestTransactionStatus || '-'}}</div>
+                <div *ngIf="d.latestReleaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="d.latestReleaseError">{{d.latestReleaseError}}</div>
+              </td>
+              <td class="px-3 py-2 text-right">
+                <div class="inline-flex flex-wrap justify-end gap-2">
+                  <button type="button" (click)="confirmAcceptReturn(d)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                    Accept return
+                  </button>
+                  <button type="button" (click)="confirmReopenReturn(d)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                    Reopen return
+                  </button>
+                  <button type="button" (click)="confirmCancelRefund(d)" class="px-3 py-1.5 rounded-lg border border-amber-200 text-amber-800 hover:bg-amber-50 inline-flex items-center gap-2">
+                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                    Cancel/refund
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="disputes.length === 0">
+              <td colspan="7" class="px-3 py-8 text-center text-gray-500">No disputes found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{disputesTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="disputesPage <= 0" (click)="loadDisputes(disputesPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(disputesPage + 1) * pageSize >= disputesTotal" (click)="loadDisputes(disputesPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'REPORTS'" class="p-4 space-y-4">
+      <div *ngIf="reportsLoading" class="flex justify-center p-10">
+        <lucide-icon [img]="Loader2" [size]="24" class="animate-spin"></lucide-icon>
+      </div>
+      <div *ngIf="!reportsLoading" class="space-y-3">
+        <div *ngFor="let r of reports" class="p-4 border rounded-xl bg-white flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="text-sm font-bold text-gray-900">{{r.reason || '-'}}</div>
+            <div class="text-xs text-gray-600 mt-1 truncate">{{r.details || ''}}</div>
+            <div class="text-xs text-gray-500 mt-1">
+              <ng-container *ngIf="r.listing?.title">{{ 'Listing: ' + r.listing.title }}</ng-container>
+              <ng-container *ngIf="r.listing?.title && r.reporter?.name"> • </ng-container>
+              <ng-container *ngIf="r.reporter?.name">{{ 'By: ' + r.reporter.name }}</ng-container>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="confirmDeleteReport(r)"
+            class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50"
+          >
+            {{ i18n.t('admin.action.dismiss') }}
+          </button>
+        </div>
+        <div *ngIf="reports.length === 0" class="text-sm text-gray-500 text-center py-10">
+          {{ i18n.t('admin.empty.reports') }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-confirmation-modal
+  [isOpen]="confirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  [variant]="confirmVariant"
+  [confirmDisabled]="confirmLoading"
+  (cancel)="closeConfirm()"
+  (confirm)="confirmDo()"
+></app-confirmation-modal>

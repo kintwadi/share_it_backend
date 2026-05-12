@@ -1,0 +1,17 @@
+/target/
+/logs/
+/.env
+/.env.*
+/*.log
+/*.log.*
+/*.gz
+/.idea/
+/.vscode/
+**/*.p12
+**/*.jks
+**/*.keystore
+**/*.pem
+**/*.key
+**/*.crt
+/docker-deploy.env
+/docker-deploy.config

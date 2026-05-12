@@ -1,0 +1,1390 @@
+<div class="min-h-screen bg-slate-50 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
+    <div class="mb-6">
+      <button type="button" (click)="router.navigate(['/dashboard'])" class="flex items-center text-gray-600 hover:text-gray-900 mb-2">
+        ← {{ i18n.t('settings.back_to_dashboard') }}
+      </button>
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="text-sm font-semibold text-brand-600 uppercase tracking-wide">{{ i18n.t('settings.header_kicker') }}</div>
+          <h1 class="text-4xl font-bold text-gray-900 mt-1">{{ i18n.t('settings.header_title') }}</h1>
+          <p class="text-gray-600 mt-2">{{ i18n.t('settings.header_subtitle') }}</p>
+        </div>
+        <button
+          type="button"
+          (click)="sidebarOpen = !sidebarOpen"
+          class="md:hidden px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm"
+        >
+          {{ sidebarOpen ? i18n.t('settings.sidebar_close') : i18n.t('settings.sidebar_open') }}
+        </button>
+      </div>
+      <div class="flex items-center gap-2 mt-4 text-sm text-gray-500">
+        <span>{{ i18n.t('settings.breadcrumb_root') }}</span>
+        <span>/</span>
+        <span class="font-semibold text-gray-700">{{ i18n.t(tabs.find(t => t.id === activeTab)?.labelKey || 'settings.tabs.overview') }}</span>
+        <div *ngIf="settingsConfig.isSectionEnabled(activeTab, 'header.privacy.badge')" class="ml-auto flex items-center gap-2">
+          <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
+            {{ i18n.t('settings.header.privacy_badge') }}
+          </span>
+          <span class="text-xs">{{ i18n.t('settings.header.privacy_hint') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-6 relative">
+    <div class="md:w-64 flex-shrink-0" [ngClass]="{'hidden md:block': !sidebarOpen}">
+      <div class="bg-white rounded-2xl shadow-soft p-4 sticky top-8 border border-gray-100">
+        <nav [attr.aria-label]="i18n.t('settings.sidebar_aria')">
+          <ul class="space-y-1">
+            <li *ngFor="let tab of visibleTabs">
+              <button
+                type="button"
+                (click)="handleTabClick(tab.id)"
+                class="relative w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+                [ngClass]="activeTab === tab.id ? 'bg-white text-gray-900 shadow-soft border border-indigo-100' : 'text-gray-600 hover:bg-gray-50'"
+                [attr.aria-current]="activeTab === tab.id ? 'page' : null"
+              >
+                <span *ngIf="activeTab === tab.id" class="absolute inset-y-1 left-0 w-1 rounded-full bg-gradient-to-b from-indigo-500 to-purple-500"></span>
+                <span class="relative flex items-center gap-2">
+                  <span>{{ tab.icon }}</span>
+                  <span>{{ i18n.t(tab.labelKey) }}</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1">
+      <div class="min-h-[600px] space-y-6">
+        
+        <!-- Overview Tab -->
+        <ng-container *ngIf="activeTab === 'overview'">
+          <div class="space-y-8">
+            <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+              <div class="mb-4">
+                <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.overview.summary_title') }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.overview.summary_help') }}</p>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex flex-col justify-between">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">
+                      {{ i18n.t('settings.overview.status_premium_label') }}
+                    </div>
+                    <span *ngIf="subscription && subscription?.planType !== 'starter'" class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">
+                      <lucide-icon [img]="CheckCircle2" [size]="12" class="mr-1"></lucide-icon>
+                      {{ i18n.t('settings.overview.status_premium_badge') }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-indigo-900 font-semibold">
+                    {{ subscriptionPlanLabel }}
+                  </p>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                  <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                    {{ i18n.t('settings.overview.status_items_label') }}
+                  </div>
+                  <p class="text-2xl font-bold text-gray-900">
+                    {{ overviewLoading ? '-' : overviewListingCount }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    {{ i18n.t('settings.overview.status_items_hint') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+                {{ i18n.t('settings.overview.summary_footer') }}
+              </div>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+              <div class="mb-4">
+                <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.overview.actions_title') }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.overview.actions_help') }}</p>
+              </div>
+
+              <div class="grid sm:grid-cols-2 lg:grid-cols-2 gap-3">
+                <button type="button" (click)="handleTabClick('profile')" class="flex flex-col items-start p-3 rounded-xl border border-gray-200 bg-white hover:border-indigo-400 hover:shadow-soft transition-all">
+                  <span class="text-xs font-semibold text-gray-500 mb-1">
+                    {{ i18n.t('settings.overview.actions_profile_label') }}
+                  </span>
+                  <span class="text-sm font-bold text-gray-900">
+                    {{ i18n.t('settings.overview.actions_profile_title') }}
+                  </span>
+                  <span class="mt-1 text-xs text-gray-500">
+                    {{ i18n.t('settings.overview.actions_profile_hint') }}
+                  </span>
+                </button>
+                <button type="button" (click)="handleTabClick('security')" class="flex flex-col items-start p-3 rounded-xl border border-gray-200 bg-white hover:border-indigo-400 hover:shadow-soft transition-all">
+                  <span class="text-xs font-semibold text-gray-500 mb-1">
+                    {{ i18n.t('settings.overview.actions_security_label') }}
+                  </span>
+                  <span class="text-sm font-bold text-gray-900">
+                    {{ i18n.t('settings.overview.actions_security_title') }}
+                  </span>
+                  <span class="mt-1 text-xs text-gray-500">
+                    {{ i18n.t('settings.overview.actions_security_hint') }}
+                  </span>
+                </button>
+              </div>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+              <div class="mb-4">
+                <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.overview.timeline_title') }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.overview.timeline_help') }}</p>
+              </div>
+
+              <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                  <div class="mt-1">
+                    <div class="w-2 h-2 rounded-full bg-brand-600"></div>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.overview.timeline_item1_title') }}</p>
+                      <span class="text-xs text-gray-400 flex items-center gap-1">
+                        <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                        {{ i18n.t('settings.overview.timeline_item1_date') }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('settings.overview.timeline_item1_description') }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                  <div class="mt-1">
+                    <div class="w-2 h-2 rounded-full bg-brand-600"></div>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.overview.timeline_item2_title') }}</p>
+                      <span class="text-xs text-gray-400 flex items-center gap-1">
+                        <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                        {{ i18n.t('settings.overview.timeline_item2_date') }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('settings.overview.timeline_item2_description') }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                  <div class="mt-1">
+                    <div class="w-2 h-2 rounded-full bg-brand-600"></div>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.overview.timeline_item3_title') }}</p>
+                      <span class="text-xs text-gray-400 flex items-center gap-1">
+                        <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                        {{ i18n.t('settings.overview.timeline_item3_date') }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('settings.overview.timeline_item3_description') }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                  <div class="mt-1">
+                    <div class="w-2 h-2 rounded-full bg-brand-600"></div>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.overview.timeline_item4_title') }}</p>
+                      <span class="text-xs text-gray-400 flex items-center gap-1">
+                        <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                        {{ i18n.t('settings.overview.timeline_item4_date') }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('settings.overview.timeline_item4_description') }}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+              <div class="mb-4">
+                <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.overview.security_title') }}</h2>
+                <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.overview.security_help') }}</p>
+              </div>
+              <div class="grid sm:grid-cols-3 gap-4">
+                <div class="flex items-start gap-2">
+                  <span class="mt-0.5" [ngClass]="user?.verificationStatus === 'VERIFIED' ? 'text-emerald-500' : 'text-amber-500'">
+                    <lucide-icon [img]="user?.verificationStatus === 'VERIFIED' ? CheckCircle2 : AlertTriangle" [size]="18"></lucide-icon>
+                  </span>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900">{{ i18n.t('settings.overview.security_email_title') }}</p>
+                    <p class="text-xs text-gray-500">{{ user?.verificationStatus === 'VERIFIED' ? i18n.t('settings.overview.security_email_hint') : i18n.t('settings.security.email_not_verified') }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="mt-0.5" [ngClass]="twoFactorEnabled ? 'text-emerald-500' : 'text-amber-500'">
+                    <lucide-icon [img]="twoFactorEnabled ? CheckCircle2 : AlertTriangle" [size]="18"></lucide-icon>
+                  </span>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900">{{ i18n.t('settings.overview.security_2fa_title') }}</p>
+                    <p class="text-xs text-gray-500">{{ twoFactorEnabled ? i18n.t('settings.overview.security_2fa_hint') : i18n.t('settings.security.2fa_not_enabled') }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="mt-0.5" [ngClass]="trustedDevicesCount > 0 ? 'text-emerald-500' : 'text-gray-400'">
+                    <lucide-icon [img]="Shield" [size]="18"></lucide-icon>
+                  </span>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900">{{ i18n.t('settings.overview.security_devices_title') }}</p>
+                    <p class="text-xs text-gray-500">{{ trustedDevicesCount > 0 ? (trustedDevicesCount + ' active devices') : i18n.t('settings.overview.security_devices_hint') }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+                {{ i18n.t('settings.overview.security_footer') }}
+              </div>
+            </section>
+          </div>
+        </ng-container>
+
+        <!-- Profile Tab -->
+        <ng-container *ngIf="activeTab === 'profile'">
+          <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.profile.title') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.profile.help') }}</p>
+            </div>
+
+            <div class="space-y-6">
+            <div *ngIf="profileError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2">
+              <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon> {{profileError}}
+            </div>
+
+            <div class="flex items-center gap-6 mb-6">
+              <input
+                #avatarInput
+                type="file"
+                class="hidden"
+                accept="image/*"
+                (change)="onAvatarFileSelected($event)"
+              />
+              <div class="relative group">
+                <div class="w-24 h-24 rounded-full bg-gray-200 border-4 border-white shadow-sm overflow-hidden flex items-center justify-center">
+                  <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Profile" class="w-full h-full object-cover" />
+                  <lucide-icon *ngIf="!avatarUrl" [img]="UserIcon" [size]="40" class="text-gray-400"></lucide-icon>
+                </div>
+                <button
+                  type="button"
+                  (click)="triggerAvatarSelect(avatarInput)"
+                  [disabled]="isUploadingAvatar"
+                  class="absolute bottom-0 right-0 p-1.5 rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 hover:text-brand-600 transition-colors disabled:opacity-60"
+                >
+                  <lucide-icon [img]="Camera" [size]="14"></lucide-icon>
+                </button>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">
+                  {{ user?.name || 'User' }}
+                </h3>
+                <p class="text-sm text-gray-500">{{ user?.email }}</p>
+                <div class="flex items-center gap-2 mt-2">
+                  <span *ngIf="isVerifiedSubscriber" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    {{ i18n.t('settings.profile.verified_badge') }}
+                  </span>
+                  <span class="text-xs text-gray-400">
+                    {{ i18n.t('settings.profile.member_since') }} {{ user?.joinedDate ? (user?.joinedDate | date:'yyyy') : '' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.profile.email_label') }}
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="email"
+                      [value]="user?.email || ''"
+                      readonly
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-gray-50"
+                    />
+                    <span *ngIf="user?.verificationStatus === 'VERIFIED'" class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+                      <lucide-icon [img]="CheckCircle2" [size]="12" class="mr-1"></lucide-icon>
+                      {{ i18n.t('settings.profile.email_verified_badge') }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.profile.name_label') }}
+                    </label>
+                    <div class="relative">
+                      <lucide-icon [img]="UserIcon" [size]="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                      <input
+                        type="text"
+                        [(ngModel)]="name"
+                        [ngModelOptions]="{standalone: true}"
+                        class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.profile.display_name_label') }}
+                    </label>
+                    <input
+                      type="text"
+                      [(ngModel)]="displayName"
+                      [ngModelOptions]="{standalone: true}"
+                      [placeholder]="i18n.t('settings.profile.display_name_placeholder')"
+                      class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.profile.phone_label') }}
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <div class="relative">
+                      <select
+                        [(ngModel)]="selectedCountryCode"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="onCountryCodeChange()"
+                        class="appearance-none pr-7 pl-2 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                        title="Country code"
+                      >
+                        <option *ngFor="let c of countries" [ngValue]="c.code">
+                          {{c.flag}} {{c.dial}}
+                        </option>
+                      </select>
+                      <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">▾</span>
+                    </div>
+                    <input
+                      type="tel"
+                      [(ngModel)]="phone"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onPhoneChange($event)"
+                      inputmode="numeric"
+                      maxlength="20"
+                      [placeholder]="i18n.t('settings.profile.phone_placeholder')"
+                      class="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                    />
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">{{ i18n.t('settings.profile.phone_help') }}</p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.profile.language_label') }}
+                  </label>
+                  <div class="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
+                    <div class="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-white border border-gray-200">
+                      <lucide-icon [img]="Globe" [size]="16" class="text-gray-400 mb-0.5"></lucide-icon>
+                      <span class="text-[10px] font-semibold text-gray-400 tracking-wide">
+                        {{ i18n.language().toUpperCase() }}
+                      </span>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-semibold text-gray-900">
+                        {{ i18n.language() === 'de' ? 'Deutsch' : i18n.language() === 'pt' ? 'Português' : 'English' }}
+                      </p>
+                      <p class="text-xs text-gray-500 mt-0.5">
+                        {{ i18n.t('settings.profile.language_hint') }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p class="text-sm font-semibold text-gray-900 mb-2">
+                    {{ i18n.t('settings.profile.visibility_title') }}
+                  </p>
+                  <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.profile.visibility_profile_label') }}</p>
+                      <p class="text-xs text-gray-500">{{ i18n.t('settings.profile.visibility_profile_help') }}</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      [attr.aria-checked]="profileVisibility"
+                      (click)="profileVisibility = !profileVisibility"
+                      class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                      [ngClass]="profileVisibility ? 'bg-teal-600' : 'bg-gray-200'"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                        [ngClass]="profileVisibility ? 'translate-x-5' : 'translate-x-0'"
+                      ></span>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between py-3">
+                    <div>
+                      <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.profile.visibility_reviews_label') }}</p>
+                      <p class="text-xs text-gray-500">{{ i18n.t('settings.profile.visibility_reviews_help') }}</p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      [attr.aria-checked]="reviewsPublic"
+                      (click)="reviewsPublic = !reviewsPublic"
+                      class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                      [ngClass]="reviewsPublic ? 'bg-teal-600' : 'bg-gray-200'"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                        [ngClass]="reviewsPublic ? 'translate-x-5' : 'translate-x-0'"
+                      ></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                  <span *ngIf="profileSuccess" class="text-sm text-green-600 self-center animate-fade-in">
+                    {{ profileSuccess }}
+                  </span>
+                  <button
+                    type="button"
+                    (click)="reloadPage()"
+                    class="inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-gray-500 shadow-sm text-sm px-4 py-2.5 gap-2"
+                  >
+                    {{ i18n.t('settings.profile.cancel') }}
+                  </button>
+                  <app-button
+                    variant="primary"
+                    [isLoading]="isSavingProfile"
+                    (onClick)="saveProfile()"
+                  >
+                    {{ i18n.t('settings.profile.save') }}
+                  </app-button>
+                </div>
+              </div>
+            </div>
+            </div>
+
+            <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+              {{ i18n.t('settings.profile.gdpr_footer') }}
+            </div>
+          </section>
+        </ng-container>
+
+        <!-- Subscription Tab -->
+        <ng-container *ngIf="activeTab === 'subscription'">
+          <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.subscription.title') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.subscription.help') }}</p>
+            </div>
+
+            <div class="space-y-6">
+              <div class="grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6">
+              <div class="space-y-4">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <p class="text-xs font-semibold text-indigo-700 uppercase tracking-wide mb-1">
+                      {{ i18n.t('settings.subscription.status_label') }}
+                    </p>
+                    <div class="flex flex-col gap-2">
+                      <p class="text-sm font-semibold text-indigo-900">
+                        {{ subscriptionPlanLabel }} • {{ subscriptionStatusLabel }}
+                      </p>
+                      <button
+                        type="button"
+                        (click)="goToSubscriptionPlans()"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-xs font-semibold text-brand-600 border border-brand-200 shadow-sm hover:bg-brand-50 hover:text-brand-700 transition-colors w-fit"
+                      >
+                        <lucide-icon [img]="Star" [size]="12" class="text-amber-500"></lucide-icon>
+                        {{ subscriptionUpgradeCta }}
+                        <lucide-icon [img]="ChevronRight" [size]="14" class="text-brand-500"></lucide-icon>
+                      </button>
+
+                      <p *ngIf="isTrialSubscription && trialCountdownText" class="text-xs font-bold text-amber-700 mt-1">
+                        {{ trialCountdownText }}
+                      </p>
+                      <p *ngIf="autoChargeText" class="text-xs text-indigo-800 mt-1">
+                        {{ autoChargeText }}
+                      </p>
+                      <p *ngIf="!isTrialSubscription && !subscription" class="text-xs text-indigo-800 mt-1">
+                        {{ i18n.t('settings.subscription.free_hint') }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right text-xs text-indigo-800"></div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                  <p class="text-sm font-semibold text-gray-900 mb-2">
+                    {{ i18n.t('settings.subscription.benefits_title') }}
+                  </p>
+                  <ul *ngIf="!subscription || subscription?.planType === 'starter'" class="text-xs text-gray-600 space-y-1.5">
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-gray-400 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('lenderSub.basic_no_insurance') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-gray-400 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('lenderSub.basic_standard_placement') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('lenderSub.basic_community_protection') }}</span>
+                    </li>
+                  </ul>
+                  <ul *ngIf="subscription && subscription?.planType !== 'starter'" class="text-xs text-gray-600 space-y-1.5">
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ subscription?.planType === 'plus' ? i18n.t('settings.subscription.benefit_insurance_plus') : i18n.t('settings.subscription.benefit_insurance') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('settings.subscription.benefit_visibility') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('settings.subscription.benefit_support') }}</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
+                      <span>{{ i18n.t('settings.subscription.benefit_badge') }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 mb-2">
+                    {{ i18n.t('settings.subscription.invoices_title') }}
+                  </p>
+                  <div class="overflow-x-auto rounded-xl border border-gray-200">
+                    <table class="min-w-full text-xs">
+                      <thead class="bg-gray-50 text-gray-500 text-left">
+                        <tr>
+                          <th class="px-3 py-2 font-semibold">{{ i18n.t('settings.subscription.invoices_date') }}</th>
+                          <th class="px-3 py-2 font-semibold">{{ i18n.t('settings.subscription.invoices_status') }}</th>
+                          <th class="px-3 py-2 font-semibold text-right">{{ i18n.t('settings.subscription.invoices_download') }}</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100">
+                        <tr *ngIf="isLoadingInvoices">
+                          <td class="px-3 py-4 text-xs text-gray-500" colspan="3">{{ i18n.t('settings.subscription.loading_invoices') }}</td>
+                        </tr>
+                        <tr *ngIf="!isLoadingInvoices && invoiceRows.length === 0">
+                          <td class="px-3 py-4 text-xs text-gray-500" colspan="3">
+                            {{ !subscription || subscription?.planType === 'starter' ? i18n.t('settings.subscription.invoices_empty_starter') : i18n.t('settings.subscription.invoices_empty') }}
+                          </td>
+                        </tr>
+                        <tr *ngFor="let row of invoiceRows">
+                          <td class="px-3 py-2 text-gray-800">{{ row.date | date:'shortDate' }}</td>
+                          <td class="px-3 py-2">
+                            <span
+                              class="inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-semibold"
+                              [ngClass]="row.variant === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-700 border-gray-200'"
+                            >
+                              {{ i18n.t(row.statusKey) }}
+                            </span>
+                          </td>
+                          <td class="px-3 py-2 text-right">
+                            <button
+                              type="button"
+                              class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
+                              (click)="openInvoice(row.pdfUrl)"
+                              [attr.aria-label]="i18n.t('settings.subscription.invoices_download') || 'Download invoice'"
+                            >
+                              <lucide-icon [img]="Download" [size]="14" class="mr-1"></lucide-icon>
+                              {{ i18n.t('settings.subscription.invoices_download') || 'PDF' }}
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div *ngIf="subscription && subscription?.planType !== 'starter'" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <p class="text-sm font-semibold text-gray-900 mb-2">
+                    {{ i18n.t('settings.subscription.cancel_title') }}
+                  </p>
+                  <p class="text-xs text-gray-600 mb-3">
+                    {{ i18n.t('settings.subscription.cancel_confirm') }}
+                  </p>
+                  <app-button
+                    variant="destructive"
+                    [disabled]="isCanceledSubscription"
+                    (onClick)="openCancelSubscription()"
+                  >
+                    {{ i18n.t('settings.subscription.cancel_cta') }}
+                  </app-button>
+                </div>
+              </div>
+            </div>
+            </div>
+
+            <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+              {{ i18n.t('settings.subscription.gdpr_footer') }}
+            </div>
+          </section>
+        </ng-container>
+
+        <!-- Security Tab -->
+        <ng-container *ngIf="activeTab === 'security'">
+          <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.security.title') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.security.help') }}</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <div *ngIf="passwordError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2">
+                  <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                  {{ passwordError }}
+                </div>
+                <div *ngIf="passwordSuccess" class="p-3 bg-green-50 text-green-700 text-sm rounded-xl border border-green-100 flex items-center gap-2">
+                  <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                  {{ passwordSuccess }}
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.security.password_current') }}
+                  </label>
+                  <input type="password" [(ngModel)]="oldPassword" name="oldPassword" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" />
+                </div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.security.password_new') }}
+                    </label>
+                    <input type="password" [(ngModel)]="newPassword" name="newPassword" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.security.password_confirm') }}
+                    </label>
+                    <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" />
+                  </div>
+                </div>
+                <app-button variant="dark" [isLoading]="isChangingPassword" (onClick)="handlePasswordUpdate()" class="mt-3">
+                  <lucide-icon [img]="Lock" [size]="14" class="mr-2"></lucide-icon>
+                  {{ i18n.t('settings.security.password_save') }}
+                </app-button>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                  <div *ngIf="twoFactorError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2 mb-3">
+                    <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                    {{ twoFactorError }}
+                  </div>
+                  <div *ngIf="securitySuccess" class="p-3 bg-green-50 text-green-700 text-sm rounded-xl border border-green-100 flex items-center gap-2 mb-3">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    {{ securitySuccess }}
+                  </div>
+
+                  <div class="flex items-center justify-between mb-3">
+                    <div>
+                      <p class="text-sm font-semibold text-gray-900">
+                        {{ i18n.t('settings.security.2fa_title') }}
+                      </p>
+                      <p class="text-xs text-gray-500">
+                        {{ i18n.t('settings.security.2fa_help') }}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="handleToggle2FA(!twoFactorEnabled)"
+                      [attr.aria-pressed]="twoFactorVisualOn"
+                      class="relative inline-flex h-8 w-14 items-center rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      [ngClass]="twoFactorVisualOn ? '!bg-teal-600 !border-teal-600 shadow-inner' : '!bg-gray-300 !border-gray-400'"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform"
+                        [ngClass]="twoFactorVisualOn ? 'translate-x-7' : 'translate-x-1'"
+                      ></span>
+                    </button>
+                  </div>
+
+                  <div *ngIf="twoFactorSetupOpen && !twoFactorEnabled && twoFactorQrCode" class="mt-4 border-t border-gray-200 pt-4 animate-fade-in">
+                    <p class="text-sm font-semibold mb-3 text-center">{{ i18n.t('settings.security.scan_qr') }}</p>
+                    <div class="flex justify-center mb-4 bg-white p-2 rounded-lg border border-gray-200 w-fit mx-auto shadow-sm">
+                      <img [src]="twoFactorQrCode" [alt]="i18n.t('settings.security.twofa_qr_alt') || '2FA QR Code'" class="w-48 h-48" />
+                    </div>
+                    <div class="space-y-3 max-w-xs mx-auto">
+                      <label class="block text-xs font-bold text-gray-700 uppercase text-center">{{ i18n.t('settings.security.verification_code') }}</label>
+                      <input
+                        type="text"
+                        maxlength="6"
+                        [(ngModel)]="twoFactorVerifyCode"
+                        (ngModelChange)="onTwoFactorVerifyCodeChange($event)"
+                        name="twoFactorVerifyCode"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl text-center tracking-widest text-lg font-mono focus:ring-2 focus:ring-brand-500 outline-none"
+                        placeholder="000000"
+                      />
+                      <button
+                        type="button"
+                        (click)="verifyTwoFactorSetup()"
+                        [disabled]="twoFactorVerifyCode.length !== 6 || twoFactorLoading"
+                        class="w-full px-4 py-2 bg-brand-600 text-white font-bold rounded-lg text-sm hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        {{ i18n.t('settings.security.verify_enable') }}
+                      </button>
+                      <button type="button" (click)="twoFactorSetupOpen = false; twoFactorQrCode = null; twoFactorVerifyCode = ''" class="w-full text-xs text-gray-400 hover:text-gray-600 underline text-center">
+                        {{ i18n.t('settings.security.cancel_setup') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.security.devices_title') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.security.devices_help') }}</p>
+            </div>
+
+            <div class="space-y-3">
+              <div *ngIf="devicesError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2">
+                <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                {{ devicesError }}
+              </div>
+              <div *ngIf="devicesSuccess" class="p-3 bg-green-50 text-green-700 text-sm rounded-xl border border-green-100 flex items-center gap-2">
+                <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                {{ devicesSuccess }}
+              </div>
+
+              <div *ngIf="isLoadingDevices" class="text-sm text-gray-500 italic px-3 py-2">
+                {{ i18n.t('settings.security.loading_devices') }}
+              </div>
+
+              <div *ngIf="!isLoadingDevices && devices.length === 0" class="text-sm text-gray-500 italic px-3 py-2">
+                {{ i18n.t('settings.security.no_devices') || 'No trusted devices found.' }}
+              </div>
+
+              <div *ngFor="let d of devices" class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2.5">
+                <div class="flex-1 min-w-0 mr-4">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <p class="text-sm font-semibold text-gray-900 truncate" [title]="d.userAgent">
+                      {{ d.deviceName || d.name || i18n.t('settings.security.unknown_device') || 'Unknown Device' }}
+                    </p>
+                    <span *ngIf="d.trusted" class="shrink-0 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-wide">
+                      {{ i18n.t('settings.security.trusted') || 'Trusted' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-500 truncate">
+                    {{ d.ipAddress }} • {{ formatMaybeDate(d.lastSeenAt || d.lastSeen || d.updatedAt || d.createdAt || d.lastActive) }}
+                  </p>
+                </div>
+
+                <app-button variant="secondary" size="sm" (onClick)="openRevokeDevice(d)" class="shrink-0 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
+                  <lucide-icon [img]="LogOut" [size]="14" class="mr-1.5"></lucide-icon>
+                  {{ i18n.t('settings.security.device_logout') || 'Log out' }}
+                </app-button>
+              </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+              <app-button variant="destructive" size="sm">
+                <lucide-icon [img]="Trash2" [size]="14" class="mr-2"></lucide-icon>
+                {{ i18n.t('settings.security.devices_logout_all') }}
+              </app-button>
+              <p class="text-xs text-gray-500">
+                {{ i18n.t('settings.security.devices_warning') }}
+              </p>
+            </div>
+
+            <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+              {{ i18n.t('settings.security.devices_footer') }}
+            </div>
+          </section>
+
+          <section *ngIf="settingsConfig.isSectionEnabled('security', 'identity_verification')" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.security.identity_verification') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.security.identity_help') }}</p>
+            </div>
+
+            <div class="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+              <div class="flex items-center justify-between">
+                <div class="text-gray-700">{{ i18n.t('settings.security.status') }}</div>
+                <div class="font-bold text-gray-900">{{verificationStatusLabel}}</div>
+              </div>
+            </div>
+
+            <div *ngIf="verificationError" class="mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-start gap-2">
+              <lucide-icon [img]="AlertTriangle" size="16" class="mt-0.5"></lucide-icon> {{verificationError}}
+            </div>
+            <div *ngIf="verificationSuccess" class="mt-3 p-3 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-100 flex items-start gap-2">
+              <lucide-icon [img]="CheckCircle2" size="16" class="mt-0.5"></lucide-icon> {{verificationSuccess}}
+            </div>
+
+            <div *ngIf="(user?.verificationStatus || '') !== 'VERIFIED'" class="mt-4 space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">{{ i18n.t('settings.security.address') }}</label>
+                <input [(ngModel)]="verificationAddress" [ngModelOptions]="{standalone: true}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white" [placeholder]="i18n.t('settings.security.address_placeholder')" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1">{{ i18n.t('settings.security.phone') }}</label>
+                <input [(ngModel)]="verificationPhone" [ngModelOptions]="{standalone: true}" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white" [placeholder]="i18n.t('settings.security.phone_placeholder')" />
+              </div>
+              <app-button variant="dark" [disabled]="verificationSubmitting" (onClick)="submitVerificationRequest()" class="w-full">
+                <lucide-icon *ngIf="verificationSubmitting" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
+                {{ i18n.t('settings.security.submit_request') }}
+              </app-button>
+            </div>
+          </section>
+        </ng-container>
+
+        <!-- Privacy Tab -->
+        <ng-container *ngIf="activeTab === 'privacy'">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.privacy.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.privacy.help') }}</p>
+          </div>
+
+          <div class="space-y-8">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="space-y-4">
+                <p class="text-sm font-semibold text-gray-900">
+                  {{ i18n.t('settings.privacy.location_title') }}
+                </p>
+                <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.privacy.location_city') }}</p>
+                    <p class="text-xs text-gray-500">{{ i18n.t('settings.privacy.location_city_help') }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    [attr.aria-checked]="locationData"
+                    (click)="toggleLocationData()"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                    [ngClass]="locationData ? 'bg-teal-600' : 'bg-gray-200'"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      [ngClass]="locationData ? 'translate-x-5' : 'translate-x-0'"
+                    ></span>
+                  </button>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.privacy.location_building') }}</p>
+                    <p class="text-xs text-gray-500">{{ i18n.t('settings.privacy.location_building_help') }}</p>
+                  </div>
+                  <input type="checkbox" class="h-4 w-4 border-gray-300 rounded" checked disabled />
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <p class="text-sm font-semibold text-gray-900">
+                  {{ i18n.t('settings.privacy.share_title') }}
+                </p>
+                <div class="overflow-x-auto rounded-xl border border-gray-200">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-gray-50 text-gray-500 text-left">
+                      <tr>
+                        <th class="px-3 py-2 font-semibold">{{ i18n.t('settings.privacy.share_partner') }}</th>
+                        <th class="px-3 py-2 font-semibold">{{ i18n.t('settings.privacy.share_purpose') }}</th>
+                        <th class="px-3 py-2 font-semibold">{{ i18n.t('settings.privacy.share_allowed') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr *ngFor="let key of ['manager','allianz','stripe']">
+                        <td class="px-3 py-2 text-gray-800">
+                          {{ i18n.t('settings.privacy.partner_' + key + '_name') }}
+                        </td>
+                        <td class="px-3 py-2 text-gray-500">
+                          {{ i18n.t('settings.privacy.partner_' + key + '_purpose') }}
+                        </td>
+                        <td class="px-3 py-2">
+                          <input type="checkbox" class="h-4 w-4 border-gray-300 rounded" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-2xl p-6 bg-white">
+              <div class="mb-4">
+                <h3 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.privacy.research_title') }}</h3>
+                <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.privacy.research_help') }}</p>
+              </div>
+
+              <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.privacy.research_label') }}</p>
+                  <p class="text-xs text-gray-500">{{ i18n.t('settings.privacy.research_description') }}</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  [attr.aria-checked]="researchOptIn"
+                  (click)="toggleResearchOptIn()"
+                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                  [ngClass]="researchOptIn ? 'bg-teal-600' : 'bg-gray-200'"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    [ngClass]="researchOptIn ? 'translate-x-5' : 'translate-x-0'"
+                  ></span>
+                </button>
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <button type="button" (click)="exportData()" class="inline-flex items-center px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                  <lucide-icon [img]="Download" [size]="14" class="mr-2"></lucide-icon>
+                  {{ i18n.t('settings.privacy.export_cta') }}
+                </button>
+                <div class="text-xs text-gray-500 max-w-md">
+                  {{ i18n.t('settings.privacy.retention_note') }}
+                </div>
+              </div>
+
+              <div class="mt-4 border-t border-gray-100 pt-4">
+                <p class="text-sm font-semibold text-red-700 mb-2">
+                  {{ i18n.t('settings.privacy.delete_title') }}
+                </p>
+                <div class="flex items-start gap-2 mb-3">
+                  <input id="delete-confirm" type="checkbox" class="mt-1 h-4 w-4 border-gray-300 rounded" [(ngModel)]="deleteConfirmChecked" [ngModelOptions]="{standalone: true}" />
+                  <label for="delete-confirm" class="text-xs text-gray-700">
+                    {{ i18n.t('settings.privacy.delete_confirm') }}
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  (click)="openDeleteAccount()"
+                  [disabled]="!deleteConfirmChecked"
+                  class="inline-flex items-center px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 shadow-sm disabled:opacity-50"
+                >
+                  <lucide-icon [img]="Trash2" [size]="14" class="mr-2"></lucide-icon>
+                  {{ i18n.t('settings.privacy.delete_cta') }}
+                </button>
+                <div *ngIf="deleteAccountError" class="mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2">
+                  <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon> {{deleteAccountError}}
+                </div>
+              </div>
+
+              <div class="mt-4 text-xs text-gray-500">
+                {{ i18n.t('settings.privacy.research_footer') }}
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Notifications Tab -->
+        <ng-container *ngIf="activeTab === 'notifications'">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.notifications.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.notifications.help') }}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <p class="text-sm font-semibold text-gray-900">
+                {{ i18n.t('settings.notifications.channels_title') }}
+              </p>
+
+              <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.notifications.email_label') }}</p>
+                  <p class="text-xs text-gray-500">{{ i18n.t('settings.notifications.email_help') }}</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  [attr.aria-checked]="emailNotifications"
+                  (click)="toggleEmailNotifications()"
+                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                  [ngClass]="emailNotifications ? 'bg-teal-600' : 'bg-gray-200'"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    [ngClass]="emailNotifications ? 'translate-x-5' : 'translate-x-0'"
+                  ></span>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between py-3">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.notifications.push_label') }}</p>
+                  <p class="text-xs text-gray-500">{{ i18n.t('settings.notifications.push_help') }}</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  [attr.aria-checked]="pushNotifications"
+                  (click)="togglePushNotifications()"
+                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                  [ngClass]="pushNotifications ? 'bg-teal-600' : 'bg-gray-200'"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    [ngClass]="pushNotifications ? 'translate-x-5' : 'translate-x-0'"
+                  ></span>
+                </button>
+              </div>
+
+              <p class="text-sm font-semibold text-gray-900 mt-4">
+                {{ i18n.t('settings.notifications.frequency_title') }}
+              </p>
+              <select class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" [(ngModel)]="notificationFrequency" (ngModelChange)="setNotificationFrequency($event)">
+                <option value="immediate">{{ i18n.t('settings.notifications.frequency_immediate') }}</option>
+                <option value="daily">{{ i18n.t('settings.notifications.frequency_daily') }}</option>
+                <option value="weekly">{{ i18n.t('settings.notifications.frequency_weekly') }}</option>
+              </select>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-sm font-semibold text-gray-900">
+                {{ i18n.t('settings.notifications.dnd_title') }}
+              </p>
+              <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <label class="block text-xs font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.notifications.dnd_from') }}
+                  </label>
+                  <input type="time" [(ngModel)]="dndFrom" (ngModelChange)="updateDnd()" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-900 mb-1">
+                    {{ i18n.t('settings.notifications.dnd_to') }}
+                  </label>
+                  <input type="time" [(ngModel)]="dndTo" (ngModelChange)="updateDnd()" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white" />
+                </div>
+              </div>
+              <p class="text-xs text-gray-500">
+                {{ i18n.t('settings.notifications.dnd_help') }}
+              </p>
+
+              <div class="mt-4">
+                <p class="text-sm font-semibold text-gray-900 mb-2">
+                  {{ i18n.t('settings.notifications.marketing_title') }}
+                </p>
+                <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ i18n.t('settings.notifications.marketing_label') }}</p>
+                    <p class="text-xs text-gray-500">{{ i18n.t('settings.notifications.marketing_help') }}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    [attr.aria-checked]="marketingConsent"
+                    (click)="toggleMarketingConsent()"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+                    [ngClass]="marketingConsent ? 'bg-teal-600' : 'bg-gray-200'"
+                  >
+                    <span
+                      aria-hidden="true"
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      [ngClass]="marketingConsent ? 'translate-x-5' : 'translate-x-0'"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Payments Tab -->
+        <ng-container *ngIf="activeTab === 'payments'">
+          <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div class="mb-4">
+              <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.payments.title') }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.payments.help') }}</p>
+            </div>
+            <app-payment-settings></app-payment-settings>
+            <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+              {{ i18n.t('settings.payments.footer') }}
+            </div>
+          </section>
+        </ng-container>
+
+        <!-- Building Tab -->
+        <ng-container *ngIf="activeTab === 'building'">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.building.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.building.help') }}</p>
+          </div>
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div class="bg-white border border-gray-200 rounded-xl p-4">
+                <p class="text-sm font-semibold text-gray-900 mb-1">
+                  {{ i18n.t('settings.building.current_title') }}
+                </p>
+                <p class="text-xs text-gray-500 mb-3">
+                  {{ i18n.t('settings.building.current_help') }}
+                </p>
+                <div class="text-sm text-gray-800">
+                  <p>{{ i18n.t('settings.building.current_address') }}</p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ i18n.t('settings.building.current_meta') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-900 mb-2">
+                  {{ i18n.t('settings.building.change_title') }}
+                </p>
+                <input
+                  type="search"
+                  [(ngModel)]="buildingSearch"
+                  name="buildingSearch"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white mb-3"
+                  [placeholder]="i18n.t('settings.building.change_placeholder')"
+                />
+                <div class="space-y-2 text-sm">
+                  <button type="button" class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50">
+                    {{ i18n.t('settings.building.change_option1') }}
+                  </button>
+                  <button type="button" class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50">
+                    {{ i18n.t('settings.building.change_option2') }}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-sm font-semibold text-gray-900 mb-2">
+                  {{ i18n.t('settings.building.manual_title') }}
+                </p>
+                <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.building.manual_postal') }}
+                    </label>
+                    <input
+                      type="text"
+                      [(ngModel)]="manualPostalCode"
+                      name="manualPostalCode"
+                      class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-900 mb-1">
+                      {{ i18n.t('settings.building.manual_name') }}
+                    </label>
+                    <input
+                      type="text"
+                      [(ngModel)]="manualBuildingName"
+                      name="manualBuildingName"
+                      class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-xl border border-dashed border-gray-300 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-gray-900">
+                {{ i18n.t('settings.building.partner_title') }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ i18n.t('settings.building.partner_help') }}
+              </p>
+            </div>
+            <button type="button" (click)="openBuildingPartnerPortal()" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 shadow-sm">
+              <lucide-icon [img]="Home" [size]="14" class="mr-2"></lucide-icon>
+              {{ i18n.t('settings.building.partner_cta') }}
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Stats Tab -->
+        <ng-container *ngIf="activeTab === 'stats'">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.stats.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.stats.help') }}</p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                {{ i18n.t('settings.stats.card1_label') }}
+              </p>
+              <p class="text-2xl font-bold text-gray-900">
+                {{ i18n.t('settings.stats.card1_value') }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ i18n.t('settings.stats.card1_hint') }}
+              </p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                {{ i18n.t('settings.stats.card2_label') }}
+              </p>
+              <p class="text-2xl font-bold text-gray-900">
+                {{ i18n.t('settings.stats.card2_value') }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ i18n.t('settings.stats.card2_hint') }}
+              </p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl p-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                {{ i18n.t('settings.stats.card3_label') }}
+              </p>
+              <p class="text-2xl font-bold text-gray-900">
+                {{ i18n.t('settings.stats.card3_value') }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                {{ i18n.t('settings.stats.card3_hint') }}
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-4 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-semibold text-gray-900">
+                {{ i18n.t('settings.stats.timeline_title') }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ i18n.t('settings.stats.timeline_help') }}
+              </p>
+            </div>
+            <lucide-icon [img]="BarChart2" [size]="24" class="text-indigo-500"></lucide-icon>
+          </div>
+        </ng-container>
+
+        <!-- Support Tab -->
+        <ng-container *ngIf="activeTab === 'support'">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.support.title') }}</h2>
+            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.support.help') }}</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div *ngIf="supportContactEnabled" class="bg-white border border-gray-200 rounded-xl p-4">
+                <p class="text-sm font-semibold text-gray-900 mb-1">
+                  {{ i18n.t('settings.support.contact_title') }}
+                </p>
+                <p class="text-xs text-gray-500 mb-3">
+                  {{ i18n.t('settings.support.contact_help') }}
+                </p>
+                <div class="flex items-center gap-2 mb-3 text-sm font-semibold text-gray-900">
+                  <lucide-icon [img]="Mail" [size]="16"></lucide-icon>
+                  <span>{{ i18n.t('settings.support.contact_cta') }}</span>
+                </div>
+                <div class="space-y-2 text-xs text-gray-600 border-t border-gray-100 pt-3">
+                  <div *ngIf="supportEmail" class="flex items-center gap-2">
+                    <lucide-icon [img]="Mail" [size]="12" class="text-gray-400"></lucide-icon>
+                    <a [href]="supportEmailHref" class="hover:text-brand-600">
+                      {{ supportEmail }}
+                    </a>
+                  </div>
+                  <div *ngIf="supportPhone" class="flex items-center gap-2">
+                    <lucide-icon [img]="Phone" [size]="12" class="text-gray-400"></lucide-icon>
+                    <a [href]="supportPhoneHref" class="hover:text-brand-600">
+                      {{ supportPhone }}
+                    </a>
+                  </div>
+                  <div *ngIf="supportAddress" class="flex items-start gap-2">
+                    <lucide-icon [img]="MapPin" [size]="12" class="text-gray-400 mt-0.5"></lucide-icon>
+                    <span>{{ supportAddress }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div *ngIf="supportFaqEnabled" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p class="text-sm font-semibold text-gray-900 mb-1">
+                  {{ i18n.t('settings.support.faq_title') }}
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ i18n.t('settings.support.faq_help') }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 text-[11px] text-gray-500 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
+    <span *ngIf="footerGdprEnabled">{{ i18n.t('settings.footer_gdpr_note') }}</span>
+    <a
+      *ngIf="footerDpoEnabled"
+      [href]="'mailto:' + i18n.t('settings.footer_dpo_email')"
+      class="inline-flex items-center text-brand-600 hover:text-brand-700"
+    >
+      <lucide-icon [img]="Shield" [size]="12" class="mr-1"></lucide-icon>
+      {{ i18n.t('settings.footer_dpo_label') }}
+    </a>
+  </div>
+</div>
+
+<app-confirmation-modal
+  [isOpen]="cancelConfirmOpen"
+  [title]="i18n.t('settings.subscription.cancel_title')"
+  [message]="cancelError || i18n.t('settings.subscription.cancel_confirm')"
+  [confirmLabel]="cancelError ? i18n.t('settings.subscription.cancel_modal_retry') : i18n.t('settings.subscription.cancel_modal_confirm')"
+  [cancelLabel]="i18n.t('settings.subscription.cancel_modal_keep')"
+  [confirmDisabled]="cancelConfirmLoading"
+  variant="danger"
+  (cancel)="closeCancelSubscription()"
+  (confirm)="confirmCancelSubscription()"
+></app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="revokeDeviceOpen"
+  [title]="i18n.t('settings.security.device_logout')"
+  [message]="i18n.t('settings.security.revoke_confirm')"
+  [confirmLabel]="i18n.t('settings.security.device_logout')"
+  [cancelLabel]="i18n.t('common.cancel')"
+  [confirmDisabled]="revokeDeviceLoading"
+  variant="danger"
+  (cancel)="closeRevokeDevice()"
+  (confirm)="confirmRevokeDevice()"
+></app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="disable2FAOpen"
+  [title]="i18n.t('settings.security.2fa_disable_title')"
+  [message]="i18n.t('settings.security.2fa_disable_message')"
+  [confirmLabel]="i18n.t('settings.security.2fa_disable_confirm')"
+  [cancelLabel]="i18n.t('settings.security.2fa_disable_cancel')"
+  [confirmDisabled]="isDisabling2FA"
+  variant="warning"
+  (cancel)="closeDisable2FA()"
+  (confirm)="confirmDisable2FA()"
+></app-confirmation-modal>
+
+<app-confirmation-modal
+  [isOpen]="deleteAccountOpen"
+  [title]="i18n.t('settings.privacy.delete_modal_title')"
+  [message]="i18n.t('settings.privacy.delete_modal_message')"
+  [confirmLabel]="i18n.t('settings.privacy.delete_modal_confirm')"
+  [cancelLabel]="i18n.t('common.cancel')"
+  [confirmDisabled]="deleteAccountLoading"
+  variant="danger"
+  (cancel)="closeDeleteAccount()"
+  (confirm)="confirmDeleteAccount()"
+></app-confirmation-modal>

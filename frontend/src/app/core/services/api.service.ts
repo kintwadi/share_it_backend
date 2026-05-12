@@ -1,0 +1,661 @@
+import { Injectable, inject } from '@angular/core';
+import { ApiClientService } from './api-client.service';
+import { firstValueFrom } from 'rxjs';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message } from '../models/types';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private api = inject(ApiClientService);
+
+  async getPublicConfig(): Promise<any> {
+    try {
+      return await firstValueFrom(this.api.get<any>('/config/public'));
+    } catch {
+      return { allowAdminToggle: false };
+    }
+  }
+
+  async getSettingsConfig(): Promise<any> {
+    return firstValueFrom(this.api.get<any>('/config/settings'));
+  }
+
+  async getCurrentUser(): Promise<User | null> {
+    try {
+      return await firstValueFrom(this.api.get<User>('/users/me'));
+    } catch {
+      return null;
+    }
+  }
+
+  async seedData(): Promise<string> {
+    return firstValueFrom(this.api.get<string>('/seed'));
+  }
+
+  async getBorrowingHistory(): Promise<any[]> {
+    try {
+      const user = await this.getCurrentUser();
+      if (!user) return [];
+      const listings = await this.getListings();
+      const borrowed = listings.filter(l => l.borrowerId === user.id);
+      const now = new Date();
+      return borrowed.map((l, idx) => ({
+        id: `hist_${l.id}_${idx}`,
+        listing: l,
+        borrowedDate: now.toISOString().slice(0, 10),
+        returnedDate: l.status === AvailabilityStatus.BORROWED ? '' : now.toISOString().slice(0, 10),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async getListings(): Promise<Listing[]> {
+    try {
+      const page = await firstValueFrom(this.api.get<any>('/listings/?page=0&size=100'));
+      return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getListingById(id: string): Promise<Listing | null> {
+    try {
+      return await firstValueFrom(this.api.get<Listing>(`/listings/${encodeURIComponent(id)}`));
+    } catch {
+      return null;
+    }
+  }
+
+  async searchListings(query: string): Promise<Listing[]> {
+    try {
+      const page = await firstValueFrom(this.api.get<any>(`/listings/?search=${encodeURIComponent(query)}&page=0&size=100`));
+      return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getRecommendedListings(size: number = 6): Promise<Listing[]> {
+    try {
+      return await firstValueFrom(this.api.get<Listing[]>(`/listings/recommended?size=${size}`));
+    } catch {
+      return [];
+    }
+  }
+
+  async dismissRecommendation(id: string): Promise<boolean> {
+    await firstValueFrom(this.api.post(`/listings/${id}/dismiss`, {}));
+    return true;
+  }
+
+  async borrowListing(id: string, payload: { paymentMethod?: string; paymentToken?: string; durationHours?: number; borrowerPath?: string }): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(id)}/borrow`, {
+      paymentMethod: payload.paymentMethod ?? 'CASH',
+      paymentToken: payload.paymentToken ?? null,
+      durationHours: typeof payload.durationHours === 'number' ? payload.durationHours : 1,
+      borrowerPath: payload.borrowerPath ?? 'VERIFIED'
+    }));
+  }
+
+  async login(userId: string): Promise<User> {
+    const data = await firstValueFrom(this.api.post<any>('/auth/login', { email: `${userId}@example.com`, password: 'password123' })); // Simplified for mock
+    return data.user;
+  }
+
+  async loginWithEmail(email: string, password: string): Promise<any> {
+    const data = await firstValueFrom(this.api.post<any>('/auth/login', { email, password }));
+    if (data.mfaRequired) {
+      throw { code: 'MFA_REQUIRED', token: data.token };
+    }
+    return data;
+  }
+
+  async verify2FALogin(code: string, token: string): Promise<any> {
+    const res = await fetch(`${this.api.getBaseUrl()}/auth/verify-2fa-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) throw new Error('Invalid code');
+    const data = await res.json();
+    return data;
+  }
+
+  async registerUser(name: string, email: string, password: string, isAdmin?: boolean): Promise<any> {
+    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0, isAdmin: !!isAdmin };
+    await firstValueFrom(this.api.post('/auth/register', body));
+    const data = await firstValueFrom(this.api.post<any>('/auth/login', { email, password }));
+    return data;
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    await firstValueFrom(this.api.post('/auth/forgot-password', { email }));
+  }
+
+  async verifyResetCode(email: string, code: string): Promise<{ valid: boolean; token?: string | null }> {
+    const data = await firstValueFrom(this.api.post<any>('/auth/verify-reset-code', { email, code }));
+    return { valid: !!data?.valid, token: data?.token ?? null };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await firstValueFrom(this.api.post('/auth/reset-password', { token, newPassword }));
+  }
+
+  async getContacts(): Promise<User[]> {
+    return firstValueFrom(this.api.get<User[]>('/users/contacts'));
+  }
+
+  async getPickupLocations(): Promise<PickupLocation[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/pickup-locations/'));
+      return (Array.isArray(list) ? list : []).map((p: any) => ({
+        id: String(p.id),
+        name: p.name ?? '',
+        address: p.address ?? '',
+        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) }
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async getCategories(): Promise<Category[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/categories/'));
+      return (Array.isArray(list) ? list : []).map((c: any) => ({
+        id: String(c.id),
+        name: c.code ?? '',
+        slug: String(c.code ?? '').toLowerCase(),
+        icon: undefined,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async uploadFile(file: File): Promise<{ url: string; key?: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return firstValueFrom(this.api.postFormData<any>('/storage/upload', form));
+  }
+
+  async uploadListingImage(file: File): Promise<string> {
+    const res = await this.uploadFile(file);
+    return res?.url || '';
+  }
+
+  async evaluateListingRecommendation(req: ListingRecommendationRequest): Promise<ListingRecommendationResult> {
+    const payload = {
+      title: req.title,
+      category: req.category,
+      description: req.description ?? '',
+      estimatedValue: typeof req.estimatedValue === 'number' ? req.estimatedValue : null,
+    };
+    const data = await firstValueFrom(this.api.post<any>('/listings/evaluate', payload));
+    return {
+      recommendedAction: data.recommendedAction,
+      suggestedPrice: typeof data.suggestedPrice === 'number' ? data.suggestedPrice : (data.suggestedPrice != null ? Number(data.suggestedPrice) : undefined),
+      confidenceScore: typeof data.confidenceScore === 'number' ? data.confidenceScore : 0,
+      reasoning: data.reasoning ?? '',
+      similarItems: Array.isArray(data.similarItems) ? data.similarItems.map((s: any) => ({
+        id: String(s.id),
+        title: s.title ?? '',
+        transactionType: s.transactionType ?? '',
+        price: s.price != null ? Number(s.price) : undefined
+      })) : []
+    };
+  }
+
+  async createListing(payload: {
+    title: string;
+    description: string;
+    category: string;
+    type: any;
+    hourlyRate?: number;
+    imageUrl: string;
+    gallery?: string[];
+    autoApprove?: boolean;
+    x?: number;
+    y?: number;
+    pickupLocationId?: string | null;
+    pickupLocationCustom?: string | null;
+    pickupLocationStreet?: string | null;
+    pickupLocationHouseNumber?: string | null;
+    pickupLocationCity?: string | null;
+    pickupLocationZip?: string | null;
+  }): Promise<Listing> {
+    const body = {
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      type: payload.type,
+      hourlyRate: payload.hourlyRate ?? 0,
+      imageUrl: payload.imageUrl,
+      gallery: payload.gallery ?? [],
+      autoApprove: !!payload.autoApprove,
+      x: payload.x ?? 0,
+      y: payload.y ?? 0,
+      pickupLocationId: payload.pickupLocationId ?? null,
+      pickupLocationCustom: payload.pickupLocationCustom ?? null,
+      pickupLocationStreet: payload.pickupLocationStreet ?? null,
+      pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
+      pickupLocationCity: payload.pickupLocationCity ?? null,
+      pickupLocationZip: payload.pickupLocationZip ?? null,
+    };
+    return firstValueFrom(this.api.post<Listing>('/listings/', body));
+  }
+
+  async updateListing(id: string, payload: {
+    title: string;
+    description: string;
+    category: string;
+    type: any;
+    hourlyRate?: number;
+    imageUrl: string;
+    gallery?: string[];
+    autoApprove?: boolean;
+    x?: number;
+    y?: number;
+    pickupLocationId?: string | null;
+    pickupLocationCustom?: string | null;
+    pickupLocationStreet?: string | null;
+    pickupLocationHouseNumber?: string | null;
+    pickupLocationCity?: string | null;
+    pickupLocationZip?: string | null;
+  }): Promise<Listing> {
+    const body = {
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      type: payload.type,
+      hourlyRate: payload.hourlyRate ?? 0,
+      imageUrl: payload.imageUrl,
+      gallery: payload.gallery ?? [],
+      autoApprove: !!payload.autoApprove,
+      x: payload.x ?? 0,
+      y: payload.y ?? 0,
+      pickupLocationId: payload.pickupLocationId ?? null,
+      pickupLocationCustom: payload.pickupLocationCustom ?? null,
+      pickupLocationStreet: payload.pickupLocationStreet ?? null,
+      pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
+      pickupLocationCity: payload.pickupLocationCity ?? null,
+      pickupLocationZip: payload.pickupLocationZip ?? null,
+    };
+    return firstValueFrom(this.api.put<Listing>(`/listings/${encodeURIComponent(id)}`, body));
+  }
+
+  async getConversations(): Promise<User[]> {
+    const list = await firstValueFrom(this.api.get<any[]>('/messages/conversations'));
+    return (Array.isArray(list) ? list : []).map((u: any) => ({
+      id: String(u.id),
+      name: u.name ?? '',
+      email: '',
+      phone: '',
+      address: '',
+      avatarUrl: u.avatarUrl ?? '',
+      trustScore: typeof u.trustScore === 'number' ? u.trustScore : 0,
+      vouchCount: 0,
+      verificationStatus: 'UNVERIFIED' as any,
+      location: { lat: 0, lng: 0 },
+      joinedDate: '',
+      role: 'MEMBER' as any,
+      status: 'ACTIVE' as any,
+    }));
+  }
+
+  async getMessages(userId: string): Promise<Message[]> {
+    return firstValueFrom(this.api.get<Message[]>(`/messages/with/${encodeURIComponent(userId)}`));
+  }
+
+  async sendMessage(receiverId: string, content: string, imageUrl?: string): Promise<Message> {
+    const receiverEmail = receiverId && receiverId.includes('@') ? receiverId : null;
+    return firstValueFrom(this.api.post<Message>('/messages/', { receiverId, receiverEmail, content, imageUrl: imageUrl ?? null }));
+  }
+
+  async deleteMessage(id: string): Promise<void> {
+    return firstValueFrom(this.api.delete(`/messages/${id}`));
+  }
+
+  async getReviewInvite(token: string): Promise<any> {
+    return firstValueFrom(this.api.get<any>(`/reviews/invite/${token}`));
+  }
+
+  async submitReviewInvite(token: string, rating: number, comment: string): Promise<any> {
+    return firstValueFrom(this.api.post(`/reviews/invite/${token}`, { rating, comment }));
+  }
+
+  async createReview(targetUserId: string, listingId: string, rating: number, comment: string): Promise<any> {
+    return firstValueFrom(this.api.post('/reviews/', { targetUserId, listingId, rating, comment }));
+  }
+
+  async getReviews(userId: string): Promise<any[]> {
+    const list = await firstValueFrom(this.api.get<any[]>(`/reviews/user/${encodeURIComponent(userId)}`));
+    return Array.isArray(list) ? list : [];
+  }
+
+  async getSubscriptionConfig(): Promise<{ starter: boolean, plus: boolean, pro: boolean }> {
+    return firstValueFrom(this.api.get<any>('/subscriptions/config'));
+  }
+
+  async subscribeStarter(): Promise<void> {
+    return firstValueFrom(this.api.post('/subscriptions/starter', {}));
+  }
+
+  async createSubscriptionCheckoutSession(planType: string, returnPath: string = '/dashboard'): Promise<{ url: string; sessionId: string }> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/create-checkout-session', { 
+      planType,
+      returnPath
+    }));
+  }
+
+  async getCurrentSubscription(): Promise<any | null> {
+    try {
+      const data = await firstValueFrom(this.api.get<any>('/subscriptions/me'));
+      return data || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async cancelSubscription(): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/cancel', {}));
+  }
+
+  async getSubscriptionInvoices(): Promise<any[]> {
+    try {
+      const data = await firstValueFrom(this.api.get<any[]>('/subscriptions/invoices'));
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async previewSubscriptionUpgrade(newPlan: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/upgrade/preview', { newPlan }));
+  }
+
+  async confirmSubscriptionUpgrade(newPlan: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/upgrade/confirm', { newPlan }));
+  }
+
+  async getPaymentMethods(): Promise<any[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/payments/methods'));
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async addPaymentMethod(paymentMethodId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/payments/methods', { paymentMethodId }));
+  }
+
+  async removePaymentMethod(paymentMethodId: string): Promise<any> {
+    return firstValueFrom(this.api.delete<any>(`/payments/methods/${encodeURIComponent(paymentMethodId)}`));
+  }
+
+  async connectOnboard(): Promise<{ accountId: string; url: string }> {
+    return firstValueFrom(this.api.post<any>('/payments/connect/onboard', {}));
+  }
+
+  async getConnectStatus(): Promise<any> {
+    return firstValueFrom(this.api.get<any>('/payments/connect/status'));
+  }
+
+  async getPaymentTransactions(): Promise<any[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/payments/transactions'));
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getPaymentTransactionInvoiceUrl(transactionId: string): Promise<{ url: string }> {
+    return firstValueFrom(this.api.get<any>(`/payments/transactions/${encodeURIComponent(transactionId)}/invoice`));
+  }
+
+  async retryEscrowRelease(): Promise<{ attempted: number }> {
+    return firstValueFrom(this.api.post<any>('/payments/release/retry', {}));
+  }
+
+  async createPaymentIntent(payload: { amount: number; currency: string; listingId: string; durationHours?: number; borrowerPath?: string; paymentMethodId?: string }): Promise<{ clientSecret: string; amount?: number; currency?: string }> {
+    return firstValueFrom(this.api.post<any>('/payments/create-payment-intent', {
+      amount: payload.amount,
+      currency: payload.currency,
+      listingId: payload.listingId,
+      durationHours: typeof payload.durationHours === 'number' ? payload.durationHours : 0,
+      borrowerPath: payload.borrowerPath ?? 'VERIFIED',
+      paymentMethodId: payload.paymentMethodId ?? null,
+    }));
+  }
+
+  async getDevices(): Promise<any[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/devices'));
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async revokeDevice(id: string): Promise<void> {
+    await firstValueFrom(this.api.delete(`/devices/${encodeURIComponent(id)}`));
+  }
+
+  async sendSubscriptionVerificationCode(planType?: string, language?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/send-code', { planType: planType || null, language: language || null }));
+  }
+
+  async verifySubscriptionVerificationCode(code: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/verify-code', { code }));
+  }
+
+  async updateProfile(payload: { name?: string; displayName?: string; avatarUrl?: string; phone?: string; address?: string; profileVisible?: boolean; showRatings?: boolean }): Promise<User> {
+    return firstValueFrom(this.api.patch<User>('/users/me', payload));
+  }
+
+  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    await firstValueFrom(this.api.put<void>('/users/me/password', { oldPassword, newPassword }));
+  }
+
+  async deleteMyAccount(): Promise<void> {
+    await firstValueFrom(this.api.delete('/users/me')); 
+  }
+
+  async requestVerification(payload: { address: string; phone: string }): Promise<User> {
+    return firstValueFrom(this.api.post<User>('/users/verification-request', payload));
+  }
+
+  async approveVerification(userId: string): Promise<User> {
+    return firstValueFrom(this.api.post<User>(`/users/${encodeURIComponent(userId)}/approve-verification`, {}));
+  }
+
+  async revokeVerification(userId: string): Promise<User> {
+    return firstValueFrom(this.api.post<User>(`/users/${encodeURIComponent(userId)}/revoke-verification`, {}));
+  }
+
+  async vouchForUser(userId: string): Promise<User> {
+    return firstValueFrom(this.api.post<User>(`/users/${encodeURIComponent(userId)}/vouch`, {}));
+  }
+
+  async setup2FA(): Promise<{ secret: string; qrCode: string }> {
+    return firstValueFrom(this.api.post<any>('/users/2fa/setup', {}));
+  }
+
+  async verify2FASetup(code: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/users/2fa/verify', { code }));
+  }
+
+  async disable2FA(): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/users/2fa/disable', {}));
+  }
+
+  async getOnlineUserIds(): Promise<string[]> {
+    try {
+      const list = await firstValueFrom(this.api.get<any[]>('/users/online'));
+      return (Array.isArray(list) ? list : []).map(String);
+    } catch {
+      return [];
+    }
+  }
+
+  async approveRequest(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/approve`, {}));
+  }
+
+  async denyRequest(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/deny`, {}));
+  }
+
+  async returnItem(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/return`, {}));
+  }
+
+  async deleteListing(listingId: string): Promise<void> {
+    await firstValueFrom(this.api.delete(`/listings/${encodeURIComponent(listingId)}`));
+  }
+
+  async reportListing(listingId: string, reason: string, details?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/report`, { reason, details: details ?? '' }));
+  }
+
+  async initiateReturnSession(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/initiate`, {}));
+  }
+
+  async getReturnSession(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.get<any>(`/listings/${encodeURIComponent(listingId)}/return`));
+  }
+
+  async scanReturnQrCode(listingId: string, qrCode: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/scan`, { qrCode }));
+  }
+
+  async manualReturnFallback(listingId: string, itemNumber: string, conciergeWitnessId?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/manual`, { itemNumber, conciergeWitnessId: conciergeWitnessId ?? null }));
+  }
+
+  async initiateReturnDispute(listingId: string, reason: string, photoUrl?: string, conciergeWitnessId?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/dispute`, { reason, photoUrl: photoUrl ?? null, conciergeWitnessId: conciergeWitnessId ?? null }));
+  }
+
+  async getAdminSummary(): Promise<any> {
+    return firstValueFrom(this.api.get<any>('/admin/summary'));
+  }
+
+  async adminListUsers(params: { q?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const q = params.q ? `&q=${encodeURIComponent(params.q)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/users?page=${page}&size=${size}${q}`));
+  }
+
+  async adminSetUserStatus(userId: string, status: string): Promise<any> {
+    return firstValueFrom(this.api.patch<any>(`/admin/users/${encodeURIComponent(userId)}/status`, { status }));
+  }
+
+  async adminDeleteUser(userId: string): Promise<any> {
+    return firstValueFrom(this.api.delete<any>(`/admin/users/${encodeURIComponent(userId)}`));
+  }
+
+  async adminListListings(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/listings?page=${page}&size=${size}${status}`));
+  }
+
+  async adminBlockListing(listingId: string, blocked: boolean): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/block`, { blocked }));
+  }
+
+  async adminDeleteListing(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.delete<any>(`/admin/listings/${encodeURIComponent(listingId)}`));
+  }
+
+  async adminListTransactions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/transactions?page=${page}&size=${size}${status}`));
+  }
+
+  async adminDeleteTransaction(transactionId: string): Promise<any> {
+    return firstValueFrom(this.api.delete<any>(`/admin/transactions/${encodeURIComponent(transactionId)}`));
+  }
+
+  async adminRetryTransactionRelease(transactionId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/transactions/${encodeURIComponent(transactionId)}/retry-release`, {}));
+  }
+
+  async adminListSubscriptions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/subscriptions?page=${page}&size=${size}${status}`));
+  }
+
+  async adminListDisputes(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/disputes?page=${page}&size=${size}`));
+  }
+
+  async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/disputes/${encodeURIComponent(listingId)}/cancel-refund`, { reason }));
+  }
+
+  async adminAcceptReturnDispute(listingId: string, reason: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/returns/${encodeURIComponent(listingId)}/accept`, { reason }));
+  }
+
+  async adminReopenReturn(listingId: string, minutes?: number): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/returns/${encodeURIComponent(listingId)}/reopen`, { minutes: typeof minutes === 'number' ? minutes : null }));
+  }
+
+  async adminGetReports(): Promise<any[]> {
+    return firstValueFrom(this.api.get<any[]>('/admin/reports'));
+  }
+
+  async adminListReports(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 50;
+    try {
+      const res = await firstValueFrom(this.api.get<any>(`/admin/reports?page=${page}&size=${size}`));
+      if (res && Array.isArray(res.items)) {
+        return {
+          items: res.items,
+          total: typeof res.total === 'number' ? res.total : Number(res.total || 0),
+          page: typeof res.page === 'number' ? res.page : page,
+          size: typeof res.size === 'number' ? res.size : size,
+        };
+      }
+      if (Array.isArray(res)) {
+        return { items: res, total: res.length, page, size };
+      }
+    } catch { }
+    const list = await this.adminGetReports();
+    const items = Array.isArray(list) ? list : [];
+    return { items: items.slice(page * size, page * size + size), total: items.length, page, size };
+  }
+
+  async adminDeleteReport(reportId: string): Promise<any> {
+    return firstValueFrom(this.api.delete<any>(`/admin/reports/${encodeURIComponent(reportId)}`));
+  }
+
+  // --- Mailbox / Messages ---
+  async getInbox(): Promise<Message[]> {
+    return firstValueFrom(this.api.get<Message[]>('/messages/inbox'));
+  }
+
+  async getOutbox(): Promise<Message[]> {
+    return firstValueFrom(this.api.get<Message[]>('/messages/outbox'));
+  }
+}

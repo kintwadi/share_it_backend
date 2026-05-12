@@ -1,0 +1,810 @@
+<div class="space-y-8" *ngIf="user">
+      
+  <!-- Error Alert -->
+  <div *ngIf="error" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in mb-4">
+    <lucide-icon [img]="AlertTriangle" class="text-red-600 mt-0.5 shrink-0" size="20"></lucide-icon>
+    <div>
+      <h3 class="text-red-800 font-bold text-sm">{{ i18n.t('common.error') }}</h3>
+      <p class="text-red-700 text-xs mt-1">{{ error }}</p>
+    </div>
+  </div>
+
+  <!-- Payment Success Alert -->
+  <div *ngIf="paymentSuccess" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in">
+    <lucide-icon [img]="CheckCircle2" class="text-emerald-600 mt-0.5 shrink-0" size="20"></lucide-icon>
+    <div>
+      <h3 class="text-emerald-800 font-bold text-sm">{{ i18n.t('dashboard.subscription_active') }}</h3>
+      <p class="text-emerald-700 text-xs mt-1">{{ i18n.t('dashboard.subscription_active_help') }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="upgradeSuccess" class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in">
+    <lucide-icon [img]="CheckCircle2" class="text-blue-600 mt-0.5 shrink-0" size="20"></lucide-icon>
+    <div>
+      <h3 class="text-blue-800 font-bold text-sm">{{ i18n.t('dashboard.upgrade_success') }}</h3>
+      <p class="text-blue-700 text-xs mt-1">{{ i18n.t('dashboard.upgrade_success_help') }}</p>
+    </div>
+  </div>
+
+  <!-- Profile Header -->
+  <div class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+    <div class="absolute inset-0 bg-gradient-to-br from-brand-50/60 via-white to-indigo-50/60"></div>
+    <div class="relative p-6 md:p-8 flex flex-col lg:flex-row gap-6 lg:items-center">
+      <div class="flex items-center gap-5">
+        <div class="relative">
+          <div class="absolute inset-0 rounded-full bg-gradient-to-br from-brand-500/30 to-indigo-500/30 blur-md"></div>
+          <img
+            [src]="user.avatarUrl || 'https://picsum.photos/seed/' + user.id + '/120/120'"
+            [alt]="user.name"
+            class="relative w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-4 ring-white shadow-md"
+          />
+          <div class="absolute -bottom-2 -right-2 bg-brand-600 text-white p-1.5 rounded-full ring-2 ring-white shadow">
+            <lucide-icon [img]="Shield" size="16"></lucide-icon>
+          </div>
+          <div *ngIf="currentSub && currentSub.planType === 'premium'" class="absolute -top-2 -right-2 bg-amber-500 text-white p-1 rounded-full ring-2 ring-white shadow">
+            <lucide-icon [img]="Zap" size="12"></lucide-icon>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+              {{user.name}}
+            </h2>
+            <lucide-icon *ngIf="user.verificationStatus === VerificationStatus.VERIFIED" [img]="BadgeCheck" class="text-blue-600" size="22"></lucide-icon>
+          </div>
+          <div class="mt-1 flex items-center text-sm text-gray-500">
+            <lucide-icon [img]="Calendar" size="16" class="mr-2 text-gray-400"></lucide-icon>
+            <span>{{ i18n.t('dashboard.joined') }} {{ user.joinedDate | date }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+
+      <div class="flex flex-col gap-3 w-full lg:w-auto">
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-white/70 backdrop-blur text-xs font-bold text-gray-700">
+            <span class="uppercase">{{user.role}}</span>
+          </span>
+
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-bold text-blue-700">
+            <span class="uppercase">Score</span>
+            <span class="text-blue-900">{{user.trustScore}}</span>
+          </span>
+
+          <span *ngIf="currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
+            <span class="uppercase">Plan</span>
+            <span class="text-emerald-900 normal-case">
+              {{ currentSub.status === 'canceled' ? 'Standard (Lender)' : (currentSub.planType + ' • ' + currentSub.status) }}
+            </span>
+          </span>
+
+          <span *ngIf="currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
+            <lucide-icon [img]="Shield" size="12" class="text-amber-700"></lucide-icon>
+            <span class="uppercase">Premium</span>
+          </span>
+        </div>
+
+        <button
+          *ngIf="!currentSub"
+          type="button"
+          (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
+          class="w-full lg:w-[320px] p-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 transition-colors text-left shadow-sm"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <div class="text-[10px] font-black text-amber-700 uppercase tracking-wider">
+                {{ i18n.t('dash.subscription_cta') }}
+              </div>
+              <div class="text-sm font-bold text-amber-900 mt-1">
+                {{ i18n.t('dash.subscription_desc') }}
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-white border border-amber-200 flex items-center justify-center text-amber-700">
+              <lucide-icon [img]="ChevronRight" size="18"></lucide-icon>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Left Column: Listings & Requests -->
+    <div class="space-y-6">
+
+      <!-- Incoming Requests Section -->
+      <div *ngIf="pendingRequests.length > 0" class="space-y-4 animate-fade-in">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center">
+            <lucide-icon [img]="BellRing" class="mr-2 text-brand-600" size="20"></lucide-icon>
+            {{ i18n.t('dash.incoming_requests') }}
+            <span class="ml-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{pendingRequests.length}}</span>
+          </h3>
+          
+          <div class="bg-white rounded-xl border border-blue-200 shadow-md overflow-hidden divide-y divide-gray-100 ring-4 ring-blue-50/50">
+            <div *ngFor="let req of pendingRequests" class="p-4 flex gap-4 bg-blue-50/30">
+              <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/40'" class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover" />
+              <div class="flex-1">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="text-sm text-gray-900 font-bold">
+                      <span class="text-brand-700">{{req.borrower?.name}}</span>
+                      {{ req.type === ListingType.GIVE ? 'wants to claim:' : (req.type === ListingType.SELL ? 'wants to buy:' : 'wants to borrow:') }}
+                    </p>
+                    <p class="text-xs text-gray-600 mt-1 font-medium bg-white border border-gray-200 rounded px-2 py-1 inline-block">{{req.title}}</p>
+                  </div>
+                  <span class="text-[10px] font-bold text-brand-600 bg-white px-2 py-1 rounded-full border border-brand-100 uppercase tracking-wide">
+                    {{req.borrower?.trustScore}}% Trust
+                  </span>
+                </div>
+                <div class="flex gap-2 mt-3">
+                  <button
+                    type="button"
+                    (click)="handleApprove(req.id)"
+                    [disabled]="actionLoading === req.id"
+                    class="flex-1 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
+                  >
+                    <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="animate-spin mr-1"></lucide-icon>
+                    <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="14" class="mr-1"></lucide-icon>
+                    Approve
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="openUserPreview(req.borrower)"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
+                    title="Preview User"
+                  >
+                    <lucide-icon [img]="Eye" size="16"></lucide-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="handleMessageUser(req.borrower)"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-brand-600 hover:border-brand-200 transition-colors"
+                    title="Message Borrower"
+                  >
+                    <lucide-icon [img]="MessageSquare" size="16"></lucide-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="handleDeny(req.id)"
+                    [disabled]="actionLoading === req.id"
+                    class="flex-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors"
+                  >
+                    <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="animate-spin mr-1"></lucide-icon>
+                    <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="14" class="mr-1"></lucide-icon>
+                    Deny
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center">
+            <lucide-icon [img]="Package" class="mr-2 text-brand-600" size="20"></lucide-icon>
+            {{ i18n.t('dash.my_listings') }}
+          </h3>
+          <button 
+            (click)="handleAddNew()"
+            [disabled]="actionLoading === 'add_new'"
+            class="text-sm text-brand-600 font-medium hover:text-brand-700 flex items-center bg-brand-50 px-3 py-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <lucide-icon *ngIf="actionLoading !== 'add_new'" [img]="Plus" size="16" class="mr-1"></lucide-icon>
+            <lucide-icon *ngIf="actionLoading === 'add_new'" [img]="Loader2" size="16" class="mr-1 animate-spin"></lucide-icon>
+            {{ i18n.t('dash.add_new') }}
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div *ngIf="isLoadingListings" class="p-8 text-center text-gray-400">
+            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
+            <p class="text-sm">Loading your listings…</p>
+          </div>
+          
+          <div *ngIf="!isLoadingListings && myListings.length > 0" class="divide-y divide-gray-100">
+            <div *ngFor="let item of myListings" class="p-4 flex gap-4 transition-colors" [ngClass]="listingRowClass(item)">
+              <div class="relative group">
+                <img
+                  [src]="item.imageUrl"
+                  [alt]="item.title"
+                  class="w-16 h-16 rounded-lg object-cover bg-gray-100"
+                  [ngClass]="listingImageClass(item)"
+                />
+                <div *ngIf="listingIsHidden(item)" class="absolute inset-0 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
+                  <lucide-icon [img]="EyeOff" size="24" class="text-white drop-shadow-md"></lucide-icon>
+                </div>
+                <div *ngIf="listingIsBlocked(item)" class="absolute inset-0 bg-red-900/20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
+                  <lucide-icon [img]="Ban" size="24" class="text-white drop-shadow-md"></lucide-icon>
+                </div>
+                <div *ngIf="item.autoApprove" class="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white" title="Instant Book Enabled">
+                  <lucide-icon [img]="Zap" size="10"></lucide-icon>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-bold truncate" [ngClass]="listingTitleClass(item)">{{item.title}}</h4>
+                  <span class="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide border border-transparent" [ngClass]="listingBadgeClass(item)">
+                    <lucide-icon [img]="listingStatusIcon(item)" size="12"></lucide-icon>
+                    {{ listingStatusLabel(item) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 mt-1 mb-2">
+                  <p class="text-xs text-gray-500 truncate">{{item.category}}</p>
+                  <span class="text-gray-300">•</span>
+                  <p *ngIf="item.hourlyRate; else freePrice" class="text-xs font-semibold text-brand-600">{{ i18n.formatPrice(item.hourlyRate) }}/hr</p>
+                  <ng-template #freePrice>
+                    <p class="text-xs font-bold text-pink-600 flex items-center gap-1">
+                      <lucide-icon [img]="Gift" size="12"></lucide-icon>
+                      Free
+                    </p>
+                  </ng-template>
+                </div>
+
+                <div class="flex items-center gap-2 mt-2" [ngClass]="listingActionsClass(item)">
+                  <p *ngIf="listingIsBlocked(item)" class="text-xs text-red-500 font-bold flex items-center">
+                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
+                    Flagged by Admin
+                  </p>
+
+                  <ng-container *ngIf="!listingIsBlocked(item)">
+                    <button
+                      *ngIf="listingShowOverview(item)"
+                      type="button"
+                      (click)="setOverviewItem(item)"
+                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center px-2 py-1 hover:bg-brand-50 rounded transition-colors"
+                      title="View Overview"
+                    >
+                      <lucide-icon [img]="FileCheck" size="12" class="mr-1"></lucide-icon>
+                      Overview
+                    </button>
+
+                    <button
+                      *ngIf="!listingShowOverview(item)"
+                      type="button"
+                      (click)="handleEdit(item)"
+                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center px-2 py-1 hover:bg-brand-50 rounded transition-colors"
+                      title="Edit Listing"
+                    >
+                      <lucide-icon [img]="Edit2" size="12" class="mr-1"></lucide-icon>
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      (click)="handleToggleStatus(item)"
+                      [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
+                      class="text-xs font-medium flex items-center px-2 py-1 rounded transition-colors"
+                      [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'text-gray-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
+                      [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
+                    >
+                      <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12" class="mr-1"></lucide-icon>
+                      {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
+                    </button>
+
+                    <button
+                      *ngIf="listingIsActiveLoan(item)"
+                      type="button"
+                      (click)="handleReturnClick(item)"
+                      class="text-xs bg-gray-900 text-white font-semibold px-2 py-1 rounded hover:bg-black transition-colors"
+                      title="Start Return"
+                    >
+                      Return
+                    </button>
+
+                    <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
+                      <button
+                        type="button"
+                        (click)="handleApprove(item.id)"
+                        [disabled]="actionLoading === item.id"
+                        class="text-xs bg-indigo-600 text-white font-semibold px-2 py-1 rounded hover:bg-indigo-700 transition-colors"
+                        title="Approve Request"
+                      >
+                        <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
+                        Approve
+                      </button>
+                      <button
+                        type="button"
+                        (click)="handleDeny(item.id)"
+                        [disabled]="actionLoading === item.id"
+                        class="text-xs bg-white text-red-600 border border-red-200 font-semibold px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                        title="Deny Request"
+                      >
+                        Deny
+                      </button>
+                    </ng-container>
+
+                    <button
+                      type="button"
+                      (click)="handleDeleteClick(item)"
+                      class="text-xs text-red-500 font-medium hover:text-red-700 flex items-center ml-auto px-2 py-1 hover:bg-red-50 rounded transition-colors"
+                      title="Delete Listing"
+                    >
+                      <lucide-icon [img]="Trash2" size="12" class="mr-1"></lucide-icon>
+                      Delete
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!isLoadingListings && myListings.length === 0" class="p-8 text-center text-gray-400">
+            <lucide-icon [img]="Package" size="32" class="mx-auto mb-2 opacity-20"></lucide-icon>
+            <p class="text-sm">{{ i18n.t('dash.no_listings') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Borrowing & History -->
+    <div class="space-y-8">
+      <div *ngIf="activeBorrows.length > 0" class="space-y-4">
+        <h3 class="text-lg font-bold text-gray-900 flex items-center">
+          <lucide-icon [img]="Clock" class="mr-2 text-brand-600" size="20"></lucide-icon>
+          {{ i18n.t('dash.active_borrows') }}
+        </h3>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div *ngIf="isLoadingBorrows" class="p-8 text-center text-gray-400">
+            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
+            <p class="text-sm">Loading active borrows…</p>
+          </div>
+
+          <div *ngIf="!isLoadingBorrows" class="divide-y divide-gray-100">
+            <div
+              *ngFor="let item of activeBorrows"
+              (click)="navigateToListing(item.id)"
+              class="p-4 flex gap-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+            >
+              <img [src]="item.imageUrl" [alt]="item.title" class="w-16 h-16 rounded-lg object-cover bg-gray-100 group-hover:scale-105 transition-transform" />
+              <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors">{{item.title}}</h4>
+                <p class="text-xs text-gray-500 mb-2">Owner: {{item.owner?.name}}</p>
+
+                <div *ngIf="item.status === AvailabilityStatus.PENDING" class="flex items-center text-xs text-indigo-600 bg-indigo-50 w-fit px-2 py-1 rounded animate-pulse">
+                  <lucide-icon [img]="BellRing" size="12" class="mr-1"></lucide-icon>
+                  Request Pending
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.DISPUTED" class="flex items-center text-xs text-red-600 bg-red-50 w-fit px-2 py-1 rounded">
+                  <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
+                  Disputed
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
+                  <lucide-icon [img]="CheckCircle2" size="12" class="mr-1"></lucide-icon>
+                  Approved
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.BORROWED" class="flex items-center text-xs text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded">
+                  <lucide-icon [img]="Clock" size="12" class="mr-1"></lucide-icon>
+                  Due in 2 days
+                </div>
+              </div>
+
+              <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="flex flex-col justify-center gap-2">
+                <button
+                  *ngIf="item.status !== AvailabilityStatus.DISPUTED"
+                  type="button"
+                  (click)="$event.stopPropagation(); handleReturnClick(item)"
+                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full"
+                >
+                  Return
+                </button>
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); setOverviewItem(item)"
+                  class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors w-full"
+                >
+                  Overview
+                </button>
+                <button
+                  type="button"
+                  (click)="$event.stopPropagation(); openReportModal(item)"
+                  class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors w-full"
+                >
+                  <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-8">
+        <div *ngIf="borrowedHistory.length > 0" class="space-y-4">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center">
+            <lucide-icon [img]="History" class="mr-2 text-brand-600" size="20"></lucide-icon>
+            {{ i18n.t('dash.borrowing_history') }}
+          </h3>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div *ngIf="isLoadingHistory" class="p-6 text-center text-gray-400">
+              <lucide-icon [img]="Loader2" size="28" class="mx-auto mb-2 animate-spin"></lucide-icon>
+              <p class="text-sm">Loading history…</p>
+            </div>
+            <div *ngIf="!isLoadingHistory" class="divide-y divide-gray-100">
+              <div *ngFor="let item of borrowedHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between">
+                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Returned</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">Owner: {{item.listing!.owner?.name}}</p>
+                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                    <span>{{item.borrowedDate | date}} — {{item.returnedDate | date}}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
+                    Overview
+                  </button>
+                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
+                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                    {{ i18n.t('listing.report.title') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="giftActive.length > 0 || giftHistory.length > 0" class="space-y-4">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center">
+            <lucide-icon [img]="Gift" class="mr-2 text-pink-500" size="20"></lucide-icon>
+            My Gifts
+          </h3>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="divide-y divide-gray-100">
+              <div *ngFor="let item of giftActive" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
+                <img [src]="item.imageUrl" [alt]="item.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between">
+                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">Claim Pending</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Claim Approved</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-pink-600 font-medium bg-pink-50 px-2 py-0.5 rounded-full">Gifted</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">From: {{item.owner?.name}}</p>
+                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                    <span>{{item.status === AvailabilityStatus.PENDING ? 'Requested today' : ('Received on ' + (today | date:'shortDate'))}}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
+                    Overview
+                  </button>
+                  <button type="button" (click)="openReportModal(item)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
+                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                    {{ i18n.t('listing.report.title') }}
+                  </button>
+                </div>
+              </div>
+              <div *ngFor="let item of giftHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between">
+                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Received</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">From: {{item.listing!.owner?.name}}</p>
+                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                    <span>{{item.borrowedDate | date}}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
+                    Overview
+                  </button>
+                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
+                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                    {{ i18n.t('listing.report.title') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="purchaseActive.length > 0 || purchaseHistory.length > 0" class="space-y-4">
+          <h3 class="text-lg font-bold text-gray-900 flex items-center">
+            <lucide-icon [img]="DollarSign" class="mr-2 text-emerald-600" size="20"></lucide-icon>
+            Purchase History
+          </h3>
+
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="divide-y divide-gray-100">
+              <div *ngFor="let item of purchaseActive" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
+                <img [src]="item.imageUrl" [alt]="item.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between">
+                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">Request Pending</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Approved</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Purchased</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">Seller: {{item.owner?.name}}</p>
+                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                    <span>{{item.status === AvailabilityStatus.PENDING ? 'Requested today' : ('Bought on ' + (today | date:'shortDate'))}}</span>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <button type="button" (click)="openReportModal(item)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
+                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                    {{ i18n.t('listing.report.title') }}
+                  </button>
+                </div>
+              </div>
+              <div *ngFor="let item of purchaseHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between">
+                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Purchased</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">Seller: {{item.listing!.owner?.name}}</p>
+                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                    <span>{{item.borrowedDate | date}}</span>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
+                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                    {{ i18n.t('listing.report.title') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="pt-4 border-t border-gray-200">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">{{ i18n.t('dash.recommendations') }}</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngIf="isLoadingRecs" class="col-span-full text-center text-gray-400 py-6">
+        <lucide-icon [img]="Loader2" [size]="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
+        <p class="text-sm">Loading recommendations…</p>
+      </div>
+      <ng-container *ngIf="!isLoadingRecs && recommendations.length > 0">
+        <div
+          *ngFor="let rec of recommendations"
+          (click)="navigateToListing(rec.id)"
+          class="w-full bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4 group"
+        >
+          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-xl group-hover:bg-indigo-100 transition-colors flex-none">
+            {{ rec.type === ListingType.SKILL ? '🎓' : '🔧' }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="font-bold text-gray-900 truncate text-sm">{{rec.title}}</h4>
+            <div class="flex items-center text-xs text-gray-500 mt-0.5">
+              <lucide-icon [img]="MapPin" [size]="10" class="mr-1"></lucide-icon>
+              {{ (rec.distanceMiles || 0) | number:'1.0-0' }} mi
+            </div>
+          </div>
+          <div class="text-gray-300 group-hover:text-brand-600 flex-none">
+            <lucide-icon [img]="ChevronRight" [size]="16"></lucide-icon>
+          </div>
+        </div>
+      </ng-container>
+      <div *ngIf="!isLoadingRecs && recommendations.length === 0" class="col-span-full text-center text-gray-400 py-4 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
+        No recommendations available nearby at the moment.
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-transaction-overview-modal
+  [item]="overviewItem"
+  [isOpen]="!!overviewItem"
+  [currentUser]="user"
+  (close)="closeOverview()"
+></app-transaction-overview-modal>
+
+<app-return-modal
+  *ngIf="returnsEnabled"
+  [item]="returningItem"
+  [currentUser]="user"
+  [isOpen]="!!returningItem"
+  (close)="closeReturn()"
+  (complete)="handleReturnComplete()"
+></app-return-modal>
+
+<app-review-modal
+  [item]="reviewingItem"
+  [currentUser]="user"
+  [isOpen]="!!reviewingItem"
+  (close)="closeReview()"
+></app-review-modal>
+
+<app-confirmation-modal
+  [isOpen]="deleteConfirmOpen"
+  [title]="i18n.t('dashboard.delete_listing_title')"
+  [message]="deleteConfirmMessage"
+  [confirmLabel]="i18n.t('dashboard.delete_cta')"
+  variant="danger"
+  (cancel)="closeDeleteConfirm()"
+  (confirm)="confirmDeleteListing()"
+></app-confirmation-modal>
+
+<ng-container *ngIf="userPreviewOpen && userPreview">
+  <div class="fixed inset-0 z-[75] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4" (click)="closeUserPreview()">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-fade-in-down" (click)="$event.stopPropagation()">
+      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h3 class="font-bold text-gray-900 text-lg">User Preview</h3>
+        <button type="button" (click)="closeUserPreview()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
+          <lucide-icon [img]="X" [size]="20"></lucide-icon>
+        </button>
+      </div>
+      <div class="p-6">
+        <div class="flex items-center gap-4">
+          <img [src]="userPreview.avatarUrl || 'https://via.placeholder.com/80'" class="w-16 h-16 rounded-full border border-gray-200 object-cover" />
+          <div class="min-w-0">
+            <div class="font-bold text-gray-900 truncate">{{ userPreview.name }}</div>
+            <div class="text-sm text-gray-600 truncate">{{ userPreview.email }}</div>
+            <div class="mt-2 inline-flex items-center gap-2 text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-2 py-1 rounded-full">
+              {{ userPreview.trustScore }}% Trust
+              <span class="text-gray-300">•</span>
+              {{ userPreview.vouchCount }} Vouches
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+          <button type="button" (click)="handleMessageUser(userPreview)" class="flex-1 py-3 px-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-sm transition-colors flex items-center justify-center gap-2">
+            <lucide-icon [img]="MessageSquare" [size]="18"></lucide-icon>
+            Message
+          </button>
+          <button type="button" (click)="closeUserPreview()" class="flex-1 py-3 px-4 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="subscriptionGateOpen">
+  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4" (click)="closeSubscriptionGate()">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-fade-in-down" (click)="$event.stopPropagation()">
+      <div class="relative p-6 bg-gradient-to-b from-amber-50 to-white">
+        <button type="button" (click)="closeSubscriptionGate()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
+          <lucide-icon [img]="X" [size]="18"></lucide-icon>
+        </button>
+
+        <div class="flex items-start gap-4">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shadow-sm">
+            <lucide-icon [img]="ShieldAlert" [size]="22"></lucide-icon>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-gray-900">
+              {{ i18n.t('dash.subscription_required_title') }}
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ i18n.t('dash.subscription_required_message') }}
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-amber-100 bg-white/70 px-4 py-3">
+          <div class="flex items-start gap-2 text-xs text-gray-700">
+            <lucide-icon [img]="CheckCircle2" [size]="16" class="text-emerald-600 mt-0.5"></lucide-icon>
+            <div>
+              <div class="font-semibold text-gray-900">Unlock posting</div>
+              <div class="text-gray-600">Subscribe to list items and reach verified neighbors.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 pt-0">
+        <div class="flex gap-3">
+          <button type="button" (click)="closeSubscriptionGate()" class="flex-1 py-3 px-4 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
+            {{ i18n.t('dash.subscription_required_cancel') }}
+          </button>
+          <button type="button" (click)="confirmSubscriptionGate()" class="flex-1 py-3 px-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-sm transition-colors">
+            {{ i18n.t('dash.subscription_required_confirm') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="showReportModal && reportTarget">
+  <div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-down">
+      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
+          <lucide-icon [img]="Flag" [size]="20" class="text-red-500"></lucide-icon>
+          {{ i18n.t('listing.report.title') }}
+        </h3>
+        <button type="button" (click)="closeReportModal()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
+          <lucide-icon [img]="X" [size]="20"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <p class="text-sm text-gray-500 mb-4">
+          {{ reportTarget.title }}
+        </p>
+
+        <div class="mb-4">
+          <label class="block text-sm font-bold text-gray-700 mb-2">{{ i18n.t('listing.report.reason') }}</label>
+          <select [(ngModel)]="reportReason" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+            <option [ngValue]="''">Select a reason</option>
+            <option [ngValue]="'inappropriate'">{{ i18n.t('listing.report.reason_inappropriate') }}</option>
+            <option [ngValue]="'spam'">{{ i18n.t('listing.report.reason_spam') }}</option>
+            <option [ngValue]="'scam'">{{ i18n.t('listing.report.reason_scam') }}</option>
+            <option [ngValue]="'unsafe'">{{ i18n.t('listing.report.reason_unsafe') }}</option>
+            <option [ngValue]="'other'">{{ i18n.t('listing.report.reason_other') }}</option>
+          </select>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-gray-700 mb-2">{{ i18n.t('listing.report.details') }}</label>
+          <textarea [(ngModel)]="reportDetails" [placeholder]="i18n.t('listing.report.details_placeholder')" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all min-h-[100px]"></textarea>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" (click)="closeReportModal()" class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors">
+            {{ i18n.t('common.cancel') }}
+          </button>
+          <button type="button" (click)="submitReport()" [disabled]="!reportReason || reporting" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-200 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+            <lucide-icon *ngIf="reporting" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
+            <span *ngIf="!reporting">{{ i18n.t('listing.report.submit') }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="showReportSuccess">
+  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-down text-center p-8">
+      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <lucide-icon [img]="CheckCircle2" [size]="32"></lucide-icon>
+      </div>
+      <h3 class="font-bold text-gray-900 text-xl mb-2">{{ i18n.t('listing.report_submitted') }}</h3>
+      <p class="text-gray-500 mb-6">
+        {{ i18n.t('listing.report_thanks') }}
+      </p>
+      <button type="button" (click)="closeReportSuccess()" class="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-colors">
+        Close
+      </button>
+    </div>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="reportError">
+  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-down text-center p-8">
+      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <lucide-icon [img]="AlertTriangle" [size]="32"></lucide-icon>
+      </div>
+      <h3 class="font-bold text-gray-900 text-xl mb-2">{{ i18n.t('common.error') }}</h3>
+      <p class="text-gray-500 mb-6">
+        {{ reportError }}
+      </p>
+      <button type="button" (click)="reportError = null" class="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-colors">
+        Close
+      </button>
+    </div>
+  </div>
+</ng-container>

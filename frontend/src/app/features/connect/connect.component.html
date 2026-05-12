@@ -1,0 +1,321 @@
+<div class="flex flex-col md:flex-row min-h-[calc(100vh-140px)] gap-8 animate-fade-in relative">
+      
+  <!-- MFA Modal -->
+  <div *ngIf="showMfaInput" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-scale-in">
+        <div class="p-8 md:p-10">
+            <div class="mb-8 text-center">
+              <div class="mx-auto w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                  <lucide-icon [img]="Shield" class="text-brand-600" [size]="32"></lucide-icon>
+              </div>
+              <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ i18n.t('connect.mfa.title') || 'Two-Factor Authentication' }}</h1>
+              <p class="text-gray-500 text-sm leading-relaxed">
+                {{ i18n.t('connect.mfa.desc') || 'Your account is protected. Please enter the 6-digit code from your authenticator app to continue.' }}
+              </p>
+            </div>
+  
+            <form (submit)="handleMfaSubmit()" class="space-y-6">
+              <div *ngIf="error" class="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100 flex items-start gap-2">
+                <span class="font-bold">{{ i18n.t('common.error') }}:</span> {{ error }}
+              </div>
+              
+              <div>
+                 <div class="relative group">
+                     <input 
+                          [ngModel]="mfaCode" 
+                          (ngModelChange)="onMfaCodeChange($event)" 
+                          name="mfaCode"
+                          type="text" 
+                          class="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all text-center tracking-[0.75em] font-mono text-2xl font-bold text-gray-800 placeholder-gray-300" 
+                          placeholder="000000" 
+                          maxlength="6"
+                          required 
+                          autofocus
+                     />
+                 </div>
+              </div>
+  
+              <app-button 
+                  type="submit" 
+                  variant="primary" 
+                  [fullWidth]="true" 
+                  size="lg" 
+                  [isLoading]="isLoading"
+                  class="shadow-lg shadow-teal-200"
+              >
+                  {{ i18n.t('connect.mfa.cta') }}
+              </app-button>
+              
+              <app-button 
+                  type="button" 
+                  (onClick)="cancelMfa()"
+                  variant="tertiary"
+                  [fullWidth]="true"
+              >
+                  {{ i18n.t('connect.mfa.cancel') }}
+              </app-button>
+            </form>
+        </div>
+     </div>
+  </div>
+
+  <!-- Mobile Info Box -->
+  <div class="md:hidden mb-6 w-full">
+    <div class="bg-teal-600 rounded-3xl text-white p-6 space-y-4">
+      <div *ngIf="show('showHero')">
+        <div class="bg-teal-700 w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm">
+          <lucide-icon [img]="Shield" [size]="20" class="text-white"></lucide-icon>
+        </div>
+        <h2 class="text-xl font-bold mb-2 leading-snug">{{ i18n.t('home.hero_title_1') }}</h2>
+        <p class="text-teal-100 text-sm">
+          {{ i18n.t('home.hero_desc') }}
+        </p>
+      </div>
+      <div *ngIf="show('showPrivacyBullets')" class="space-y-2 text-xs text-teal-50">
+        <div class="flex items-start gap-2">
+          <span class="mt-0.5">✅</span>
+          <span>{{ i18n.t('connect.privacy.bullet1') }}</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="mt-0.5">✅</span>
+          <span>{{ i18n.t('connect.privacy.bullet2') }}</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="mt-0.5">✅</span>
+          <span>{{ i18n.t('connect.privacy.bullet3') }}</span>
+        </div>
+      </div>
+      <div *ngIf="show('showPrivacyBox')" class="border-t border-teal-500 pt-3 space-y-3">
+        <div class="flex items-start gap-2 text-[11px] text-teal-50">
+          <span class="mt-0.5">☑</span>
+          <span>{{ i18n.t('connect.privacy.agree') }}</span>
+        </div>
+        <app-button
+          type="button"
+          (onClick)="toggleMode(false)"
+          variant="secondary"
+          [fullWidth]="true"
+          size="sm"
+          class="uppercase tracking-wide font-bold"
+        >
+          {{ i18n.t('connect.create_free_account') }}
+        </app-button>
+        <p *ngIf="show('showFooterInfo')" class="text-[11px] text-brand-50 flex items-start gap-1">
+          <span class="mt-0.5">ℹ️</span>
+          <span>{{ i18n.t('connect.footer_info') }}</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Info Side -->
+  <div class="hidden md:flex flex-1 bg-teal-600 rounded-3xl relative overflow-hidden text-white p-12 flex-col justify-between">
+     <div *ngIf="show('showHero')">
+        <div class="bg-teal-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-sm">
+           <lucide-icon [img]="Shield" [size]="24" class="text-white"></lucide-icon>
+        </div>
+        <h2 class="text-4xl font-bold mb-4 leading-tight">{{ i18n.t('home.hero_title_1') }}</h2>
+        <p class="text-teal-100 text-lg max-w-sm">
+           {{ i18n.t('home.hero_desc') }}
+        </p>
+     </div>
+
+     <div class="space-y-4">
+        <div *ngIf="show('showTrustScore')" class="flex items-center gap-4 bg-teal-700 p-4 rounded-2xl">
+           <div class="bg-teal-800 p-2 rounded-full"><lucide-icon [img]="Sparkles" [size]="16"></lucide-icon></div>
+           <div>
+              <div class="font-bold">{{ i18n.t('connect.trust.title') }}</div>
+              <div class="text-xs text-teal-100">{{ i18n.t('connect.trust.help') }}</div>
+           </div>
+        </div>
+        <div *ngIf="show('showHyperLocal')" class="flex items-center gap-4 bg-teal-700 p-4 rounded-2xl">
+           <div class="bg-teal-800 p-2 rounded-full"><lucide-icon [img]="UserCheck" [size]="16"></lucide-icon></div>
+           <div>
+              <div class="font-bold">{{ i18n.t('connect.hyperlocal.title') }}</div>
+              <div class="text-xs text-teal-100">{{ i18n.t('connect.hyperlocal.help') }}</div>
+           </div>
+        </div>
+        <!-- Privacy Section -->
+        <div *ngIf="show('showPrivacyBox') || show('showPrivacyBullets')" class="bg-teal-700 p-4 rounded-2xl space-y-3">
+          <div *ngIf="show('showPrivacyBox')" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-teal-50">
+            <span>🤝</span>
+            <span>{{ i18n.t('connect.privacy.title') }}</span>
+          </div>
+          <div *ngIf="show('showPrivacyBullets')" class="space-y-1 text-sm text-teal-100 mt-1">
+            <div class="flex items-start gap-2">
+              <span class="mt-0.5">✅</span>
+              <span>{{ i18n.t('connect.privacy.bullet1') }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="mt-0.5">✅</span>
+              <span>{{ i18n.t('connect.privacy.bullet2') }}</span>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="mt-0.5">✅</span>
+              <span>{{ i18n.t('connect.privacy.bullet3') }}</span>
+            </div>
+          </div>
+          <div *ngIf="show('showPrivacyBox')" class="border-t border-white/15 pt-3 mt-2 space-y-3">
+            <div class="flex items-start gap-2 text-xs text-teal-100">
+              <span class="mt-0.5">☑</span>
+              <span>{{ i18n.t('connect.privacy.agree') }}</span>
+            </div>
+            <app-button
+              type="button"
+              (onClick)="toggleMode(false)"
+              variant="secondary"
+              [fullWidth]="true"
+              size="sm"
+              class="uppercase tracking-wide font-bold"
+            >
+              {{ i18n.t('connect.create_free_account') }}
+            </app-button>
+            <p *ngIf="show('showFooterInfo')" class="text-[11px] text-brand-100 flex items-start gap-1">
+              <span class="mt-0.5">ℹ️</span>
+              <span>{{ i18n.t('connect.footer_info') }}</span>
+            </p>
+          </div>
+        </div>
+     </div>
+  </div>
+
+  <!-- Auth Form Side -->
+  <div class="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-soft border border-gray-100">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">{{ isLogin ? i18n.t('connect.welcome_back') : i18n.t('connect.create_account_title') }}</h1>
+        <p class="text-gray-500 mt-2 text-sm">
+          {{ isLogin ? i18n.t('connect.login_help') : i18n.t('connect.register_help') }}
+        </p>
+      </div>
+
+      <!-- Toggle Switch -->
+      <div class="bg-gray-100 p-1 rounded-xl flex mb-8">
+        <button
+          (click)="toggleMode(true)"
+          [ngClass]="isLogin ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          class="flex-1 py-2 text-sm font-bold rounded-lg transition-all"
+        >
+          {{ i18n.t('connect.sign_in') }}
+        </button>
+        <button
+          (click)="toggleMode(false)"
+          [ngClass]="!isLogin ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          class="flex-1 py-2 text-sm font-bold rounded-lg transition-all"
+        >
+          {{ i18n.t('connect.register') }}
+        </button>
+      </div>
+
+      <form (submit)="handleSubmit(); $event.preventDefault()" class="space-y-5">
+        <div *ngIf="error" class="p-3 rounded-xl bg-red-50 text-red-700 text-sm border border-red-200 flex items-start gap-2">
+          <lucide-icon [img]="AlertCircle" [size]="18" class="mt-0.5 flex-shrink-0"></lucide-icon>
+          <span>{{ error }}</span>
+        </div>
+        
+        <div *ngIf="!isLogin">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 ml-1">{{ i18n.t('connect.full_name') }}</label>
+          <div class="relative group">
+            <lucide-icon [img]="UserIcon" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-brand-600 transition-colors" [size]="18"></lucide-icon>
+            <input [(ngModel)]="name" name="name" type="text" class="w-full pl-14 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:outline-none transition-all" placeholder="Jane Doe" [required]="!isLogin" />
+          </div>
+        </div>
+
+        <div *ngIf="!isLogin && allowAdminToggle" class="flex items-center gap-2">
+          <input id="isAdmin" name="isAdmin" type="checkbox" [(ngModel)]="isAdmin" class="h-4 w-4" />
+          <label for="isAdmin" class="text-sm text-gray-700 font-medium">{{ i18n.t('connect.admin') }}</label>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 ml-1">{{ i18n.t('connect.email') }}</label>
+           <div class="relative group">
+               <lucide-icon [img]="Mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-brand-600 transition-colors" [size]="18"></lucide-icon>
+               <input [(ngModel)]="email" name="email" type="email" class="w-full pl-14 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:outline-none transition-all" placeholder="you@example.com" required />
+           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 ml-1">{{ i18n.t('connect.password') }}</label>
+           <div class="relative group">
+               <lucide-icon [img]="Lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-brand-600 transition-colors" [size]="18"></lucide-icon>
+               <input [(ngModel)]="password" name="password" type="password" class="w-full pl-14 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:outline-none transition-all" placeholder="••••••••" required />
+           </div>
+           <button *ngIf="isLogin" type="button" (click)="showPasswordRecovery = true" class="text-sm text-brand-600 hover:text-brand-700 mt-2 ml-1">
+            {{ i18n.t('connect.reset_password') }}
+           </button>
+        </div>
+
+        <div *ngIf="!isLogin && show('showTermsCheckbox')" class="flex items-start gap-2 text-xs text-gray-600">
+          <input
+            id="acceptTerms"
+            name="acceptTerms"
+            type="checkbox"
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            [(ngModel)]="acceptedTerms"
+          />
+          <label for="acceptTerms" class="leading-snug">
+            {{ i18n.t('connect.terms.prefix') }} <a href="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a href="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
+          </label>
+        </div>
+
+        <app-button
+          type="submit"
+          variant="dark"
+          [fullWidth]="true"
+          size="lg"
+          [disabled]="!isLogin && show('showTermsCheckbox') && !acceptedTerms"
+          [isLoading]="isLoading"
+          class="mt-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:transform-none"
+        >
+          {{ isLogin ? i18n.t('connect.sign_in') : i18n.t('connect.create_account_cta') }}
+        </app-button>
+      </form>
+      
+      <div *ngIf="show('showDemoSection')" class="mt-8 border-t border-gray-100 pt-6">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-4 text-center">{{ i18n.t('connect.demo.title') }}</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <button (click)="handleDemoLogin('user_lender')" class="p-2 rounded-lg text-center transition-colors border border-transparent hover:border-black/5 text-green-600 bg-green-50 hover:bg-green-100">
+            <div class="font-bold text-sm text-gray-900">{{ i18n.t('connect.demo.lender') || 'Lender' }}</div>
+            <div class="text-[10px] opacity-80">{{ i18n.t('connect.demo.trust98') || 'Trust 98' }}</div>
+          </button>
+          <button (click)="handleDemoLogin('user_borrower')" class="p-2 rounded-lg text-center transition-colors border border-transparent hover:border-black/5 text-amber-600 bg-amber-50 hover:bg-amber-100">
+            <div class="font-bold text-sm text-gray-900">{{ i18n.t('connect.demo.borrower') || 'Borrower' }}</div>
+            <div class="text-[10px] opacity-80">{{ i18n.t('connect.demo.new_user') || 'New User' }}</div>
+          </button>
+          <button (click)="handleDemoLogin('user_admin')" class="p-2 rounded-lg text-center transition-colors border border-transparent hover:border-black/5 text-purple-600 bg-purple-50 hover:bg-purple-100">
+            <div class="font-bold text-sm text-gray-900">{{ i18n.t('nav.admin') || 'Admin' }}</div>
+            <div class="text-[10px] opacity-80">{{ i18n.t('connect.demo.staff') || 'Staff' }}</div>
+          </button>
+          <button (click)="handleDemoLogin('user_unverified_demo')" class="p-2 rounded-lg text-center transition-colors border border-transparent hover:border-black/5 text-slate-600 bg-slate-50 hover:bg-slate-100">
+            <div class="font-bold text-sm text-gray-900">{{ i18n.t('connect.demo.unverified') || 'Unverified' }}</div>
+            <div class="text-[10px] opacity-80">{{ i18n.t('connect.demo.demo') || 'Demo' }}</div>
+          </button>
+        </div>
+        <div *ngIf="demoNotice && demoNotice.type === 'success'" class="mt-4 p-2 bg-green-50 text-green-700 text-xs rounded-lg text-center font-medium">
+          {{ demoNotice.message }}
+        </div>
+        <div class="mt-4 flex justify-center">
+          <app-button 
+            type="button"
+            (onClick)="handleSeedData()"
+            [disabled]="isLoading"
+            variant="tertiary"
+            size="sm"
+            class="text-gray-400 hover:text-brand-600"
+          >
+            {{ i18n.t('connect.demo.seed') || 'Seed Data' }}
+          </app-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="showPasswordRecovery">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+    <div class="absolute inset-0" (click)="closePasswordRecovery()"></div>
+    <div class="relative w-full">
+      <app-password-recovery (backToLogin)="closePasswordRecovery()" (recoverySuccess)="onPasswordRecoverySuccess()"></app-password-recovery>
+    </div>
+  </div>
+</ng-container>
