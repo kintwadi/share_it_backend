@@ -12,9 +12,9 @@
       "vouchCount": 500,
       "verificationStatus": "VERIFIED",
       "joinedDate": "2020-01-01T00:00:00",
-      "location": { "lat": 0.0, "lng": 0.0 },
+      "location": { "lat": 50.1109, "lng": 8.6821 },
       "subscription": {
-        "planType": "premium",
+        "planType": "pro",
         "status": "active",
         "autoChargeAmountCents": 799
       }
@@ -25,17 +25,17 @@
       "password": "password123",
       "role": "LENDER",
       "phone": "123-456-7890",
-      "address": "1 Main St",
+      "address": "Frankfurterstr 2455, Frankfurt",
       "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
       "trustScore": 98,
       "vouchCount": 156,
       "verificationStatus": "VERIFIED",
       "joinedDate": "2021-05-15T00:00:00",
-      "location": { "lat": 0.002, "lng": 0.002 },
+      "location": { "lat": 50.1109, "lng": 8.6821 },
       "subscription": {
-        "planType": "premium",
+        "planType": "plus",
         "status": "active",
-        "autoChargeAmountCents": 799
+        "autoChargeAmountCents": 499
       }
     },
     {
@@ -44,13 +44,13 @@
       "password": "password123",
       "role": "BORROWER",
       "phone": "987-654-3210",
-      "address": "2 Main St",
+      "address": "Konstablerwache 5, Frankfurt",
       "avatarUrl": "https://images.unsplash.com/photo-1502767089025-6572583495b0",
       "trustScore": 75,
       "vouchCount": 45,
       "verificationStatus": "UNVERIFIED",
       "joinedDate": "2022-01-10T00:00:00",
-      "location": { "lat": 0.003, "lng": 0.003 }
+      "location": { "lat": 50.1147, "lng": 8.6873 }
     },
     {
       "name": "Sarah Smith",
@@ -58,17 +58,36 @@
       "password": "password123",
       "role": "MEMBER",
       "phone": "555-123-4567",
-      "address": "3 Oak Ave",
+      "address": "Leipzigerstr 102, Frankfurt",
       "avatarUrl": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
       "trustScore": 60,
       "vouchCount": 10,
       "verificationStatus": "VERIFIED",
       "joinedDate": "2023-03-20T00:00:00",
-      "location": { "lat": 0.004, "lng": 0.004 },
+      "location": { "lat": 50.118, "lng": 8.6512 },
       "subscription": {
-        "planType": "verified",
+        "planType": "plus",
+        "status": "trialing",
+        "autoChargeAmountCents": 499
+      }
+    },
+    {
+      "name": "Peter Pro",
+      "email": "peter.pro@example.com",
+      "password": "password123",
+      "role": "LENDER",
+      "phone": "555-222-3333",
+      "address": "Müllerstraße 45, Berlin",
+      "avatarUrl": "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
+      "trustScore": 92,
+      "vouchCount": 88,
+      "verificationStatus": "VERIFIED",
+      "joinedDate": "2023-08-01T00:00:00",
+      "location": { "lat": 52.520008, "lng": 13.404954 },
+      "subscription": {
+        "planType": "pro",
         "status": "active",
-        "autoChargeAmountCents": 299
+        "autoChargeAmountCents": 799
       }
     }
   ],
@@ -84,7 +103,9 @@
       "gallery": ["https://images.unsplash.com/photo-1504148455328-c376907d081c"],
       "autoApprove": false,
       "status": "AVAILABLE",
-      "location": { "lat": 0.002, "lng": 0.002 }
+      "location": { "lat": 50.1109, "lng": 8.6821 },
+      "createdAt": "2026-05-10T10:30:00",
+      "pickupLocationName": "Concierge (building front desk)"
     },
     {
       "ownerEmail": "linda.lender@example.com",
@@ -97,7 +118,9 @@
       "gallery": [],
       "autoApprove": true,
       "status": "AVAILABLE",
-      "location": { "lat": 0.002, "lng": 0.002 }
+      "location": { "lat": 50.1109, "lng": 8.6821 },
+      "createdAt": "2026-05-09T18:10:00",
+      "pickupLocationName": "Local bakery partner"
     },
     {
       "ownerEmail": "sarah.smith@example.com",
@@ -109,47 +132,64 @@
       "imageUrl": "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d",
       "gallery": ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4"],
       "autoApprove": true,
-      "status": "AVAILABLE",
-      "location": { "lat": 0.004, "lng": 0.004 }
+      "status": "BORROWED",
+      "borrowerEmail": "bob.borrower@example.com",
+      "location": { "lat": 50.118, "lng": 8.6512 },
+      "createdAt": "2026-05-11T09:00:00",
+      "pickupLocationName": "Public meetup spot"
     },
     {
-      "ownerEmail": "sarah.smith@example.com",
-      "title": "DSLR Camera Kit",
-      "description": "Canon DSLR with 18-55mm and 50mm lenses. Includes bag, memory card, and extra battery. Great for beginners.",
+      "ownerEmail": "peter.pro@example.com",
+      "title": "DJ Controller (Beginner Friendly)",
+      "description": "Compact DJ controller with USB, perfect for learning basic mixing. Includes carrying case.",
       "type": "LEND",
-      "category": "Electronics",
-      "hourlyRate": 35.0,
-      "imageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+      "category": "Music",
+      "hourlyRate": 18.0,
+      "imageUrl": "https://images.unsplash.com/photo-1511379938547-c1f69419868d",
       "gallery": [],
-      "autoApprove": false,
+      "autoApprove": true,
       "status": "AVAILABLE",
-      "location": { "lat": 0.004, "lng": 0.004 }
+      "location": { "lat": 52.520008, "lng": 13.404954 },
+      "createdAt": "2026-05-07T12:00:00",
+      "pickupLocationCustom": "Meet at building entrance, ring 12B",
+      "pickupLocationStreet": "Müllerstraße",
+      "pickupLocationHouseNumber": "45",
+      "pickupLocationCity": "Berlin",
+      "pickupLocationZip": "13349"
     },
     {
       "ownerEmail": "linda.lender@example.com",
       "title": "Moving Boxes (Bundle of 10)",
       "description": "Used once, good condition. Free to anyone who needs them.",
       "type": "GIVE",
-      "category": "Home",
+      "category": "Misc",
       "hourlyRate": 0.0,
       "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309",
       "gallery": [],
       "autoApprove": true,
       "status": "AVAILABLE",
-      "location": { "lat": 0.002, "lng": 0.002 }
+      "location": { "lat": 50.1109, "lng": 8.6821 },
+      "createdAt": "2026-05-06T17:45:00",
+      "pickupLocationName": "Concierge (building front desk)"
     },
     {
-      "ownerEmail": "bob.borrower@example.com",
+      "ownerEmail": "peter.pro@example.com",
       "title": "Vintage Bookshelf",
-      "description": "Solid oak bookshelf. Needs a new home. 50 Euros or best offer.",
+      "description": "Solid oak bookshelf. Minor scratches. Pick-up only.",
       "type": "SELL",
-      "category": "Furniture",
-      "hourlyRate": 50.0,
+      "category": "Misc",
+      "hourlyRate": 60.0,
       "imageUrl": "https://images.unsplash.com/photo-1594620302200-9a762244a156",
       "gallery": [],
       "autoApprove": false,
       "status": "AVAILABLE",
-      "location": { "lat": 0.003, "lng": 0.003 }
+      "location": { "lat": 52.520008, "lng": 13.404954 },
+      "createdAt": "2026-05-05T08:20:00",
+      "pickupLocationCustom": "Pick-up after 18:00 weekdays",
+      "pickupLocationStreet": "Müllerstraße",
+      "pickupLocationHouseNumber": "45",
+      "pickupLocationCity": "Berlin",
+      "pickupLocationZip": "13349"
     }
   ],
   "reviews": [
@@ -159,7 +199,7 @@
       "listingTitle": "Professional Tile Cutter",
       "rating": 5,
       "comment": "Great tool! Saved me a lot of money compared to buying one. Linda was very helpful showing me how to use it.",
-      "timestamp": "2023-10-15T14:30:00"
+      "timestamp": "2026-05-11T14:30:00"
     },
     {
       "authorEmail": "sarah.smith@example.com",
@@ -167,7 +207,7 @@
       "listingTitle": "Pressure Washer 3000 PSI",
       "rating": 4,
       "comment": "Worked well, but was a bit hard to start initially. Once running it was powerful.",
-      "timestamp": "2023-11-05T09:15:00"
+      "timestamp": "2026-05-10T09:15:00"
     }
   ],
   "messages": [
@@ -175,15 +215,22 @@
       "senderEmail": "bob.borrower@example.com",
       "receiverEmail": "linda.lender@example.com",
       "content": "Hi Linda, is the tile cutter available this weekend?",
-      "timestamp": "2023-10-10T10:00:00",
+      "timestamp": "2026-05-10T10:00:00",
       "isRead": true
     },
     {
       "senderEmail": "linda.lender@example.com",
       "receiverEmail": "bob.borrower@example.com",
       "content": "Yes, it is! You can book it through the app.",
-      "timestamp": "2023-10-10T10:05:00",
+      "timestamp": "2026-05-10T10:05:00",
       "isRead": true
+    },
+    {
+      "senderEmail": "bob.borrower@example.com",
+      "receiverEmail": "sarah.smith@example.com",
+      "content": "Hey Sarah, can I pick up the tent tonight?",
+      "timestamp": "2026-05-11T17:20:00",
+      "isRead": false
     }
   ]
 }
