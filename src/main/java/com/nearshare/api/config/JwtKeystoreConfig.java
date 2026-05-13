@@ -23,9 +23,9 @@ public class JwtKeystoreConfig {
     @Bean(name = "accessTokenKey")
     public Key accessTokenKey(
             @Value("${server.ssl.key-store:}") String keyStoreLocation,
-            @Value("${SSL_PASSWORD:}") String keyStorePassword,
-            @Value("${KEYSTORE_ACCESS_TOKEN_ALIAS:${KEYSTORE_ACCESS_Token_Alias:}}") String alias,
-            @Value("${KEYSTORE_ACCESS_TOKEN_PW:${KEYSTORE_ACCESS_Token_PW:}}") String password
+            @Value("${security.keystore.password:}") String keyStorePassword,
+            @Value("${security.jwt.access-token.alias:}") String alias,
+            @Value("${security.jwt.access-token.password:}") String password
     ) {
         return loadOrGenerateKey(keyStoreLocation, keyStorePassword, alias, password);
     }
@@ -33,9 +33,9 @@ public class JwtKeystoreConfig {
     @Bean(name = "refreshTokenKey")
     public Key refreshTokenKey(
             @Value("${server.ssl.key-store:}") String keyStoreLocation,
-            @Value("${SSL_PASSWORD:}") String keyStorePassword,
-            @Value("${KEYSTORE_REFRESH_TOKEN_ALIAS:${KEYSTORE_REFRESH_Token_Alias:}}") String alias,
-            @Value("${KEYSTORE_REFRESH_TOKEN_PW:${KEYSTORE_REFRESH_Token_PW:}}") String password
+            @Value("${security.keystore.password:}") String keyStorePassword,
+            @Value("${security.jwt.refresh-token.alias:}") String alias,
+            @Value("${security.jwt.refresh-token.password:}") String password
     ) {
         return loadOrGenerateKey(keyStoreLocation, keyStorePassword, alias, password);
     }

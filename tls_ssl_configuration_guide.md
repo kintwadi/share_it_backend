@@ -20,7 +20,8 @@ server.ssl.enabled=true
 
 # External Keystore Location
 server.ssl.key-store=file:/etc/ssl/certs/keystore.p12
-server.ssl.key-store-password=\${SSL_PASSWORD}
+security.keystore.password=\${SSL_PASSWORD}
+server.ssl.key-store-password=\${security.keystore.password}
 server.ssl.key-store-type=PKCS12
 server.ssl.key-alias=springboot
 
