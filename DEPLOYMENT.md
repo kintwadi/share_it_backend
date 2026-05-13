@@ -8,6 +8,8 @@ This guide explains how to deploy the NearShare backend application to Docker Hu
 2. **Docker Hub Account**: Create an account at [hub.docker.com](https://hub.docker.com)
 3. **Login**: Run `docker login` in your terminal and enter your credentials
 
+ trae-sandbox 'npm run start -- --ssl true --host 0.0.0.0 --port 4200'
+
 ## Configuration
 
 ### 1. Set your Docker Hub username
