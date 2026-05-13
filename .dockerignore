@@ -1,0 +1,44 @@
+# --- IDEs & OS ---
+.vscode/
+.idea/
+*.swp
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# --- Build & Tooling Outputs ---
+# Matches target, dist, tmp, etc. at any directory level
+**/target/
+**/dist/
+**/out-tsc/
+**/bazel-out/
+**/tmp/
+**/_backup/
+**/.angular/
+
+# --- Dependency Managers ---
+**/node_modules/
+**/node_modules_old/
+**/node/
+.mvn/
+mvnw*
+!.mvn/wrapper/maven-wrapper.properties
+
+# --- Logs ---
+**/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Environment & Secrets ---
+.env*
+!.env.example
+
+# --- Docker ---
+# (Uncomment below if you want to ignore Docker files)
+Dockerfile
+# docker-compose.yml
+# .dockerignore
