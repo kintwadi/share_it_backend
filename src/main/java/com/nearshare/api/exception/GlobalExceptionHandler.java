@@ -20,6 +20,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(com.nearshare.api.insurance.exception.InvalidInsuranceTypeException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidInsuranceType(com.nearshare.api.insurance.exception.InvalidInsuranceTypeException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.nearshare.api.insurance.exception.ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleInsuranceNotFound(com.nearshare.api.insurance.exception.ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
         if ("listing_not_found".equals(ex.getMessage()) || 

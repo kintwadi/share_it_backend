@@ -23,4 +23,8 @@ set KEYSTORE_REFRESH_TOKEN_PW=Nshare@132
 set ENCRYPTION_KEY=1234567890123456
 set FRONTEND_BASE_URL=https://localhost:4200
 
+set LOCAL_HOST=https://localhost:*
+set LOCAL_127=https://127.0.0.1:*
+set REMOTE_RENDE=https://share-it-client.onrender.com
+
 echo Environment variables set for this session.

@@ -37,6 +37,11 @@ set "SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus"
 set "SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro"
 set "FRONTEND_BASE_URL=https://localhost:4200"
 
+:: CORS Origin Patterns (used by security.cors.allowed-origin-patterns)
+set "LOCAL_HOST=https://localhost:*"
+set "LOCAL_127=https://127.0.0.1:*"
+set "REMOTE_RENDE=https://share-it-client.onrender.com"
+
 :: Display configuration
 echo Environment variables set for NearShare Backend:
 echo - DB_URL: %DB_URL%
@@ -58,5 +63,8 @@ echo - MAIL_PORT: %MAIL_PORT%
 echo - MAIL_USERNAME: %MAIL_USERNAME%
 echo - STRIPE_PUBLIC_KEY: %STRIPE_PUBLIC_KEY%
 echo - STRIPE_SECRET_KEY: ********
+echo - LOCAL_HOST: %LOCAL_HOST%
+echo - LOCAL_127: %LOCAL_127%
+echo - REMOTE_RENDE: %REMOTE_RENDE%
 echo.
 echo Run the application with: mvn spring-boot:run

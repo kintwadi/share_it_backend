@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/config/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payments/webhook", "/api/health", "/api/seed").permitAll()
                 .requestMatchers("/api/auth/verify-2fa-login").authenticated()
                 .requestMatchers("/api/subscriptions/**").permitAll()
+                .requestMatchers("/api/insurance/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/listings/evaluate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/**").hasAnyRole("ADMIN", "LENDER", "BORROWER", "MEMBER")
