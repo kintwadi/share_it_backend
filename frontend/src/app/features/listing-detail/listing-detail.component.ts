@@ -124,6 +124,10 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   insuranceZipCode = '';
   insuranceQuote: InsuranceQuoteResponse | null = null;
 
+  plusTrialDays = 14;
+  plusMonthlyAmountCents = 499;
+  subscriptionCurrency = 'EUR';
+
   @ViewChild('cardPayMount') cardPayMount?: ElementRef<HTMLDivElement>;
 
   AvailabilityStatus = AvailabilityStatus;
@@ -316,6 +320,16 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         this.activeImage = this.listing.imageUrl || (this.listing.gallery && this.listing.gallery[0]) || '';
       }
       this.currentUser = await this.api.getCurrentUser();
+      try {
+        const cfg = await this.api.getPublicConfig();
+        const sub = cfg?.subscription || {};
+        const td = Number(sub?.plusTrialDays);
+        const cents = Number(sub?.plusMonthlyAmountCents);
+        const curr = String(sub?.currency || '');
+        if (!Number.isNaN(td) && td > 0) this.plusTrialDays = td;
+        if (!Number.isNaN(cents) && cents >= 0) this.plusMonthlyAmountCents = cents;
+        if (curr) this.subscriptionCurrency = curr;
+      } catch { }
       await this.initStripe();
       this.startStatusPolling();
       this.render();
@@ -413,6 +427,24 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
 
   get finalTotalWithInsurance() {
     return this.finalTotal + this.insuranceCost;
+  }
+
+  get plusMonthlyAmount() {
+    return (this.plusMonthlyAmountCents || 0) / 100;
+  }
+
+  get plusMonthlyLabel() {
+    const amount = this.plusMonthlyAmount;
+    const curr = String(this.subscriptionCurrency || '').toUpperCase();
+    const formatted = amount.toFixed(2);
+    if (curr === 'EUR') return `€${formatted}`;
+    if (curr === 'USD') return `$${formatted}`;
+    if (curr === 'GBP') return `£${formatted}`;
+    return `${curr} ${formatted}`;
+  }
+
+  get verifiedTrialCaption() {
+    return `Free for ${this.plusTrialDays} days, then ${this.plusMonthlyLabel} / month`;
   }
 
   async initStripe() {

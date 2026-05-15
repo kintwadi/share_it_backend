@@ -820,7 +820,7 @@ export class I18nService {
       'subscription.plus.price': '€4.99 / month',
       'subscription.plus.feature1': 'Everything in Starter',
       'subscription.plus.feature2': 'Verified Owner Badge',
-      'subscription.plus.feature3': 'Partner Protection Access',
+      'subscription.plus.feature3': 'No Transaction Fee',
       'subscription.plus.feature4': '2x Higher Visibility',
       'subscription.plus.feature5': 'Priority Support',
       'subscription.plus.cta': 'Select Plan',
