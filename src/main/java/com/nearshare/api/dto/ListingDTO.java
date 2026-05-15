@@ -34,6 +34,7 @@ public class ListingDTO {
     private UserSummaryDTO borrower;
     private List<String> gallery;
     private boolean autoApprove;
+    private boolean insuranceRequired;
     private PickupLocationDTO pickupLocation;
     private String pickupLocationCustom;
     private String pickupLocationStreet;

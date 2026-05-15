@@ -43,6 +43,7 @@ public class Listing {
     private List<String> gallery;
     private BigDecimal hourlyRate;
     private boolean autoApprove;
+    private boolean insuranceRequired;
     @Enumerated(EnumType.STRING)
     private AvailabilityStatus status;
     @Embedded

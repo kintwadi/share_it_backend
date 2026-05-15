@@ -138,6 +138,7 @@ public class MockDataSeederService {
                                     .imageUrl(l.imageUrl)
                                     .gallery(l.gallery != null ? l.gallery : Collections.emptyList())
                                     .autoApprove(l.autoApprove)
+                                    .insuranceRequired(l.insuranceRequired)
                                     .status(AvailabilityStatus.valueOf(l.status))
                                     .location(Location.builder().lat(l.location.lat).lng(l.location.lng).build())
                                     .pickupLocation(pickup)
@@ -246,6 +247,7 @@ public class MockDataSeederService {
         public String imageUrl;
         public List<String> gallery;
         public boolean autoApprove;
+        public boolean insuranceRequired;
         public String status;
         public MockLocation location;
         public String createdAt;

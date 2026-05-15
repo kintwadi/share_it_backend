@@ -128,6 +128,7 @@ public class ListingService {
                 .gallery(req.getGallery())
                 .hourlyRate(hourlyRate)
                 .autoApprove(autoApprove)
+                .insuranceRequired(req.isInsuranceRequired())
                 .status(AvailabilityStatus.AVAILABLE)
                 .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
                 .owner(owner)
@@ -165,6 +166,7 @@ public class ListingService {
         l.setType(req.getType());
         l.setImageUrl(req.getImageUrl());
         l.setGallery(req.getGallery());
+        l.setInsuranceRequired(req.isInsuranceRequired());
         if (req.getType() == ListingType.GIVE) {
             l.setHourlyRate(BigDecimal.ZERO);
         } else {
@@ -515,6 +517,7 @@ public class ListingService {
                 .build() : null)
             .gallery(l.getGallery() != null ? new java.util.ArrayList<>(l.getGallery()) : null)
             .autoApprove(l.isAutoApprove())
+            .insuranceRequired(l.isInsuranceRequired())
             .pickupLocation(l.getPickupLocation() != null ? PickupLocationDTO.builder()
                 .id(l.getPickupLocation().getId())
                 .name(l.getPickupLocation().getName())

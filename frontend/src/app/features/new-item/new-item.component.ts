@@ -61,6 +61,7 @@ export class NewItemComponent implements OnInit {
   imageUrl = '';
   gallery: string[] = [];
   autoApprove = false;
+  insuranceRequired = false;
   pickupLocationId: string | null = null;
 
   pickupOption: 'concierge' | 'bakery' | 'public' | 'custom' = 'concierge';
@@ -269,6 +270,7 @@ export class NewItemComponent implements OnInit {
     this.imageUrl = listing.imageUrl ?? '';
     this.gallery = Array.isArray(listing.gallery) ? listing.gallery : [];
     this.autoApprove = !!listing.autoApprove;
+    this.insuranceRequired = !!(listing as any).insuranceRequired;
     this.pickupLocationId = listing.pickupLocation?.id ? String(listing.pickupLocation.id) : null;
     this.pickupLocationStreet = String((listing as any).pickupLocationStreet || '');
     this.pickupLocationHouseNumber = String((listing as any).pickupLocationHouseNumber || '');
@@ -511,6 +513,7 @@ export class NewItemComponent implements OnInit {
         imageUrl: this.imageUrl,
         gallery: this.gallery,
         autoApprove: this.isPremiumLender ? true : !!this.autoApprove,
+        insuranceRequired: !!this.insuranceRequired,
         x: 0,
         y: 0,
         pickupLocationId: this.pickupOption === 'custom' ? null : this.pickupLocationId,

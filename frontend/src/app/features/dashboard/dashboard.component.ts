@@ -148,11 +148,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.listingsIntervalId = setInterval(() => this.fetchListings(true), 3000);
 
-      this.route.queryParams.subscribe(params => {
-        if (params['session_id']) {
+      this.route.queryParams.subscribe(async params => {
+        const sessionId = String(params['session_id'] || '');
+        if (sessionId) {
           this.paymentSuccess = true;
           this.render();
-          this.api.getCurrentSubscription().catch(() => null);
+          try {
+            await this.api.syncSubscriptionFromSession(sessionId);
+          } catch { }
+          try {
+            const sub = await this.api.getCurrentSubscription();
+            if (sub) {
+              this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
+            } else {
+              this.currentSub = null;
+            }
+          } catch {
+            this.currentSub = null;
+          }
+          try {
+            this.router.navigate([], { relativeTo: this.route, queryParams: { session_id: null }, queryParamsHandling: 'merge', replaceUrl: true });
+          } catch { }
+          this.render();
           setTimeout(() => {
             this.paymentSuccess = false;
             this.render();

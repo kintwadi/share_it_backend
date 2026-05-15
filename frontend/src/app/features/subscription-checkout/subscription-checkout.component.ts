@@ -5,6 +5,8 @@ import { LucideAngularModule, Shield, CheckCircle2, CreditCard, ArrowLeft, Loade
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { ButtonComponent } from '../../shared/components/button/button';
+import { SessionService } from '../../core/services/session.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
 
 @Component({
   selector: 'app-subscription-checkout',
@@ -19,6 +21,8 @@ export class SubscriptionCheckoutComponent implements OnInit {
   api = inject(ApiService);
   cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  session = inject(SessionService);
+  settingsConfig = inject(SettingsConfigService);
 
   readonly Shield = Shield;
   readonly CheckCircle2 = CheckCircle2;
@@ -44,6 +48,13 @@ export class SubscriptionCheckoutComponent implements OnInit {
       if (params['plan']) {
         this.plan = params['plan'];
         this.render();
+      }
+    });
+
+    this.route.queryParams.subscribe(params => {
+      const sessionId = String(params['session_id'] || '');
+      if (sessionId) {
+        this.handleStripeReturn(sessionId);
       }
     });
 
@@ -89,7 +100,7 @@ export class SubscriptionCheckoutComponent implements OnInit {
     this.render();
     
     try {
-      const { url, sessionId } = await this.api.createSubscriptionCheckoutSession(this.plan, '/dashboard');
+      const { url, sessionId } = await this.api.createSubscriptionCheckoutSession(this.plan, '/subscription/checkout');
       
       if (url) {
         window.location.href = url;
@@ -100,6 +111,24 @@ export class SubscriptionCheckoutComponent implements OnInit {
         this.error = this.i18n.t('subscription.checkout.session_create_failed');
         this.redirecting = false;
       }
+    } catch (e: any) {
+      this.error = e?.message || this.i18n.t('subscription.checkout.failed');
+      this.redirecting = false;
+      this.render();
+    }
+  }
+
+  private async handleStripeReturn(sessionId: string) {
+    if (!sessionId) return;
+    if (this.redirecting) return;
+    this.redirecting = true;
+    this.error = null;
+    this.render();
+    try {
+      await this.api.syncSubscriptionFromSession(sessionId);
+      await this.session.refresh();
+      await this.settingsConfig.reload();
+      await this.router.navigate(['/dashboard'], { state: { upgradeSuccess: true }, replaceUrl: true });
     } catch (e: any) {
       this.error = e?.message || this.i18n.t('subscription.checkout.failed');
       this.redirecting = false;

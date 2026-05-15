@@ -106,6 +106,7 @@ export interface Listing {
   status: AvailabilityStatus;
   hourlyRate?: number;
   autoApprove?: boolean;
+  insuranceRequired?: boolean;
   location: {
     x: number;
     y: number;
@@ -117,6 +118,30 @@ export interface Listing {
   pickupLocationHouseNumber?: string;
   pickupLocationCity?: string;
   pickupLocationZip?: string;
+}
+
+export interface InsuranceTypeInfo {
+  insuranceType: string;
+  percent: number;
+  min: number;
+  max: number;
+}
+
+export interface InsuranceQuoteResponse {
+  quoteId: string;
+  productId: string;
+  productBasePrice: number;
+  insuranceType: string;
+  insuranceCost: number;
+  totalCost: number;
+  currency: string;
+  validUntil: string;
+}
+
+export interface InsurancePurchaseResponse {
+  policyNumber: string;
+  status: string;
+  message: string;
 }
 
 export interface ListingRecommendationRequest {

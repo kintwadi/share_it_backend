@@ -518,7 +518,7 @@
     <div class="relative bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-gray-200 flex flex-col max-h-[90vh]">
       <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
         <h3 class="font-bold text-gray-900 text-lg">
-          {{ bookingStep === 'DURATION' ? 'Request Details' : 'Checkout' }}
+          {{ bookingStep === 'DURATION' ? 'Request Details' : (bookingStep === 'INSURANCE' ? 'Insurance' : 'Checkout') }}
         </h3>
         <button type="button" (click)="closeBookingModal()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
           <lucide-icon [img]="X" [size]="20"></lucide-icon>
@@ -526,10 +526,14 @@
       </div>
 
       <div class="p-6 overflow-y-auto space-y-6">
-        <div *ngIf="!isFree" class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+        <div *ngIf="bookingStep !== 'PATH_SELECTION'" class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
           <div class="flex items-center justify-between">
             <div>{{ i18n.t('listing.borrow.base') }}</div>
             <div class="font-bold">{{i18n.formatPrice(baseTotal)}}</div>
+          </div>
+          <div *ngIf="requiresInsurance" class="flex items-center justify-between mt-2">
+            <div>Insurance</div>
+            <div class="font-bold">{{i18n.formatPrice(insuranceCost)}}</div>
           </div>
           <div *ngIf="serviceFee > 0" class="flex items-center justify-between mt-2">
             <div>{{ i18n.t('listing.borrow.service_fee') }}</div>
@@ -542,7 +546,7 @@
           <div class="h-px bg-gray-200 my-3"></div>
           <div class="flex items-center justify-between">
             <div class="font-bold">{{ i18n.t('listing.borrow.total') }}</div>
-            <div class="font-black text-gray-900">{{i18n.formatPrice(finalTotal)}}</div>
+            <div class="font-black text-gray-900">{{i18n.formatPrice(finalTotalWithInsurance)}}</div>
           </div>
         </div>
 
@@ -703,6 +707,66 @@
           </button>
         </div>
 
+        <div *ngIf="bookingStep === 'INSURANCE'" class="animate-fade-in space-y-4">
+          <button
+            type="button"
+            (click)="backToDuration()"
+            class="text-sm text-gray-500 hover:text-gray-800 flex items-center"
+          >
+            <lucide-icon [img]="ChevronLeft" [size]="16" class="mr-1"></lucide-icon>
+            Back
+          </button>
+
+          <div class="text-sm font-bold text-gray-900">Select insurance</div>
+          <div class="text-xs text-gray-500">Required for this item</div>
+
+          <div class="rounded-xl border border-gray-200 bg-white p-3">
+            <label class="block text-xs font-bold text-gray-700 mb-2">Zip code (optional)</label>
+            <input
+              [(ngModel)]="insuranceZipCode"
+              (blur)="selectedInsuranceType && selectInsuranceType(selectedInsuranceType)"
+              class="w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm"
+              placeholder="e.g. 90001"
+            />
+          </div>
+
+          <div *ngIf="insuranceError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
+            {{insuranceError}}
+          </div>
+
+          <div *ngIf="insuranceLoading && insuranceTypes.length === 0" class="p-3 bg-gray-50 text-gray-700 text-sm rounded-xl border border-gray-200 flex items-center gap-2">
+            <lucide-icon [img]="Loader2" size="16" class="animate-spin"></lucide-icon>
+            Loading insurance options...
+          </div>
+
+          <div class="space-y-2" *ngIf="insuranceTypes.length > 0">
+            <button
+              *ngFor="let t of insuranceTypes"
+              type="button"
+              (click)="selectInsuranceType(t.insuranceType)"
+              class="w-full flex items-center justify-between p-3 rounded-xl border transition-all"
+              [ngClass]="selectedInsuranceType === t.insuranceType ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-gray-300'"
+            >
+              <div class="text-left">
+                <div class="text-sm font-bold text-gray-900">{{t.insuranceType}}</div>
+                <div class="text-xs text-gray-500">{{ (t.percent * 100) | number:'1.0-2' }}% (min {{i18n.formatPrice(t.min)}}, max {{i18n.formatPrice(t.max)}})</div>
+              </div>
+              <div class="text-sm font-black text-gray-900" *ngIf="selectedInsuranceType === t.insuranceType">
+                {{ insuranceLoading ? '...' : i18n.formatPrice(insuranceCost) }}
+              </div>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            (click)="proceedFromInsurance()"
+            [disabled]="insuranceLoading || (requiresInsurance && !insuranceQuote)"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl disabled:opacity-60"
+          >
+            Continue
+          </button>
+        </div>
+
         <div *ngIf="bookingStep === 'PAYMENT'" class="space-y-4">
           <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.borrow.payment') }}</div>
           <div *ngIf="isFree" class="text-sm text-gray-600 rounded-xl border border-gray-200 bg-gray-50 p-4">
@@ -784,7 +848,7 @@
 
           <button (click)="submitCardPayment()" [disabled]="cardProcessing || !stripeReady" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl disabled:opacity-60 flex items-center justify-center">
             <lucide-icon *ngIf="cardProcessing" [img]="Loader2" size="18" class="animate-spin mr-2"></lucide-icon>
-            {{ i18n.t('listing.borrow.pay') }} {{i18n.formatPrice(finalTotal)}}
+            {{ i18n.t('listing.borrow.pay') }} {{i18n.formatPrice(finalTotalWithInsurance)}}
           </button>
         </div>
       </div>
