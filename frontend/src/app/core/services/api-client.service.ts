@@ -9,7 +9,16 @@ import { catchError } from 'rxjs/operators';
 })
 export class ApiClientService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private apiUrl = this.resolveApiUrl();
+
+  private resolveApiUrl(): string {
+    try {
+      const w = globalThis as any;
+      const runtime = String(w?.__env?.API_URL || '').trim();
+      if (runtime) return runtime.replace(/\/+$/, '');
+    } catch { }
+    return String(environment.apiUrl || '').replace(/\/+$/, '');
+  }
 
   getBaseUrl(): string {
     return this.apiUrl;

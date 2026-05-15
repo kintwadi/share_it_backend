@@ -16,13 +16,22 @@ public class ConfigController {
     private final boolean allowAdminToggle;
     private final String stripePublicKey;
     private final SettingsProperties settingsProperties;
+    private final int subscriptionPlusTrialDays;
+    private final int subscriptionPlusMonthlyAmountCents;
+    private final String subscriptionCurrency;
 
     public ConfigController(
             @Value("${nearshare.allowAdminToggle:false}") boolean allowAdminToggle,
             @Value("${STRIPE_PUBLIC_KEY}") String stripePublicKey,
+            @Value("${subscription.plus.trial_days:14}") int subscriptionPlusTrialDays,
+            @Value("${subscription.plus.monthly_amount_cents:499}") int subscriptionPlusMonthlyAmountCents,
+            @Value("${subscription.currency:EUR}") String subscriptionCurrency,
             SettingsProperties settingsProperties) {
         this.allowAdminToggle = allowAdminToggle;
         this.stripePublicKey = stripePublicKey;
+        this.subscriptionPlusTrialDays = subscriptionPlusTrialDays;
+        this.subscriptionPlusMonthlyAmountCents = subscriptionPlusMonthlyAmountCents;
+        this.subscriptionCurrency = subscriptionCurrency;
         this.settingsProperties = settingsProperties;
     }
 
@@ -33,7 +42,12 @@ public class ConfigController {
             "stripePublicKey", stripePublicKey,
             "connect", settingsProperties.getConnect(),
             "home", settingsProperties.getHome(),
-            "borrowing", settingsProperties.getBorrowing()
+            "borrowing", settingsProperties.getBorrowing(),
+            "subscription", Map.of(
+                "plusTrialDays", subscriptionPlusTrialDays,
+                "plusMonthlyAmountCents", subscriptionPlusMonthlyAmountCents,
+                "currency", subscriptionCurrency
+            )
         ));
     }
 

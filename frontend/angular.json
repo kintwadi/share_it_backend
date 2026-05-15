@@ -36,8 +36,6 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "baseHref": "/shareit/",
-              "deployUrl": "/shareit/",
               "budgets": [
                 {
                   "type": "initial",

@@ -18,6 +18,7 @@ public class CreateListingRequest {
     private String imageUrl;
     private List<String> gallery;
     private boolean autoApprove;
+    private boolean insuranceRequired;
     private Double x;
     private Double y;
     private java.util.UUID pickupLocationId;

@@ -13,6 +13,7 @@ import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.MessageRepository;
+import com.nearshare.api.repository.PickupLocationRepository;
 import com.nearshare.api.repository.ReviewRepository;
 import com.nearshare.api.repository.UserRepository;
 import org.springframework.core.io.ClassPathResource;
@@ -38,14 +39,16 @@ public class MockDataSeederService {
     private final ReviewRepository reviews;
     private final MessageRepository messages;
     private final SubscriptionRepository subscriptions;
+    private final PickupLocationRepository pickupLocations;
     private final PasswordEncoder encoder;
 
-    public MockDataSeederService(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, SubscriptionRepository subscriptions, PasswordEncoder encoder) {
+    public MockDataSeederService(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, SubscriptionRepository subscriptions, PickupLocationRepository pickupLocations, PasswordEncoder encoder) {
         this.users = users;
         this.listings = listings;
         this.reviews = reviews;
         this.messages = messages;
         this.subscriptions = subscriptions;
+        this.pickupLocations = pickupLocations;
         this.encoder = encoder;
     }
 
@@ -111,12 +114,22 @@ public class MockDataSeederService {
 
                 // Seed Listings
                 if (mockData.listings != null) {
+                    List<com.nearshare.api.model.PickupLocation> pickupList = pickupLocations.findAll();
                     for (MockListing l : mockData.listings) {
                         User owner = users.findByEmail(l.ownerEmail).orElse(null);
                         if (owner != null && listings.findByTitle(l.title).isEmpty()) {
+                            User borrower = l.borrowerEmail != null ? users.findByEmail(l.borrowerEmail).orElse(null) : null;
+                            com.nearshare.api.model.PickupLocation pickup = null;
+                            if (l.pickupLocationId != null) {
+                                pickup = pickupLocations.findById(UUID.fromString(l.pickupLocationId)).orElse(null);
+                            } else if (l.pickupLocationName != null) {
+                                String n = l.pickupLocationName.trim();
+                                pickup = pickupList.stream().filter(p -> p.getName() != null && p.getName().equalsIgnoreCase(n)).findFirst().orElse(null);
+                            }
                             Listing listing = Listing.builder()
                                     .id(UUID.randomUUID())
                                     .owner(owner)
+                                    .borrower(borrower)
                                     .title(l.title)
                                     .description(l.description)
                                     .type(ListingType.valueOf(l.type))
@@ -125,8 +138,16 @@ public class MockDataSeederService {
                                     .imageUrl(l.imageUrl)
                                     .gallery(l.gallery != null ? l.gallery : Collections.emptyList())
                                     .autoApprove(l.autoApprove)
+                                    .insuranceRequired(l.insuranceRequired)
                                     .status(AvailabilityStatus.valueOf(l.status))
                                     .location(Location.builder().lat(l.location.lat).lng(l.location.lng).build())
+                                    .pickupLocation(pickup)
+                                    .pickupLocationCustom(l.pickupLocationCustom)
+                                    .pickupLocationStreet(l.pickupLocationStreet)
+                                    .pickupLocationHouseNumber(l.pickupLocationHouseNumber)
+                                    .pickupLocationCity(l.pickupLocationCity)
+                                    .pickupLocationZip(l.pickupLocationZip)
+                                    .createdAt(l.createdAt != null ? LocalDateTime.parse(l.createdAt) : LocalDateTime.now())
                                     .build();
                             listings.save(listing);
                         }
@@ -217,6 +238,7 @@ public class MockDataSeederService {
 
     public static class MockListing {
         public String ownerEmail;
+        public String borrowerEmail;
         public String title;
         public String description;
         public String type;
@@ -225,8 +247,17 @@ public class MockDataSeederService {
         public String imageUrl;
         public List<String> gallery;
         public boolean autoApprove;
+        public boolean insuranceRequired;
         public String status;
         public MockLocation location;
+        public String createdAt;
+        public String pickupLocationId;
+        public String pickupLocationName;
+        public String pickupLocationCustom;
+        public String pickupLocationStreet;
+        public String pickupLocationHouseNumber;
+        public String pickupLocationCity;
+        public String pickupLocationZip;
     }
 
     public static class MockReview {

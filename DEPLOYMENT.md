@@ -8,6 +8,8 @@ This guide explains how to deploy the NearShare backend application to Docker Hu
 2. **Docker Hub Account**: Create an account at [hub.docker.com](https://hub.docker.com)
 3. **Login**: Run `docker login` in your terminal and enter your credentials
 
+ trae-sandbox 'npm run start -- --ssl true --host 0.0.0.0 --port 4200'
+
 ## Configuration
 
 ### 1. Set your Docker Hub username
@@ -112,16 +114,23 @@ DB_URL=jdbc:postgresql://host:5432/database
 DB_USERNAME=username
 DB_PASSWORD=password
 
-# JWT
-JWT_SECRET=your-jwt-secret-key
+# TLS / Keystore
+SSL_PASSWORD=your_keystore_password
+KEYSTORE_ACCESS_TOKEN_ALIAS=accesstoken
+KEYSTORE_ACCESS_TOKEN_PW=your_access_token_key_password
+KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken
+KEYSTORE_REFRESH_TOKEN_PW=your_refresh_token_key_password
+
+# Encryption
+ENCRYPTION_KEY=1234567890123456
 
 # AWS/R2 Storage
 AWS_ACCESS_KEY_ID=your-key-id
 AWS_SECRET_ACCESS_KEY=your-secret-key
 
 # Stripe Payments
-STRIPE_PUBLIC_KEY=pk_test_...
-STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLIC_KEY=test_public_key
+STRIPE_SECRET_KEY=test_secret_key
 ```
 
 ## Troubleshooting

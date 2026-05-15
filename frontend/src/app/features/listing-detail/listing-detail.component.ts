@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, MapPin, ShieldCheck, ArrowLeft, Calendar, CheckCircle2, AlertCircle, Loader2, Share2, BadgeCheck, Flag, DollarSign, Gift, ChevronLeft, ChevronRight, Star, X, Minus, Plus, Clock, CreditCard, Wallet, AlertTriangle, BellRing, Check, X as XIcon, Zap, ThumbsUp, Trash2, Lock as LockIcon } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { User, Listing, AvailabilityStatus, ListingType } from '../../core/models/types';
+import { User, Listing, AvailabilityStatus, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse } from '../../core/models/types';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
 import { Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
@@ -92,7 +92,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   deleting = false;
 
   showBookingModal = false;
-  bookingStep: 'PATH_SELECTION' | 'DURATION' | 'PAYMENT' | 'CARD_FORM' = 'PATH_SELECTION';
+  bookingStep: 'PATH_SELECTION' | 'DURATION' | 'INSURANCE' | 'PAYMENT' | 'CARD_FORM' = 'PATH_SELECTION';
   selectedPath: 'DEPOSIT' | 'VERIFIED' | 'FEE' = 'VERIFIED';
   bookingDuration = 2;
   paymentMethod: 'CARD' | 'PAYPAL' | 'CASH' = 'CARD';
@@ -116,6 +116,17 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   selectedSavedPaymentMethodId: string | null = null;
   cardProcessing = false;
   cardError: string | null = null;
+
+  insuranceTypes: InsuranceTypeInfo[] = [];
+  insuranceLoading = false;
+  insuranceError: string | null = null;
+  selectedInsuranceType: string | null = null;
+  insuranceZipCode = '';
+  insuranceQuote: InsuranceQuoteResponse | null = null;
+
+  plusTrialDays = 14;
+  plusMonthlyAmountCents = 499;
+  subscriptionCurrency = 'EUR';
 
   @ViewChild('cardPayMount') cardPayMount?: ElementRef<HTMLDivElement>;
 
@@ -309,6 +320,16 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         this.activeImage = this.listing.imageUrl || (this.listing.gallery && this.listing.gallery[0]) || '';
       }
       this.currentUser = await this.api.getCurrentUser();
+      try {
+        const cfg = await this.api.getPublicConfig();
+        const sub = cfg?.subscription || {};
+        const td = Number(sub?.plusTrialDays);
+        const cents = Number(sub?.plusMonthlyAmountCents);
+        const curr = String(sub?.currency || '');
+        if (!Number.isNaN(td) && td > 0) this.plusTrialDays = td;
+        if (!Number.isNaN(cents) && cents >= 0) this.plusMonthlyAmountCents = cents;
+        if (curr) this.subscriptionCurrency = curr;
+      } catch { }
       await this.initStripe();
       this.startStatusPolling();
       this.render();
@@ -400,6 +421,32 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     return this.baseTotal + this.serviceFee + this.depositAmount;
   }
 
+  get insuranceCost() {
+    return this.insuranceQuote?.insuranceCost || 0;
+  }
+
+  get finalTotalWithInsurance() {
+    return this.finalTotal + this.insuranceCost;
+  }
+
+  get plusMonthlyAmount() {
+    return (this.plusMonthlyAmountCents || 0) / 100;
+  }
+
+  get plusMonthlyLabel() {
+    const amount = this.plusMonthlyAmount;
+    const curr = String(this.subscriptionCurrency || '').toUpperCase();
+    const formatted = amount.toFixed(2);
+    if (curr === 'EUR') return `€${formatted}`;
+    if (curr === 'USD') return `$${formatted}`;
+    if (curr === 'GBP') return `£${formatted}`;
+    return `${curr} ${formatted}`;
+  }
+
+  get verifiedTrialCaption() {
+    return `Free for ${this.plusTrialDays} days, then ${this.plusMonthlyLabel} / month`;
+  }
+
   async initStripe() {
     this.stripe = await this.stripeClient.getStripe();
     this.stripeReady = !!this.stripe;
@@ -438,8 +485,16 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.selectedSavedPaymentMethodId = null;
     this.cardError = null;
     this.stripeError = null;
+    this.insuranceError = null;
+    this.selectedInsuranceType = null;
+    this.insuranceZipCode = '';
+    this.insuranceQuote = null;
+    this.insuranceTypes = [];
     this.showBookingModal = true;
     this.bookingStep = this.isFree ? 'DURATION' : 'PATH_SELECTION';
+    if (this.requiresInsurance) {
+      this.loadInsuranceTypes();
+    }
     this.render();
   }
 
@@ -448,6 +503,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.bookingStep = 'PATH_SELECTION';
     this.cardError = null;
     this.stripeError = null;
+    this.insuranceError = null;
     this.cleanupCardElement();
     this.render();
   }
@@ -463,6 +519,21 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   proceedFromDuration() {
+    this.bookingStep = this.requiresInsurance ? 'INSURANCE' : 'PAYMENT';
+    this.render();
+  }
+
+  backToDuration() {
+    this.bookingStep = 'DURATION';
+    this.render();
+  }
+
+  async proceedFromInsurance() {
+    if (this.requiresInsurance && !this.insuranceQuote) {
+      this.insuranceError = 'Please select an insurance option to continue.';
+      this.render();
+      return;
+    }
     this.bookingStep = 'PAYMENT';
     this.render();
   }
@@ -515,7 +586,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.render();
     try {
       const intent = await this.api.createPaymentIntent({
-        amount: this.finalTotal,
+        amount: this.finalTotalWithInsurance,
         currency: 'usd',
         listingId: listing.id,
         durationHours: this.isTimeBased ? this.bookingDuration : 0,
@@ -548,6 +619,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         durationHours: this.isTimeBased ? this.bookingDuration : 0,
         borrowerPath: this.selectedPath
       });
+      await this.purchaseInsuranceIfSelected();
 
       this.wasAutoApproved = !!listing.autoApprove;
       this.closeBookingModal();
@@ -590,6 +662,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         await this.submitCardPayment();
         return;
       }
+      await this.purchaseInsuranceIfSelected();
 
       this.wasAutoApproved = !!listing.autoApprove;
       this.closeBookingModal();
@@ -601,6 +674,59 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       this.borrowing = false;
       this.render();
     }
+  }
+
+  get requiresInsurance(): boolean {
+    return !!(this.listing as any)?.insuranceRequired;
+  }
+
+  async loadInsuranceTypes() {
+    if (this.insuranceLoading) return;
+    this.insuranceLoading = true;
+    this.insuranceError = null;
+    this.render();
+    try {
+      this.insuranceTypes = await this.api.getInsuranceTypes();
+    } catch (e: any) {
+      this.insuranceError = e?.message || 'Failed to load insurance types';
+      this.insuranceTypes = [];
+    } finally {
+      this.insuranceLoading = false;
+      this.render();
+    }
+  }
+
+  async selectInsuranceType(type: string) {
+    const listing = this.listing;
+    if (!listing) return;
+    this.selectedInsuranceType = type;
+    this.insuranceQuote = null;
+    this.insuranceError = null;
+    this.insuranceLoading = true;
+    this.render();
+    try {
+      const quote = await this.api.quoteInsurance({
+        productId: listing.id,
+        productBasePrice: this.baseTotal,
+        insuranceType: type,
+        customerZipCode: this.insuranceZipCode ? this.insuranceZipCode : null
+      });
+      this.insuranceQuote = quote;
+    } catch (e: any) {
+      this.insuranceError = e?.message || 'Failed to calculate insurance';
+      this.insuranceQuote = null;
+    } finally {
+      this.insuranceLoading = false;
+      this.render();
+    }
+  }
+
+  private async purchaseInsuranceIfSelected() {
+    const quoteId = this.insuranceQuote?.quoteId;
+    if (!quoteId) return;
+    try {
+      await this.api.purchaseInsurance(quoteId);
+    } catch { }
   }
 
   async reloadListing() {

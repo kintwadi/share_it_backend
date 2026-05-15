@@ -10,11 +10,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 @Configuration
 public class DataSeeder {
 
     @Bean
+    @Order(3)
     @ConditionalOnProperty(name = "seeding.enabled", havingValue = "true")
     CommandLineRunner seed(MockDataSeederService mockDataSeederService) {
         return args -> {
@@ -24,6 +26,7 @@ public class DataSeeder {
     }
 
     @Bean
+    @Order(1)
     @ConditionalOnProperty(name = "seeding.enabled", havingValue = "true")
     CommandLineRunner seedPickupLocations(PickupLocationRepository pickupLocationRepository) {
         return args -> {
@@ -55,6 +58,7 @@ public class DataSeeder {
     }
 
     @Bean
+    @Order(2)
     @ConditionalOnProperty(name = "seeding.enabled", havingValue = "true")
     CommandLineRunner seedCategories(CategoryRepository categoryRepository) {
         return args -> {

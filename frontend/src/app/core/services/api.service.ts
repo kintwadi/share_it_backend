@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
-import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message } from '../models/types';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +31,24 @@ export class ApiService {
 
   async seedData(): Promise<string> {
     return firstValueFrom(this.api.get<string>('/seed'));
+  }
+
+  async getInsuranceTypes(): Promise<InsuranceTypeInfo[]> {
+    return firstValueFrom(this.api.get<InsuranceTypeInfo[]>('/insurance/types'));
+  }
+
+  async quoteInsurance(payload: { productId: string; productBasePrice: number; insuranceType: string; customerZipCode?: string | null }): Promise<InsuranceQuoteResponse> {
+    const body = {
+      productId: payload.productId,
+      productBasePrice: payload.productBasePrice,
+      insuranceType: payload.insuranceType,
+      customerZipCode: payload.customerZipCode ?? null
+    };
+    return firstValueFrom(this.api.post<InsuranceQuoteResponse>('/insurance/quote', body));
+  }
+
+  async purchaseInsurance(quoteId: string): Promise<InsurancePurchaseResponse> {
+    return firstValueFrom(this.api.post<InsurancePurchaseResponse>('/insurance/purchase', { quoteId }));
   }
 
   async getBorrowingHistory(): Promise<any[]> {
@@ -220,6 +238,7 @@ export class ApiService {
     imageUrl: string;
     gallery?: string[];
     autoApprove?: boolean;
+    insuranceRequired?: boolean;
     x?: number;
     y?: number;
     pickupLocationId?: string | null;
@@ -238,6 +257,7 @@ export class ApiService {
       imageUrl: payload.imageUrl,
       gallery: payload.gallery ?? [],
       autoApprove: !!payload.autoApprove,
+      insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
       pickupLocationId: payload.pickupLocationId ?? null,
@@ -259,6 +279,7 @@ export class ApiService {
     imageUrl: string;
     gallery?: string[];
     autoApprove?: boolean;
+    insuranceRequired?: boolean;
     x?: number;
     y?: number;
     pickupLocationId?: string | null;
@@ -277,6 +298,7 @@ export class ApiService {
       imageUrl: payload.imageUrl,
       gallery: payload.gallery ?? [],
       autoApprove: !!payload.autoApprove,
+      insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
       pickupLocationId: payload.pickupLocationId ?? null,
@@ -351,6 +373,10 @@ export class ApiService {
       planType,
       returnPath
     }));
+  }
+
+  async syncSubscriptionFromSession(sessionId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/subscriptions/sync-session', { sessionId }));
   }
 
   async getCurrentSubscription(): Promise<any | null> {
