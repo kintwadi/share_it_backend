@@ -82,10 +82,10 @@ echo [INFO] The application requires environment variables to run properly.
 echo [INFO] Use the .env file or set variables manually:
 echo.
 echo Using .env file (recommended):
-echo   docker run -p 80:80 -p 443:443 --env-file .env !full_image_name!
+echo   docker run -p 8081:8080 --env-file .env -e PORT=8080 -e SSL_ENABLED=false -e SETTINGS_HTTP_ENABLED=false !full_image_name!
 echo.
 echo Manual environment variables (from setup.bat):
-echo   docker run -p 80:80 -p 443:443 ^
+echo   docker run -p 8081:8080 -e PORT=8080 -e SSL_ENABLED=false -e SETTINGS_HTTP_ENABLED=false ^
 echo     -e DB_URL=jdbc:postgresql://localhost:5432/nearshare ^
 echo     -e DB_USERNAME=postgres ^
 echo     -e DB_PASSWORD=postgres ^
@@ -105,7 +105,7 @@ if not "!version!"=="latest" (
 )
 echo.
 echo Run the application locally with environment variables:
-echo   docker run -p 80:80 -p 443:443 --env-file .env !IMAGE_NAME!:!version!
+echo   docker run -p 8081:8080 --env-file .env -e PORT=8080 -e SSL_ENABLED=false -e SETTINGS_HTTP_ENABLED=false !IMAGE_NAME!:!version!
 
 echo [SUCCESS] Local Docker image build completed successfully!
 pause

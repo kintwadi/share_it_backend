@@ -8,6 +8,9 @@ services:
       dockerfile: Dockerfile
     container_name: nearshare-backend
     environment:
+      PORT: 8080
+      SSL_ENABLED: "false"
+      SETTINGS_HTTP_ENABLED: "false"
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -32,8 +35,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:8080"
     restart: unless-stopped
 
 networks:

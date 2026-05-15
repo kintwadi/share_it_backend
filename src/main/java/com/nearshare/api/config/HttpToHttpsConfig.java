@@ -16,6 +16,15 @@ public class HttpToHttpsConfig {
     @Value("${settings.http.redirect-to-https.enabled:false}")
     private boolean redirectEnabled;
 
+    @Value("${settings.http.enabled:true}")
+    private boolean httpEnabled;
+
+    @Value("${settings.http.port:80}")
+    private int httpPort;
+
+    @Value("${server.port:443}")
+    private int httpsPort;
+
     @Bean
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = redirectEnabled
@@ -32,16 +41,18 @@ public class HttpToHttpsConfig {
                 }
                 : new TomcatServletWebServerFactory();
 
-        tomcat.addAdditionalTomcatConnectors(httpConnector());
+        if (httpEnabled && httpPort > 0 && httpPort != httpsPort) {
+            tomcat.addAdditionalTomcatConnectors(httpConnector());
+        }
         return tomcat;
     }
 
     private Connector httpConnector() {
         Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         connector.setScheme("http");
-        connector.setPort(80);
+        connector.setPort(httpPort);
         connector.setSecure(false);
-        connector.setRedirectPort(443);
+        connector.setRedirectPort(httpsPort);
         return connector;
     }
 }
