@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy all files and build the application with Spring Boot executable JAR
 COPY . .
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -DfrontendSkip=true
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
