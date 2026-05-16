@@ -85,12 +85,30 @@ public class JwtKeystoreConfig {
                 throw new IllegalStateException("jwt_keystore_not_found location=" + normalizedLocation);
             }
             String effectiveType = isBlank(keyStoreType) ? "PKCS12" : keyStoreType.trim();
-            KeyStore ks = KeyStore.getInstance(effectiveType);
             byte[] bytes;
             try (InputStream in = resource.getInputStream()) {
                 bytes = in.readAllBytes();
             }
-            loadKeyStore(ks, bytes, keyStorePassword);
+            KeyStore ks = KeyStore.getInstance(effectiveType);
+            try {
+                loadKeyStore(ks, bytes, keyStorePassword);
+            } catch (Exception first) {
+                String altType = null;
+                if ("PKCS12".equalsIgnoreCase(effectiveType)) altType = "JKS";
+                else if ("JKS".equalsIgnoreCase(effectiveType)) altType = "PKCS12";
+                if (altType != null) {
+                    try {
+                        KeyStore alt = KeyStore.getInstance(altType);
+                        loadKeyStore(alt, bytes, keyStorePassword);
+                        ks = alt;
+                    } catch (Exception second) {
+                        first.addSuppressed(second);
+                        throw first;
+                    }
+                } else {
+                    throw first;
+                }
+            }
             Key key = ks.getKey(alias, password.toCharArray());
             if (key == null) {
                 throw new IllegalStateException("jwt_keystore_key_not_found location=" + normalizedLocation + " alias=" + alias);
