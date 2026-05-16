@@ -22,5 +22,7 @@
 /keystore.p12.b64
 /nearshare.sqlite
 /*.sqlite
+/data/
+/stripe.exe
 /docker-deploy.env
 /docker-deploy.config

@@ -2,7 +2,9 @@
 
 set -eu
 
-if [ "${SQLITE_R2_STREAM_FOR_RENDER:-false}" = "true" ] || [ "${SQLITE_R2_STREAM_FOR_RENDER:-false}" = "1" ]; then
+FLAG="$(printf '%s' "${SQLITE_R2_STREAM_FOR_RENDER:-false}" | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
+
+if [ "$FLAG" = "true" ] || [ "$FLAG" = "1" ]; then
   : "${SQLITE_DB_PATH:=/data/nearshare.sqlite}"
 
   DB_TYPE=sqlite

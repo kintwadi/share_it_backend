@@ -9,4 +9,6 @@ if not "%ERRORLEVEL%"=="0" (
   exit /b 1
 )
 
-docker compose -f docker-compose-app-only.yml up --build --force-recreate
+set "SQLITE_R2_STREAM_FOR_RENDER=true"
+
+docker compose --env-file .env -f docker-compose-app-only.yml up --build --force-recreate
