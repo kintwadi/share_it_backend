@@ -11,15 +11,26 @@ fi
 : "${DB_USERNAME:=postgres}"
 : "${DB_PASSWORD:=postgres}"
 
-: "${JWT_SECRET:=change_me_dev_secret_please}"
+: "${JWT_SECRET:=}"
 
 : "${JWT_KEYSTORE_LOCATION:=}"
 : "${JWT_KEYSTORE_PASSWORD:=}"
+: "${SSL_PASSWORD:=}"
+: "${JWT_KEYSTORE_PASSWORD:=${SSL_PASSWORD}}"
 : "${JWT_KEYSTORE_TYPE:=PKCS12}"
 : "${KEYSTORE_ACCESS_TOKEN_ALIAS:=accesstoken}"
 : "${KEYSTORE_ACCESS_TOKEN_PW:=}"
 : "${KEYSTORE_REFRESH_TOKEN_ALIAS:=refreshtoken}"
 : "${KEYSTORE_REFRESH_TOKEN_PW:=}"
+
+if [ -z "$JWT_SECRET" ] && [ -z "$JWT_KEYSTORE_LOCATION" ]; then
+  echo "JWT signing is not configured. Set JWT_SECRET or JWT_KEYSTORE_LOCATION/JWT_KEYSTORE_PASSWORD in .env"
+  exit 1
+fi
+if [ -n "$JWT_KEYSTORE_LOCATION" ] && [ -z "$JWT_KEYSTORE_PASSWORD" ]; then
+  echo "JWT keystore password is missing. Set JWT_KEYSTORE_PASSWORD in .env"
+  exit 1
+fi
 
 : "${ENCRYPTION_KEY:=1234567890123456}"
 

@@ -11,17 +11,27 @@ if "%DB_URL%"=="" set "DB_URL=jdbc:postgresql://localhost:5432/nearshare"
 if "%DB_USERNAME%"=="" set "DB_USERNAME=postgres"
 if "%DB_PASSWORD%"=="" set "DB_PASSWORD=postgres"
 
-:: JWT Configuration (recommended)
-if "%JWT_SECRET%"=="" set "JWT_SECRET=change_me_dev_secret_please"
+:: JWT Configuration
+if "%JWT_SECRET%"=="" set "JWT_SECRET="
 
-:: JWT Keystore Configuration (optional - only if you want to use a keystore for JWT signing)
+:: JWT Keystore Configuration
 if "%JWT_KEYSTORE_LOCATION%"=="" set "JWT_KEYSTORE_LOCATION="
 if "%JWT_KEYSTORE_PASSWORD%"=="" set "JWT_KEYSTORE_PASSWORD="
+if not "%SSL_PASSWORD%"=="" if "%JWT_KEYSTORE_PASSWORD%"=="" set "JWT_KEYSTORE_PASSWORD=%SSL_PASSWORD%"
 if "%JWT_KEYSTORE_TYPE%"=="" set "JWT_KEYSTORE_TYPE=PKCS12"
 if "%KEYSTORE_ACCESS_TOKEN_ALIAS%"=="" set "KEYSTORE_ACCESS_TOKEN_ALIAS=accesstoken"
 if "%KEYSTORE_ACCESS_TOKEN_PW%"=="" set "KEYSTORE_ACCESS_TOKEN_PW="
 if "%KEYSTORE_REFRESH_TOKEN_ALIAS%"=="" set "KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken"
 if "%KEYSTORE_REFRESH_TOKEN_PW%"=="" set "KEYSTORE_REFRESH_TOKEN_PW="
+
+if "%JWT_SECRET%"=="" if "%JWT_KEYSTORE_LOCATION%"=="" (
+  echo [ERROR] JWT signing is not configured. Set JWT_SECRET or JWT_KEYSTORE_LOCATION/JWT_KEYSTORE_PASSWORD in .env
+  exit /b 1
+)
+if not "%JWT_KEYSTORE_LOCATION%"=="" if "%JWT_KEYSTORE_PASSWORD%"=="" (
+  echo [ERROR] JWT keystore password is missing. Set JWT_KEYSTORE_PASSWORD in .env
+  exit /b 1
+)
 
 :: App Encryption Configuration (required)
 if "%ENCRYPTION_KEY%"=="" set "ENCRYPTION_KEY=1234567890123456"
