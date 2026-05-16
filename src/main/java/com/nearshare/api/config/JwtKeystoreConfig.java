@@ -48,10 +48,13 @@ public class JwtKeystoreConfig {
     }
 
     private Key resolveKey(String jwtSecret, String purpose, String keyStoreLocation, String keyStorePassword, String keyStoreType, String alias, String password) {
+        if (!isBlank(keyStoreLocation)) {
+            return loadOrGenerateKey(keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+        }
         if (!isBlank(jwtSecret)) {
             return keyFromSecret(jwtSecret, purpose);
         }
-        return loadOrGenerateKey(keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
 
     private Key loadOrGenerateKey(String keyStoreLocation, String keyStorePassword, String keyStoreType, String alias, String password) {
