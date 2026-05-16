@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -84,9 +85,11 @@ public class JwtKeystoreConfig {
             }
             String effectiveType = isBlank(keyStoreType) ? "PKCS12" : keyStoreType.trim();
             KeyStore ks = KeyStore.getInstance(effectiveType);
+            byte[] bytes;
             try (InputStream in = resource.getInputStream()) {
-                ks.load(in, keyStorePassword.toCharArray());
+                bytes = in.readAllBytes();
             }
+            loadKeyStore(ks, bytes, keyStorePassword);
             Key key = ks.getKey(alias, password.toCharArray());
             if (key == null) {
                 throw new IllegalStateException("jwt_keystore_key_not_found");
@@ -95,6 +98,36 @@ public class JwtKeystoreConfig {
         } catch (Exception e) {
             throw new IllegalStateException("jwt_keystore_key_load_failed", e);
         }
+    }
+
+    private void loadKeyStore(KeyStore ks, byte[] bytes, String keyStorePassword) throws Exception {
+        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes)) {
+            ks.load(in, keyStorePassword.toCharArray());
+            return;
+        } catch (Exception first) {
+            String s = new String(bytes, StandardCharsets.UTF_8).trim();
+            if (!s.isEmpty() && looksLikeBase64(s)) {
+                byte[] decoded = Base64.getDecoder().decode(s);
+                try (ByteArrayInputStream in2 = new ByteArrayInputStream(decoded)) {
+                    ks.load(in2, keyStorePassword.toCharArray());
+                    return;
+                } catch (Exception second) {
+                    first.addSuppressed(second);
+                }
+            }
+            throw first;
+        }
+    }
+
+    private boolean looksLikeBase64(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '+' || c == '/' || c == '=' || c == '\n' || c == '\r') {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 
     private String normalizeLocation(String rawLocation) {
