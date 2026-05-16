@@ -4,11 +4,14 @@ set -eu
 
 if [ "${SQLITE_R2_STREAM_FOR_RENDER:-false}" = "true" ] || [ "${SQLITE_R2_STREAM_FOR_RENDER:-false}" = "1" ]; then
   : "${SQLITE_DB_PATH:=/data/nearshare.sqlite}"
-  : "${DB_TYPE:=sqlite}"
-  : "${DB_URL:=jdbc:sqlite:${SQLITE_DB_PATH}}"
-  : "${DB_DRIVER:=org.sqlite.JDBC}"
-  : "${DB_USERNAME:=sqlite_user}"
-  : "${DB_PASSWORD:=sqlite_password_123}"
+
+  DB_TYPE=sqlite
+  DB_URL="jdbc:sqlite:${SQLITE_DB_PATH}"
+  DB_DRIVER=org.sqlite.JDBC
+  DB_USERNAME=${DB_USERNAME:-sqlite_user}
+  DB_PASSWORD=${DB_PASSWORD:-sqlite_password_123}
+
+  export DB_TYPE DB_URL DB_DRIVER DB_USERNAME DB_PASSWORD SQLITE_DB_PATH
 
   : "${LITESTREAM_ACCESS_KEY_ID:=${SQLITE_R2_ACCESS_KEY_ID:-${R2_ACCESS_KEY_ID:-}}}"
   : "${LITESTREAM_SECRET_ACCESS_KEY:=${SQLITE_R2_SECRET_ACCESS_KEY:-${R2_SECRET_ACCESS_KEY:-}}}"
