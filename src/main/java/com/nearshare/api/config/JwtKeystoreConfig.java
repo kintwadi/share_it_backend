@@ -79,9 +79,10 @@ public class JwtKeystoreConfig {
             return Keys.secretKeyFor(SignatureAlgorithm.HS256);
         }
         try {
-            Resource resource = resourceLoader.getResource(normalizeLocation(keyStoreLocation));
+            String normalizedLocation = normalizeLocation(keyStoreLocation);
+            Resource resource = resourceLoader.getResource(normalizedLocation);
             if (!resource.exists()) {
-                throw new IllegalStateException("jwt_keystore_not_found");
+                throw new IllegalStateException("jwt_keystore_not_found location=" + normalizedLocation);
             }
             String effectiveType = isBlank(keyStoreType) ? "PKCS12" : keyStoreType.trim();
             KeyStore ks = KeyStore.getInstance(effectiveType);
@@ -92,7 +93,7 @@ public class JwtKeystoreConfig {
             loadKeyStore(ks, bytes, keyStorePassword);
             Key key = ks.getKey(alias, password.toCharArray());
             if (key == null) {
-                throw new IllegalStateException("jwt_keystore_key_not_found");
+                throw new IllegalStateException("jwt_keystore_key_not_found location=" + normalizedLocation + " alias=" + alias);
             }
             return key;
         } catch (Exception e) {
