@@ -2,6 +2,8 @@ package com.nearshare.api.config;
 
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,7 @@ import java.util.Base64;
 
 @Configuration
 public class JwtKeystoreConfig {
+    private static final Logger log = LoggerFactory.getLogger(JwtKeystoreConfig.class);
     private final ResourceLoader resourceLoader;
 
     public JwtKeystoreConfig(ResourceLoader resourceLoader) {
@@ -80,6 +83,7 @@ public class JwtKeystoreConfig {
         }
         try {
             String normalizedLocation = normalizeLocation(keyStoreLocation);
+            log.info("jwt_keystore_loading location={} type={} alias={}", normalizedLocation, keyStoreType, alias);
             Resource resource = resourceLoader.getResource(normalizedLocation);
             if (!resource.exists()) {
                 throw new IllegalStateException("jwt_keystore_not_found location=" + normalizedLocation);
@@ -89,6 +93,7 @@ public class JwtKeystoreConfig {
             try (InputStream in = resource.getInputStream()) {
                 bytes = in.readAllBytes();
             }
+            log.info("jwt_keystore_read_bytes location={} bytes={}", normalizedLocation, bytes.length);
             KeyStore ks = KeyStore.getInstance(effectiveType);
             try {
                 loadKeyStore(ks, bytes, keyStorePassword);
@@ -97,6 +102,7 @@ public class JwtKeystoreConfig {
                 if ("PKCS12".equalsIgnoreCase(effectiveType)) altType = "JKS";
                 else if ("JKS".equalsIgnoreCase(effectiveType)) altType = "PKCS12";
                 if (altType != null) {
+                    log.warn("jwt_keystore_load_failed_trying_fallback_type location={} type={} altType={} error={}", normalizedLocation, effectiveType, altType, first.getClass().getSimpleName());
                     try {
                         KeyStore alt = KeyStore.getInstance(altType);
                         loadKeyStore(alt, bytes, keyStorePassword);
@@ -113,6 +119,7 @@ public class JwtKeystoreConfig {
             if (key == null) {
                 throw new IllegalStateException("jwt_keystore_key_not_found location=" + normalizedLocation + " alias=" + alias);
             }
+            log.info("jwt_keystore_key_loaded location={} type={} alias={}", normalizedLocation, ks.getType(), alias);
             return key;
         } catch (Exception e) {
             throw new IllegalStateException("jwt_keystore_key_load_failed", e);
