@@ -1,0 +1,9 @@
+{
+  "/shareit": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "ws": true,
+    "logLevel": "warn"
+  }
+}

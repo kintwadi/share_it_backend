@@ -7,17 +7,41 @@ if exist "%ENV_FILE%" (
 )
 
 :: Database Configuration
+if "%DB_TYPE%"=="" set "DB_TYPE="
 if "%DB_URL%"=="" set "DB_URL=jdbc:postgresql://localhost:5432/nearshare"
+if "%DB_DRIVER%"=="" set "DB_DRIVER="
 if "%DB_USERNAME%"=="" set "DB_USERNAME=postgres"
 if "%DB_PASSWORD%"=="" set "DB_PASSWORD=postgres"
 
-:: SSL Configuration
-if "%SSL_PASSWORD%"=="" set "SSL_PASSWORD=Nshare@132"
+:: JWT Configuration
+if "%JWT_SECRET%"=="" set "JWT_SECRET="
+
+:: JWT Keystore Configuration
+if "%JWT_KEYSTORE_LOCATION%"=="" set "JWT_KEYSTORE_LOCATION="
+if "%JWT_KEYSTORE_PASSWORD%"=="" set "JWT_KEYSTORE_PASSWORD="
+if not "%SSL_PASSWORD%"=="" if "%JWT_KEYSTORE_PASSWORD%"=="" set "JWT_KEYSTORE_PASSWORD=%SSL_PASSWORD%"
+if "%JWT_KEYSTORE_TYPE%"=="" set "JWT_KEYSTORE_TYPE=PKCS12"
 if "%KEYSTORE_ACCESS_TOKEN_ALIAS%"=="" set "KEYSTORE_ACCESS_TOKEN_ALIAS=accesstoken"
-if "%KEYSTORE_ACCESS_TOKEN_PW%"=="" set "KEYSTORE_ACCESS_TOKEN_PW=Nshare@132"
+if "%KEYSTORE_ACCESS_TOKEN_PW%"=="" set "KEYSTORE_ACCESS_TOKEN_PW="
 if "%KEYSTORE_REFRESH_TOKEN_ALIAS%"=="" set "KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken"
-if "%KEYSTORE_REFRESH_TOKEN_PW%"=="" set "KEYSTORE_REFRESH_TOKEN_PW=Nshare@132"
+if "%KEYSTORE_REFRESH_TOKEN_PW%"=="" set "KEYSTORE_REFRESH_TOKEN_PW="
+
+if "%JWT_SECRET%"=="" if "%JWT_KEYSTORE_LOCATION%"=="" (
+  echo [ERROR] JWT signing is not configured. Set JWT_SECRET or JWT_KEYSTORE_LOCATION/JWT_KEYSTORE_PASSWORD in .env
+  exit /b 1
+)
+if not "%JWT_KEYSTORE_LOCATION%"=="" if "%JWT_KEYSTORE_PASSWORD%"=="" (
+  echo [ERROR] JWT keystore password is missing. Set JWT_KEYSTORE_PASSWORD in .env
+  exit /b 1
+)
+
+:: App Encryption Configuration (required)
 if "%ENCRYPTION_KEY%"=="" set "ENCRYPTION_KEY=1234567890123456"
+
+:: Render / Docker runtime toggles
+if "%PORT%"=="" set "PORT=8080"
+if "%SSL_ENABLED%"=="" set "SSL_ENABLED=false"
+if "%SETTINGS_HTTP_ENABLED%"=="" set "SETTINGS_HTTP_ENABLED=false"
 
 :: AWS Configuration (Placeholder values - update with actual AWS credentials)
 if "%AWS_ACCESS_KEY_ID%"=="" set "AWS_ACCESS_KEY_ID=example"
@@ -55,12 +79,17 @@ echo - DB_URL: %DB_URL%
 echo - DB_USERNAME: %DB_USERNAME%
 echo - DB_PASSWORD: ********
 echo - JWT_SECRET: ********
-echo - SSL_PASSWORD: ********
+echo - JWT_KEYSTORE_LOCATION: %JWT_KEYSTORE_LOCATION%
+echo - JWT_KEYSTORE_PASSWORD: ********
+echo - JWT_KEYSTORE_TYPE: %JWT_KEYSTORE_TYPE%
 echo - KEYSTORE_ACCESS_TOKEN_ALIAS: %KEYSTORE_ACCESS_TOKEN_ALIAS%
 echo - KEYSTORE_ACCESS_TOKEN_PW: ********
 echo - KEYSTORE_REFRESH_TOKEN_ALIAS: %KEYSTORE_REFRESH_TOKEN_ALIAS%
 echo - KEYSTORE_REFRESH_TOKEN_PW: ********
 echo - ENCRYPTION_KEY: ********
+echo - PORT: %PORT%
+echo - SSL_ENABLED: %SSL_ENABLED%
+echo - SETTINGS_HTTP_ENABLED: %SETTINGS_HTTP_ENABLED%
 echo - R2_ACCOUNT_ID: %R2_ACCOUNT_ID%
 echo - R2_ACCESS_KEY_ID: %R2_ACCESS_KEY_ID%
 echo - R2_SECRET_ACCESS_KEY: ********

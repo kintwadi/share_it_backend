@@ -105,8 +105,17 @@ export class WsService {
   }
 
   private getWsBaseUrl(): string {
-    const apiUrl = environment.apiUrl;
+    const apiUrl = this.resolveApiUrl();
     if (apiUrl.endsWith('/api')) return apiUrl.slice(0, -4);
     return apiUrl.replace(/\/api\/?$/, '');
+  }
+
+  private resolveApiUrl(): string {
+    try {
+      const w = globalThis as any;
+      const runtime = String(w?.__env?.API_URL || '').trim();
+      if (runtime) return runtime.replace(/\/+$/, '');
+    } catch { }
+    return String(environment.apiUrl || '').replace(/\/+$/, '');
   }
 }

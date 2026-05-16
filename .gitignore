@@ -2,13 +2,14 @@
 /logs/
 /.env
 /.env.*
+!.env.example
+!.env.template
 /*.log
 /*.log.*
 /*.gz
 /.idea/
 /.vscode/
 /.trae/
-/setup.zip
 /frontend/_backup/
 /frontend/.vscode/
 **/*.code-workspace
@@ -18,5 +19,10 @@
 **/*.pem
 **/*.key
 **/*.crt
+/keystore.p12.b64
+/nearshare.sqlite
+/*.sqlite
+/data/
+/stripe.exe
 /docker-deploy.env
 /docker-deploy.config
