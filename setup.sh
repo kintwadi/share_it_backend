@@ -7,6 +7,8 @@ if [ -f "$ENV_FILE" ]; then
   . "$ENV_FILE"
 fi
 
+: "${DB_TYPE:=}"
+: "${DB_DRIVER:=}"
 : "${DB_URL:=jdbc:postgresql://localhost:5432/nearshare}"
 : "${DB_USERNAME:=postgres}"
 : "${DB_PASSWORD:=postgres}"

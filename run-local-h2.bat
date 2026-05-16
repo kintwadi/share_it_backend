@@ -1,7 +1,9 @@
 @echo off
 echo Starting NearShare Backend with H2 Database (Local Mode)...
 
+set DB_TYPE=h2
 set DB_URL=jdbc:h2:mem:nearshare;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+set DB_DRIVER=org.h2.Driver
 set DB_USERNAME=sa
 set DB_PASSWORD=
 set AWS_ACCESS_KEY_ID=example

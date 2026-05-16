@@ -7,7 +7,9 @@ if exist "%ENV_FILE%" (
 )
 
 :: Database Configuration
+if "%DB_TYPE%"=="" set "DB_TYPE="
 if "%DB_URL%"=="" set "DB_URL=jdbc:postgresql://localhost:5432/nearshare"
+if "%DB_DRIVER%"=="" set "DB_DRIVER="
 if "%DB_USERNAME%"=="" set "DB_USERNAME=postgres"
 if "%DB_PASSWORD%"=="" set "DB_PASSWORD=postgres"
 

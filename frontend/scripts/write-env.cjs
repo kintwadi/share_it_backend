@@ -1,7 +1,20 @@
 const fs = require('fs');
 const path = require('path');
 
-const apiUrl = process.env.API_URL || process.env.NG_APP_API_URL || '/shareit/api';
+function normalizeApiUrl(raw) {
+  const v = String(raw || '').trim().replace(/\/+$/, '');
+  if (!v) return '';
+  if (/\/shareit\/api$/i.test(v)) return v;
+  if (/\/shareit$/i.test(v)) return `${v}/api`;
+  if (/^https?:\/\//i.test(v)) return `${v}/shareit/api`;
+  return v;
+}
+
+const apiUrl =
+  normalizeApiUrl(process.env.API_URL) ||
+  normalizeApiUrl(process.env.NG_APP_API_URL) ||
+  normalizeApiUrl(process.env.BACKEND_URL) ||
+  '/shareit/api';
 
 const content =
   'window.__env = window.__env || {};\n' +

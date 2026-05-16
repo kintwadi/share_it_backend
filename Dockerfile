@@ -7,16 +7,26 @@ COPY . .
 RUN mvn clean package -DskipTests -DfrontendSkip=true
 
 # Runtime stage
+FROM litestream/litestream:0.3.13 AS litestream
+
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl ca-certificates
 
 # Copy the built JAR file from the build stage
 COPY --from=build /app/target/nearshare-back-end-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=litestream /usr/local/bin/litestream /usr/local/bin/litestream
+
+COPY litestream.yml /app/litestream.yml
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+
+RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /data
 
 # Create a non-root user to run the application
 RUN addgroup -S spring && adduser -S spring -G spring
+
+RUN chown -R spring:spring /app /data
 
 USER spring
 
@@ -32,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD curl -f "http://localhost:${PORT}/shareit/api/health" || exit 1
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
