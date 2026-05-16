@@ -29,6 +29,8 @@ if [ "$FLAG" = "true" ] || [ "$FLAG" = "1" ]; then
   : "${LITESTREAM_BUCKET:=${SQLITE_R2_BUCKET:-sqlitedb}}"
   : "${LITESTREAM_PATH:=${SQLITE_R2_PATH:-production}}"
 
+  export LITESTREAM_ACCESS_KEY_ID LITESTREAM_SECRET_ACCESS_KEY LITESTREAM_ENDPOINT LITESTREAM_BUCKET LITESTREAM_PATH
+
   mkdir -p "$(dirname "$SQLITE_DB_PATH")"
 
   litestream restore -config /app/litestream.yml -if-db-not-exists -if-replica-exists "$SQLITE_DB_PATH"
