@@ -26,28 +26,39 @@ public class JwtKeystoreConfig {
     @Bean(name = "accessTokenKey")
     public Key accessTokenKey(
             @Value("${security.jwt.secret:}") String jwtSecret,
+            @Value("${security.jwt.keystore.remote-location:}") String remoteKeyStoreLocation,
             @Value("${security.jwt.keystore.location:}") String keyStoreLocation,
             @Value("${security.jwt.keystore.password:}") String keyStorePassword,
             @Value("${security.jwt.keystore.type:PKCS12}") String keyStoreType,
             @Value("${security.jwt.access-token.alias:}") String alias,
             @Value("${security.jwt.access-token.password:}") String password
     ) {
-        return resolveKey(jwtSecret, "access", keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+        return resolveKey(jwtSecret, "access", remoteKeyStoreLocation, keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
     }
 
     @Bean(name = "refreshTokenKey")
     public Key refreshTokenKey(
             @Value("${security.jwt.secret:}") String jwtSecret,
+            @Value("${security.jwt.keystore.remote-location:}") String remoteKeyStoreLocation,
             @Value("${security.jwt.keystore.location:}") String keyStoreLocation,
             @Value("${security.jwt.keystore.password:}") String keyStorePassword,
             @Value("${security.jwt.keystore.type:PKCS12}") String keyStoreType,
             @Value("${security.jwt.refresh-token.alias:}") String alias,
             @Value("${security.jwt.refresh-token.password:}") String password
     ) {
-        return resolveKey(jwtSecret, "refresh", keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+        return resolveKey(jwtSecret, "refresh", remoteKeyStoreLocation, keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
     }
 
-    private Key resolveKey(String jwtSecret, String purpose, String keyStoreLocation, String keyStorePassword, String keyStoreType, String alias, String password) {
+    private Key resolveKey(String jwtSecret, String purpose, String remoteKeyStoreLocation, String keyStoreLocation, String keyStorePassword, String keyStoreType, String alias, String password) {
+        if (!isBlank(remoteKeyStoreLocation)) {
+            try {
+                return loadOrGenerateKey(remoteKeyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+            } catch (IllegalStateException e) {
+                if (isBlank(keyStoreLocation)) {
+                    throw e;
+                }
+            }
+        }
         if (!isBlank(keyStoreLocation)) {
             return loadOrGenerateKey(keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
         }
@@ -62,7 +73,7 @@ public class JwtKeystoreConfig {
             return Keys.secretKeyFor(SignatureAlgorithm.HS256);
         }
         try {
-            Resource resource = resourceLoader.getResource(keyStoreLocation);
+            Resource resource = resourceLoader.getResource(normalizeLocation(keyStoreLocation));
             if (!resource.exists()) {
                 throw new IllegalStateException("jwt_keystore_not_found");
             }
@@ -79,6 +90,17 @@ public class JwtKeystoreConfig {
         } catch (Exception e) {
             throw new IllegalStateException("jwt_keystore_key_load_failed", e);
         }
+    }
+
+    private String normalizeLocation(String rawLocation) {
+        String location = rawLocation == null ? "" : rawLocation.trim();
+        if (location.isEmpty()) return location;
+        if (location.startsWith("classpath:") || location.startsWith("file:")) return location;
+        if (location.startsWith("/")) return "file:" + location;
+        if (location.length() >= 3 && Character.isLetter(location.charAt(0)) && location.charAt(1) == ':' && (location.charAt(2) == '\\' || location.charAt(2) == '/')) {
+            return "file:" + location.replace('\\', '/');
+        }
+        return location;
     }
 
     private Key keyFromSecret(String secret, String purpose) {
