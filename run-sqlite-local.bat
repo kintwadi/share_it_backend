@@ -15,6 +15,15 @@ if "%DB_USERNAME%"=="" set "DB_USERNAME=sqlite_user"
 if "%DB_PASSWORD%"=="" set "DB_PASSWORD=sqlite_password_123"
 if "%DB_DRIVER%"=="" set "DB_DRIVER=org.sqlite.JDBC"
 
+if "%AWS_ACCESS_KEY_ID%"=="" set "AWS_ACCESS_KEY_ID=example"
+if "%AWS_SECRET_ACCESS_KEY%"=="" set "AWS_SECRET_ACCESS_KEY=example"
+if "%R2_ACCOUNT_ID%"=="" set "R2_ACCOUNT_ID=example"
+if "%R2_ACCESS_KEY_ID%"=="" set "R2_ACCESS_KEY_ID=example"
+if "%R2_SECRET_ACCESS_KEY%"=="" set "R2_SECRET_ACCESS_KEY=example"
+if "%R2_BUCKET_NAME%"=="" set "R2_BUCKET_NAME=example"
+if "%R2_ENDPOINT%"=="" set "R2_ENDPOINT=https://example.r2.cloudflarestorage.com"
+if "%R2_PUBLIC_URL%"=="" set "R2_PUBLIC_URL=https://example.r2.dev"
+
 echo.
 echo SQLite DB URL: %DB_URL%
 echo.

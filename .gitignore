@@ -20,5 +20,7 @@
 **/*.key
 **/*.crt
 /keystore.p12.b64
+/nearshare.sqlite
+/*.sqlite
 /docker-deploy.env
 /docker-deploy.config

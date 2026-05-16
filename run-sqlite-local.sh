@@ -18,6 +18,15 @@ fi
 : "${DB_PASSWORD:=sqlite_password_123}"
 : "${DB_DRIVER:=org.sqlite.JDBC}"
 
+: "${AWS_ACCESS_KEY_ID:=example}"
+: "${AWS_SECRET_ACCESS_KEY:=example}"
+: "${R2_ACCOUNT_ID:=example}"
+: "${R2_ACCESS_KEY_ID:=example}"
+: "${R2_SECRET_ACCESS_KEY:=example}"
+: "${R2_BUCKET_NAME:=example}"
+: "${R2_ENDPOINT:=https://example.r2.cloudflarestorage.com}"
+: "${R2_PUBLIC_URL:=https://example.r2.dev}"
+
 set +a
 
 mvn -DfrontendSkip=true spring-boot:run
