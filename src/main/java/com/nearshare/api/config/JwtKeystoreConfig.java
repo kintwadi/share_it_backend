@@ -50,17 +50,22 @@ public class JwtKeystoreConfig {
     }
 
     private Key resolveKey(String jwtSecret, String purpose, String remoteKeyStoreLocation, String keyStoreLocation, String keyStorePassword, String keyStoreType, String alias, String password) {
-        if (!isBlank(remoteKeyStoreLocation)) {
+        if (!isBlank(keyStoreLocation)) {
             try {
-                return loadOrGenerateKey(remoteKeyStoreLocation, keyStorePassword, keyStoreType, alias, password);
-            } catch (IllegalStateException e) {
-                if (isBlank(keyStoreLocation)) {
-                    throw e;
+                return loadOrGenerateKey(keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+            } catch (IllegalStateException localEx) {
+                if (!isBlank(remoteKeyStoreLocation)) {
+                    try {
+                        return loadOrGenerateKey(remoteKeyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+                    } catch (IllegalStateException remoteEx) {
+                        localEx.addSuppressed(remoteEx);
+                    }
                 }
+                throw localEx;
             }
         }
-        if (!isBlank(keyStoreLocation)) {
-            return loadOrGenerateKey(keyStoreLocation, keyStorePassword, keyStoreType, alias, password);
+        if (!isBlank(remoteKeyStoreLocation)) {
+            return loadOrGenerateKey(remoteKeyStoreLocation, keyStorePassword, keyStoreType, alias, password);
         }
         if (!isBlank(jwtSecret)) {
             return keyFromSecret(jwtSecret, purpose);
