@@ -8,7 +8,6 @@
 /.idea/
 /.vscode/
 /.trae/
-/setup.zip
 /frontend/_backup/
 /frontend/.vscode/
 **/*.code-workspace
