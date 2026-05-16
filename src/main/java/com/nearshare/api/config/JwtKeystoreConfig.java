@@ -141,6 +141,18 @@ public class JwtKeystoreConfig {
                     first.addSuppressed(second);
                 }
             }
+            String cleaned = s.replaceAll("[^A-Za-z0-9+/=]", "");
+            if (!cleaned.isEmpty() && cleaned.length() != s.length()) {
+                try {
+                    byte[] decoded = Base64.getDecoder().decode(cleaned);
+                    try (ByteArrayInputStream in3 = new ByteArrayInputStream(decoded)) {
+                        ks.load(in3, keyStorePassword.toCharArray());
+                        return;
+                    }
+                } catch (Exception third) {
+                    first.addSuppressed(third);
+                }
+            }
             throw first;
         }
     }
