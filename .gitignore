@@ -19,5 +19,6 @@
 **/*.pem
 **/*.key
 **/*.crt
+/keystore.p12.b64
 /docker-deploy.env
 /docker-deploy.config
