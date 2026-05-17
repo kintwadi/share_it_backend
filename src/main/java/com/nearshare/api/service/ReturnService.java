@@ -7,6 +7,8 @@ import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ReturnStatus;
+import com.nearshare.api.partner.model.PartnerAdminRole;
+import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.ReturnSessionRepository;
 import com.nearshare.api.repository.UserRepository;
@@ -32,6 +34,7 @@ public class ReturnService {
     private final SettingsProperties settingsProperties;
     private final EscrowService escrowService;
     private final ReviewInviteService reviewInviteService;
+    private final PartnerAdminRepository partnerAdminRepository;
     private final Random codeRandom = new java.security.SecureRandom();
 
     @Transactional
@@ -49,17 +52,22 @@ public class ReturnService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is not currently borrowed");
         }
 
-        if (listing.getBorrower() == null || listing.getOwner() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower/owner");
+        if (listing.getBorrower() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
+        }
+
+        User lender = resolveLender(listing);
+        if (lender == null || lender.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing lender");
         }
 
         boolean isBorrower = currentUser != null && currentUser.getId() != null && currentUser.getId().equals(listing.getBorrower().getId());
-        boolean isLender = currentUser != null && currentUser.getId() != null && currentUser.getId().equals(listing.getOwner().getId());
+        boolean isLender = currentUser != null && currentUser.getId() != null && currentUser.getId().equals(lender.getId());
         if (!isBorrower && !isLender) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
         }
 
-        ReturnSession session = getOrCreateActiveSession(listing);
+        ReturnSession session = getOrCreateActiveSession(listing, lender);
         ensureCodes(session);
         return mapToResponse(returnSessionRepository.save(session));
     }
@@ -249,7 +257,7 @@ public class ReturnService {
         return mapToResponse(session);
     }
 
-    private ReturnSession getOrCreateActiveSession(Listing listing) {
+    private ReturnSession getOrCreateActiveSession(Listing listing, User lender) {
         UUID listingId = listing.getId();
         List<ReturnSession> pending = returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING);
         if (!pending.isEmpty()) {
@@ -281,7 +289,7 @@ public class ReturnService {
                 .id(UUID.randomUUID())
                 .listing(listing)
                 .borrower(listing.getBorrower())
-                .lender(listing.getOwner())
+                .lender(lender)
                 .borrowerQrCode("BQR-" + UUID.randomUUID().toString())
                 .lenderQrCode("LQR-" + UUID.randomUUID().toString())
                 .borrowerCode(borrowerCode)
@@ -290,6 +298,20 @@ public class ReturnService {
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .build();
+    }
+
+    private User resolveLender(Listing listing) {
+        if (listing.getOwner() != null) {
+            return listing.getOwner();
+        }
+        if (listing.getPartner() == null || listing.getPartner().getId() == null) {
+            return null;
+        }
+        var admins = partnerAdminRepository.findUsersByPartnerIdAndRoleOrderByCreatedAtAsc(listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+        if (!admins.isEmpty()) {
+            return admins.get(0);
+        }
+        return null;
     }
 
     private ReturnSession resolveSingleActiveSession(UUID listingId) {

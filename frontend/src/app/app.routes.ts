@@ -6,6 +6,7 @@ export const routes: Routes = [
   { path: 'connect', loadComponent: () => import('./features/connect/connect.component').then(m => m.ConnectComponent) },
   { path: 'dashboard', canMatch: [canMatchDashboard], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'admin', canMatch: [canMatchAdmin], loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent) },
+  { path: 'partner', loadChildren: () => import('./features/partner/partner.routes').then(m => m.PARTNER_ROUTES) },
   { path: 'messages', canMatch: [canMatchMessages], loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent) },
   { path: 'mailbox', canMatch: [canMatchMailbox], loadComponent: () => import('./features/mailbox/mailbox.component').then(m => m.MailboxComponent) },
   { path: 'listing/:id', loadComponent: () => import('./features/listing-detail/listing-detail.component').then(m => m.ListingDetailComponent) },

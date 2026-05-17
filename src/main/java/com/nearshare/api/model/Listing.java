@@ -3,6 +3,7 @@ package com.nearshare.api.model;
 import com.nearshare.api.model.embeddable.Location;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ListingType;
+import com.nearshare.api.partner.model.Partner;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -12,6 +13,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,9 +51,12 @@ public class Listing {
     private AvailabilityStatus status;
     @Embedded
     private Location location;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "owner_id")
     private User owner;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "partner_id")
+    private Partner partner;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrower_id")
     private User borrower;
@@ -63,4 +69,12 @@ public class Listing {
     private String pickupLocationCity;
     private String pickupLocationZip;
     private java.time.LocalDateTime createdAt;
+
+    @PrePersist
+    @PreUpdate
+    private void validateOwnerOrPartner() {
+        if ((owner == null && partner == null) || (owner != null && partner != null)) {
+            throw new IllegalStateException("listing_must_have_exactly_one_owner_or_partner");
+        }
+    }
 }

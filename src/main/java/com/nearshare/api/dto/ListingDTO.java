@@ -20,6 +20,8 @@ import java.util.UUID;
 public class ListingDTO {
     private UUID id;
     private UUID ownerId;
+    private UUID partnerId;
+    private String partnerName;
     private UUID borrowerId;
     private String title;
     private String description;

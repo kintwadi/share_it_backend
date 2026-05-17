@@ -148,6 +148,9 @@ public class ListingService {
     @Transactional
     public ListingDTO update(UUID id, CreateListingRequest req, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         
         // Enforce subscription tiers
         if (req.getType() == ListingType.LEND) {
@@ -245,6 +248,13 @@ public class ListingService {
     public ListingDTO borrow(UUID id, User borrower, com.nearshare.api.dto.BorrowRequest request) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
 
+        if (l.getPartner() != null) {
+            l.setBorrower(borrower);
+            l.setStatus(AvailabilityStatus.PENDING);
+            listingRepository.save(l);
+            return toDTO(l, borrower);
+        }
+
         if (l.getType() == ListingType.GIVE) {
             l.setBorrower(borrower);
             if (l.isAutoApprove()) {
@@ -277,20 +287,18 @@ public class ListingService {
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
-        if (hourlyRate.compareTo(BigDecimal.ZERO) > 0) {
-            boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
-            int duration = isTimeBased ? (request.getDurationHours() > 0 ? request.getDurationHours() : 1) : 1;
-            totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
+        boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
+        int duration = isTimeBased ? (request.getDurationHours() > 0 ? request.getDurationHours() : 1) : 1;
+        totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
 
-            String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
-            if ("FEE".equals(borrowerPath)) {
-                serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
-            } else if ("DEPOSIT".equals(borrowerPath)) {
-                depositAmount = new BigDecimal("50.00");
-            }
-
-            amount = totalCost.add(serviceFee).add(depositAmount);
+        String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
+        if ("FEE".equals(borrowerPath)) {
+            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+        } else if ("DEPOSIT".equals(borrowerPath)) {
+            depositAmount = new BigDecimal("50.00");
         }
+
+        amount = totalCost.add(serviceFee).add(depositAmount);
 
         // Process payment if amount > 0 and payment method is not CASH
         if (amount.compareTo(BigDecimal.ZERO) > 0 && request.getPaymentMethod() != null && !"CASH".equalsIgnoreCase(request.getPaymentMethod())) {
@@ -362,6 +370,9 @@ public class ListingService {
     @Transactional
     public ListingDTO approve(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         if (l.getType() == ListingType.GIVE) {
             l.setStatus(AvailabilityStatus.GIFTED);
             if (l.getBorrower() != null) {
@@ -384,6 +395,9 @@ public class ListingService {
     @Transactional
     public ListingDTO deny(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         l.setStatus(AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
         listingRepository.save(l);
@@ -393,6 +407,9 @@ public class ListingService {
     @Transactional
     public ListingDTO returnItem(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         
         if (l.getBorrower() != null) {
             trustScoreService.updateTrustScore(l.getBorrower(), l);
@@ -424,7 +441,7 @@ public class ListingService {
         List<Listing> all = listingRepository.findAll();
         List<Listing> candidates = all.stream()
                 .filter(l -> l.getStatus() == AvailabilityStatus.AVAILABLE)
-                .filter(l -> l.getOwner() != null && !l.getOwner().getId().equals(current.getId()))
+                .filter(l -> l.getOwner() == null || !l.getOwner().getId().equals(current.getId()))
                 .filter(l -> !dismissed.contains(l.getId()))
                 .toList();
         record Scored(Listing l, double score) {}
@@ -489,6 +506,8 @@ public class ListingService {
         return ListingDTO.builder()
             .id(l.getId())
             .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
+            .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
+            .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
             .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
             .title(l.getTitle())
             .description(l.getDescription())

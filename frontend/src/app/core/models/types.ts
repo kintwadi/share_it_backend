@@ -93,7 +93,9 @@ export interface User {
 
 export interface Listing {
   id: string;
-  ownerId: string;
+  ownerId?: string | null;
+  partnerId?: string | null;
+  partnerName?: string | null;
   borrowerId?: string;
   borrower?: User;
   title: string;
@@ -255,4 +257,35 @@ export interface Device {
   ipAddress: string;
   lastActive: string;
   trusted: boolean;
+}
+
+export type PartnerStatus = 'ACTIVE' | 'PENDING' | 'SUSPENDED';
+
+export interface Partner {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  contactPerson?: string;
+  status?: PartnerStatus;
+}
+
+export interface PartnerBorrowRequest {
+  listingId: string;
+  listingTitle?: string;
+  partnerId?: string;
+  partnerName?: string;
+  borrowerId?: string | null;
+  borrowerName?: string | null;
+  borrowerEmail?: string | null;
+  status?: AvailabilityStatus;
+}
+
+export interface PartnerSettings {
+  partnerId: string;
+  maxLendingDays?: number | null;
+  depositCents?: number | null;
+  autoApproval?: boolean | null;
 }

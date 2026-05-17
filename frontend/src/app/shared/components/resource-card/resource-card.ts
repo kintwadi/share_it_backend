@@ -37,9 +37,19 @@ export class ResourceCardComponent {
     return !this.listing?.hourlyRate || this.listing.hourlyRate === 0;
   }
 
+  get isPartner(): boolean {
+    return !!this.listing?.partnerId;
+  }
+
+  get displayOwnerName(): string {
+    return this.isPartner ? (this.listing.partnerName || 'Partner') : (this.listing.owner?.name || '');
+  }
+
+  get displayAvatarSeed(): string {
+    return String(this.isPartner ? (this.listing.partnerId || 'partner') : (this.listing.owner?.id || 'user'));
+  }
+
   onImageError(event: Event) {
-    if (this.listing?.owner?.id) {
-      (event.target as HTMLImageElement).src = `https://picsum.photos/seed/${this.listing.owner.id}/80/80`;
-    }
+    (event.target as HTMLImageElement).src = `https://picsum.photos/seed/${this.displayAvatarSeed}/80/80`;
   }
 }
