@@ -175,20 +175,23 @@
         <div (click)="openUserProfile()" class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl mb-8 transition-colors group cursor-pointer hover:bg-gray-100">
           <div class="flex items-center gap-3">
             <div class="relative">
-              <img [src]="listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + listing.owner?.id + '/200/200'" [alt]="listing.owner?.name" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+              <img [src]="(isPartnerListing ? ('https://picsum.photos/seed/' + displayAvatarSeed + '/200/200') : (listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + displayAvatarSeed + '/200/200'))" [alt]="displayOwnerName" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
               <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                 <lucide-icon [img]="BadgeCheck" [size]="14" class="text-blue-500"></lucide-icon>
               </div>
             </div>
             <div>
-              <div class="text-sm font-bold text-gray-900 group-hover:text-brand-600 transition-colors">{{ listing.owner?.name }}</div>
-              <div class="text-xs text-gray-500">Joined {{ ownerJoinedYear }}</div>
+              <div class="text-sm font-bold text-gray-900 group-hover:text-brand-600 transition-colors">{{ displayOwnerName }}</div>
+              <div *ngIf="!isPartnerListing" class="text-xs text-gray-500">Joined {{ ownerJoinedYear }}</div>
             </div>
           </div>
           <div class="text-right">
-            <div class="flex items-center text-emerald-600 font-bold text-sm justify-end">
+            <div *ngIf="!isPartnerListing" class="flex items-center text-emerald-600 font-bold text-sm justify-end">
               <lucide-icon [img]="ShieldCheck" [size]="16" class="mr-1"></lucide-icon>
               {{ listing.owner?.trustScore }}%
+            </div>
+            <div *ngIf="isPartnerListing" class="text-xs font-bold text-gray-700 uppercase tracking-wide">
+              Partner
             </div>
             <div class="text-[10px] text-gray-400 uppercase tracking-wide group-hover:text-brand-500 transition-colors">
               View Profile
@@ -550,7 +553,7 @@
           </div>
         </div>
 
-        <div *ngIf="bookingStep === 'PATH_SELECTION'" class="animate-fade-in">
+        <div *ngIf="bookingStep === 'PATH_SELECTION' && !isPartnerListing" class="animate-fade-in">
           <h4 class="font-bold text-gray-900 mb-6 text-center text-xl">How would you like to borrow?</h4>
 
           <div class="space-y-4 mb-8">
@@ -763,7 +766,7 @@
           </button>
         </div>
 
-        <div *ngIf="bookingStep === 'PAYMENT'" class="space-y-4">
+        <div *ngIf="bookingStep === 'PAYMENT' && !isPartnerListing" class="space-y-4">
           <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.borrow.payment') }}</div>
           <div *ngIf="isFree" class="text-sm text-gray-600 rounded-xl border border-gray-200 bg-gray-50 p-4">
             {{ i18n.t('listing.borrow.free_confirm') }}
@@ -811,7 +814,7 @@
           </button>
         </div>
 
-        <div *ngIf="bookingStep === 'CARD_FORM'" class="space-y-4">
+        <div *ngIf="bookingStep === 'CARD_FORM' && !isPartnerListing" class="space-y-4">
           <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.borrow.pay_by_card') }}</div>
           <div *ngIf="!stripeReady" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
             {{ i18n.t('listing.borrow.stripe_not_configured') }}

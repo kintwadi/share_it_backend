@@ -1,0 +1,44 @@
+<div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+  <div class="flex items-center justify-between">
+    <button (click)="router.navigate(['/partner/dashboard'])" class="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+    <h1 class="text-xl font-bold text-gray-900">Partner Settings</h1>
+  </div>
+
+  <div *ngIf="loading" class="text-sm text-gray-500">Loading...</div>
+  <div *ngIf="!loading && error" class="text-sm text-red-600">{{ error }}</div>
+
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">Partner</label>
+      <select formControlName="partnerId" (change)="loadSettings()" class="w-full border border-gray-200 rounded-xl px-3 py-2">
+        <option value="" disabled>Select partner</option>
+        <option *ngFor="let p of partners" [value]="p.id">{{ p.name }}</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Max lending days</label>
+        <input type="number" formControlName="maxLendingDays" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Deposit (cents)</label>
+        <input type="number" formControlName="depositCents" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
+      </div>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm text-gray-700">
+      <input type="checkbox" formControlName="autoApproval" />
+      Auto-approve requests by default
+    </label>
+
+    <button type="submit" [disabled]="saving" class="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold disabled:opacity-60 inline-flex items-center justify-center gap-2">
+      <lucide-icon [img]="Save" [size]="16"></lucide-icon>
+      {{ saving ? 'Saving...' : 'Save Settings' }}
+    </button>
+  </form>
+</div>
+

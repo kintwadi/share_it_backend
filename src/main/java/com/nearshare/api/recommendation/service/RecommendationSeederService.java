@@ -61,6 +61,7 @@ public class RecommendationSeederService {
             Listing listing = listings.get(random.nextInt(listings.size()));
             
             // Avoid self-transaction
+            if (listing.getOwner() == null || listing.getOwner().getId() == null) continue;
             if (listing.getOwner().getId().equals(payer.getId())) continue;
 
             Transaction tx = Transaction.builder()

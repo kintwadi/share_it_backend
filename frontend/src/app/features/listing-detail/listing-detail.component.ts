@@ -87,6 +87,19 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   vouching = false;
   hasVouched = false;
 
+  get isPartnerListing(): boolean {
+    return !!this.listing?.partnerId;
+  }
+
+  get displayOwnerName(): string {
+    if (this.isPartnerListing) return this.listing?.partnerName || 'Partner';
+    return this.listing?.owner?.name || '';
+  }
+
+  get displayAvatarSeed(): string {
+    return String(this.isPartnerListing ? (this.listing?.partnerId || 'partner') : (this.listing?.owner?.id || 'user'));
+  }
+
   actionLoading: 'APPROVE' | 'DENY' | null = null;
   showDeleteModal = false;
   deleting = false;
@@ -372,10 +385,13 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get isFree() {
-    return !this.listing?.hourlyRate || this.listing.hourlyRate === 0;
+    return this.finalTotalWithInsurance <= 0;
   }
 
   get borrowTierEnabled() {
+    if (this.isPartnerListing) {
+      return { deposit: false, verified: false, fee: false };
+    }
     return {
       deposit: this.settingsConfig.isSectionEnabled('borrowing', 'deposit'),
       verified: this.settingsConfig.isSectionEnabled('borrowing', 'verified'),
@@ -384,6 +400,9 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get paymentOptions() {
+    if (this.isPartnerListing) {
+      return { card: false, paypal: false, cash: false };
+    }
     return {
       card: this.settingsConfig.isSectionEnabled('borrowing', 'payments.card'),
       paypal: this.settingsConfig.isSectionEnabled('borrowing', 'payments.paypal'),
@@ -408,11 +427,13 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get serviceFee() {
+    if (this.isPartnerListing) return 0;
     if (this.selectedPath !== 'FEE') return 0;
     return Math.round(this.baseTotal * 0.08 * 100) / 100;
   }
 
   get depositAmount() {
+    if (this.isPartnerListing) return 0;
     if (this.selectedPath !== 'DEPOSIT') return 0;
     return 50;
   }
@@ -474,6 +495,24 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isPartnerListing) {
+      this.bookingDuration = 2;
+      this.selectedPath = 'VERIFIED';
+      this.paymentMethod = 'CASH';
+      this.selectedSavedPaymentMethodId = null;
+      this.cardError = null;
+      this.stripeError = null;
+      this.insuranceError = null;
+      this.selectedInsuranceType = null;
+      this.insuranceZipCode = '';
+      this.insuranceQuote = null;
+      this.insuranceTypes = [];
+      this.showBookingModal = true;
+      this.bookingStep = 'DURATION';
+      this.render();
+      return;
+    }
+
     if (listing.type === ListingType.GIVE) {
       this.handleConfirmRequest();
       return;
@@ -491,7 +530,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.insuranceQuote = null;
     this.insuranceTypes = [];
     this.showBookingModal = true;
-    this.bookingStep = this.isFree ? 'DURATION' : 'PATH_SELECTION';
+    this.bookingStep = 'PATH_SELECTION';
     if (this.requiresInsurance) {
       this.loadInsuranceTypes();
     }
@@ -519,6 +558,10 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   proceedFromDuration() {
+    if (this.isPartnerListing) {
+      this.handleConfirmRequest();
+      return;
+    }
     this.bookingStep = this.requiresInsurance ? 'INSURANCE' : 'PAYMENT';
     this.render();
   }
@@ -539,7 +582,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   async proceedFromPayment() {
-    if (this.paymentMethod === 'CARD' && !this.isFree) {
+    if (this.paymentMethod === 'CARD' && this.finalTotalWithInsurance > 0) {
       this.bookingStep = 'CARD_FORM';
       this.render();
       setTimeout(() => this.mountPaymentCard(), 0);
@@ -575,6 +618,11 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     if (!listing) return;
     if (!this.stripe) return;
     if (this.cardProcessing) return;
+    if (this.finalTotalWithInsurance <= 0) {
+      this.cardError = this.i18n.t('listing.error.payment_not_required');
+      this.render();
+      return;
+    }
     if (!this.selectedSavedPaymentMethodId && !this.card) {
       this.cardError = this.i18n.t('listing.error.card_details');
       this.render();
@@ -652,12 +700,25 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if (this.isFree) {
+      if (this.isPartnerListing) {
+        await this.api.borrowListing(listing.id, {
+          paymentMethod: 'PARTNER',
+          durationHours: this.isTimeBased ? this.bookingDuration : 0,
+          borrowerPath: 'PARTNER'
+        });
+        this.wasAutoApproved = false;
+        this.closeBookingModal();
+        await this.reloadListing();
+        this.notifySuccess(this.i18n.t('listing.success.request_sent'));
+        return;
+      }
+
+      if (this.finalTotalWithInsurance <= 0) {
         await this.api.borrowListing(listing.id, { paymentMethod: 'FREE', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'PAYPAL') {
-        await this.api.borrowListing(listing.id, { paymentMethod: this.isFree ? 'FREE' : 'PAYPAL', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'PAYPAL', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CASH') {
-        await this.api.borrowListing(listing.id, { paymentMethod: this.isFree ? 'FREE' : 'CASH', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'CASH', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CARD') {
         await this.submitCardPayment();
         return;
@@ -677,6 +738,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get requiresInsurance(): boolean {
+    if (this.isPartnerListing) return false;
     return !!(this.listing as any)?.insuranceRequired;
   }
 

@@ -317,26 +317,28 @@ public class PaymentController {
         Listing listing = listingRepository.findById(java.util.UUID.fromString(listingId))
                 .orElseThrow(() -> new RuntimeException("listing_not_found"));
 
+        if (listing.getPartner() != null) {
+            throw new RuntimeException("partner_listing_offline_payment");
+        }
+
         if (listing.getType() == com.nearshare.api.model.enums.ListingType.GIVE) {
             throw new RuntimeException("free_listing_no_payment_required");
         }
 
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal hourlyRate = listing.getHourlyRate() != null ? listing.getHourlyRate() : BigDecimal.ZERO;
-        if (hourlyRate.compareTo(BigDecimal.ZERO) > 0) {
-            boolean isTimeBased = listing.getType() != com.nearshare.api.model.enums.ListingType.GIVE && listing.getType() != com.nearshare.api.model.enums.ListingType.SELL;
-            int effectiveDuration = isTimeBased ? (duration > 0 ? duration : 1) : 1;
-            BigDecimal totalCost = hourlyRate.multiply(BigDecimal.valueOf(effectiveDuration));
-            BigDecimal serviceFee = BigDecimal.ZERO;
-            BigDecimal depositAmount = BigDecimal.ZERO;
-            String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";
-            if ("FEE".equals(bp)) {
-                serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
-            } else if ("DEPOSIT".equals(bp)) {
-                depositAmount = new BigDecimal("50.00");
-            }
-            amount = totalCost.add(serviceFee).add(depositAmount);
+        boolean isTimeBased = listing.getType() != com.nearshare.api.model.enums.ListingType.GIVE && listing.getType() != com.nearshare.api.model.enums.ListingType.SELL;
+        int effectiveDuration = isTimeBased ? (duration > 0 ? duration : 1) : 1;
+        BigDecimal totalCost = hourlyRate.multiply(BigDecimal.valueOf(effectiveDuration));
+        BigDecimal serviceFee = BigDecimal.ZERO;
+        BigDecimal depositAmount = BigDecimal.ZERO;
+        String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";
+        if ("FEE".equals(bp)) {
+            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+        } else if ("DEPOSIT".equals(bp)) {
+            depositAmount = new BigDecimal("50.00");
         }
+        amount = totalCost.add(serviceFee).add(depositAmount);
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("free_listing_no_payment_required");
         }

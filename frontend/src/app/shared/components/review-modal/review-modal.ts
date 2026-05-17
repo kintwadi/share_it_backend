@@ -48,8 +48,11 @@ export class ReviewModalComponent {
 
   get targetUserId(): string | null {
     if (!this.item || !this.currentUser) return null;
-    if (this.currentUser.id === this.item.ownerId) return this.item.borrowerId || null;
-    return this.item.ownerId;
+    const ownerId = this.item.ownerId ?? null;
+    const borrowerId = this.item.borrowerId ?? null;
+    if (!ownerId) return null;
+    if (this.currentUser.id === ownerId) return borrowerId;
+    return ownerId;
   }
 
   async submit() {
