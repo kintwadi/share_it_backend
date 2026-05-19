@@ -104,13 +104,8 @@ export class Layout {
   
   isHomePage = signal(true);
   currentPath = signal('');
-  isPartnerContext(): boolean {
-    return this.authStorage.getAuthContext() === 'partner';
-  }
-
-  isPartnerArea(): boolean {
-    return String(this.currentPath() || '').startsWith('/partner');
-  }
+  isPartnerContext = computed(() => this.authStorage.authContext() === 'partner');
+  isPartnerArea = computed(() => String(this.currentPath() || '').startsWith('/partner'));
 
   constructor() {
     this.session.refresh();
@@ -132,13 +127,16 @@ export class Layout {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.isHomePage.set(event.urlAfterRedirects === '/' || event.urlAfterRedirects === '/home');
-      this.currentPath.set(event.urlAfterRedirects || '');
-      this.isMenuOpen.set(false);
-      this.isProfileDropdownOpen.set(false);
-      this.isNotifDropdownOpen.set(false);
-      if (!this.currentUser() && !!this.session.user()) return;
-      this.session.refresh();
+      const url = String(event.urlAfterRedirects || '');
+      setTimeout(() => {
+        this.isHomePage.set(url === '/' || url === '/home');
+        this.currentPath.set(url);
+        this.isMenuOpen.set(false);
+        this.isProfileDropdownOpen.set(false);
+        this.isNotifDropdownOpen.set(false);
+        if (!this.currentUser() && !!this.session.user()) return;
+        this.session.refresh();
+      }, 0);
     });
   }
 
