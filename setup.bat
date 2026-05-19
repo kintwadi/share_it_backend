@@ -67,6 +67,7 @@ if "%STRIPE_WEBHOOK_SECRET%"=="" set "STRIPE_WEBHOOK_SECRET=test_webhook_secret"
 if "%SUBSCRIPTION_PLUS_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus"
 if "%SUBSCRIPTION_PRO_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro"
 if "%FRONTEND_BASE_URL%"=="" set "FRONTEND_BASE_URL=https://localhost:4200"
+if "%ADMIN_SIGNUP_SECRET%"=="" set "ADMIN_SIGNUP_SECRET="
 
 :: CORS Origin Patterns (used by security.cors.allowed-origin-patterns)
 set "LOCAL_HOST=https://localhost:*"
@@ -103,6 +104,7 @@ echo - MAIL_FROM: %MAIL_FROM%
 echo - STRIPE_PUBLIC_KEY: %STRIPE_PUBLIC_KEY%
 echo - STRIPE_SECRET_KEY: ********
 echo - STRIPE_WEBHOOK_SECRET: ********
+echo - ADMIN_SIGNUP_SECRET: ********
 echo - LOCAL_HOST: %LOCAL_HOST%
 echo - LOCAL_127: %LOCAL_127%
 echo - REMOTE_RENDE: %REMOTE_RENDE%
