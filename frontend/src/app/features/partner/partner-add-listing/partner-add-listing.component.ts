@@ -48,19 +48,38 @@ export class PartnerAddListingComponent implements OnInit {
     pickupLocationCustom: [''],
   });
 
-  async ngOnInit() {
+  private async withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+    return Promise.race([
+      p,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+  }
+
+  ngOnInit() {
+    setTimeout(() => {
+      void this.loadPartners();
+    }, 0);
+    this.applyHourlyRateRules(this.form.get('type')?.value);
+    this.form.get('type')?.valueChanges.subscribe(t => this.applyHourlyRateRules(t));
+  }
+
+  async loadPartners() {
     this.loading = true;
+    this.error = '';
     try {
-      this.partners = await this.partnerApi.getMyPartners();
+      const list = await this.withTimeout(this.partnerApi.getMyPartners(), 12000);
+      this.partners = Array.isArray(list) ? list : [];
       if (this.partners.length === 1) {
         this.form.patchValue({ partnerId: this.partners[0].id });
       }
-      this.applyHourlyRateRules(this.form.get('type')?.value);
-      this.form.get('type')?.valueChanges.subscribe(t => this.applyHourlyRateRules(t));
     } catch (e: any) {
-      this.error = e?.message || 'failed_to_load';
+      const msg = String(e?.message || 'failed_to_load');
+      this.error = msg === 'timeout' ? 'backend_timeout' : msg;
+      this.partners = [];
     } finally {
-      this.loading = false;
+      setTimeout(() => {
+        this.loading = false;
+      }, 0);
     }
   }
 
