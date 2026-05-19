@@ -25,16 +25,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-    private final boolean allowAdminToggle;
 
     private final TwoFactorService twoFactorService;
     private final DeviceService deviceService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider, @Value("${nearshare.allowAdminToggle:false}") boolean allowAdminToggle, TwoFactorService twoFactorService, DeviceService deviceService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider, TwoFactorService twoFactorService, DeviceService deviceService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
-        this.allowAdminToggle = allowAdminToggle;
         this.twoFactorService = twoFactorService;
         this.deviceService = deviceService;
     }
@@ -66,11 +64,7 @@ public class AuthService {
 
     public UserDTO register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) throw new IllegalArgumentException("email_exists");
-        // Determine role (Default to MEMBER, but allow Admin if enabled)
-        UserRole role = (Boolean.TRUE.equals(request.getIsAdmin()) && allowAdminToggle)
-                ? UserRole.ADMIN
-                : UserRole.MEMBER;
-        User user = User.builder().id(UUID.randomUUID()).name(request.getName()).email(request.getEmail()).password(passwordEncoder.encode(request.getPassword())).phone(request.getPhone()).address(request.getAddress()).avatarUrl(request.getAvatarUrl()).trustScore(50).vouchCount(0).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(request.getLat()).lng(request.getLng()).build()).joinedDate(LocalDateTime.now()).status(UserStatus.ACTIVE).role(role).build();
+        User user = User.builder().id(UUID.randomUUID()).name(request.getName()).email(request.getEmail()).password(passwordEncoder.encode(request.getPassword())).phone(request.getPhone()).address(request.getAddress()).avatarUrl(request.getAvatarUrl()).trustScore(50).vouchCount(0).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(request.getLat()).lng(request.getLng()).build()).joinedDate(LocalDateTime.now()).status(UserStatus.ACTIVE).role(UserRole.MEMBER).build();
         userRepository.save(user);
         return toUserDTO(user);
     }

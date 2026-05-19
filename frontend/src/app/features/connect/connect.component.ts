@@ -28,9 +28,7 @@ export class ConnectComponent implements OnInit {
   showMfaInput = false;
   showPasswordRecovery = false;
   tempToken: string | null = null;
-  allowAdminToggle = false;
   connectConfig: any = {};
-  isAdmin = false;
   error: string | null = null;
   demoNotice: { type: 'success' | 'error'; message: string } | null = null;
   private demoNoticeTimer: any = null;
@@ -54,10 +52,9 @@ export class ConnectComponent implements OnInit {
 
   ngOnInit() {
     this.api.getPublicConfig().then(cfg => {
-      this.allowAdminToggle = !!cfg.allowAdminToggle;
       if (cfg.connect) this.connectConfig = cfg.connect;
       this.render();
-    }).catch(() => this.allowAdminToggle = false);
+    }).catch(() => { });
   }
 
   private render() {
@@ -157,17 +154,13 @@ export class ConnectComponent implements OnInit {
         this.render();
         this.router.navigate(['/dashboard']);
       } else {
-        const data = await this.api.registerUser(this.name, this.email, this.password, this.isAdmin);
+        const data = await this.api.registerUser(this.name, this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
         await this.session.refresh();
         this.isLoading = false;
         this.render();
-        if (this.isAdmin) {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/subscription']);
-        }
+        this.router.navigate(['/subscription']);
       }
     } catch (err: any) {
       console.error('Auth error', err);

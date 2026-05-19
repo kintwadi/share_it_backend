@@ -1,10 +1,9 @@
 package com.nearshare.api.dto;
-
-import com.nearshare.api.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 
 @Getter
 @Setter
@@ -19,6 +18,4 @@ public class RegisterRequest {
     private String avatarUrl;
     private Double lat;
     private Double lng;
-    private Boolean isAdmin;
-    private UserRole role;
 }

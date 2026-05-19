@@ -13,7 +13,7 @@ export class ApiService {
     try {
       return await firstValueFrom(this.api.get<any>('/config/public'));
     } catch {
-      return { allowAdminToggle: false };
+      return {};
     }
   }
 
@@ -203,8 +203,8 @@ export class ApiService {
     return data;
   }
 
-  async registerUser(name: string, email: string, password: string, isAdmin?: boolean): Promise<any> {
-    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0, isAdmin: !!isAdmin };
+  async registerUser(name: string, email: string, password: string): Promise<any> {
+    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0 };
     await firstValueFrom(this.api.post('/auth/register', body));
     const data = await firstValueFrom(this.api.post<any>('/auth/login', { email, password }));
     return data;

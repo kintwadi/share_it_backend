@@ -27,22 +27,19 @@ public class AdminAuthService {
     private final JwtTokenProvider tokenProvider;
     private final AuthService authService;
     private final String signupSecret;
-    private final boolean allowAdminToggle;
 
     public AdminAuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider tokenProvider,
             AuthService authService,
-            @Value("${security.admin.signup.secret:}") String signupSecret,
-            @Value("${nearshare.allowAdminToggle:false}") boolean allowAdminToggle
+            @Value("${security.admin.signup.secret:}") String signupSecret
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.authService = authService;
         this.signupSecret = signupSecret != null ? signupSecret.trim() : "";
-        this.allowAdminToggle = allowAdminToggle;
     }
 
     public TokenResponse login(LoginRequest request, String userAgent, String ipAddress) {
@@ -78,7 +75,7 @@ public class AdminAuthService {
             if (!signupSecret.equals(provided)) {
                 throw new RuntimeException("forbidden");
             }
-        } else if (!allowAdminToggle) {
+        } else {
             throw new RuntimeException("forbidden");
         }
 

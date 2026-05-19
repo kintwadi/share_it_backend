@@ -13,7 +13,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/config")
 public class ConfigController {
-    private final boolean allowAdminToggle;
     private final String stripePublicKey;
     private final SettingsProperties settingsProperties;
     private final int subscriptionPlusTrialDays;
@@ -21,13 +20,11 @@ public class ConfigController {
     private final String subscriptionCurrency;
 
     public ConfigController(
-            @Value("${nearshare.allowAdminToggle:false}") boolean allowAdminToggle,
             @Value("${STRIPE_PUBLIC_KEY}") String stripePublicKey,
             @Value("${subscription.plus.trial_days:14}") int subscriptionPlusTrialDays,
             @Value("${subscription.plus.monthly_amount_cents:499}") int subscriptionPlusMonthlyAmountCents,
             @Value("${subscription.currency:EUR}") String subscriptionCurrency,
             SettingsProperties settingsProperties) {
-        this.allowAdminToggle = allowAdminToggle;
         this.stripePublicKey = stripePublicKey;
         this.subscriptionPlusTrialDays = subscriptionPlusTrialDays;
         this.subscriptionPlusMonthlyAmountCents = subscriptionPlusMonthlyAmountCents;
@@ -38,7 +35,6 @@ public class ConfigController {
     @GetMapping("/public")
     public ResponseEntity<Map<String, Object>> publicConfig() {
         return ResponseEntity.ok(Map.of(
-            "allowAdminToggle", allowAdminToggle,
             "stripePublicKey", stripePublicKey,
             "connect", settingsProperties.getConnect(),
             "home", settingsProperties.getHome(),

@@ -221,11 +221,6 @@
           </div>
         </div>
 
-        <div *ngIf="!isLogin && allowAdminToggle" class="flex items-center gap-2">
-          <input id="isAdmin" name="isAdmin" type="checkbox" [(ngModel)]="isAdmin" class="h-4 w-4" />
-          <label for="isAdmin" class="text-sm text-gray-700 font-medium">{{ i18n.t('connect.admin') }}</label>
-        </div>
-        
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 ml-1">{{ i18n.t('connect.email') }}</label>
            <div class="relative group">
