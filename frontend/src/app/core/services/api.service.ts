@@ -144,6 +144,65 @@ export class ApiService {
     return data;
   }
 
+  async loginAdmin(email: string, password: string): Promise<any> {
+    const data = await firstValueFrom(this.api.post<any>('/admin/auth/login', { email, password }));
+    if (data.mfaRequired) {
+      throw { code: 'MFA_REQUIRED', token: data.token };
+    }
+    return data;
+  }
+
+  async verify2FALoginAdmin(code: string, token: string): Promise<any> {
+    const res = await fetch(`${this.api.getBaseUrl()}/admin/auth/verify-2fa-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) throw new Error('Invalid code');
+    return res.json();
+  }
+
+  async registerAdmin(name: string, email: string, password: string, signupSecret?: string): Promise<any> {
+    const body = { name, email, password, signupSecret: signupSecret ?? '' };
+    const data = await firstValueFrom(this.api.post<any>('/admin/auth/register', body));
+    return data;
+  }
+
+  async loginPartner(email: string, password: string): Promise<any> {
+    const data = await firstValueFrom(this.api.post<any>('/partner/auth/login', { email, password }));
+    if (data.mfaRequired) {
+      throw { code: 'MFA_REQUIRED', token: data.token };
+    }
+    return data;
+  }
+
+  async verify2FALoginPartner(code: string, token: string): Promise<any> {
+    const res = await fetch(`${this.api.getBaseUrl()}/partner/auth/verify-2fa-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) throw new Error('Invalid code');
+    return res.json();
+  }
+
+  async registerPartner(payload: { userName: string; userEmail: string; userPassword: string; partner: any }): Promise<any> {
+    const body = {
+      userName: payload.userName,
+      userEmail: payload.userEmail,
+      userPassword: payload.userPassword,
+      partner: payload.partner
+    };
+    const data = await firstValueFrom(this.api.post<any>('/partner/auth/register', body));
+    return data;
+  }
+
   async registerUser(name: string, email: string, password: string, isAdmin?: boolean): Promise<any> {
     const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0, isAdmin: !!isAdmin };
     await firstValueFrom(this.api.post('/auth/register', body));

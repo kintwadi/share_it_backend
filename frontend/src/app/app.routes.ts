@@ -4,6 +4,8 @@ import { canMatchAdmin, canMatchBorrowerSubscription, canMatchDashboard, canMatc
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
   { path: 'connect', loadComponent: () => import('./features/connect/connect.component').then(m => m.ConnectComponent) },
+  { path: 'connect/admin', loadComponent: () => import('./features/connect-admin/connectAdmin').then(m => m.ConnectAdminComponent) },
+  { path: 'connect/partner', loadComponent: () => import('./features/connect-partner/connectPartner').then(m => m.ConnectPartnerComponent) },
   { path: 'dashboard', canMatch: [canMatchDashboard], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'admin', canMatch: [canMatchAdmin], loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent) },
   { path: 'partner', loadChildren: () => import('./features/partner/partner.routes').then(m => m.PARTNER_ROUTES) },
