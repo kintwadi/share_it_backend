@@ -35,36 +35,47 @@ export class PartnerDashboardComponent implements OnInit {
     ]);
   }
 
-  async ngOnInit() {
-    await this.reload();
+  ngOnInit() {
+    setTimeout(() => {
+      void this.reload();
+    }, 0);
   }
 
   async reload() {
     this.loading = true;
     this.error = '';
+    let nextPartners: Partner[] = [];
+    let nextListings: Listing[] = [];
+    let nextError = '';
     try {
       const [partnersRes, listingsRes] = await Promise.allSettled([
         this.withTimeout(this.partnerApi.getMyPartners(), 12000),
         this.withTimeout(this.partnerApi.getListings(), 12000)
       ]);
       if (partnersRes.status === 'fulfilled') {
-        this.partners = Array.isArray(partnersRes.value) ? partnersRes.value : [];
+        nextPartners = Array.isArray(partnersRes.value) ? partnersRes.value : [];
       } else {
-        this.partners = [];
-        this.error = (partnersRes.reason as any)?.message || 'failed_to_load';
+        nextPartners = [];
+        nextError = (partnersRes.reason as any)?.message || 'failed_to_load';
       }
       if (listingsRes.status === 'fulfilled') {
-        this.listings = Array.isArray(listingsRes.value) ? listingsRes.value : [];
-      } else if (!this.error) {
-        this.listings = [];
-        this.error = (listingsRes.reason as any)?.message || 'failed_to_load';
+        nextListings = Array.isArray(listingsRes.value) ? listingsRes.value : [];
+      } else if (!nextError) {
+        nextListings = [];
+        nextError = (listingsRes.reason as any)?.message || 'failed_to_load';
       }
-      if (this.error === 'timeout') {
-        this.error = 'backend_timeout';
-      }
-    } finally {
-      this.loading = false;
+    } catch (e: any) {
+      nextError = e?.message || 'failed_to_load';
     }
+    if (nextError === 'timeout') {
+      nextError = 'backend_timeout';
+    }
+    setTimeout(() => {
+      this.partners = nextPartners;
+      this.listings = nextListings;
+      this.error = nextError;
+      this.loading = false;
+    }, 0);
   }
 
   goAdd() {
