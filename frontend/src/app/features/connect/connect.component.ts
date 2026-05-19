@@ -149,6 +149,7 @@ export class ConnectComponent implements OnInit {
         const data = await this.api.loginWithEmail(this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('user');
         await this.session.refresh();
         this.isLoading = false;
         this.render();
@@ -157,6 +158,7 @@ export class ConnectComponent implements OnInit {
         const data = await this.api.registerUser(this.name, this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('user');
         await this.session.refresh();
         this.isLoading = false;
         this.render();

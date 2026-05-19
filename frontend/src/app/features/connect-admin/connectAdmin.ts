@@ -74,6 +74,7 @@ export class ConnectAdminComponent implements OnInit {
       const data = await this.api.verify2FALoginAdmin(this.mfaCode, this.tempToken);
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+      this.authStorage.setAuthContext('admin');
       await this.session.refresh();
       this.isLoading = false;
       this.render();
@@ -102,6 +103,7 @@ export class ConnectAdminComponent implements OnInit {
         const data = await this.api.loginAdmin(this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('admin');
         await this.session.refresh();
         this.isLoading = false;
         this.render();
@@ -112,6 +114,7 @@ export class ConnectAdminComponent implements OnInit {
       const data = await this.api.registerAdmin(this.name, this.email, this.password, this.signupSecret);
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+      this.authStorage.setAuthContext('admin');
       await this.session.refresh();
       this.isLoading = false;
       this.render();
@@ -130,4 +133,3 @@ export class ConnectAdminComponent implements OnInit {
     }
   }
 }
-

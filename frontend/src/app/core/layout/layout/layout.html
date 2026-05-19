@@ -26,6 +26,11 @@
             <span>{{ i18n.t('nav.admin') }}</span>
           </a>
 
+          <a *ngIf="currentUser() && (isPartnerContext() || isPartnerArea())" routerLink="/partner/dashboard" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+            <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
+            <span>Partner</span>
+          </a>
+
           <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages')" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
             <lucide-icon [img]="MessageSquare" [size]="18"></lucide-icon>
             <span>{{ i18n.t('nav.messages') }}</span>
@@ -61,7 +66,7 @@
           </div>
 
           <!-- Notifications -->
-          <a *ngIf="currentUser() && !hasSubscription() && !isAdmin() && isHeaderSectionEnabled('subscribe')" routerLink="/subscription" class="mr-2 px-4 py-2 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1">
+          <a *ngIf="currentUser() && !hasSubscription() && !isAdmin() && !isPartnerContext() && !isPartnerArea() && isHeaderSectionEnabled('subscribe')" routerLink="/subscription" class="mr-2 px-4 py-2 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1">
             <lucide-icon [img]="Zap" [size]="14"></lucide-icon>
             {{ i18n.t('nav.subscribe') }}
           </a>
@@ -155,6 +160,9 @@
           </a>
           <a *ngIf="isAdmin()" routerLink="/admin" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
             <lucide-icon [img]="Shield" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.admin') }}
+          </a>
+          <a *ngIf="(isPartnerContext() || isPartnerArea())" routerLink="/partner/dashboard" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
+            <lucide-icon [img]="Building2" [size]="18" class="mr-3"></lucide-icon> Partner
           </a>
           <a *ngIf="(hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages')" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
             <lucide-icon [img]="MessageSquare" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.messages') }}

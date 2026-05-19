@@ -15,6 +15,10 @@ function isAdminRole(role: unknown): boolean {
   return r === 'ADMIN' || r === 'ROLE_ADMIN';
 }
 
+function isPartnerContext(authStorage: AuthStorageService): boolean {
+  return authStorage.getAuthContext() === 'partner';
+}
+
 export const canMatchDashboard: CanMatchFn = async () => {
   const router = inject(Router);
   const settingsConfig = inject(SettingsConfigService);
@@ -24,6 +28,7 @@ export const canMatchDashboard: CanMatchFn = async () => {
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
   if (isAdminRole(session.user()?.role)) return true;
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   if (!settingsConfig.isSectionEnabled('header', 'dashboard')) {
     return router.createUrlTree(['/']);
   }
@@ -93,6 +98,7 @@ export const canMatchSubscription: CanMatchFn = async () => {
   }
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   const u = session.user();
   if (!u || u.role === 'ADMIN') return router.createUrlTree(['/']);
   const sub = session.subscription();

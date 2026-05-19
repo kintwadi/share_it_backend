@@ -81,6 +81,7 @@ export class ConnectPartnerComponent implements OnInit {
       const data = await this.api.verify2FALoginPartner(this.mfaCode, this.tempToken);
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+      this.authStorage.setAuthContext('partner');
       await this.session.refresh();
       this.isLoading = false;
       this.render();
@@ -109,6 +110,7 @@ export class ConnectPartnerComponent implements OnInit {
         const data = await this.api.loginPartner(this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('partner');
         await this.session.refresh();
         this.isLoading = false;
         this.render();
@@ -131,6 +133,7 @@ export class ConnectPartnerComponent implements OnInit {
       });
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+      this.authStorage.setAuthContext('partner');
       await this.session.refresh();
       this.isLoading = false;
       this.render();
@@ -149,4 +152,3 @@ export class ConnectPartnerComponent implements OnInit {
     }
   }
 }
-

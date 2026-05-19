@@ -17,7 +17,8 @@ import {
   UserCircle, 
   ChevronDown, 
   Bell,
-  Globe
+  Globe,
+  Building2
 } from 'lucide-angular';
 import { SessionService } from '../../services/session.service';
 import { Notification } from '../../models/types';
@@ -26,6 +27,7 @@ import { NotificationType } from '../../models/types';
 import { SettingsConfigService } from '../../services/settings-config.service';
 import { I18nService } from '../../services/i18n.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
+import { AuthStorageService } from '../../services/auth-storage.service';
 
 @Component({
   selector: 'app-layout',
@@ -49,12 +51,14 @@ export class Layout {
   readonly ChevronDown = ChevronDown;
   readonly Bell = Bell;
   readonly Globe = Globe;
+  readonly Building2 = Building2;
 
   private router = inject(Router);
   private session = inject(SessionService);
   private notificationsApi = inject(NotificationService);
   private settingsConfig = inject(SettingsConfigService);
   private prefs = inject(UserPreferencesService);
+  private authStorage = inject(AuthStorageService);
   i18n = inject(I18nService);
 
   isMenuOpen = signal(false);
@@ -99,6 +103,14 @@ export class Layout {
   language = this.i18n.language;
   
   isHomePage = signal(true);
+  currentPath = signal('');
+  isPartnerContext(): boolean {
+    return this.authStorage.getAuthContext() === 'partner';
+  }
+
+  isPartnerArea(): boolean {
+    return String(this.currentPath() || '').startsWith('/partner');
+  }
 
   constructor() {
     this.session.refresh();
@@ -121,6 +133,7 @@ export class Layout {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.isHomePage.set(event.urlAfterRedirects === '/' || event.urlAfterRedirects === '/home');
+      this.currentPath.set(event.urlAfterRedirects || '');
       this.isMenuOpen.set(false);
       this.isProfileDropdownOpen.set(false);
       this.isNotifDropdownOpen.set(false);

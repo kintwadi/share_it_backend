@@ -70,8 +70,8 @@ if "%FRONTEND_BASE_URL%"=="" set "FRONTEND_BASE_URL=https://localhost:4200"
 if "%ADMIN_SIGNUP_SECRET%"=="" set "ADMIN_SIGNUP_SECRET="
 
 :: CORS Origin Patterns (used by security.cors.allowed-origin-patterns)
-set "LOCAL_HOST=https://localhost:*"
-set "LOCAL_127=https://127.0.0.1:*"
+set "LOCAL_HOST=http://localhost:*"
+set "LOCAL_127=http://127.0.0.1:*"
 set "REMOTE_RENDE=https://share-it-client.onrender.com"
 
 :: Display configuration

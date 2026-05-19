@@ -7,6 +7,7 @@ export class AuthStorageService {
   private readonly TOKEN_KEY = 'nearshare_token';
   private readonly USER_ID_KEY = 'nearshare_current_user_id';
   private readonly NOTIFICATIONS_KEY = 'nearshare_notifications';
+  private readonly AUTH_CONTEXT_KEY = 'nearshare_auth_context';
 
   getToken(): string | null {
     return sessionStorage.getItem(this.TOKEN_KEY) || localStorage.getItem(this.TOKEN_KEY);
@@ -25,6 +26,8 @@ export class AuthStorageService {
     localStorage.removeItem(this.TOKEN_KEY);
     sessionStorage.removeItem(this.USER_ID_KEY);
     localStorage.removeItem(this.USER_ID_KEY);
+    sessionStorage.removeItem(this.AUTH_CONTEXT_KEY);
+    localStorage.removeItem(this.AUTH_CONTEXT_KEY);
   }
 
   getUserId(): string | null {
@@ -36,6 +39,21 @@ export class AuthStorageService {
       localStorage.setItem(this.USER_ID_KEY, id);
     } else {
       sessionStorage.setItem(this.USER_ID_KEY, id);
+    }
+  }
+
+  getAuthContext(): 'user' | 'admin' | 'partner' | null {
+    const raw = sessionStorage.getItem(this.AUTH_CONTEXT_KEY) || localStorage.getItem(this.AUTH_CONTEXT_KEY);
+    const v = String(raw || '').toLowerCase();
+    if (v === 'user' || v === 'admin' || v === 'partner') return v;
+    return null;
+  }
+
+  setAuthContext(ctx: 'user' | 'admin' | 'partner', rememberMe: boolean = false): void {
+    if (rememberMe) {
+      localStorage.setItem(this.AUTH_CONTEXT_KEY, ctx);
+    } else {
+      sessionStorage.setItem(this.AUTH_CONTEXT_KEY, ctx);
     }
   }
 }
