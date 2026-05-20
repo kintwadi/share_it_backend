@@ -4,6 +4,7 @@ import com.nearshare.api.partner.model.PartnerAdmin;
 import com.nearshare.api.partner.model.PartnerAdminRole;
 import com.nearshare.api.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,6 +14,10 @@ import java.util.UUID;
 public interface PartnerAdminRepository extends JpaRepository<PartnerAdmin, UUID> {
     @Query("select pa from PartnerAdmin pa where pa.user.id = :userId")
     List<PartnerAdmin> findAllByUserId(@Param("userId") UUID userId);
+
+    @Modifying
+    @Query("delete from PartnerAdmin pa where pa.user.id = :userId")
+    void deleteAllByUserId(@Param("userId") UUID userId);
 
     @Query("select (count(pa) > 0) from PartnerAdmin pa where pa.user.id = :userId and pa.partner.id = :partnerId and pa.role = :role")
     boolean existsByUserAndPartnerAndRole(@Param("userId") UUID userId, @Param("partnerId") UUID partnerId, @Param("role") PartnerAdminRole role);
