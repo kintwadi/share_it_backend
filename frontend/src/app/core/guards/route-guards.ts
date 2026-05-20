@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanMatchFn, Router } from '@angular/router';
 import { AuthStorageService } from '../services/auth-storage.service';
+import { PartnerService } from '../services/partner.service';
 import { SessionService } from '../services/session.service';
 import { SettingsConfigService } from '../services/settings-config.service';
 
@@ -133,6 +134,16 @@ export const canMatchPartner: CanMatchFn = async () => {
   if (!ok) return router.createUrlTree(['/connect/partner']);
   const u = session.user();
   if (isAdminRole(u?.role)) return router.createUrlTree(['/admin']);
-  if (!isPartnerContext(authStorage)) return router.createUrlTree(['/dashboard']);
-  return true;
+  if (isPartnerContext(authStorage)) return true;
+
+  const partnerApi = inject(PartnerService);
+  try {
+    const partners = await partnerApi.getMyPartners();
+    if (Array.isArray(partners) && partners.length > 0) {
+      authStorage.setAuthContext('partner');
+      return true;
+    }
+  } catch { }
+
+  return router.createUrlTree(['/connect/partner']);
 };
