@@ -46,7 +46,6 @@ export class PartnerSubmitListingComponent implements OnInit {
   hourlyRate = 0;
   imageUrl = '';
   gallery: string[] = [];
-  insuranceRequired = false;
 
   pickupOption: 'concierge' | 'bakery' | 'public' | 'custom' = 'concierge';
   pickupLocationId: string | null = null;
@@ -263,7 +262,7 @@ export class PartnerSubmitListingComponent implements OnInit {
         imageUrl: this.imageUrl,
         gallery: this.gallery,
         autoApprove: false,
-        insuranceRequired: !!this.insuranceRequired,
+        insuranceRequired: false,
         x: 0,
         y: 0,
         pickupLocationId: this.pickupOption === 'custom' ? null : this.pickupLocationId,
@@ -280,7 +279,6 @@ export class PartnerSubmitListingComponent implements OnInit {
       this.hourlyRate = 0;
       this.imageUrl = '';
       this.gallery = [];
-      this.insuranceRequired = false;
       this.pickupLocationStreet = '';
       this.pickupLocationHouseNumber = '';
       this.pickupLocationCity = '';
