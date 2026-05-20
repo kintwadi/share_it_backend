@@ -118,15 +118,15 @@ export class PartnerSubmitListingComponent implements OnInit {
   }
 
   get pickupConcierge(): PickupLocation | null {
-    return this.findPickupByKeyword('concierge') || this.pickupLocations[0] || null;
+    return this.findPickupByKeyword('concierge');
   }
 
   get pickupBakery(): PickupLocation | null {
-    return this.findPickupByKeyword('bakery') || this.pickupLocations[0] || null;
+    return this.findPickupByKeyword('bakery');
   }
 
   get pickupPublic(): PickupLocation | null {
-    return this.findPickupByKeyword('public') || this.pickupLocations[0] || null;
+    return this.findPickupByKeyword('public');
   }
 
   private findPickupByKeyword(keyword: string): PickupLocation | null {
@@ -140,7 +140,15 @@ export class PartnerSubmitListingComponent implements OnInit {
     if (opt === 'concierge') selected = this.pickupConcierge;
     if (opt === 'bakery') selected = this.pickupBakery;
     if (opt === 'public') selected = this.pickupPublic;
-    this.pickupLocationId = opt === 'custom' ? null : (selected ? String(selected.id) : null);
+    if (opt === 'custom') {
+      this.pickupLocationId = null;
+    } else if (selected) {
+      this.pickupLocationId = String(selected.id);
+    } else if (this.pickupLocations.length > 0) {
+      this.pickupLocationId = String(this.pickupLocations[0]?.id || '');
+    } else {
+      this.pickupLocationId = null;
+    }
     if (opt !== 'custom') {
       this.pickupLocationStreet = '';
       this.pickupLocationHouseNumber = '';
@@ -224,6 +232,10 @@ export class PartnerSubmitListingComponent implements OnInit {
     }
     if (!String(this.imageUrl || '').trim()) {
       this.error = 'cover_required';
+      return;
+    }
+    if (this.pickupOption !== 'custom' && !this.pickupLocationId) {
+      this.error = 'pickup_point_required';
       return;
     }
     if (this.pickupOption === 'custom') {
