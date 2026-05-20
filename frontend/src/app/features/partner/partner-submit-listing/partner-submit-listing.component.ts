@@ -29,6 +29,7 @@ export class PartnerSubmitListingComponent implements OnInit {
   readonly ListingType = ListingType;
 
   loading = true;
+  slowLoad = false;
   saving = false;
   uploadingCover = false;
   uploadingGallery = false;
@@ -63,19 +64,52 @@ export class PartnerSubmitListingComponent implements OnInit {
     }, 0);
   }
 
+  reload() {
+    void this.init();
+  }
+
+  private async withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+    return Promise.race([
+      p,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+  }
+
   private async init() {
     this.loading = true;
+    this.slowLoad = false;
     this.error = null;
     this.success = null;
+    const slowTimer = setTimeout(() => {
+      if (this.loading) this.slowLoad = true;
+    }, 5000);
     try {
-      const [partners, categories, pickups] = await Promise.all([
-        this.partnerApi.getMyPartners(),
-        this.api.getCategories().catch(() => []),
-        this.api.getPickupLocations().catch(() => [])
+      const [partnersRes, categoriesRes, pickupsRes] = await Promise.allSettled([
+        this.withTimeout(this.partnerApi.getMyPartners(), 12000),
+        this.withTimeout(this.api.getCategories().catch(() => []), 12000),
+        this.withTimeout(this.api.getPickupLocations().catch(() => []), 12000)
       ]);
-      this.partners = Array.isArray(partners) ? partners : [];
-      this.categories = Array.isArray(categories) ? categories : [];
-      this.pickupLocations = Array.isArray(pickups) ? pickups : [];
+
+      if (partnersRes.status === 'fulfilled') {
+        this.partners = Array.isArray(partnersRes.value) ? partnersRes.value : [];
+      } else {
+        this.partners = [];
+        this.error = (partnersRes.reason as any)?.message || 'failed_to_load';
+      }
+
+      if (categoriesRes.status === 'fulfilled') {
+        this.categories = Array.isArray(categoriesRes.value) ? categoriesRes.value : [];
+      } else {
+        this.categories = [];
+        if (!this.error) this.error = (categoriesRes.reason as any)?.message || 'failed_to_load';
+      }
+
+      if (pickupsRes.status === 'fulfilled') {
+        this.pickupLocations = Array.isArray(pickupsRes.value) ? pickupsRes.value : [];
+      } else {
+        this.pickupLocations = [];
+        if (!this.error) this.error = (pickupsRes.reason as any)?.message || 'failed_to_load';
+      }
 
       if (!this.partnerId && this.partners.length === 1) {
         this.partnerId = String(this.partners[0].id || '');
@@ -90,9 +124,8 @@ export class PartnerSubmitListingComponent implements OnInit {
       this.error = e?.message || 'failed_to_load';
       this.partners = [];
     } finally {
-      setTimeout(() => {
-        this.loading = false;
-      }, 0);
+      clearTimeout(slowTimer);
+      this.loading = false;
     }
   }
 

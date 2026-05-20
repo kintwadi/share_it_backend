@@ -8,8 +8,12 @@
   </div>
 
   <ng-container *ngIf="loading; else formTpl">
-    <div class="flex items-center justify-center py-10 text-slate-500">
+    <div class="flex flex-col items-center justify-center py-10 text-slate-500 gap-3">
       <lucide-icon [img]="Loader2" size="32" class="animate-spin"></lucide-icon>
+      <div class="text-sm">Loading partner form...</div>
+      <button *ngIf="slowLoad" type="button" (click)="reload()" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50">
+        Retry
+      </button>
     </div>
   </ng-container>
 
