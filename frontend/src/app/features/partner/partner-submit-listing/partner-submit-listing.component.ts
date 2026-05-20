@@ -53,6 +53,19 @@ export class PartnerSubmitListingComponent implements OnInit {
   pickupLocationZip = '';
   pickupLocationCustom = '';
 
+  availabilityMode: 'fixed' | 'unlimited' = 'unlimited';
+  availableFromDate = '';
+  availableFromTime = '10:00';
+  availableToDate = '';
+  availableToTime = '18:00';
+
+  readonly timeOptions = [
+    '08:00','08:30','09:00','09:30','10:00','10:30',
+    '11:00','11:30','12:00','12:30','13:00','13:30',
+    '14:00','14:30','15:00','15:30','16:00','16:30',
+    '17:00','17:30','18:00','18:30','19:00','19:30','20:00'
+  ];
+
   ngOnInit() {
     setTimeout(() => {
       void this.init();
@@ -136,6 +149,27 @@ export class PartnerSubmitListingComponent implements OnInit {
     this.pickupLocationCustom = '';
   }
 
+  setAvailabilityMode(mode: 'fixed' | 'unlimited') {
+    this.availabilityMode = mode;
+    if (mode === 'unlimited') {
+      this.availableToDate = '';
+      this.availableToTime = '18:00';
+    }
+  }
+
+  private validateAvailability(): string | null {
+    if (this.availabilityMode === 'unlimited') return null;
+    if (!this.availableFromDate) return 'availability_from_required';
+    if (!this.availableToDate) return 'availability_to_required';
+    if (
+      this.availableToDate < this.availableFromDate ||
+      (this.availableToDate === this.availableFromDate && this.availableToTime <= this.availableFromTime)
+    ) {
+      return 'availability_time_order';
+    }
+    return null;
+  }
+
   onTypeSelect(type: ListingType) {
     if (type !== ListingType.GIVE && type !== ListingType.LEND) return;
     this.type = type;
@@ -205,6 +239,13 @@ export class PartnerSubmitListingComponent implements OnInit {
       this.error = 'partner_required';
       return;
     }
+
+    const availabilityErr = this.validateAvailability();
+    if (availabilityErr) {
+      this.error = availabilityErr;
+      return;
+    }
+
     if (!String(this.title || '').trim() || !String(this.category || '').trim() || !this.type) {
       this.error = 'required_fields';
       return;
