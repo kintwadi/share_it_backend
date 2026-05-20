@@ -124,3 +124,15 @@ export const canMatchBorrowerSubscription: CanMatchFn = async () => {
   const ok = await ensureAuthenticated(authStorage, session);
   return ok ? true : router.createUrlTree(['/connect']);
 };
+
+export const canMatchPartner: CanMatchFn = async () => {
+  const router = inject(Router);
+  const authStorage = inject(AuthStorageService);
+  const session = inject(SessionService);
+  const ok = await ensureAuthenticated(authStorage, session);
+  if (!ok) return router.createUrlTree(['/connect/partner']);
+  const u = session.user();
+  if (isAdminRole(u?.role)) return router.createUrlTree(['/admin']);
+  if (!isPartnerContext(authStorage)) return router.createUrlTree(['/dashboard']);
+  return true;
+};

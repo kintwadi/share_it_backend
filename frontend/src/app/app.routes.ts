@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { canMatchAdmin, canMatchBorrowerSubscription, canMatchDashboard, canMatchMailbox, canMatchMessages, canMatchNewItem, canMatchSettings, canMatchSubscription } from './core/guards/route-guards';
+import { canMatchAdmin, canMatchBorrowerSubscription, canMatchDashboard, canMatchMailbox, canMatchMessages, canMatchNewItem, canMatchPartner, canMatchSettings, canMatchSubscription } from './core/guards/route-guards';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) },
@@ -8,7 +8,7 @@ export const routes: Routes = [
   { path: 'connect/partner', loadComponent: () => import('./features/connect-partner/connectPartner').then(m => m.ConnectPartnerComponent) },
   { path: 'dashboard', canMatch: [canMatchDashboard], loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'admin', canMatch: [canMatchAdmin], loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent) },
-  { path: 'partner', loadChildren: () => import('./features/partner/partner.routes').then(m => m.PARTNER_ROUTES) },
+  { path: 'partner', canMatch: [canMatchPartner], loadChildren: () => import('./features/partner/partner.routes').then(m => m.PARTNER_ROUTES) },
   { path: 'messages', canMatch: [canMatchMessages], loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent) },
   { path: 'mailbox', canMatch: [canMatchMailbox], loadComponent: () => import('./features/mailbox/mailbox.component').then(m => m.MailboxComponent) },
   { path: 'listing/:id', loadComponent: () => import('./features/listing-detail/listing-detail.component').then(m => m.ListingDetailComponent) },
