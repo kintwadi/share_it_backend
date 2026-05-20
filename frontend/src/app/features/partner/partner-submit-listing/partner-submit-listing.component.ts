@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, ChevronDown, X, Plus } from 'lucide-angular';
+import { LucideAngularModule, Package, Upload, Image as ImageIcon, ChevronDown, X, Plus } from 'lucide-angular';
 import { ApiService } from '../../../core/services/api.service';
 import { PartnerService } from '../../../core/services/partner.service';
 import { ListingType, Partner, Category, PickupLocation } from '../../../core/models/types';
@@ -21,15 +21,13 @@ export class PartnerSubmitListingComponent implements OnInit {
   readonly Package = Package;
   readonly Upload = Upload;
   readonly ImageIcon = ImageIcon;
-  readonly Loader2 = Loader2;
   readonly ChevronDown = ChevronDown;
   readonly X = X;
   readonly Plus = Plus;
 
   readonly ListingType = ListingType;
 
-  loading = true;
-  slowLoad = false;
+  loading = false;
   saving = false;
   uploadingCover = false;
   uploadingGallery = false;
@@ -64,10 +62,6 @@ export class PartnerSubmitListingComponent implements OnInit {
     }, 0);
   }
 
-  reload() {
-    void this.init();
-  }
-
   private async withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
       p,
@@ -76,13 +70,8 @@ export class PartnerSubmitListingComponent implements OnInit {
   }
 
   private async init() {
-    this.loading = true;
-    this.slowLoad = false;
     this.error = null;
     this.success = null;
-    const slowTimer = setTimeout(() => {
-      if (this.loading) this.slowLoad = true;
-    }, 5000);
     try {
       const [partnersRes, categoriesRes, pickupsRes] = await Promise.allSettled([
         this.withTimeout(this.partnerApi.getMyPartners(), 12000),
@@ -124,7 +113,6 @@ export class PartnerSubmitListingComponent implements OnInit {
       this.error = e?.message || 'failed_to_load';
       this.partners = [];
     } finally {
-      clearTimeout(slowTimer);
       this.loading = false;
     }
   }
