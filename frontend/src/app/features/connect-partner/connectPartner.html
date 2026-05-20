@@ -24,15 +24,7 @@
       </div>
 
       <form *ngIf="!showMfaInput" (ngSubmit)="handleSubmit()" class="space-y-4">
-        <div *ngIf="!isLogin">
-          <label class="block text-sm font-semibold text-gray-700 mb-1">Your Name</label>
-          <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
-            <lucide-icon [img]="UserIcon" [size]="16" class="text-gray-400"></lucide-icon>
-            <input [(ngModel)]="userName" name="userName" class="w-full outline-none text-sm" />
-          </div>
-        </div>
-
-        <div>
+        <div *ngIf="isLogin">
           <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
           <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
             <lucide-icon [img]="Mail" [size]="16" class="text-gray-400"></lucide-icon>
@@ -40,7 +32,7 @@
           </div>
         </div>
 
-        <div>
+        <div *ngIf="isLogin">
           <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
           <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
             <lucide-icon [img]="Lock" [size]="16" class="text-gray-400"></lucide-icon>
@@ -49,8 +41,6 @@
         </div>
 
         <ng-container *ngIf="!isLogin">
-          <div class="h-px bg-gray-200 my-2"></div>
-
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">Partner Name</label>
             <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
@@ -68,11 +58,19 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-1">Partner Phone</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">Partner Password</label>
               <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
-                <lucide-icon [img]="Phone" [size]="16" class="text-gray-400"></lucide-icon>
-                <input [(ngModel)]="partnerPhone" name="partnerPhone" class="w-full outline-none text-sm" />
+                <lucide-icon [img]="Lock" [size]="16" class="text-gray-400"></lucide-icon>
+                <input [(ngModel)]="partnerPassword" name="partnerPassword" type="password" class="w-full outline-none text-sm" />
               </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Partner Phone</label>
+            <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
+              <lucide-icon [img]="Phone" [size]="16" class="text-gray-400"></lucide-icon>
+              <input [(ngModel)]="partnerPhone" name="partnerPhone" class="w-full outline-none text-sm" />
             </div>
           </div>
 
@@ -123,4 +121,3 @@
     </div>
   </div>
 </div>
-

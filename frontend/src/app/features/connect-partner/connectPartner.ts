@@ -40,6 +40,7 @@ export class ConnectPartnerComponent implements OnInit {
 
   partnerName = '';
   partnerEmail = '';
+  partnerPassword = '';
   partnerPhone = '';
   partnerAddress = '';
   partnerCity = '';
@@ -65,6 +66,14 @@ export class ConnectPartnerComponent implements OnInit {
     this.showMfaInput = false;
     this.tempToken = null;
     this.mfaCode = '';
+    if (!isLoginMode) {
+      this.userName = '';
+      this.email = '';
+      this.password = '';
+    }
+    if (isLoginMode) {
+      this.partnerPassword = '';
+    }
     this.render();
   }
 
@@ -119,9 +128,9 @@ export class ConnectPartnerComponent implements OnInit {
       }
 
       const data = await this.api.registerPartner({
-        userName: this.userName,
-        userEmail: this.email,
-        userPassword: this.password,
+        userName: this.partnerName || this.contactPerson,
+        userEmail: this.partnerEmail,
+        userPassword: this.partnerPassword,
         partner: {
           name: this.partnerName,
           email: this.partnerEmail,
