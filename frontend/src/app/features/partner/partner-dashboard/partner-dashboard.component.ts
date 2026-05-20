@@ -5,11 +5,12 @@ import { LucideAngularModule, Plus, Settings, Inbox, Building2, History } from '
 import { PartnerService } from '../../../core/services/partner.service';
 import { Listing, Partner } from '../../../core/models/types';
 import { ResourceCardComponent } from '../../../shared/components/resource-card/resource-card';
+import { PartnerSubmitListingComponent } from '../partner-submit-listing/partner-submit-listing.component';
 
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, ResourceCardComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, ResourceCardComponent, PartnerSubmitListingComponent],
   templateUrl: './partner-dashboard.component.html',
   styleUrl: './partner-dashboard.component.css'
 })
@@ -27,6 +28,7 @@ export class PartnerDashboardComponent implements OnInit {
   listings: Listing[] = [];
   loading = true;
   error = '';
+  showSubmitForm = true;
 
   private async withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
     return Promise.race([
@@ -78,7 +80,11 @@ export class PartnerDashboardComponent implements OnInit {
     }, 0);
   }
 
-  goAdd() {
-    this.router.navigate(['/partner/listings/add']);
+  openSubmitForm() {
+    this.showSubmitForm = true;
+    setTimeout(() => {
+      const el = document.getElementById('partner-submit-form');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   }
 }

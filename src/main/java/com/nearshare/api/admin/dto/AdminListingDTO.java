@@ -19,8 +19,9 @@ public class AdminListingDTO {
     private BigDecimal hourlyRate;
     private UUID ownerId;
     private String ownerEmail;
+    private UUID partnerId;
+    private String partnerName;
     private UUID borrowerId;
     private String borrowerEmail;
     private LocalDateTime createdAt;
 }
-

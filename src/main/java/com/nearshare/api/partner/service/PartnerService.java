@@ -126,7 +126,7 @@ public class PartnerService {
                 .hourlyRate(hourlyRate)
                 .autoApprove(req.isAutoApprove())
                 .insuranceRequired(req.isInsuranceRequired())
-                .status(AvailabilityStatus.AVAILABLE)
+                .status(AvailabilityStatus.PARTNER_PENDING_APPROVAL)
                 .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
                 .owner(null)
                 .partner(partner)

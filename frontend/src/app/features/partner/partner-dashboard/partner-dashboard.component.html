@@ -17,9 +17,9 @@
         <lucide-icon [img]="Settings" [size]="16"></lucide-icon>
         Settings
       </a>
-      <button (click)="goAdd()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800">
+      <button (click)="openSubmitForm()" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800">
         <lucide-icon [img]="Plus" [size]="16"></lucide-icon>
-        Add Listing
+        Submit Listing
       </button>
     </div>
   </div>
@@ -38,6 +38,10 @@
       No partners found for your account.
     </div>
     <p class="text-sm text-gray-500 mt-2">Ask an admin to grant you partner access or use the backend partner registration endpoint.</p>
+  </div>
+
+  <div id="partner-submit-form" *ngIf="!loading && partners.length > 0 && showSubmitForm">
+    <app-partner-submit-listing (submitted)="reload()"></app-partner-submit-listing>
   </div>
 
   <div *ngIf="!loading && listings.length > 0" class="space-y-3">

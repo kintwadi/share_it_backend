@@ -132,7 +132,7 @@
               <th class="px-3 py-2 font-semibold">Title</th>
               <th class="px-3 py-2 font-semibold">Type</th>
               <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold">Owner</th>
+              <th class="px-3 py-2 font-semibold">Owner / Partner</th>
               <th class="px-3 py-2 font-semibold text-right">Actions</th>
             </tr>
           </thead>
@@ -141,9 +141,15 @@
               <td class="px-3 py-2 text-gray-900 font-semibold">{{l.title}}</td>
               <td class="px-3 py-2 text-gray-700">{{l.type || '-'}}</td>
               <td class="px-3 py-2 text-gray-700">{{l.status || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || '-'}}</td>
+              <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || l.partnerName || '-'}}</td>
               <td class="px-3 py-2 text-right">
                 <div class="inline-flex gap-2">
+                  <button *ngIf="l.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                    Approve
+                  </button>
+                  <button *ngIf="l.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    Reject
+                  </button>
                   <button type="button" (click)="confirmBlockListing(l, l.status !== 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
                     <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
                     {{l.status === 'BLOCKED' ? 'Unblock' : 'Block'}}

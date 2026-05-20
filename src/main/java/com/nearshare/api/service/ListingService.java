@@ -73,6 +73,7 @@ public class ListingService {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
+            .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL))
             .filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase())))
             .filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category)))
             .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
@@ -87,6 +88,12 @@ public class ListingService {
     @Transactional(readOnly = true)
     public ListingDTO getById(UUID id, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+            boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+            if (!isAdmin) {
+                throw new RuntimeException("listing_not_found");
+            }
+        }
         return toDTO(l, current);
     }
 

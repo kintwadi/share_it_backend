@@ -663,6 +663,14 @@ export class ApiService {
     return firstValueFrom(this.api.delete<any>(`/admin/listings/${encodeURIComponent(listingId)}`));
   }
 
+  async adminApprovePartnerListing(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/approve`, {}));
+  }
+
+  async adminRejectPartnerListing(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/reject`, {}));
+  }
+
   async adminListTransactions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
     const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
     const page = typeof params.page === 'number' ? params.page : 0;

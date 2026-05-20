@@ -251,6 +251,32 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void approvePartnerListing(UUID listingId) {
+        Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (l.getPartner() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
+        }
+        if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
+        }
+        l.setStatus(AvailabilityStatus.AVAILABLE);
+        listingRepository.save(l);
+    }
+
+    @Transactional
+    public void rejectPartnerListing(UUID listingId) {
+        Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (l.getPartner() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
+        }
+        if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
+        }
+        l.setStatus(AvailabilityStatus.BLOCKED);
+        listingRepository.save(l);
+    }
+
+    @Transactional
     public void cancelAndRefundDispute(UUID listingId, String reason) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
@@ -408,6 +434,8 @@ public class AdminManagementService {
                 .hourlyRate(l.getHourlyRate())
                 .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
                 .ownerEmail(l.getOwner() != null ? l.getOwner().getEmail() : null)
+                .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
+                .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
                 .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
                 .borrowerEmail(l.getBorrower() != null ? l.getBorrower().getEmail() : null)
                 .createdAt(l.getCreatedAt())

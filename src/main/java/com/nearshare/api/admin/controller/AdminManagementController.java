@@ -142,6 +142,18 @@ public class AdminManagementController {
         return ResponseEntity.ok(Map.of("status", "deleted"));
     }
 
+    @PostMapping("/listings/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerListing(@PathVariable("listingId") UUID listingId) {
+        adminService.approvePartnerListing(listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/listings/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerListing(@PathVariable("listingId") UUID listingId) {
+        adminService.rejectPartnerListing(listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
     @Data
     public static class UpdateUserStatusRequest {
         private UserStatus status;

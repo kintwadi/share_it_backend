@@ -74,7 +74,7 @@ export class AdminComponent implements OnInit {
 
   pageSize = 20;
 
-  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED'];
+  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_PENDING_APPROVAL'];
   txStatusOptions = ['', 'ESCROWED', 'RELEASED', 'RELEASE_FAILED', 'DISPUTED', 'REFUNDED', 'PENDING', 'FAILED'];
   subStatusOptions = ['', 'active', 'trialing', 'past_due', 'canceled', 'incomplete'];
 
@@ -279,6 +279,32 @@ export class AdminComponent implements OnInit {
       action: async () => {
         await this.api.adminDeleteListing(String(l.id));
         await this.loadListings(this.listingsPage);
+      }
+    });
+  }
+
+  confirmApprovePartnerListing(l: any) {
+    this.openConfirm({
+      title: 'Approve partner listing?',
+      message: String(l?.title || ''),
+      variant: 'warning',
+      confirmLabel: 'Approve',
+      action: async () => {
+        await this.api.adminApprovePartnerListing(String(l.id));
+        await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+      }
+    });
+  }
+
+  confirmRejectPartnerListing(l: any) {
+    this.openConfirm({
+      title: 'Reject partner listing?',
+      message: String(l?.title || ''),
+      variant: 'danger',
+      confirmLabel: 'Reject',
+      action: async () => {
+        await this.api.adminRejectPartnerListing(String(l.id));
+        await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
       }
     });
   }

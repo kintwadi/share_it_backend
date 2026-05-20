@@ -28,7 +28,8 @@ export enum AvailabilityStatus {
   GIFTED = 'GIFTED',
   SOLD = 'SOLD',
   APPROVED = 'APPROVED',
-  DISPUTED = 'DISPUTED'
+  DISPUTED = 'DISPUTED',
+  PARTNER_PENDING_APPROVAL = 'PARTNER_PENDING_APPROVAL'
 }
 
 export enum UserRole {
