@@ -62,15 +62,10 @@
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1.5">Category</label>
-              <div class="relative">
-                <select [(ngModel)]="category" name="category" class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none bg-white cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all appearance-none">
-                  <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
-                  <option *ngIf="categories.length === 0" [value]="'Tools'">Tools</option>
-                </select>
-                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                  <lucide-icon [img]="ChevronDown" size="16"></lucide-icon>
-                </div>
-              </div>
+              <input [(ngModel)]="category" name="category" list="partner-categories" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white font-medium text-sm transition-all" placeholder="Category" />
+              <datalist id="partner-categories">
+                <option *ngFor="let c of categories" [value]="c.name"></option>
+              </datalist>
             </div>
           </div>
         </div>
