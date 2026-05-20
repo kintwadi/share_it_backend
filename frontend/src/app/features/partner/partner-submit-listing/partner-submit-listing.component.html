@@ -1,116 +1,265 @@
-<div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
-  <div class="flex items-center justify-between gap-3">
+<div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+  <div class="flex items-start justify-between gap-4">
     <div>
-      <div class="text-lg font-bold text-gray-900">Submit a Listing</div>
-      <div class="text-sm text-gray-600">Submitted listings stay hidden until an admin approves them.</div>
+      <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Partner</div>
+      <div class="text-xl font-bold text-slate-900">Create a Listing</div>
+      <div class="text-sm text-slate-500 mt-1">Submitted listings stay hidden until an admin approves them.</div>
     </div>
   </div>
 
-  <div *ngIf="loading" class="text-sm text-gray-500">Loading...</div>
-  <div *ngIf="!loading && error" class="flex items-center justify-between gap-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-    <div>{{ error }}</div>
-    <button type="button" (click)="loadPartners()" class="px-3 py-1.5 rounded-lg bg-white border border-red-200 text-red-700 font-semibold hover:bg-red-50">
-      Retry
-    </button>
-  </div>
-  <div *ngIf="!loading && success" class="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
-    {{ success }}
-  </div>
+  <ng-container *ngIf="loading; else formTpl">
+    <div class="flex items-center justify-center py-10 text-slate-500">
+      <lucide-icon [img]="Loader2" size="32" class="animate-spin"></lucide-icon>
+    </div>
+  </ng-container>
 
-  <div *ngIf="!loading && !error && partners.length === 0" class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-    <div class="text-amber-900 font-semibold">No partners found for your account.</div>
-    <div class="text-sm text-amber-900/70 mt-2">You need at least one partner linked to your account before you can create partner listings.</div>
-  </div>
-
-  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-    <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Partner</label>
-      <select formControlName="partnerId" [disabled]="partners.length === 0" class="w-full border border-gray-200 rounded-xl px-3 py-2 bg-white">
-        <option value="" disabled>{{ partners.length === 0 ? 'No partners available' : 'Select partner' }}</option>
-        <option *ngFor="let p of partners" [value]="p.id">{{ p.name }}</option>
-      </select>
+  <ng-template #formTpl>
+    <div *ngIf="error" class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+      {{ error }}
+    </div>
+    <div *ngIf="success" class="p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm border border-emerald-200">
+      {{ success }}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Title</label>
-        <input formControlName="title" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Category</label>
-        <input formControlName="category" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
+    <div *ngIf="partners.length === 0" class="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+      <div class="text-amber-900 font-semibold">No partners found for your account.</div>
+      <div class="text-sm text-amber-900/70 mt-2">You need at least one partner linked to your account before you can create partner listings.</div>
     </div>
 
-    <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
-      <textarea formControlName="description" rows="4" class="w-full border border-gray-200 rounded-xl px-3 py-2"></textarea>
-    </div>
+    <form *ngIf="partners.length > 0" (ngSubmit)="submit()" class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">Step 1</div>
+              <h2 class="text-sm font-semibold text-slate-900">Basic info</h2>
+            </div>
+            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+              <lucide-icon [img]="Package" size="18"></lucide-icon>
+            </div>
+          </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Type</label>
-        <select formControlName="type" class="w-full border border-gray-200 rounded-xl px-3 py-2 bg-white">
-          <option [ngValue]="ListingType.GOODS">GOODS</option>
-          <option [ngValue]="ListingType.SKILL">SKILL</option>
-          <option [ngValue]="ListingType.LEND">LEND</option>
-          <option [ngValue]="ListingType.SELL">SELL</option>
-          <option [ngValue]="ListingType.GIVE">GIVE</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Hourly Rate</label>
-        <input type="number" formControlName="hourlyRate" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-    </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Partner</label>
+              <div class="relative">
+                <select [(ngModel)]="partnerId" name="partnerId" class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none bg-white cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all appearance-none">
+                  <option value="" disabled>Select partner</option>
+                  <option *ngFor="let p of partners" [value]="p.id">{{ p.name }}</option>
+                </select>
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <lucide-icon [img]="ChevronDown" size="16"></lucide-icon>
+                </div>
+              </div>
+            </div>
 
-    <label class="flex items-center gap-2 text-sm text-gray-700">
-      <input type="checkbox" formControlName="insuranceRequired" />
-      Requires insurance
-    </label>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Type</label>
+              <div class="grid grid-cols-2 sm:grid-cols-5 bg-slate-100 p-1 rounded-xl gap-1">
+                <button type="button" (click)="onTypeSelect(ListingType.GOODS)" class="flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.GOODS ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <span class="text-base">📦</span>
+                  GOODS
+                </button>
+                <button type="button" (click)="onTypeSelect(ListingType.SKILL)" class="flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SKILL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <span class="text-base">✨</span>
+                  SKILL
+                </button>
+                <button type="button" (click)="onTypeSelect(ListingType.GIVE)" class="flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.GIVE ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <span class="text-base">🎁</span>
+                  GIVE
+                </button>
+                <button type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <span class="text-base">💰</span>
+                  SELL
+                </button>
+                <button type="button" (click)="onTypeSelect(ListingType.LEND)" class="flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.LEND ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <span class="text-base">🔄</span>
+                  LEND
+                </button>
+              </div>
+            </div>
 
-    <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Image</label>
-      <div class="flex items-center gap-3">
-        <input formControlName="imageUrl" class="w-full border border-gray-200 rounded-xl px-3 py-2" placeholder="Image URL" />
-        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-sm font-semibold cursor-pointer">
-          <lucide-icon [img]="Upload" [size]="16"></lucide-icon>
-          Upload
-          <input type="file" class="hidden" accept="image/*" (change)="onUpload($any($event.target).files?.[0] || null)" />
-        </label>
-      </div>
-    </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Title</label>
+              <input [(ngModel)]="title" name="title" class="w-full pl-4 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white font-medium text-sm transition-all" placeholder="e.g. Power drill" />
+            </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">City</label>
-        <input formControlName="pickupLocationCity" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Zip</label>
-        <input formControlName="pickupLocationZip" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-    </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Category</label>
+              <div class="relative">
+                <select [(ngModel)]="category" name="category" class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none bg-white cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all appearance-none">
+                  <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
+                  <option *ngIf="categories.length === 0" [value]="'Tools'">Tools</option>
+                </select>
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <lucide-icon [img]="ChevronDown" size="16"></lucide-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Street</label>
-        <input formControlName="pickupLocationStreet" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">House Number</label>
-        <input formControlName="pickupLocationHouseNumber" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-      </div>
-    </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">Step 2</div>
+              <h2 class="text-sm font-semibold text-slate-900">Details</h2>
+            </div>
+          </div>
 
-    <div>
-      <label class="block text-sm font-semibold text-gray-700 mb-1">Pickup Notes</label>
-      <input formControlName="pickupLocationCustom" class="w-full border border-gray-200 rounded-xl px-3 py-2" />
-    </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">Description</label>
+              <textarea [(ngModel)]="description" name="description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm transition-all min-h-[96px]" placeholder="Describe the listing"></textarea>
+            </div>
 
-    <button type="submit" [disabled]="saving || form.invalid || partners.length === 0" class="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold disabled:opacity-60">
-      {{ saving ? 'Submitting...' : 'Submit Listing' }}
-    </button>
-  </form>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Hourly Rate</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" [(ngModel)]="hourlyRate" name="hourlyRate" [disabled]="type === ListingType.GIVE" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm" [ngClass]="type === ListingType.GIVE ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'" placeholder="0" />
+                  <span class="text-xs text-slate-500 whitespace-nowrap">/ hr</span>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-slate-200 bg-white p-3 flex items-center justify-between">
+                <div class="text-xs font-semibold text-slate-900">Insurance required</div>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only peer" [(ngModel)]="insuranceRequired" name="insuranceRequired" />
+                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-600 relative transition-colors">
+                    <div class="absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">Step 3</div>
+              <h2 class="text-sm font-semibold text-slate-900">Pickup location</h2>
+              <p class="text-[11px] text-slate-500 mt-1">Use a pickup point or provide a coarse pickup location.</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <button type="button" (click)="selectPickupOption('concierge')" class="text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'concierge' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
+                <div>
+                  <div class="text-[11px] font-semibold text-slate-900">Concierge</div>
+                  <div class="mt-1 text-[11px] text-slate-600">{{ pickupConcierge?.address || 'Pickup point' }}</div>
+                </div>
+              </button>
+              <button type="button" (click)="selectPickupOption('bakery')" class="text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'bakery' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
+                <div>
+                  <div class="text-[11px] font-semibold text-slate-900">Bakery</div>
+                  <div class="mt-1 text-[11px] text-slate-600">{{ pickupBakery?.address || 'Pickup point' }}</div>
+                </div>
+              </button>
+              <button type="button" (click)="selectPickupOption('public')" class="text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'public' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
+                <div>
+                  <div class="text-[11px] font-semibold text-slate-900">Public</div>
+                  <div class="mt-1 text-[11px] text-slate-600">{{ pickupPublic?.address || 'Pickup point' }}</div>
+                </div>
+              </button>
+              <button type="button" (click)="selectPickupOption('custom')" class="text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'custom' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
+                <div>
+                  <div class="text-[11px] font-semibold text-slate-900">Custom</div>
+                  <div class="mt-1 text-[11px] text-slate-600">Street + house + city + ZIP</div>
+                </div>
+              </button>
+            </div>
+
+            <div *ngIf="pickupOption === 'custom'" class="space-y-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">Street</label>
+                  <input [(ngModel)]="pickupLocationStreet" name="pickupLocationStreet" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">House number</label>
+                  <input [(ngModel)]="pickupLocationHouseNumber" name="pickupLocationHouseNumber" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">City</label>
+                  <input [(ngModel)]="pickupLocationCity" name="pickupLocationCity" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">ZIP</label>
+                  <input [(ngModel)]="pickupLocationZip" name="pickupLocationZip" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pickup notes</label>
+                <input [(ngModel)]="pickupLocationCustom" name="pickupLocationCustom" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">Step 4</div>
+              <h2 class="text-sm font-semibold text-slate-900">Photos</h2>
+              <p class="text-[11px] text-slate-500 mt-1">Upload a cover photo and optional gallery photos.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-700">Cover photo</label>
+            <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                  <lucide-icon [img]="ImageIcon" size="18"></lucide-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="text-xs font-semibold text-slate-900">Upload cover</div>
+                  <div class="text-[11px] text-slate-500">PNG, JPG</div>
+                </div>
+                <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900 text-white text-xs font-semibold cursor-pointer">
+                  <lucide-icon [img]="Upload" [size]="16"></lucide-icon>
+                  {{ uploadingCover ? 'Uploading...' : 'Upload' }}
+                  <input type="file" class="hidden" accept="image/*" (change)="onCoverSelected($event)" />
+                </label>
+              </div>
+              <div *ngIf="imageUrl" class="mt-4">
+                <img [src]="imageUrl" class="w-full h-48 object-cover rounded-xl border border-slate-200" />
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-700">Gallery</label>
+            <div class="flex items-center justify-between gap-3">
+              <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold cursor-pointer hover:bg-slate-50">
+                <lucide-icon [img]="Plus" [size]="16"></lucide-icon>
+                {{ uploadingGallery ? 'Uploading...' : 'Add photos' }}
+                <input type="file" multiple class="hidden" accept="image/*" (change)="onGallerySelected($event)" />
+              </label>
+              <div class="text-[11px] text-slate-500">{{ gallery.length }} photos</div>
+            </div>
+            <div *ngIf="gallery.length > 0" class="grid grid-cols-3 gap-3">
+              <div *ngFor="let g of gallery; let i = index" class="relative">
+                <img [src]="g" class="w-full h-24 object-cover rounded-xl border border-slate-200" />
+                <button type="button" (click)="removeGalleryImage(i)" class="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1">
+                  <lucide-icon [img]="X" size="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="saving" class="w-full py-3 px-4 bg-gray-900 hover:bg-black active:bg-black text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+          {{ saving ? 'Submitting...' : 'Submit listing for review' }}
+        </button>
+      </div>
+    </form>
+  </ng-template>
 </div>
-
