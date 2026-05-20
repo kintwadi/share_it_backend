@@ -41,7 +41,7 @@ export class PartnerSubmitListingComponent implements OnInit {
   partnerId = '';
   title = '';
   category = '';
-  type: ListingType = ListingType.GOODS;
+  type: ListingType = ListingType.GIVE;
   description = '';
   hourlyRate = 0;
   imageUrl = '';
@@ -159,6 +159,7 @@ export class PartnerSubmitListingComponent implements OnInit {
   }
 
   onTypeSelect(type: ListingType) {
+    if (type !== ListingType.GIVE && type !== ListingType.LEND) return;
     this.type = type;
     if (type === ListingType.GIVE) {
       this.hourlyRate = 0;
