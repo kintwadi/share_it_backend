@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Package, Upload, Image as ImageIcon, ChevronDown, X, Plus } from 'lucide-angular';
 import { ApiService } from '../../../core/services/api.service';
 import { PartnerService } from '../../../core/services/partner.service';
-import { ListingType, Partner, Category, PickupLocation } from '../../../core/models/types';
+import { ListingType, Partner, Category } from '../../../core/models/types';
 
 @Component({
   selector: 'app-partner-submit-listing',
@@ -36,7 +36,6 @@ export class PartnerSubmitListingComponent implements OnInit {
 
   partners: Partner[] = [];
   categories: Category[] = [];
-  pickupLocations: PickupLocation[] = [];
 
   partnerId = '';
   title = '';
@@ -47,8 +46,7 @@ export class PartnerSubmitListingComponent implements OnInit {
   imageUrl = '';
   gallery: string[] = [];
 
-  pickupOption: 'concierge' | 'bakery' | 'public' | 'custom' = 'concierge';
-  pickupLocationId: string | null = null;
+  pickupOption: 'partner' | 'custom' = 'partner';
   pickupLocationStreet = '';
   pickupLocationHouseNumber = '';
   pickupLocationCity = '';
@@ -72,10 +70,9 @@ export class PartnerSubmitListingComponent implements OnInit {
     this.error = null;
     this.success = null;
     try {
-      const [partnersRes, categoriesRes, pickupsRes] = await Promise.allSettled([
+      const [partnersRes, categoriesRes] = await Promise.allSettled([
         this.withTimeout(this.partnerApi.getMyPartners(), 12000),
         this.withTimeout(this.api.getCategories().catch(() => []), 12000),
-        this.withTimeout(this.api.getPickupLocations().catch(() => []), 12000)
       ]);
 
       if (partnersRes.status === 'fulfilled') {
@@ -92,21 +89,14 @@ export class PartnerSubmitListingComponent implements OnInit {
         if (!this.error) this.error = (categoriesRes.reason as any)?.message || 'failed_to_load';
       }
 
-      if (pickupsRes.status === 'fulfilled') {
-        this.pickupLocations = Array.isArray(pickupsRes.value) ? pickupsRes.value : [];
-      } else {
-        this.pickupLocations = [];
-        if (!this.error) this.error = (pickupsRes.reason as any)?.message || 'failed_to_load';
-      }
-
       if (!this.partnerId && this.partners.length === 1) {
         this.partnerId = String(this.partners[0].id || '');
       }
       if (!this.category) {
         this.category = String(this.categories[0]?.name || 'Tools');
       }
-      if (!this.pickupLocationId && this.pickupLocations.length > 0) {
-        this.selectPickupOption(this.pickupOption);
+      if (this.pickupOption === 'partner') {
+        this.applyPartnerPickupDefaults();
       }
     } catch (e: any) {
       this.error = e?.message || 'failed_to_load';
@@ -116,45 +106,34 @@ export class PartnerSubmitListingComponent implements OnInit {
     }
   }
 
-  get pickupConcierge(): PickupLocation | null {
-    return this.findPickupByKeyword('concierge');
+  get selectedPartner(): Partner | null {
+    const id = String(this.partnerId || '');
+    return this.partners.find(p => String(p.id) === id) || null;
   }
 
-  get pickupBakery(): PickupLocation | null {
-    return this.findPickupByKeyword('bakery');
+  onPartnerChange() {
+    if (this.pickupOption === 'partner') {
+      this.applyPartnerPickupDefaults();
+    }
   }
 
-  get pickupPublic(): PickupLocation | null {
-    return this.findPickupByKeyword('public');
-  }
-
-  private findPickupByKeyword(keyword: string): PickupLocation | null {
-    const k = keyword.toLowerCase();
-    return this.pickupLocations.find(p => String(p.name || '').toLowerCase().includes(k)) || null;
-  }
-
-  selectPickupOption(opt: 'concierge' | 'bakery' | 'public' | 'custom') {
+  selectPickupOption(opt: 'partner' | 'custom') {
     this.pickupOption = opt;
-    let selected: PickupLocation | null = null;
-    if (opt === 'concierge') selected = this.pickupConcierge;
-    if (opt === 'bakery') selected = this.pickupBakery;
-    if (opt === 'public') selected = this.pickupPublic;
-    if (opt === 'custom') {
-      this.pickupLocationId = null;
-    } else if (selected) {
-      this.pickupLocationId = String(selected.id);
-    } else if (this.pickupLocations.length > 0) {
-      this.pickupLocationId = String(this.pickupLocations[0]?.id || '');
-    } else {
-      this.pickupLocationId = null;
+    if (opt === 'partner') {
+      this.applyPartnerPickupDefaults();
+      return;
     }
-    if (opt !== 'custom') {
-      this.pickupLocationStreet = '';
-      this.pickupLocationHouseNumber = '';
-      this.pickupLocationCity = '';
-      this.pickupLocationZip = '';
-      this.pickupLocationCustom = '';
-    }
+  }
+
+  private applyPartnerPickupDefaults() {
+    const p = this.selectedPartner;
+    const address = String(p?.address || '').trim();
+    const city = String(p?.city || '').trim();
+    this.pickupLocationStreet = address;
+    this.pickupLocationCity = city;
+    this.pickupLocationHouseNumber = '';
+    this.pickupLocationZip = '';
+    this.pickupLocationCustom = '';
   }
 
   onTypeSelect(type: ListingType) {
@@ -234,10 +213,6 @@ export class PartnerSubmitListingComponent implements OnInit {
       this.error = 'cover_required';
       return;
     }
-    if (this.pickupOption !== 'custom' && !this.pickupLocationId) {
-      this.error = 'pickup_point_required';
-      return;
-    }
     if (this.pickupOption === 'custom') {
       const street = String(this.pickupLocationStreet || '').trim();
       const house = String(this.pickupLocationHouseNumber || '').trim();
@@ -246,6 +221,13 @@ export class PartnerSubmitListingComponent implements OnInit {
       const zipOk = zip.length >= 3 && zip.length <= 20 && /[0-9]/.test(zip);
       if (street.length < 2 || house.length < 1 || city.length < 2 || !zipOk) {
         this.error = 'pickup_location_required';
+        return;
+      }
+    } else {
+      const address = String(this.pickupLocationStreet || '').trim();
+      const city = String(this.pickupLocationCity || '').trim();
+      if (address.length < 2 || city.length < 2) {
+        this.error = 'partner_address_required';
         return;
       }
     }
@@ -265,10 +247,10 @@ export class PartnerSubmitListingComponent implements OnInit {
         insuranceRequired: false,
         x: 0,
         y: 0,
-        pickupLocationId: this.pickupOption === 'custom' ? null : this.pickupLocationId,
-        pickupLocationStreet: this.pickupOption === 'custom' ? (this.pickupLocationStreet || null) : null,
+        pickupLocationId: null,
+        pickupLocationStreet: this.pickupLocationStreet || null,
         pickupLocationHouseNumber: this.pickupOption === 'custom' ? (this.pickupLocationHouseNumber || null) : null,
-        pickupLocationCity: this.pickupOption === 'custom' ? (this.pickupLocationCity || null) : null,
+        pickupLocationCity: this.pickupLocationCity || null,
         pickupLocationZip: this.pickupOption === 'custom' ? (this.pickupLocationZip || null) : null,
         pickupLocationCustom: this.pickupOption === 'custom' ? (this.pickupLocationCustom || null) : null
       };
@@ -287,7 +269,9 @@ export class PartnerSubmitListingComponent implements OnInit {
       if (this.categories.length > 0) {
         this.category = String(this.categories[0]?.name || this.category);
       }
-      this.selectPickupOption(this.pickupOption);
+      if (this.pickupOption === 'partner') {
+        this.applyPartnerPickupDefaults();
+      }
       this.submitted.emit();
     } catch (e: any) {
       this.error = e?.message || 'save_failed';
