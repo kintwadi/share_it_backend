@@ -32,15 +32,7 @@
     </button>
   </div>
 
-  <div *ngIf="!loading && partners.length === 0" class="bg-white border border-gray-200 rounded-2xl p-5">
-    <div class="flex items-center gap-2 text-gray-900 font-semibold">
-      <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
-      No partners found for your account.
-    </div>
-    <p class="text-sm text-gray-500 mt-2">Ask an admin to grant you partner access or use the backend partner registration endpoint.</p>
-  </div>
-
-  <div id="partner-submit-form" *ngIf="!loading && partners.length > 0 && showSubmitForm">
+  <div id="partner-submit-form" *ngIf="!loading && showSubmitForm">
     <app-partner-submit-listing (submitted)="reload()"></app-partner-submit-listing>
   </div>
 
