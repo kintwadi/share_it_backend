@@ -71,23 +71,40 @@ public class PartnerAuthService {
         if (request == null) {
             throw new RuntimeException("invalid_request");
         }
+        PartnerRegistrationRequest partnerReq = request.getPartner();
+        if (partnerReq == null || partnerReq.getName() == null || partnerReq.getName().isBlank()) {
+            throw new RuntimeException("partner_name_required");
+        }
         String email = request.getUserEmail();
+        if (email == null || email.isBlank()) {
+            email = partnerReq.getEmail();
+        }
         if (email == null || email.isBlank()) {
             throw new RuntimeException("email_required");
         }
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("email_exists");
         }
-        PartnerRegistrationRequest partnerReq = request.getPartner();
-        if (partnerReq == null || partnerReq.getName() == null || partnerReq.getName().isBlank()) {
-            throw new RuntimeException("partner_name_required");
+        String rawPassword = request.getUserPassword();
+        if (rawPassword == null || rawPassword.isBlank()) {
+            rawPassword = request.getPartnerPassword();
+        }
+        if (rawPassword == null || rawPassword.isBlank()) {
+            throw new RuntimeException("password_required");
+        }
+        String userName = request.getUserName();
+        if (userName == null || userName.isBlank()) {
+            userName = partnerReq.getContactPerson();
+        }
+        if (userName == null || userName.isBlank()) {
+            userName = partnerReq.getName();
         }
 
         User user = User.builder()
                 .id(UUID.randomUUID())
-                .name(request.getUserName() != null ? request.getUserName() : "")
+                .name(userName != null ? userName : "")
                 .email(email)
-                .password(passwordEncoder.encode(request.getUserPassword() != null ? request.getUserPassword() : ""))
+                .password(passwordEncoder.encode(rawPassword))
                 .phone("")
                 .address("")
                 .avatarUrl("")

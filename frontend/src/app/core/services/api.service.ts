@@ -192,12 +192,10 @@ export class ApiService {
     return res.json();
   }
 
-  async registerPartner(payload: { userName: string; userEmail: string; userPassword: string; partner: any }): Promise<any> {
+  async registerPartner(payload: { partner: any; partnerPassword: string }): Promise<any> {
     const body = {
-      userName: payload.userName,
-      userEmail: payload.userEmail,
-      userPassword: payload.userPassword,
-      partner: payload.partner
+      partner: payload.partner,
+      partnerPassword: payload.partnerPassword
     };
     const data = await firstValueFrom(this.api.post<any>('/partner/auth/register', body));
     return data;

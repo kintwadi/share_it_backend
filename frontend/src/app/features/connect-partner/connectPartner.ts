@@ -128,9 +128,6 @@ export class ConnectPartnerComponent implements OnInit {
       }
 
       const data = await this.api.registerPartner({
-        userName: this.partnerName || this.contactPerson,
-        userEmail: this.partnerEmail,
-        userPassword: this.partnerPassword,
         partner: {
           name: this.partnerName,
           email: this.partnerEmail,
@@ -138,7 +135,8 @@ export class ConnectPartnerComponent implements OnInit {
           address: this.partnerAddress,
           city: this.partnerCity,
           contactPerson: this.contactPerson
-        }
+        },
+        partnerPassword: this.partnerPassword
       });
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
