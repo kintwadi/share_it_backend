@@ -247,6 +247,13 @@
           </div>
         </div>
 
+        <div *ngIf="error" class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+          {{ error }}
+        </div>
+        <div *ngIf="success" class="p-3 rounded-lg bg-emerald-50 text-emerald-700 text-sm border border-emerald-200">
+          {{ success }}
+        </div>
+
         <button type="submit" [disabled]="saving" class="w-full py-3 px-4 bg-gray-900 hover:bg-black active:bg-black text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-60">
           {{ saving ? 'Submitting...' : 'Submit listing for review' }}
         </button>
