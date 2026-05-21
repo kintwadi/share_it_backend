@@ -102,7 +102,7 @@ export class PartnerSubmitListingComponent implements OnInit {
         if (!this.error) this.error = (categoriesRes.reason as any)?.message || 'failed_to_load';
       }
 
-      if (!this.partnerId && this.partners.length === 1) {
+      if (!this.partnerId && this.partners.length > 0) {
         this.partnerId = String(this.partners[0].id || '');
       }
       if (!this.category) {
