@@ -24,6 +24,7 @@
       <button (click)="setTab('OVERVIEW')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'OVERVIEW' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.overview') }}</button>
       <button (click)="setTab('USERS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'USERS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.users') }}</button>
       <button (click)="setTab('LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.listings') }}</button>
+      <button (click)="setTab('PARTNER_LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'PARTNER_LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.partner_listings') }}</button>
       <button (click)="setTab('TRANSACTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'TRANSACTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.transactions') }}</button>
       <button (click)="setTab('SUBSCRIPTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SUBSCRIPTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.subscriptions') }}</button>
       <button (click)="setTab('DISPUTES')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'DISPUTES' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.disputes') }}</button>
@@ -172,6 +173,129 @@
         <div class="flex items-center gap-2">
           <button type="button" [disabled]="listingsPage <= 0" (click)="loadListings(listingsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
           <button type="button" [disabled]="(listingsPage + 1) * pageSize >= listingsTotal" (click)="loadListings(listingsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'PARTNER_LISTINGS'" class="p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold text-gray-900">Partner listing requests</div>
+        <button type="button" (click)="loadPartnerListingRequests(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Refresh</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Title</th>
+                <th class="px-3 py-2 font-semibold">Partner</th>
+                <th class="px-3 py-2 font-semibold">Type</th>
+                <th class="px-3 py-2 font-semibold">Submitted</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let r of partnerListingRequests" class="cursor-pointer" [ngClass]="partnerListingSelectedId === ('' + r.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectPartnerListing(r)">
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{r.title || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
+                <td class="px-3 py-2 text-right">
+                  <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
+                    <button type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                      Approve
+                    </button>
+                    <button type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      Reject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="partnerListingRequests.length === 0">
+                <td colspan="5" class="px-3 py-8 text-center text-gray-500">No partner listing requests.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+            <div *ngIf="partnerListingSelectedLoading" class="inline-flex items-center gap-2 text-xs text-gray-500">
+              <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              Loading
+            </div>
+          </div>
+
+          <div *ngIf="!partnerListingSelected && !partnerListingSelectedLoading" class="text-sm text-gray-500">
+            Select a request to review.
+          </div>
+
+          <div *ngIf="partnerListingSelected" class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden shrink-0">
+                <img *ngIf="partnerListingSelected.imageUrl" [src]="partnerListingSelected.imageUrl" class="w-full h-full object-cover" />
+              </div>
+              <div class="min-w-0">
+                <div class="text-lg font-extrabold text-gray-900">{{partnerListingSelected.title}}</div>
+                <div class="text-xs text-gray-500 mt-1">{{partnerListingSelected.category}}</div>
+                <div class="mt-2 text-xs text-gray-700 whitespace-pre-line">{{partnerListingSelected.description || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Type</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.type}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Hourly rate</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.hourlyRate ?? 0}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Partner</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.partnerName || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Availability</div>
+                <div class="mt-1 font-semibold text-gray-900">
+                  <span *ngIf="partnerListingSelected.availableUnlimited">Indefinitely</span>
+                  <span *ngIf="!partnerListingSelected.availableUnlimited">
+                    {{partnerListingSelected.availableFrom ? (partnerListingSelected.availableFrom | date:'short') : '-' }}
+                    →
+                    {{partnerListingSelected.availableTo ? (partnerListingSelected.availableTo | date:'short') : '-' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl border border-gray-200 text-xs">
+              <div class="text-[11px] font-semibold text-gray-500">Pickup</div>
+              <div class="mt-1 text-gray-900">
+                {{partnerListingSelected.pickupLocationCustom || (partnerListingSelected.pickupLocationStreet ? (partnerListingSelected.pickupLocationStreet + (partnerListingSelected.pickupLocationCity ? ', ' + partnerListingSelected.pickupLocationCity : '')) : '-')}}
+              </div>
+            </div>
+
+            <div *ngIf="partnerListingSelected.gallery?.length" class="grid grid-cols-4 gap-2">
+              <div *ngFor="let g of partnerListingSelected.gallery" class="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                <img [src]="g" class="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
+              <button type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{partnerListingRequestsTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="partnerListingRequestsPage <= 0" (click)="loadPartnerListingRequests(partnerListingRequestsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(partnerListingRequestsPage + 1) * pageSize >= partnerListingRequestsTotal" (click)="loadPartnerListingRequests(partnerListingRequestsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
         </div>
       </div>
     </div>

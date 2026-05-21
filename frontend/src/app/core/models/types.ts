@@ -121,6 +121,10 @@ export interface Listing {
   pickupLocationHouseNumber?: string;
   pickupLocationCity?: string;
   pickupLocationZip?: string;
+
+  availableUnlimited?: boolean;
+  availableFrom?: string | null;
+  availableTo?: string | null;
 }
 
 export interface InsuranceTypeInfo {

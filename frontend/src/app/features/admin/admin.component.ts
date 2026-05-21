@@ -5,10 +5,10 @@ import { Router } from '@angular/router';
 import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, Shield } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { User } from '../../core/models/types';
+import { Listing, User } from '../../core/models/types';
 import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 
-type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS';
+type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'PARTNER_LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS';
 
 @Component({
   selector: 'app-admin',
@@ -46,6 +46,13 @@ export class AdminComponent implements OnInit {
   listingsTotal = 0;
   listingsPage = 0;
   listingsStatus = '';
+
+  partnerListingRequests: any[] = [];
+  partnerListingRequestsTotal = 0;
+  partnerListingRequestsPage = 0;
+  partnerListingSelectedId: string | null = null;
+  partnerListingSelected: Listing | null = null;
+  partnerListingSelectedLoading = false;
 
   transactions: any[] = [];
   transactionsTotal = 0;
@@ -113,6 +120,7 @@ export class AdminComponent implements OnInit {
       await this.loadSummary();
       if (this.activeTab === 'USERS') await this.loadUsers(this.usersPage);
       if (this.activeTab === 'LISTINGS') await this.loadListings(this.listingsPage);
+      if (this.activeTab === 'PARTNER_LISTINGS') await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
       if (this.activeTab === 'TRANSACTIONS') await this.loadTransactions(this.transactionsPage);
       if (this.activeTab === 'SUBSCRIPTIONS') await this.loadSubscriptions(this.subscriptionsPage);
       if (this.activeTab === 'DISPUTES') await this.loadDisputes(this.disputesPage);
@@ -141,6 +149,36 @@ export class AdminComponent implements OnInit {
     this.listings = Array.isArray(res?.items) ? res.items : [];
     this.listingsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.listingsPage = page;
+  }
+
+  async loadPartnerListingRequests(page: number) {
+    const res = await this.api.adminListPartnerListingRequests({ page, size: this.pageSize });
+    this.partnerListingRequests = Array.isArray(res?.items) ? res.items : [];
+    this.partnerListingRequestsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
+    this.partnerListingRequestsPage = page;
+    if (this.partnerListingSelectedId && !this.partnerListingRequests.some(r => String(r?.id) === String(this.partnerListingSelectedId))) {
+      this.partnerListingSelectedId = null;
+      this.partnerListingSelected = null;
+    }
+    if (!this.partnerListingSelectedId && this.partnerListingRequests.length > 0) {
+      await this.selectPartnerListing(this.partnerListingRequests[0]);
+    }
+  }
+
+  async selectPartnerListing(row: any) {
+    const id = String(row?.id || '');
+    if (!id) return;
+    this.partnerListingSelectedId = id;
+    this.partnerListingSelected = null;
+    this.partnerListingSelectedLoading = true;
+    this.render();
+    try {
+      const listing = await this.api.getListingById(id);
+      this.partnerListingSelected = listing;
+    } finally {
+      this.partnerListingSelectedLoading = false;
+      this.render();
+    }
   }
 
   async loadTransactions(page: number) {
@@ -305,6 +343,32 @@ export class AdminComponent implements OnInit {
       action: async () => {
         await this.api.adminRejectPartnerListing(String(l.id));
         await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+      }
+    });
+  }
+
+  confirmApprovePartnerListingRequest(l: any) {
+    this.openConfirm({
+      title: 'Approve partner listing?',
+      message: String(l?.title || ''),
+      variant: 'warning',
+      confirmLabel: 'Approve',
+      action: async () => {
+        await this.api.adminApprovePartnerListing(String(l.id));
+        await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
+      }
+    });
+  }
+
+  confirmRejectPartnerListingRequest(l: any) {
+    this.openConfirm({
+      title: 'Reject partner listing?',
+      message: String(l?.title || ''),
+      variant: 'danger',
+      confirmLabel: 'Reject',
+      action: async () => {
+        await this.api.adminRejectPartnerListing(String(l.id));
+        await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
       }
     });
   }
