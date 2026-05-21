@@ -313,6 +313,7 @@ public class UserService {
                 .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
+                .adminScope(user.getAdminScope())
                 .build();
     }
 }

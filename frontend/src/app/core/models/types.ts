@@ -90,6 +90,7 @@ export interface User {
   twoFactorEnabled?: boolean;
   profileVisible?: boolean;
   showRatings?: boolean;
+  adminScope?: 'FULL' | 'PARTNER' | string;
 }
 
 export interface Listing {

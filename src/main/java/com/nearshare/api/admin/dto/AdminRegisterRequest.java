@@ -10,4 +10,5 @@ public class AdminRegisterRequest {
     private String email;
     private String password;
     private String signupSecret;
+    private String adminScope;
 }

@@ -7,6 +7,7 @@ import com.nearshare.api.dto.TokenResponse;
 import com.nearshare.api.dto.UserDTO;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.embeddable.Location;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
@@ -94,10 +95,20 @@ public class AdminAuthService {
                 .joinedDate(LocalDateTime.now())
                 .status(UserStatus.ACTIVE)
                 .role(UserRole.ADMIN)
+                .adminScope(parseAdminScope(request.getAdminScope()))
                 .build();
         userRepository.save(user);
         String token = tokenProvider.generateToken(user.getEmail());
         return new TokenResponse(token, toUserDTO(user));
+    }
+
+    private AdminScope parseAdminScope(String raw) {
+        if (raw == null || raw.isBlank()) return AdminScope.FULL;
+        try {
+            return AdminScope.valueOf(raw.trim().toUpperCase());
+        } catch (Exception e) {
+            return AdminScope.FULL;
+        }
     }
 
     private UserDTO toUserDTO(User user) {
@@ -120,6 +131,7 @@ public class AdminAuthService {
                 .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
+                .adminScope(user.getAdminScope())
                 .build();
     }
 }

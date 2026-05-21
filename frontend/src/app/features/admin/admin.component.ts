@@ -34,6 +34,7 @@ export class AdminComponent implements OnInit {
   loading = false;
   error: string | null = null;
   currentUser: User | null = null;
+  isPartnerScopedAdmin = false;
 
   summary: any = null;
 
@@ -104,10 +105,15 @@ export class AdminComponent implements OnInit {
       return;
     }
     this.currentUser = u;
+    this.isPartnerScopedAdmin = String((u as any).adminScope ?? '').toUpperCase() === 'PARTNER';
+    if (this.isPartnerScopedAdmin) {
+      this.activeTab = 'PARTNER_LISTINGS';
+    }
     await this.refreshActive();
   }
 
   async setTab(tab: AdminTab) {
+    if (this.isPartnerScopedAdmin && tab !== 'PARTNER_LISTINGS') return;
     this.activeTab = tab;
     await this.refreshActive();
   }
@@ -117,14 +123,20 @@ export class AdminComponent implements OnInit {
     this.error = null;
     this.render();
     try {
-      await this.loadSummary();
-      if (this.activeTab === 'USERS') await this.loadUsers(this.usersPage);
-      if (this.activeTab === 'LISTINGS') await this.loadListings(this.listingsPage);
-      if (this.activeTab === 'PARTNER_LISTINGS') await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
-      if (this.activeTab === 'TRANSACTIONS') await this.loadTransactions(this.transactionsPage);
-      if (this.activeTab === 'SUBSCRIPTIONS') await this.loadSubscriptions(this.subscriptionsPage);
-      if (this.activeTab === 'DISPUTES') await this.loadDisputes(this.disputesPage);
-      if (this.activeTab === 'REPORTS') await this.loadReports();
+      if (!this.isPartnerScopedAdmin) {
+        await this.loadSummary();
+      }
+      if (this.activeTab === 'PARTNER_LISTINGS') {
+        await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
+      }
+      if (!this.isPartnerScopedAdmin) {
+        if (this.activeTab === 'USERS') await this.loadUsers(this.usersPage);
+        if (this.activeTab === 'LISTINGS') await this.loadListings(this.listingsPage);
+        if (this.activeTab === 'TRANSACTIONS') await this.loadTransactions(this.transactionsPage);
+        if (this.activeTab === 'SUBSCRIPTIONS') await this.loadSubscriptions(this.subscriptionsPage);
+        if (this.activeTab === 'DISPUTES') await this.loadDisputes(this.disputesPage);
+        if (this.activeTab === 'REPORTS') await this.loadReports();
+      }
     } catch (e: any) {
       this.error = e instanceof Error ? e.message : this.i18n.t('admin.error.load_failed');
     } finally {
@@ -329,7 +341,9 @@ export class AdminComponent implements OnInit {
       confirmLabel: 'Approve',
       action: async () => {
         await this.api.adminApprovePartnerListing(String(l.id));
-        await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+        if (!this.isPartnerScopedAdmin) {
+          await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+        }
       }
     });
   }
@@ -342,7 +356,9 @@ export class AdminComponent implements OnInit {
       confirmLabel: 'Reject',
       action: async () => {
         await this.api.adminRejectPartnerListing(String(l.id));
-        await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+        if (!this.isPartnerScopedAdmin) {
+          await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
+        }
       }
     });
   }
@@ -355,7 +371,11 @@ export class AdminComponent implements OnInit {
       confirmLabel: 'Approve',
       action: async () => {
         await this.api.adminApprovePartnerListing(String(l.id));
-        await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
+        if (!this.isPartnerScopedAdmin) {
+          await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
+        } else {
+          await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
+        }
       }
     });
   }
@@ -368,7 +388,11 @@ export class AdminComponent implements OnInit {
       confirmLabel: 'Reject',
       action: async () => {
         await this.api.adminRejectPartnerListing(String(l.id));
-        await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
+        if (!this.isPartnerScopedAdmin) {
+          await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
+        } else {
+          await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
+        }
       }
     });
   }

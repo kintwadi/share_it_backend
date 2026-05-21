@@ -120,6 +120,26 @@ public class AdminManagementController {
         return ResponseEntity.ok(adminService.listPartnerListingRequests(page, size));
     }
 
+    @PostMapping("/partner/listings/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerListingScoped(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) ApprovePartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerListing(admin, listingId, body != null ? body.getNote() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/listings/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerListingScoped(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerListing(admin, listingId, body != null ? body.getReason() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
     @PostMapping("/disputes/{listingId}/cancel-refund")
     public ResponseEntity<Map<String, String>> cancelAndRefund(@PathVariable("listingId") UUID listingId, @RequestBody ResolveDisputeRequest body) {
         adminService.cancelAndRefundDispute(listingId, body.getReason());

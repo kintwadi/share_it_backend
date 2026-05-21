@@ -1,6 +1,7 @@
 package com.nearshare.api.model;
 
 import com.nearshare.api.model.embeddable.Location;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
@@ -49,6 +50,10 @@ public class User {
     private UserStatus status;
     @Enumerated(EnumType.STRING)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "admin_scope")
+    private AdminScope adminScope;
 
     @Column(name = "two_factor_enabled")
     @Builder.Default

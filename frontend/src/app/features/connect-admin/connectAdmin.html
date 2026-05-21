@@ -56,6 +56,14 @@
           </div>
         </div>
 
+        <div *ngIf="!isLogin">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Admin type</label>
+          <select [(ngModel)]="adminScope" name="adminScope" class="w-full border border-gray-200 rounded-xl px-3 py-2 bg-white text-sm outline-none">
+            <option value="FULL">Admin</option>
+            <option value="PARTNER">Partner</option>
+          </select>
+        </div>
+
         <button type="submit" [disabled]="isLoading" class="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold disabled:opacity-60 flex items-center justify-center gap-2">
           <span>{{ isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Admin') }}</span>
           <lucide-icon *ngIf="!isLoading" [img]="ArrowRight" [size]="16"></lucide-icon>
@@ -77,4 +85,3 @@
     </div>
   </div>
 </div>
-

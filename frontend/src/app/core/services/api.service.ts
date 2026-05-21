@@ -165,8 +165,8 @@ export class ApiService {
     return res.json();
   }
 
-  async registerAdmin(name: string, email: string, password: string, signupSecret?: string): Promise<any> {
-    const body = { name, email, password, signupSecret: signupSecret ?? '' };
+  async registerAdmin(name: string, email: string, password: string, signupSecret?: string, adminScope?: 'FULL' | 'PARTNER'): Promise<any> {
+    const body = { name, email, password, signupSecret: signupSecret ?? '', adminScope: adminScope ?? 'FULL' };
     const data = await firstValueFrom(this.api.post<any>('/admin/auth/register', body));
     return data;
   }
@@ -682,11 +682,11 @@ export class ApiService {
   }
 
   async adminApprovePartnerListing(listingId: string): Promise<any> {
-    return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/approve`, {}));
+    return firstValueFrom(this.api.post<any>(`/admin/partner/listings/${encodeURIComponent(listingId)}/approve`, {}));
   }
 
   async adminRejectPartnerListing(listingId: string): Promise<any> {
-    return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/reject`, {}));
+    return firstValueFrom(this.api.post<any>(`/admin/partner/listings/${encodeURIComponent(listingId)}/reject`, {}));
   }
 
   async adminListTransactions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {

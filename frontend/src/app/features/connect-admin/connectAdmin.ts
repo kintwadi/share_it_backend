@@ -37,6 +37,7 @@ export class ConnectAdminComponent implements OnInit {
   email = '';
   password = '';
   signupSecret = '';
+  adminScope: 'FULL' | 'PARTNER' = 'FULL';
 
   showMfaInput = false;
   mfaCode = '';
@@ -111,7 +112,7 @@ export class ConnectAdminComponent implements OnInit {
         return;
       }
 
-      const data = await this.api.registerAdmin(this.name, this.email, this.password, this.signupSecret);
+      const data = await this.api.registerAdmin(this.name, this.email, this.password, this.signupSecret, this.adminScope);
       if (data?.token) this.authStorage.setToken(data.token);
       if (data?.user?.id) this.authStorage.setUserId(data.user.id);
       this.authStorage.setAuthContext('admin');
