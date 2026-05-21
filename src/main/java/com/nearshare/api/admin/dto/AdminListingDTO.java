@@ -24,4 +24,15 @@ public class AdminListingDTO {
     private UUID borrowerId;
     private String borrowerEmail;
     private LocalDateTime createdAt;
+
+    private boolean availableUnlimited;
+    private LocalDateTime availableFrom;
+    private LocalDateTime availableTo;
+
+    private LocalDateTime partnerSubmittedAt;
+    private UUID partnerSubmittedBy;
+    private LocalDateTime partnerReviewedAt;
+    private UUID partnerReviewedBy;
+    private String partnerReviewNote;
+    private String partnerRejectionReason;
 }

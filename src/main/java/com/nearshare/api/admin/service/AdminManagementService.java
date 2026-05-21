@@ -177,6 +177,14 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public AdminPageResponse<AdminListingDTO> listPartnerListingRequests(int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerSubmittedAt", "createdAt"));
+        Page<Listing> p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+        List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
+        return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
+    }
+
+    @Transactional
     public AdminPageResponse<AdminDisputeDTO> listDisputes(int page, int size) {
         List<Listing> disputedListings = listingRepository.findByStatusOrderByCreatedAtDesc(AvailabilityStatus.DISPUTED);
         List<ReturnSession> disputedReturns = returnSessionRepository.findByStatusOrderByCreatedAtDesc(ReturnStatus.DISPUTED);
@@ -251,7 +259,7 @@ public class AdminManagementService {
     }
 
     @Transactional
-    public void approvePartnerListing(UUID listingId) {
+    public void approvePartnerListing(User admin, UUID listingId, String note) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
         if (l.getPartner() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
@@ -260,11 +268,21 @@ public class AdminManagementService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
         l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setPartnerReviewedAt(java.time.LocalDateTime.now());
+        l.setPartnerReviewedBy(admin != null ? admin.getId() : null);
+        if (note != null && !note.isBlank()) {
+            String n = note.trim();
+            if (n.length() > 500) n = n.substring(0, 500);
+            l.setPartnerReviewNote(n);
+        } else {
+            l.setPartnerReviewNote(null);
+        }
+        l.setPartnerRejectionReason(null);
         listingRepository.save(l);
     }
 
     @Transactional
-    public void rejectPartnerListing(UUID listingId) {
+    public void rejectPartnerListing(User admin, UUID listingId, String reason) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
         if (l.getPartner() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
@@ -273,6 +291,16 @@ public class AdminManagementService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
         l.setStatus(AvailabilityStatus.BLOCKED);
+        l.setPartnerReviewedAt(java.time.LocalDateTime.now());
+        l.setPartnerReviewedBy(admin != null ? admin.getId() : null);
+        if (reason != null && !reason.isBlank()) {
+            String r = reason.trim();
+            if (r.length() > 500) r = r.substring(0, 500);
+            l.setPartnerRejectionReason(r);
+        } else {
+            l.setPartnerRejectionReason(null);
+        }
+        l.setPartnerReviewNote(null);
         listingRepository.save(l);
     }
 
@@ -439,6 +467,15 @@ public class AdminManagementService {
                 .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
                 .borrowerEmail(l.getBorrower() != null ? l.getBorrower().getEmail() : null)
                 .createdAt(l.getCreatedAt())
+                .availableUnlimited(l.isAvailableUnlimited())
+                .availableFrom(l.getAvailableFrom())
+                .availableTo(l.getAvailableTo())
+                .partnerSubmittedAt(l.getPartnerSubmittedAt())
+                .partnerSubmittedBy(l.getPartnerSubmittedBy())
+                .partnerReviewedAt(l.getPartnerReviewedAt())
+                .partnerReviewedBy(l.getPartnerReviewedBy())
+                .partnerReviewNote(l.getPartnerReviewNote())
+                .partnerRejectionReason(l.getPartnerRejectionReason())
                 .build();
     }
 

@@ -114,6 +114,9 @@ public class PartnerService {
         if (req.getType() == null) throw new RuntimeException("type_required");
         if (hourlyRate == null) hourlyRate = BigDecimal.ZERO;
         if (req.getType().name().equalsIgnoreCase("GIVE")) hourlyRate = BigDecimal.ZERO;
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
+        LocalDateTime availableTo = availableUnlimited ? null : req.getAvailableTo();
 
         Listing l = Listing.builder()
                 .id(UUID.randomUUID())
@@ -137,6 +140,11 @@ public class PartnerService {
                 .pickupLocationHouseNumber(pickupHouse)
                 .pickupLocationCity(pickupCity)
                 .pickupLocationZip(pickupZip)
+                .availableUnlimited(availableUnlimited)
+                .availableFrom(availableFrom)
+                .availableTo(availableTo)
+                .partnerSubmittedAt(LocalDateTime.now())
+                .partnerSubmittedBy(current.getId())
                 .createdAt(LocalDateTime.now())
                 .build();
         listingRepository.save(l);
@@ -184,6 +192,14 @@ public class PartnerService {
         if (req.getType().name().equalsIgnoreCase("GIVE")) hourlyRate = BigDecimal.ZERO;
         l.setHourlyRate(hourlyRate);
         l.setLocation(Location.builder().lat(req.getX()).lng(req.getY()).build());
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        l.setAvailableUnlimited(availableUnlimited);
+        l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
+        l.setAvailableTo(availableUnlimited ? null : req.getAvailableTo());
+        if (l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL && l.getPartnerSubmittedAt() == null) {
+            l.setPartnerSubmittedAt(LocalDateTime.now());
+            l.setPartnerSubmittedBy(current.getId());
+        }
 
         if (req.getPickupLocationId() != null) {
             com.nearshare.api.model.PickupLocation pickup = pickupLocationRepository.findById(req.getPickupLocationId())
@@ -419,6 +435,9 @@ public class PartnerService {
                 .pickupLocationHouseNumber(canSeeExactPickup ? l.getPickupLocationHouseNumber() : null)
                 .pickupLocationCity(l.getPickupLocationCity())
                 .pickupLocationZip(l.getPickupLocationZip())
+                .availableUnlimited(l.isAvailableUnlimited())
+                .availableFrom(l.getAvailableFrom())
+                .availableTo(l.getAvailableTo())
                 .build();
     }
 

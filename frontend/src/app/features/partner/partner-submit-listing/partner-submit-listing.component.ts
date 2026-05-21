@@ -275,6 +275,9 @@ export class PartnerSubmitListingComponent implements OnInit {
 
     this.saving = true;
     try {
+      const availableUnlimited = this.availabilityMode === 'unlimited';
+      const availableFrom = availableUnlimited ? null : `${this.availableFromDate}T${this.availableFromTime}:00`;
+      const availableTo = availableUnlimited ? null : `${this.availableToDate}T${this.availableToTime}:00`;
       const payload: any = {
         partnerId: this.partnerId,
         title: this.title.trim(),
@@ -288,6 +291,9 @@ export class PartnerSubmitListingComponent implements OnInit {
         insuranceRequired: false,
         x: 0,
         y: 0,
+        availableUnlimited,
+        availableFrom,
+        availableTo,
         pickupLocationId: null,
         pickupLocationStreet: this.pickupLocationStreet || null,
         pickupLocationHouseNumber: this.pickupOption === 'custom' ? (this.pickupLocationHouseNumber || null) : null,

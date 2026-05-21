@@ -27,4 +27,8 @@ public class CreateListingRequest {
     private String pickupLocationHouseNumber;
     private String pickupLocationCity;
     private String pickupLocationZip;
+
+    private boolean availableUnlimited;
+    private java.time.LocalDateTime availableFrom;
+    private java.time.LocalDateTime availableTo;
 }

@@ -8,11 +8,13 @@ import com.nearshare.api.admin.dto.AdminSummaryDTO;
 import com.nearshare.api.admin.dto.AdminTransactionDTO;
 import com.nearshare.api.admin.dto.AdminUserDTO;
 import com.nearshare.api.admin.service.AdminManagementService;
+import com.nearshare.api.model.User;
 import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.enums.UserStatus;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,9 +33,11 @@ import java.util.UUID;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminManagementController {
     private final AdminManagementService adminService;
+    private final com.nearshare.api.service.UserService userService;
 
-    public AdminManagementController(AdminManagementService adminService) {
+    public AdminManagementController(AdminManagementService adminService, com.nearshare.api.service.UserService userService) {
         this.adminService = adminService;
+        this.userService = userService;
     }
 
     @GetMapping("/summary")
@@ -108,6 +112,14 @@ public class AdminManagementController {
         return ResponseEntity.ok(adminService.listListings(status, page, size));
     }
 
+    @GetMapping("/partner/listing-requests")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerListingRequests(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(adminService.listPartnerListingRequests(page, size));
+    }
+
     @PostMapping("/disputes/{listingId}/cancel-refund")
     public ResponseEntity<Map<String, String>> cancelAndRefund(@PathVariable("listingId") UUID listingId, @RequestBody ResolveDisputeRequest body) {
         adminService.cancelAndRefundDispute(listingId, body.getReason());
@@ -143,14 +155,22 @@ public class AdminManagementController {
     }
 
     @PostMapping("/listings/{listingId}/approve")
-    public ResponseEntity<Map<String, String>> approvePartnerListing(@PathVariable("listingId") UUID listingId) {
-        adminService.approvePartnerListing(listingId);
+    public ResponseEntity<Map<String, String>> approvePartnerListing(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) ApprovePartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerListing(admin, listingId, body != null ? body.getNote() : null);
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
     @PostMapping("/listings/{listingId}/reject")
-    public ResponseEntity<Map<String, String>> rejectPartnerListing(@PathVariable("listingId") UUID listingId) {
-        adminService.rejectPartnerListing(listingId);
+    public ResponseEntity<Map<String, String>> rejectPartnerListing(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerListing(admin, listingId, body != null ? body.getReason() : null);
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
@@ -172,5 +192,15 @@ public class AdminManagementController {
     @Data
     public static class ReopenReturnRequest {
         private Integer minutes;
+    }
+
+    @Data
+    public static class ApprovePartnerListingRequest {
+        private String note;
+    }
+
+    @Data
+    public static class RejectPartnerListingRequest {
+        private String reason;
     }
 }
