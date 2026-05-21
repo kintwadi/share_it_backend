@@ -73,6 +73,10 @@ export class Layout {
     const role = String(this.currentUser()?.role ?? '').toUpperCase();
     return role === 'ADMIN' || role === 'ROLE_ADMIN';
   });
+  isPartnerScopedAdmin = computed(() => {
+    if (!this.isAdmin()) return false;
+    return String((this.currentUser() as any)?.adminScope ?? '').toUpperCase() === 'PARTNER';
+  });
   hasSubscription = computed(() => {
     const sub = this.subscription();
     if (!sub) return false;
