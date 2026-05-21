@@ -127,7 +127,7 @@ public class ListingService {
         }
         boolean availableUnlimited = req.isAvailableUnlimited();
         java.time.LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
-        java.time.LocalDateTime availableTo = availableUnlimited ? null : req.getAvailableTo();
+        java.time.LocalDateTime availableTo = null;
         Listing l = Listing.builder()
                 .id(UUID.randomUUID())
                 .title(req.getTitle())
@@ -193,7 +193,7 @@ public class ListingService {
         boolean availableUnlimited = req.isAvailableUnlimited();
         l.setAvailableUnlimited(availableUnlimited);
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
-        l.setAvailableTo(availableUnlimited ? null : req.getAvailableTo());
+        l.setAvailableTo(null);
         if (req.getPickupLocationId() != null) {
             com.nearshare.api.model.PickupLocation pickup = pickupLocationRepository.findById(req.getPickupLocationId())
                     .orElseThrow(() -> new RuntimeException("pickup_location_not_found"));

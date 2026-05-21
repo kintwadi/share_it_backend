@@ -263,8 +263,6 @@
                   <span *ngIf="partnerListingSelected.availableUnlimited">Indefinitely</span>
                   <span *ngIf="!partnerListingSelected.availableUnlimited">
                     {{partnerListingSelected.availableFrom ? (partnerListingSelected.availableFrom | date:'short') : '-' }}
-                    →
-                    {{partnerListingSelected.availableTo ? (partnerListingSelected.availableTo | date:'short') : '-' }}
                   </span>
                 </div>
               </div>

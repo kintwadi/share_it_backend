@@ -116,7 +116,7 @@ public class PartnerService {
         if (req.getType().name().equalsIgnoreCase("GIVE")) hourlyRate = BigDecimal.ZERO;
         boolean availableUnlimited = req.isAvailableUnlimited();
         LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
-        LocalDateTime availableTo = availableUnlimited ? null : req.getAvailableTo();
+        LocalDateTime availableTo = null;
 
         Listing l = Listing.builder()
                 .id(UUID.randomUUID())
@@ -195,7 +195,7 @@ public class PartnerService {
         boolean availableUnlimited = req.isAvailableUnlimited();
         l.setAvailableUnlimited(availableUnlimited);
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
-        l.setAvailableTo(availableUnlimited ? null : req.getAvailableTo());
+        l.setAvailableTo(null);
         if (l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL && l.getPartnerSubmittedAt() == null) {
             l.setPartnerSubmittedAt(LocalDateTime.now());
             l.setPartnerSubmittedBy(current.getId());

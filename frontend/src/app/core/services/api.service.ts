@@ -304,6 +304,9 @@ export class ApiService {
     pickupLocationHouseNumber?: string | null;
     pickupLocationCity?: string | null;
     pickupLocationZip?: string | null;
+    availableUnlimited?: boolean;
+    availableFrom?: string | null;
+    availableTo?: string | null;
   }): Promise<Listing> {
     const body = {
       title: payload.title,
@@ -317,6 +320,9 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      availableUnlimited: !!payload.availableUnlimited,
+      availableFrom: payload.availableFrom ?? null,
+      availableTo: payload.availableTo ?? null,
       pickupLocationId: payload.pickupLocationId ?? null,
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
@@ -345,6 +351,9 @@ export class ApiService {
     pickupLocationHouseNumber?: string | null;
     pickupLocationCity?: string | null;
     pickupLocationZip?: string | null;
+    availableUnlimited?: boolean;
+    availableFrom?: string | null;
+    availableTo?: string | null;
   }): Promise<Listing> {
     const body = {
       title: payload.title,
@@ -358,6 +367,9 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      availableUnlimited: !!payload.availableUnlimited,
+      availableFrom: payload.availableFrom ?? null,
+      availableTo: payload.availableTo ?? null,
       pickupLocationId: payload.pickupLocationId ?? null,
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,

@@ -74,8 +74,6 @@ export class NewItemComponent implements OnInit {
   timeError: string | null = null;
   availableFromDate = '';
   availableFromTime = '10:00';
-  availableToDate = '';
-  availableToTime = '18:00';
   availableUnlimited = false;
   availabilityError: string | null = null;
 
@@ -182,10 +180,6 @@ export class NewItemComponent implements OnInit {
   setUnlimited(val: boolean) {
     this.availableUnlimited = val;
     this.availabilityError = null;
-    if (val) {
-      this.availableToDate = '';
-      this.availableToTime = '';
-    }
     this.render();
   }
 
@@ -278,6 +272,16 @@ export class NewItemComponent implements OnInit {
     this.pickupLocationZip = String((listing as any).pickupLocationZip || '');
     if (!this.pickupLocationId && (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip)) {
       this.pickupOption = 'custom';
+    }
+    const availableUnlimited = !!(listing as any).availableUnlimited;
+    const availableFrom = (listing as any).availableFrom ? String((listing as any).availableFrom) : '';
+    this.availableUnlimited = availableUnlimited;
+    if (!availableUnlimited && availableFrom && availableFrom.length >= 16) {
+      this.availableFromDate = availableFrom.slice(0, 10);
+      this.availableFromTime = availableFrom.slice(11, 16) || this.availableFromTime;
+    } else {
+      this.availableFromDate = '';
+      this.availableFromTime = '10:00';
     }
   }
 
@@ -448,15 +452,8 @@ export class NewItemComponent implements OnInit {
     this.timeError = null;
     this.availabilityError = null;
 
-    if (
-      this.availableFromDate &&
-      this.availableToDate &&
-      (
-        this.availableToDate < this.availableFromDate ||
-        (this.availableToDate === this.availableFromDate && this.availableToTime <= this.availableFromTime)
-      )
-    ) {
-      this.availabilityError = this.i18n.t('new_item.error_time_order');
+    if (!this.availableUnlimited && !this.availableFromDate) {
+      this.availabilityError = this.i18n.t('new_item.error_available_from_required');
       this.render();
       return;
     }
@@ -504,6 +501,8 @@ export class NewItemComponent implements OnInit {
     this.saving = true;
     this.render();
     try {
+      const availableUnlimited = !!this.availableUnlimited;
+      const availableFrom = availableUnlimited || !this.availableFromDate ? null : `${this.availableFromDate}T${this.availableFromTime}:00`;
       const payload = {
         title: this.title.trim(),
         description: this.description ?? '',
@@ -516,6 +515,9 @@ export class NewItemComponent implements OnInit {
         insuranceRequired: !!this.insuranceRequired,
         x: 0,
         y: 0,
+        availableUnlimited,
+        availableFrom,
+        availableTo: null,
         pickupLocationId: this.pickupOption === 'custom' ? null : this.pickupLocationId,
         pickupLocationCustom: null,
         pickupLocationStreet: this.pickupOption === 'custom' ? (this.pickupLocationStreet || null) : null,

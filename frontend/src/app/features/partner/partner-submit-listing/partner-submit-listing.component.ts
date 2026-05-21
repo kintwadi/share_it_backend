@@ -56,8 +56,6 @@ export class PartnerSubmitListingComponent implements OnInit {
   availabilityMode: 'fixed' | 'unlimited' = 'unlimited';
   availableFromDate = '';
   availableFromTime = '10:00';
-  availableToDate = '';
-  availableToTime = '18:00';
 
   readonly timeOptions = [
     '08:00','08:30','09:00','09:30','10:00','10:30',
@@ -151,22 +149,11 @@ export class PartnerSubmitListingComponent implements OnInit {
 
   setAvailabilityMode(mode: 'fixed' | 'unlimited') {
     this.availabilityMode = mode;
-    if (mode === 'unlimited') {
-      this.availableToDate = '';
-      this.availableToTime = '18:00';
-    }
   }
 
   private validateAvailability(): string | null {
     if (this.availabilityMode === 'unlimited') return null;
     if (!this.availableFromDate) return 'availability_from_required';
-    if (!this.availableToDate) return 'availability_to_required';
-    if (
-      this.availableToDate < this.availableFromDate ||
-      (this.availableToDate === this.availableFromDate && this.availableToTime <= this.availableFromTime)
-    ) {
-      return 'availability_time_order';
-    }
     return null;
   }
 
@@ -277,7 +264,7 @@ export class PartnerSubmitListingComponent implements OnInit {
     try {
       const availableUnlimited = this.availabilityMode === 'unlimited';
       const availableFrom = availableUnlimited ? null : `${this.availableFromDate}T${this.availableFromTime}:00`;
-      const availableTo = availableUnlimited ? null : `${this.availableToDate}T${this.availableToTime}:00`;
+      const availableTo = null;
       const payload: any = {
         partnerId: this.partnerId,
         title: this.title.trim(),
