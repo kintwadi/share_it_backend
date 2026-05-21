@@ -11,7 +11,7 @@
         
         <!-- Desktop Menu -->
         <div class="hidden md:flex items-center space-x-2">
-          <a *ngIf="isHeaderSectionEnabled('discover') && !(isPartnerContext() || isPartnerArea())" routerLink="/" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" [routerLinkActiveOptions]="{exact: true}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+          <a *ngIf="isHeaderSectionEnabled('discover') && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" [routerLinkActiveOptions]="{exact: true}" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
             <lucide-icon [img]="Home" [size]="18"></lucide-icon>
             <span>{{ i18n.t('nav.discover') }}</span>
           </a>
@@ -31,7 +31,7 @@
             <span>Partner</span>
           </a>
 
-          <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages')" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+          <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages') && !isPartnerScopedAdmin()" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
             <lucide-icon [img]="MessageSquare" [size]="18"></lucide-icon>
             <span>{{ i18n.t('nav.messages') }}</span>
           </a>
@@ -152,7 +152,7 @@
     <!-- Mobile Menu -->
     <div *ngIf="isMenuOpen()" class="md:hidden bg-white border-t border-gray-100 py-2 shadow-xl absolute w-full animate-fade-in-down h-screen">
       <div class="flex flex-col p-4 space-y-2">
-          <a *ngIf="!(isPartnerContext() || isPartnerArea())" routerLink="/" routerLinkActive="bg-brand-50 text-brand-700" [routerLinkActiveOptions]="{exact: true}" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
+          <a *ngIf="!(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/" routerLinkActive="bg-brand-50 text-brand-700" [routerLinkActiveOptions]="{exact: true}" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
           <lucide-icon [img]="Home" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.discover') }}
         </a>
 
@@ -166,7 +166,7 @@
           <a *ngIf="(isPartnerContext() || isPartnerArea())" routerLink="/partner/dashboard" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
             <lucide-icon [img]="Building2" [size]="18" class="mr-3"></lucide-icon> Partner
           </a>
-          <a *ngIf="(hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages')" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
+          <a *ngIf="(hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages') && !isPartnerScopedAdmin()" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
             <lucide-icon [img]="MessageSquare" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.messages') }}
           </a>
         <div class="h-px bg-gray-100 my-2"></div>
