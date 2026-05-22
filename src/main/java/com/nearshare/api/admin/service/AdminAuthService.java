@@ -11,6 +11,7 @@ import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
+import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import com.nearshare.api.repository.UserRepository;
 import com.nearshare.api.security.JwtTokenProvider;
 import com.nearshare.api.service.AuthService;
@@ -28,23 +29,27 @@ public class AdminAuthService {
     private final JwtTokenProvider tokenProvider;
     private final AuthService authService;
     private final String signupSecret;
+    private final PartnerAdminRepository partnerAdminRepository;
 
     public AdminAuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider tokenProvider,
             AuthService authService,
+            PartnerAdminRepository partnerAdminRepository,
             @Value("${security.admin.signup.secret:}") String signupSecret
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.authService = authService;
+        this.partnerAdminRepository = partnerAdminRepository;
         this.signupSecret = signupSecret != null ? signupSecret.trim() : "";
     }
 
     public TokenResponse login(LoginRequest request, String userAgent, String ipAddress) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("user_not_found"));
+        ensureAdminAccess(user);
         if (user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("forbidden");
         }
@@ -53,6 +58,7 @@ public class AdminAuthService {
 
     public TokenResponse verify2faLogin(String email, String code, String userAgent, String ipAddress) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("user_not_found"));
+        ensureAdminAccess(user);
         if (user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("forbidden");
         }
@@ -109,6 +115,18 @@ public class AdminAuthService {
         } catch (Exception e) {
             return AdminScope.FULL;
         }
+    }
+
+    private void ensureAdminAccess(User user) {
+        if (user == null || user.getId() == null) return;
+        if (user.getRole() == UserRole.ADMIN) return;
+        boolean isPartnerAdmin = !partnerAdminRepository.findAllByUserId(user.getId()).isEmpty();
+        if (!isPartnerAdmin) return;
+        user.setRole(UserRole.ADMIN);
+        if (user.getAdminScope() == null) {
+            user.setAdminScope(AdminScope.PARTNER);
+        }
+        userRepository.save(user);
     }
 
     private UserDTO toUserDTO(User user) {
