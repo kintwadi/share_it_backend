@@ -166,7 +166,7 @@ public class ReturnService {
         if (bothScanned || (bothManual && session.getConciergeWitnessId() != null)) {
             session.setStatus(ReturnStatus.COMPLETED);
             Listing listing = session.getListing();
-            listing.setStatus(AvailabilityStatus.AVAILABLE);
+            listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
             listing.setBorrower(null);
             
             // Increase trust score (simple mock implementation for now)

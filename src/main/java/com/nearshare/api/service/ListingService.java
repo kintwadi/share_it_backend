@@ -266,6 +266,9 @@ public class ListingService {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
 
         if (l.getPartner() != null) {
+            if (l.getStatus() != AvailabilityStatus.APPROVED || l.getBorrower() != null) {
+                throw new RuntimeException("not_available");
+            }
             l.setBorrower(borrower);
             l.setStatus(AvailabilityStatus.PENDING);
             listingRepository.save(l);
@@ -376,7 +379,7 @@ public class ListingService {
         if (l.isAutoApprove()) {
             if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
             else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-            else l.setStatus(AvailabilityStatus.APPROVED);
+            else l.setStatus(AvailabilityStatus.BORROWED);
         } else {
             l.setStatus(AvailabilityStatus.PENDING);
         }
@@ -403,7 +406,7 @@ public class ListingService {
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else {
-            l.setStatus(AvailabilityStatus.APPROVED);
+            l.setStatus(AvailabilityStatus.BORROWED);
         }
         listingRepository.save(l);
         return toDTO(l, owner);
@@ -681,7 +684,7 @@ public class ListingService {
         if (l.isAutoApprove()) {
              if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
              else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-             else l.setStatus(AvailabilityStatus.APPROVED);
+             else l.setStatus(AvailabilityStatus.BORROWED);
         } else {
              l.setStatus(AvailabilityStatus.PENDING);
         }

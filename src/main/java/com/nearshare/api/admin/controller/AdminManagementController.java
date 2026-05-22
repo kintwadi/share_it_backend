@@ -120,6 +120,15 @@ public class AdminManagementController {
         return ResponseEntity.ok(adminService.listPartnerListingRequests(page, size));
     }
 
+    @GetMapping("/partner/listings")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerListings(
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(adminService.listPartnerListings(status, page, size));
+    }
+
     @PostMapping("/partner/listings/{listingId}/approve")
     public ResponseEntity<Map<String, String>> approvePartnerListingScoped(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,

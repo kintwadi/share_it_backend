@@ -185,6 +185,25 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public AdminPageResponse<AdminListingDTO> listPartnerListings(String status, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerSubmittedAt", "createdAt"));
+        Page<Listing> p;
+        if (status == null || status.isBlank()) {
+            p = listingRepository.findByPartnerIsNotNull(pageable);
+        } else {
+            AvailabilityStatus s;
+            try {
+                s = AvailabilityStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
+            }
+            p = listingRepository.findByPartnerIsNotNullAndStatus(s, pageable);
+        }
+        List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
+        return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
+    }
+
+    @Transactional
     public AdminPageResponse<AdminDisputeDTO> listDisputes(int page, int size) {
         List<Listing> disputedListings = listingRepository.findByStatusOrderByCreatedAtDesc(AvailabilityStatus.DISPUTED);
         List<ReturnSession> disputedReturns = returnSessionRepository.findByStatusOrderByCreatedAtDesc(ReturnStatus.DISPUTED);
@@ -267,7 +286,7 @@ public class AdminManagementService {
         if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
-        l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setStatus(AvailabilityStatus.APPROVED);
         l.setPartnerReviewedAt(java.time.LocalDateTime.now());
         l.setPartnerReviewedBy(admin != null ? admin.getId() : null);
         if (note != null && !note.isBlank()) {
@@ -324,7 +343,7 @@ public class AdminManagementService {
         }
 
         l.setBorrower(null);
-        l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setStatus(l.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
         listingRepository.save(l);
 
         for (ReturnSession rs : returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.DISPUTED)) {
@@ -345,7 +364,7 @@ public class AdminManagementService {
         session.setExpiresAt(LocalDateTime.now());
         returnSessionRepository.save(session);
 
-        l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setStatus(l.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
         listingRepository.save(l);
 

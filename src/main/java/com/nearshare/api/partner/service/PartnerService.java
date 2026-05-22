@@ -275,7 +275,7 @@ public class PartnerService {
         } else if (l.getType() != null && l.getType().name().equalsIgnoreCase("SELL")) {
             l.setStatus(AvailabilityStatus.SOLD);
         } else {
-            l.setStatus(AvailabilityStatus.APPROVED);
+            l.setStatus(AvailabilityStatus.BORROWED);
         }
         listingRepository.save(l);
         return toListingDTO(l, current);
@@ -288,7 +288,7 @@ public class PartnerService {
         requirePartnerAdmin(current, l.getPartner().getId());
         if (l.getStatus() != AvailabilityStatus.PENDING) throw new RuntimeException("invalid_status");
 
-        l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setStatus(AvailabilityStatus.APPROVED);
         l.setBorrower(null);
         listingRepository.save(l);
         return toListingDTO(l, current);

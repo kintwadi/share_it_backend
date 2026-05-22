@@ -164,7 +164,7 @@ export class AdminComponent implements OnInit {
   }
 
   async loadPartnerListingRequests(page: number) {
-    const res = await this.api.adminListPartnerListingRequests({ page, size: this.pageSize });
+    const res = await this.api.adminListPartnerListings({ page, size: this.pageSize });
     this.partnerListingRequests = Array.isArray(res?.items) ? res.items : [];
     this.partnerListingRequestsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.partnerListingRequestsPage = page;

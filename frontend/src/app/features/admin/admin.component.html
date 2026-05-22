@@ -180,7 +180,7 @@
 
     <div *ngIf="activeTab === 'PARTNER_LISTINGS'" class="p-4 space-y-4">
       <div class="flex items-center justify-between">
-        <div class="text-sm font-semibold text-gray-900">Partner listing requests</div>
+        <div class="text-sm font-semibold text-gray-900">Partner listings</div>
         <button type="button" (click)="loadPartnerListingRequests(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Refresh</button>
       </div>
 
@@ -192,6 +192,7 @@
                 <th class="px-3 py-2 font-semibold">Title</th>
                 <th class="px-3 py-2 font-semibold">Partner</th>
                 <th class="px-3 py-2 font-semibold">Type</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
                 <th class="px-3 py-2 font-semibold">Submitted</th>
                 <th class="px-3 py-2 font-semibold text-right">Actions</th>
               </tr>
@@ -201,20 +202,21 @@
                 <td class="px-3 py-2 text-gray-900 font-semibold">{{r.title || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{r.status || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
                 <td class="px-3 py-2 text-right">
                   <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
-                    <button type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                    <button *ngIf="r.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
                       Approve
                     </button>
-                    <button type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    <button *ngIf="r.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
                       Reject
                     </button>
                   </div>
                 </td>
               </tr>
               <tr *ngIf="partnerListingRequests.length === 0">
-                <td colspan="5" class="px-3 py-8 text-center text-gray-500">No partner listing requests.</td>
+                <td colspan="6" class="px-3 py-8 text-center text-gray-500">No partner listings.</td>
               </tr>
             </tbody>
           </table>
@@ -259,6 +261,10 @@
                 <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.partnerName || '-'}}</div>
               </div>
               <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
                 <div class="text-[11px] font-semibold text-gray-500">Availability</div>
                 <div class="mt-1 font-semibold text-gray-900">
                   <span *ngIf="partnerListingSelected.availableUnlimited">Indefinitely</span>
@@ -283,8 +289,8 @@
             </div>
 
             <div class="flex items-center justify-end gap-2 pt-2">
-              <button type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
-              <button type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
+              <button *ngIf="partnerListingSelected.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
+              <button *ngIf="partnerListingSelected.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
             </div>
           </div>
         </div>
