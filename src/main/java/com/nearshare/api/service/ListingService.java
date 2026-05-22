@@ -266,7 +266,11 @@ public class ListingService {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
 
         if (l.getPartner() != null) {
-            if (l.getStatus() != AvailabilityStatus.APPROVED || l.getBorrower() != null) {
+            AvailabilityStatus st = l.getStatus();
+            if (l.getBorrower() != null) {
+                throw new RuntimeException("not_available");
+            }
+            if (st != AvailabilityStatus.APPROVED && st != AvailabilityStatus.AVAILABLE) {
                 throw new RuntimeException("not_available");
             }
             l.setBorrower(borrower);
