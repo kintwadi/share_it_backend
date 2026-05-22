@@ -198,9 +198,18 @@ export class Layout {
   }
 
   handleLogoutClick() {
+    const ctx = this.authStorage.getAuthContext();
     this.session.logout();
     this.notifications.set([]);
-    this.router.navigate(['/']);
+    if (ctx === 'admin') {
+      this.router.navigate(['/connect/admin']);
+      return;
+    }
+    if (ctx === 'partner') {
+      this.router.navigate(['/connect/partner']);
+      return;
+    }
+    this.router.navigate(['/connect']);
   }
 
   changeCurrency() {
