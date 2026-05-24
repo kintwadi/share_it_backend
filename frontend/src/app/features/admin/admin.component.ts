@@ -9,6 +9,7 @@ import { Listing, User } from '../../core/models/types';
 import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 
 type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'PARTNER_LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS';
+type PartnerSubTab = 'SUBMISSIONS' | 'BORROW_REQUESTS' | 'ITEMS';
 
 @Component({
   selector: 'app-admin',
@@ -48,9 +49,20 @@ export class AdminComponent implements OnInit {
   listingsPage = 0;
   listingsStatus = '';
 
-  partnerListingRequests: any[] = [];
-  partnerListingRequestsTotal = 0;
-  partnerListingRequestsPage = 0;
+  partnerSubTab: PartnerSubTab = 'SUBMISSIONS';
+  partnerSubmissions: any[] = [];
+  partnerSubmissionsTotal = 0;
+  partnerSubmissionsPage = 0;
+
+  partnerBorrowRequests: any[] = [];
+  partnerBorrowRequestsTotal = 0;
+  partnerBorrowRequestsPage = 0;
+
+  partnerItems: any[] = [];
+  partnerItemsTotal = 0;
+  partnerItemsPage = 0;
+  partnerItemsStatus = '';
+
   partnerListingSelectedId: string | null = null;
   partnerListingSelected: Listing | null = null;
   partnerListingSelectedLoading = false;
@@ -82,7 +94,7 @@ export class AdminComponent implements OnInit {
 
   pageSize = 20;
 
-  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_PENDING_APPROVAL'];
+  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_PENDING_APPROVAL', 'PARTNER_BORROW_REQUESTED'];
   txStatusOptions = ['', 'ESCROWED', 'RELEASED', 'RELEASE_FAILED', 'DISPUTED', 'REFUNDED', 'PENDING', 'FAILED'];
   subStatusOptions = ['', 'active', 'trialing', 'past_due', 'canceled', 'incomplete'];
 
@@ -108,6 +120,7 @@ export class AdminComponent implements OnInit {
     this.isPartnerScopedAdmin = String((u as any).adminScope ?? '').toUpperCase() === 'PARTNER';
     if (this.isPartnerScopedAdmin) {
       this.activeTab = 'PARTNER_LISTINGS';
+      this.partnerSubTab = 'BORROW_REQUESTS';
     }
     await this.refreshActive();
   }
@@ -127,7 +140,7 @@ export class AdminComponent implements OnInit {
         await this.loadSummary();
       }
       if (this.activeTab === 'PARTNER_LISTINGS') {
-        await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
+        await this.loadPartnerSection();
       }
       if (!this.isPartnerScopedAdmin) {
         if (this.activeTab === 'USERS') await this.loadUsers(this.usersPage);
@@ -163,17 +176,76 @@ export class AdminComponent implements OnInit {
     this.listingsPage = page;
   }
 
-  async loadPartnerListingRequests(page: number) {
-    const res = await this.api.adminListPartnerListings({ page, size: this.pageSize });
-    this.partnerListingRequests = Array.isArray(res?.items) ? res.items : [];
-    this.partnerListingRequestsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
-    this.partnerListingRequestsPage = page;
-    if (this.partnerListingSelectedId && !this.partnerListingRequests.some(r => String(r?.id) === String(this.partnerListingSelectedId))) {
+  get partnerRows(): any[] {
+    if (this.partnerSubTab === 'SUBMISSIONS') return this.partnerSubmissions;
+    if (this.partnerSubTab === 'BORROW_REQUESTS') return this.partnerBorrowRequests;
+    return this.partnerItems;
+  }
+
+  get partnerTotal(): number {
+    if (this.partnerSubTab === 'SUBMISSIONS') return this.partnerSubmissionsTotal;
+    if (this.partnerSubTab === 'BORROW_REQUESTS') return this.partnerBorrowRequestsTotal;
+    return this.partnerItemsTotal;
+  }
+
+  get partnerPage(): number {
+    if (this.partnerSubTab === 'SUBMISSIONS') return this.partnerSubmissionsPage;
+    if (this.partnerSubTab === 'BORROW_REQUESTS') return this.partnerBorrowRequestsPage;
+    return this.partnerItemsPage;
+  }
+
+  async setPartnerSubTab(tab: PartnerSubTab) {
+    this.partnerSubTab = tab;
+    this.partnerListingSelectedId = null;
+    this.partnerListingSelected = null;
+    await this.loadPartnerSection(0);
+  }
+
+  async loadPartnerSection(page?: number) {
+    if (this.partnerSubTab === 'SUBMISSIONS') {
+      await this.loadPartnerSubmissions(typeof page === 'number' ? page : this.partnerSubmissionsPage);
+      return;
+    }
+    if (this.partnerSubTab === 'BORROW_REQUESTS') {
+      await this.loadPartnerBorrowRequests(typeof page === 'number' ? page : this.partnerBorrowRequestsPage);
+      return;
+    }
+    await this.loadPartnerItems(typeof page === 'number' ? page : this.partnerItemsPage);
+  }
+
+  async loadPartnerSubmissions(page: number) {
+    const res = await this.api.adminListPartnerSubmissions({ page, size: this.pageSize });
+    this.partnerSubmissions = Array.isArray(res?.items) ? res.items : [];
+    this.partnerSubmissionsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
+    this.partnerSubmissionsPage = page;
+    await this.ensurePartnerSelection();
+  }
+
+  async loadPartnerBorrowRequests(page: number) {
+    const res = await this.api.adminListPartnerBorrowRequests({ page, size: this.pageSize });
+    this.partnerBorrowRequests = Array.isArray(res?.items) ? res.items : [];
+    this.partnerBorrowRequestsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
+    this.partnerBorrowRequestsPage = page;
+    await this.ensurePartnerSelection();
+  }
+
+  async loadPartnerItems(page: number) {
+    const status = this.partnerItemsStatus || undefined;
+    const res = await this.api.adminListPartnerItems({ status, page, size: this.pageSize });
+    this.partnerItems = Array.isArray(res?.items) ? res.items : [];
+    this.partnerItemsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
+    this.partnerItemsPage = page;
+    await this.ensurePartnerSelection();
+  }
+
+  private async ensurePartnerSelection() {
+    const rows = this.partnerRows;
+    if (this.partnerListingSelectedId && !rows.some(r => String(r?.id) === String(this.partnerListingSelectedId))) {
       this.partnerListingSelectedId = null;
       this.partnerListingSelected = null;
     }
-    if (!this.partnerListingSelectedId && this.partnerListingRequests.length > 0) {
-      await this.selectPartnerListing(this.partnerListingRequests[0]);
+    if (!this.partnerListingSelectedId && rows.length > 0) {
+      await this.selectPartnerListing(rows[0]);
     }
   }
 
@@ -370,12 +442,9 @@ export class AdminComponent implements OnInit {
       variant: 'warning',
       confirmLabel: 'Approve',
       action: async () => {
-        await this.api.adminApprovePartnerListing(String(l.id));
-        if (!this.isPartnerScopedAdmin) {
-          await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
-        } else {
-          await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
-        }
+        await this.api.adminApprovePartnerSubmission(String(l.id));
+        if (!this.isPartnerScopedAdmin) await this.loadSummary();
+        await this.loadPartnerSubmissions(this.partnerSubmissionsPage);
       }
     });
   }
@@ -387,12 +456,37 @@ export class AdminComponent implements OnInit {
       variant: 'danger',
       confirmLabel: 'Reject',
       action: async () => {
-        await this.api.adminRejectPartnerListing(String(l.id));
-        if (!this.isPartnerScopedAdmin) {
-          await Promise.all([this.loadPartnerListingRequests(this.partnerListingRequestsPage), this.loadSummary()]);
-        } else {
-          await this.loadPartnerListingRequests(this.partnerListingRequestsPage);
-        }
+        await this.api.adminRejectPartnerSubmission(String(l.id));
+        if (!this.isPartnerScopedAdmin) await this.loadSummary();
+        await this.loadPartnerSubmissions(this.partnerSubmissionsPage);
+      }
+    });
+  }
+
+  confirmApprovePartnerBorrowRequest(l: any) {
+    this.openConfirm({
+      title: 'Approve borrow request?',
+      message: String(l?.title || ''),
+      variant: 'warning',
+      confirmLabel: 'Approve',
+      action: async () => {
+        await this.api.adminApprovePartnerBorrowRequest(String(l.id));
+        if (!this.isPartnerScopedAdmin) await this.loadSummary();
+        await this.loadPartnerBorrowRequests(this.partnerBorrowRequestsPage);
+      }
+    });
+  }
+
+  confirmRejectPartnerBorrowRequest(l: any) {
+    this.openConfirm({
+      title: 'Reject borrow request?',
+      message: String(l?.title || ''),
+      variant: 'danger',
+      confirmLabel: 'Reject',
+      action: async () => {
+        await this.api.adminRejectPartnerBorrowRequest(String(l.id));
+        if (!this.isPartnerScopedAdmin) await this.loadSummary();
+        await this.loadPartnerBorrowRequests(this.partnerBorrowRequestsPage);
       }
     });
   }

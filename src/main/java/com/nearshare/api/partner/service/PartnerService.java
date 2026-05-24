@@ -249,7 +249,7 @@ public class PartnerService {
 
         return listingRepository.findAll().stream()
                 .filter(l -> l.getPartner() != null && partnerIds.contains(l.getPartner().getId()))
-                .filter(l -> l.getStatus() == AvailabilityStatus.PENDING)
+                .filter(l -> l.getStatus() == AvailabilityStatus.PARTNER_BORROW_REQUESTED)
                 .map(l -> PartnerBorrowRequestDTO.builder()
                         .listingId(l.getId())
                         .listingTitle(l.getTitle())
@@ -268,7 +268,7 @@ public class PartnerService {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() == null) throw new RuntimeException("not_partner_listing");
         requirePartnerAdmin(current, l.getPartner().getId());
-        if (l.getStatus() != AvailabilityStatus.PENDING) throw new RuntimeException("invalid_status");
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) throw new RuntimeException("invalid_status");
 
         if (l.getType() != null && l.getType().name().equalsIgnoreCase("GIVE")) {
             l.setStatus(AvailabilityStatus.GIFTED);
@@ -277,6 +277,9 @@ public class PartnerService {
         } else {
             l.setStatus(AvailabilityStatus.BORROWED);
         }
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(current.getId());
+        l.setPartnerBorrowRejectionReason(null);
         listingRepository.save(l);
         return toListingDTO(l, current);
     }
@@ -286,10 +289,13 @@ public class PartnerService {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() == null) throw new RuntimeException("not_partner_listing");
         requirePartnerAdmin(current, l.getPartner().getId());
-        if (l.getStatus() != AvailabilityStatus.PENDING) throw new RuntimeException("invalid_status");
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) throw new RuntimeException("invalid_status");
 
         l.setStatus(AvailabilityStatus.APPROVED);
         l.setBorrower(null);
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(current.getId());
+        l.setPartnerBorrowRejectionReason("partner_reject_borrow_request");
         listingRepository.save(l);
         return toListingDTO(l, current);
     }

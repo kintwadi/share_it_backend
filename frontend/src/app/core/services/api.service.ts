@@ -673,11 +673,30 @@ export class ApiService {
     return firstValueFrom(this.api.get<any>(`/admin/partner/listing-requests?page=${page}&size=${size}`));
   }
 
+  async adminListPartnerSubmissions(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/submissions?page=${page}&size=${size}`));
+  }
+
   async adminListPartnerListings(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
     const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
     const page = typeof params.page === 'number' ? params.page : 0;
     const size = typeof params.size === 'number' ? params.size : 20;
     return firstValueFrom(this.api.get<any>(`/admin/partner/listings?page=${page}&size=${size}${status}`));
+  }
+
+  async adminListPartnerItems(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/items?page=${page}&size=${size}${status}`));
+  }
+
+  async adminListPartnerBorrowRequests(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/borrow-requests?page=${page}&size=${size}`));
   }
 
   async adminBlockListing(listingId: string, blocked: boolean): Promise<any> {
@@ -694,6 +713,22 @@ export class ApiService {
 
   async adminRejectPartnerListing(listingId: string): Promise<any> {
     return firstValueFrom(this.api.post<any>(`/admin/partner/listings/${encodeURIComponent(listingId)}/reject`, {}));
+  }
+
+  async adminApprovePartnerSubmission(listingId: string, note?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/submissions/${encodeURIComponent(listingId)}/approve`, note ? { note } : {}));
+  }
+
+  async adminRejectPartnerSubmission(listingId: string, reason?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/submissions/${encodeURIComponent(listingId)}/reject`, reason ? { reason } : {}));
+  }
+
+  async adminApprovePartnerBorrowRequest(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/borrow-requests/${encodeURIComponent(listingId)}/approve`, {}));
+  }
+
+  async adminRejectPartnerBorrowRequest(listingId: string, reason?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/borrow-requests/${encodeURIComponent(listingId)}/reject`, reason ? { reason } : {}));
   }
 
   async adminListTransactions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {

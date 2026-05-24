@@ -12,9 +12,12 @@ import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.Subscription;
 import com.nearshare.api.model.Transaction;
 import com.nearshare.api.model.User;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ReturnStatus;
 import com.nearshare.api.model.enums.UserStatus;
+import com.nearshare.api.partner.model.PartnerAdminRole;
+import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import com.nearshare.api.payment.StripePayment;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.ReturnSessionRepository;
@@ -51,6 +54,7 @@ public class AdminManagementService {
     private final StripePayment stripePayment;
     private final EscrowService escrowService;
     private final UserService userService;
+    private final PartnerAdminRepository partnerAdminRepository;
     private final RandomGenerator codeRandom = new java.security.SecureRandom();
 
     public AdminManagementService(
@@ -61,7 +65,8 @@ public class AdminManagementService {
             ReturnSessionRepository returnSessionRepository,
             StripePayment stripePayment,
             EscrowService escrowService,
-            UserService userService
+            UserService userService,
+            PartnerAdminRepository partnerAdminRepository
     ) {
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
@@ -71,6 +76,7 @@ public class AdminManagementService {
         this.stripePayment = stripePayment;
         this.escrowService = escrowService;
         this.userService = userService;
+        this.partnerAdminRepository = partnerAdminRepository;
     }
 
     @Transactional
@@ -177,19 +183,33 @@ public class AdminManagementService {
     }
 
     @Transactional
-    public AdminPageResponse<AdminListingDTO> listPartnerListingRequests(int page, int size) {
+    public AdminPageResponse<AdminListingDTO> listPartnerListingRequests(User currentAdmin, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerSubmittedAt", "createdAt"));
-        Page<Listing> p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+        Page<Listing> p;
+        if (isPartnerScoped(currentAdmin)) {
+            java.util.Set<UUID> partnerIds = partnerIdsFor(currentAdmin);
+            if (partnerIds.isEmpty()) {
+                return new AdminPageResponse<>(List.of(), 0, page, size);
+            }
+            p = listingRepository.findByPartnerIdInAndStatus(partnerIds, AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+        } else {
+            p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+        }
         List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
         return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
     }
 
     @Transactional
-    public AdminPageResponse<AdminListingDTO> listPartnerListings(String status, int page, int size) {
+    public AdminPageResponse<AdminListingDTO> listPartnerListings(User currentAdmin, String status, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerSubmittedAt", "createdAt"));
         Page<Listing> p;
+        boolean partnerScoped = isPartnerScoped(currentAdmin);
+        java.util.Set<UUID> partnerIds = partnerScoped ? partnerIdsFor(currentAdmin) : null;
+        if (partnerScoped && (partnerIds == null || partnerIds.isEmpty())) {
+            return new AdminPageResponse<>(List.of(), 0, page, size);
+        }
         if (status == null || status.isBlank()) {
-            p = listingRepository.findByPartnerIsNotNull(pageable);
+            p = partnerScoped ? listingRepository.findByPartnerIdIn(partnerIds, pageable) : listingRepository.findByPartnerIsNotNull(pageable);
         } else {
             AvailabilityStatus s;
             try {
@@ -197,7 +217,24 @@ public class AdminManagementService {
             } catch (IllegalArgumentException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
             }
-            p = listingRepository.findByPartnerIsNotNullAndStatus(s, pageable);
+            p = partnerScoped ? listingRepository.findByPartnerIdInAndStatus(partnerIds, s, pageable) : listingRepository.findByPartnerIsNotNullAndStatus(s, pageable);
+        }
+        List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
+        return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
+    }
+
+    @Transactional
+    public AdminPageResponse<AdminListingDTO> listPartnerBorrowRequests(User currentAdmin, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerBorrowRequestedAt", "createdAt"));
+        Page<Listing> p;
+        if (isPartnerScoped(currentAdmin)) {
+            java.util.Set<UUID> partnerIds = partnerIdsFor(currentAdmin);
+            if (partnerIds.isEmpty()) {
+                return new AdminPageResponse<>(List.of(), 0, page, size);
+            }
+            p = listingRepository.findByPartnerIdInAndStatus(partnerIds, AvailabilityStatus.PARTNER_BORROW_REQUESTED, pageable);
+        } else {
+            p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_BORROW_REQUESTED, pageable);
         }
         List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
         return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
@@ -283,6 +320,9 @@ public class AdminManagementService {
         if (l.getPartner() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
         }
+        if (isPartnerScoped(admin)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+        }
         if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
@@ -306,6 +346,9 @@ public class AdminManagementService {
         if (l.getPartner() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
         }
+        if (isPartnerScoped(admin)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+        }
         if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
@@ -321,6 +364,81 @@ public class AdminManagementService {
         }
         l.setPartnerReviewNote(null);
         listingRepository.save(l);
+    }
+
+    @Transactional
+    public void approvePartnerBorrowRequest(User currentAdmin, UUID listingId) {
+        Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (l.getPartner() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
+        }
+        requirePartnerAccessIfScoped(currentAdmin, l);
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
+        }
+        if (l.getBorrower() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing borrower");
+        }
+        if (l.getType() != null && l.getType().name().equalsIgnoreCase("GIVE")) {
+            l.setStatus(AvailabilityStatus.GIFTED);
+        } else if (l.getType() != null && l.getType().name().equalsIgnoreCase("SELL")) {
+            l.setStatus(AvailabilityStatus.SOLD);
+        } else {
+            l.setStatus(AvailabilityStatus.BORROWED);
+        }
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(currentAdmin != null ? currentAdmin.getId() : null);
+        l.setPartnerBorrowRejectionReason(null);
+        listingRepository.save(l);
+    }
+
+    @Transactional
+    public void rejectPartnerBorrowRequest(User currentAdmin, UUID listingId, String reason) {
+        Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (l.getPartner() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
+        }
+        requirePartnerAccessIfScoped(currentAdmin, l);
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
+        }
+        l.setStatus(AvailabilityStatus.APPROVED);
+        l.setBorrower(null);
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(currentAdmin != null ? currentAdmin.getId() : null);
+        if (reason != null && !reason.isBlank()) {
+            String r = reason.trim();
+            if (r.length() > 500) r = r.substring(0, 500);
+            l.setPartnerBorrowRejectionReason(r);
+        } else {
+            l.setPartnerBorrowRejectionReason("admin_reject_borrow_request");
+        }
+        listingRepository.save(l);
+    }
+
+    private boolean isPartnerScoped(User admin) {
+        if (admin == null) return false;
+        AdminScope s = admin.getAdminScope() != null ? admin.getAdminScope() : AdminScope.FULL;
+        return s == AdminScope.PARTNER;
+    }
+
+    private java.util.Set<UUID> partnerIdsFor(User admin) {
+        if (admin == null || admin.getId() == null) return java.util.Set.of();
+        return partnerAdminRepository.findAllByUserId(admin.getId()).stream()
+                .map(pa -> pa.getPartner() != null ? pa.getPartner().getId() : null)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+    }
+
+    private void requirePartnerAccessIfScoped(User admin, Listing listing) {
+        if (!isPartnerScoped(admin)) return;
+        if (admin == null || admin.getId() == null || listing == null || listing.getPartner() == null || listing.getPartner().getId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+        }
+        boolean ok = partnerAdminRepository.existsByUserAndPartnerAndRole(admin.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+        if (!ok) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+        }
     }
 
     @Transactional
@@ -495,6 +613,11 @@ public class AdminManagementService {
                 .partnerReviewedBy(l.getPartnerReviewedBy())
                 .partnerReviewNote(l.getPartnerReviewNote())
                 .partnerRejectionReason(l.getPartnerRejectionReason())
+                .partnerBorrowRequestedAt(l.getPartnerBorrowRequestedAt())
+                .partnerBorrowRequestedBy(l.getPartnerBorrowRequestedBy())
+                .partnerBorrowReviewedAt(l.getPartnerBorrowReviewedAt())
+                .partnerBorrowReviewedBy(l.getPartnerBorrowReviewedBy())
+                .partnerBorrowRejectionReason(l.getPartnerBorrowRejectionReason())
                 .build();
     }
 

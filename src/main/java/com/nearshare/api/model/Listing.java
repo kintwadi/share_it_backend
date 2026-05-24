@@ -82,6 +82,12 @@ public class Listing {
     private String partnerReviewNote;
     private String partnerRejectionReason;
 
+    private LocalDateTime partnerBorrowRequestedAt;
+    private UUID partnerBorrowRequestedBy;
+    private LocalDateTime partnerBorrowReviewedAt;
+    private UUID partnerBorrowReviewedBy;
+    private String partnerBorrowRejectionReason;
+
     @PrePersist
     @PreUpdate
     private void validateOwnerOrPartner() {

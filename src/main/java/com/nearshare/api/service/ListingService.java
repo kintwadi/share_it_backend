@@ -74,6 +74,12 @@ public class ListingService {
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
             .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL))
+            .filter(l -> {
+                if (l.getPartner() == null || l.getBorrower() == null) return true;
+                boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+                boolean isBorrower = current != null && current.getId() != null && l.getBorrower() != null && current.getId().equals(l.getBorrower().getId());
+                return isAdmin || isBorrower;
+            })
             .filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase())))
             .filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category)))
             .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
@@ -88,10 +94,16 @@ public class ListingService {
     @Transactional(readOnly = true)
     public ListingDTO getById(UUID id, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
-        if (l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+        if (l.getPartner() != null) {
             boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
-            if (!isAdmin) {
+            if (l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL && !isAdmin) {
                 throw new RuntimeException("listing_not_found");
+            }
+            if (l.getBorrower() != null && !isAdmin) {
+                boolean isBorrower = current != null && current.getId() != null && l.getBorrower() != null && current.getId().equals(l.getBorrower().getId());
+                if (!isBorrower) {
+                    throw new RuntimeException("listing_not_found");
+                }
             }
         }
         return toDTO(l, current);
@@ -274,7 +286,12 @@ public class ListingService {
                 throw new RuntimeException("not_available");
             }
             l.setBorrower(borrower);
-            l.setStatus(AvailabilityStatus.PENDING);
+            l.setStatus(AvailabilityStatus.PARTNER_BORROW_REQUESTED);
+            l.setPartnerBorrowRequestedAt(java.time.LocalDateTime.now());
+            l.setPartnerBorrowRequestedBy(borrower != null ? borrower.getId() : null);
+            l.setPartnerBorrowReviewedAt(null);
+            l.setPartnerBorrowReviewedBy(null);
+            l.setPartnerBorrowRejectionReason(null);
             listingRepository.save(l);
             return toDTO(l, borrower);
         }
