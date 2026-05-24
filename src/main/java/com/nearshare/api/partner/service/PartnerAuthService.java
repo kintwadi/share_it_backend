@@ -6,6 +6,7 @@ import com.nearshare.api.dto.TokenResponse;
 import com.nearshare.api.dto.UserDTO;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.embeddable.Location;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
@@ -56,6 +57,7 @@ public class PartnerAuthService {
         if (partnerAdminRepository.findAllByUserId(user.getId()).isEmpty()) {
             throw new RuntimeException("forbidden");
         }
+        ensurePartnerAdminRole(user);
         return authService.login(request, userAgent, ipAddress);
     }
 
@@ -64,6 +66,7 @@ public class PartnerAuthService {
         if (partnerAdminRepository.findAllByUserId(user.getId()).isEmpty()) {
             throw new RuntimeException("forbidden");
         }
+        ensurePartnerAdminRole(user);
         return authService.verify2faLogin(email, code, userAgent, ipAddress);
     }
 
@@ -165,6 +168,23 @@ public class PartnerAuthService {
                 .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
+                .adminScope(user.getAdminScope())
                 .build();
+    }
+
+    private void ensurePartnerAdminRole(User user) {
+        if (user == null) return;
+        boolean changed = false;
+        if (user.getRole() != UserRole.ADMIN) {
+            user.setRole(UserRole.ADMIN);
+            changed = true;
+        }
+        if (user.getAdminScope() == null) {
+            user.setAdminScope(AdminScope.PARTNER);
+            changed = true;
+        }
+        if (changed) {
+            userRepository.save(user);
+        }
     }
 }
