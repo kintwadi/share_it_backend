@@ -80,6 +80,7 @@ export const canMatchAdmin: CanMatchFn = async () => {
   const session = inject(SessionService);
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   const u = session.user();
   return isAdminRole(u?.role) ? true : router.createUrlTree(['/']);
 };

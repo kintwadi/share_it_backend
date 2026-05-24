@@ -51,6 +51,15 @@ export class ConnectPartnerComponent implements OnInit {
   tempToken: string | null = null;
 
   async ngOnInit() {
+    try {
+      if (this.authStorage.getAuthContext() === 'partner' && this.authStorage.getToken()) {
+        await this.session.refresh();
+        if (this.session.user()) {
+          this.router.navigate(['/partner/fill-request']);
+          return;
+        }
+      }
+    } catch { }
     this.render();
   }
 
@@ -94,7 +103,7 @@ export class ConnectPartnerComponent implements OnInit {
       await this.session.refresh();
       this.isLoading = false;
       this.render();
-      this.router.navigate(['/partner/listings/add']);
+      this.router.navigate(['/partner/fill-request']);
     } catch (e: any) {
       this.error = e?.message || 'Invalid code';
       this.isLoading = false;
@@ -123,7 +132,7 @@ export class ConnectPartnerComponent implements OnInit {
         await this.session.refresh();
         this.isLoading = false;
         this.render();
-        this.router.navigate(['/partner/listings/add']);
+        this.router.navigate(['/partner/fill-request']);
         return;
       }
 
@@ -144,7 +153,7 @@ export class ConnectPartnerComponent implements OnInit {
       await this.session.refresh();
       this.isLoading = false;
       this.render();
-      this.router.navigate(['/partner/listings/add']);
+      this.router.navigate(['/partner/fill-request']);
     } catch (err: any) {
       if (err?.code === 'MFA_REQUIRED') {
         this.tempToken = err.token;
