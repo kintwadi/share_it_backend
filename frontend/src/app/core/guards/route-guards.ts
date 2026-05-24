@@ -16,6 +16,10 @@ function isAdminRole(role: unknown): boolean {
   return r === 'ADMIN' || r === 'ROLE_ADMIN';
 }
 
+function isPartnerScopedAdmin(user: any): boolean {
+  return String(user?.adminScope ?? '').toUpperCase() === 'PARTNER';
+}
+
 function isPartnerContext(authStorage: AuthStorageService): boolean {
   return authStorage.getAuthContext() === 'partner';
 }
@@ -133,7 +137,9 @@ export const canMatchPartner: CanMatchFn = async () => {
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect/partner']);
   const u = session.user();
-  if (isAdminRole(u?.role)) return router.createUrlTree(['/admin']);
+  if (isAdminRole(u?.role) && !(isPartnerContext(authStorage) && isPartnerScopedAdmin(u))) {
+    return router.createUrlTree(['/admin']);
+  }
   if (isPartnerContext(authStorage)) return true;
 
   const partnerApi = inject(PartnerService);

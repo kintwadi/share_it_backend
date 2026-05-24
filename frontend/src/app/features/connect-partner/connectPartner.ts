@@ -94,7 +94,7 @@ export class ConnectPartnerComponent implements OnInit {
       await this.session.refresh();
       this.isLoading = false;
       this.render();
-      this.router.navigate(['/partner/dashboard']);
+      this.router.navigate(['/partner/listings/add']);
     } catch (e: any) {
       this.error = e?.message || 'Invalid code';
       this.isLoading = false;
@@ -123,7 +123,7 @@ export class ConnectPartnerComponent implements OnInit {
         await this.session.refresh();
         this.isLoading = false;
         this.render();
-        this.router.navigate(['/partner/dashboard']);
+        this.router.navigate(['/partner/listings/add']);
         return;
       }
 
@@ -144,7 +144,7 @@ export class ConnectPartnerComponent implements OnInit {
       await this.session.refresh();
       this.isLoading = false;
       this.render();
-      this.router.navigate(['/partner/dashboard']);
+      this.router.navigate(['/partner/listings/add']);
     } catch (err: any) {
       if (err?.code === 'MFA_REQUIRED') {
         this.tempToken = err.token;
