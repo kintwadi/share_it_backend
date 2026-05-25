@@ -107,7 +107,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   showBookingModal = false;
   bookingStep: 'PATH_SELECTION' | 'DURATION' | 'INSURANCE' | 'PAYMENT' | 'CARD_FORM' = 'PATH_SELECTION';
   selectedPath: 'DEPOSIT' | 'VERIFIED' | 'FEE' = 'VERIFIED';
-  bookingDuration = 2;
+  bookingDuration = 1;
   paymentMethod: 'CARD' | 'PAYPAL' | 'CASH' = 'CARD';
   wasAutoApproved = false;
   showSuccess = false;
@@ -505,7 +505,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     }
 
     if (this.isPartnerListing) {
-      this.bookingDuration = 2;
+      this.bookingDuration = 1;
       this.selectedPath = 'VERIFIED';
       this.paymentMethod = 'CASH';
       this.selectedSavedPaymentMethodId = null;
@@ -528,7 +528,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     }
 
     this.selectedPath = this.borrowTierEnabled.verified ? 'VERIFIED' : (this.borrowTierEnabled.deposit ? 'DEPOSIT' : 'FEE');
-    this.bookingDuration = 2;
+    this.bookingDuration = 1;
     this.paymentMethod = this.paymentOptions.card ? 'CARD' : (this.paymentOptions.paypal ? 'PAYPAL' : 'CASH');
     this.selectedSavedPaymentMethodId = null;
     this.cardError = null;
