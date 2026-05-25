@@ -870,8 +870,15 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
 
   async openUserProfile() {
     const listing = this.listing;
-    if (!listing?.ownerId) return;
     if (!this.canOpenOwnerProfile) return;
+    if (this.isPartnerListing) {
+      this.showProfileModal = true;
+      this.loadingReviews = false;
+      this.reviews = [];
+      this.render();
+      return;
+    }
+    if (!listing?.ownerId) return;
     this.showProfileModal = true;
     this.loadingReviews = true;
     this.reviews = [];

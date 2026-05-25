@@ -437,79 +437,94 @@
     <div class="absolute inset-0" (click)="closeUserProfile()"></div>
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-down max-h-[85vh] flex flex-col">
       <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="font-bold text-gray-900 text-lg">Member Profile</h3>
+        <h3 class="font-bold text-gray-900 text-lg">{{ isPartnerListing ? 'Partner Profile' : 'Member Profile' }}</h3>
         <button type="button" (click)="closeUserProfile()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
           <lucide-icon [img]="X" [size]="20"></lucide-icon>
         </button>
       </div>
 
       <div class="p-6 overflow-y-auto">
-        <div class="flex items-center gap-4 mb-6">
-          <img [src]="listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + listing.owner?.id + '/200/200'" [alt]="listing.owner?.name" class="w-20 h-20 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
-          <div>
-            <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              {{ listing.owner?.name }}
-              <lucide-icon *ngIf="listing.owner?.verificationStatus === 'VERIFIED'" [img]="BadgeCheck" [size]="20" class="text-blue-500"></lucide-icon>
-            </h4>
-            <p class="text-sm text-gray-500">
-              Joined {{ ownerJoinedYear }}
-            </p>
-            <div class="flex items-center gap-3 mt-2">
-              <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
-                <lucide-icon [img]="ShieldCheck" [size]="14" class="mr-1 text-emerald-600"></lucide-icon>
-                {{ listing.owner?.trustScore }}% Trust
-              </span>
-              <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
-                <lucide-icon [img]="ThumbsUp" [size]="14" class="mr-1 text-brand-600"></lucide-icon>
-                {{ listing.owner?.vouchCount || 0 }} Vouches
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          *ngIf="!isOwner && currentUser"
-          type="button"
-          (click)="handleVouch()"
-          [disabled]="vouching || hasVouched"
-          class="w-full py-3 mb-8 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-bold transition-colors flex items-center justify-center border border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <lucide-icon *ngIf="vouching" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
-          <span *ngIf="!vouching">{{ hasVouched ? 'Vouched!' : 'Vouch for this User' }}</span>
-        </button>
-
-        <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <lucide-icon [img]="Star" [size]="18" class="text-yellow-400 fill-current"></lucide-icon>
-          Reviews ({{ reviews.length }})
-        </h4>
-
-        <div *ngIf="loadingReviews" class="flex justify-center py-8">
-          <lucide-icon [img]="Loader2" [size]="20" class="animate-spin text-gray-400"></lucide-icon>
-        </div>
-
-        <ng-container *ngIf="!loadingReviews">
-          <div *ngIf="reviews.length > 0; else noReviews" class="space-y-4">
-            <div *ngFor="let review of reviews" class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-1 text-yellow-500">
-                  <lucide-icon
-                    *ngFor="let _ of [0,1,2,3,4]; let i = index"
-                    [img]="Star"
-                    [size]="12"
-                    [ngClass]="i < review.rating ? '' : 'text-gray-300'"
-                  ></lucide-icon>
-                </div>
-                <span class="text-xs text-gray-400">{{ review.timestamp ? (review.timestamp | date:'shortDate') : '' }}</span>
+        <ng-container *ngIf="isPartnerListing; else memberProfile">
+          <div class="flex items-center gap-4 mb-6">
+            <img [src]="'https://picsum.photos/seed/' + (listing.partnerId || 'partner') + '/200/200'" [alt]="listing.partnerName || 'Partner'" class="w-20 h-20 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
+            <div>
+              <h4 class="text-2xl font-bold text-gray-900">{{ listing.partnerName || 'Partner' }}</h4>
+              <div class="mt-2 inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                <lucide-icon [img]="MapPin" [size]="14" class="text-blue-500"></lucide-icon>
+                {{ pickupAreaLabel }}
               </div>
-              <p class="text-gray-700 text-sm italic">"{{ review.comment }}"</p>
             </div>
           </div>
-          <ng-template #noReviews>
-            <div class="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              No reviews yet.
-            </div>
-          </ng-template>
         </ng-container>
+
+        <ng-template #memberProfile>
+          <div class="flex items-center gap-4 mb-6">
+            <img [src]="listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + listing.owner?.id + '/200/200'" [alt]="listing.owner?.name" class="w-20 h-20 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
+            <div>
+              <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                {{ listing.owner?.name }}
+                <lucide-icon *ngIf="listing.owner?.verificationStatus === 'VERIFIED'" [img]="BadgeCheck" [size]="20" class="text-blue-500"></lucide-icon>
+              </h4>
+              <p class="text-sm text-gray-500">
+                Joined {{ ownerJoinedYear }}
+              </p>
+              <div class="flex items-center gap-3 mt-2">
+                <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
+                  <lucide-icon [img]="ShieldCheck" [size]="14" class="mr-1 text-emerald-600"></lucide-icon>
+                  {{ listing.owner?.trustScore }}% Trust
+                </span>
+                <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
+                  <lucide-icon [img]="ThumbsUp" [size]="14" class="mr-1 text-brand-600"></lucide-icon>
+                  {{ listing.owner?.vouchCount || 0 }} Vouches
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            *ngIf="!isOwner && currentUser"
+            type="button"
+            (click)="handleVouch()"
+            [disabled]="vouching || hasVouched"
+            class="w-full py-3 mb-8 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-bold transition-colors flex items-center justify-center border border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <lucide-icon *ngIf="vouching" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
+            <span *ngIf="!vouching">{{ hasVouched ? 'Vouched!' : 'Vouch for this User' }}</span>
+          </button>
+
+          <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <lucide-icon [img]="Star" [size]="18" class="text-yellow-400 fill-current"></lucide-icon>
+            Reviews ({{ reviews.length }})
+          </h4>
+
+          <div *ngIf="loadingReviews" class="flex justify-center py-8">
+            <lucide-icon [img]="Loader2" [size]="20" class="animate-spin text-gray-400"></lucide-icon>
+          </div>
+
+          <ng-container *ngIf="!loadingReviews">
+            <div *ngIf="reviews.length > 0; else noReviews" class="space-y-4">
+              <div *ngFor="let review of reviews" class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex items-center gap-1 text-yellow-500">
+                    <lucide-icon
+                      *ngFor="let _ of [0,1,2,3,4]; let i = index"
+                      [img]="Star"
+                      [size]="12"
+                      [ngClass]="i < review.rating ? '' : 'text-gray-300'"
+                    ></lucide-icon>
+                  </div>
+                  <span class="text-xs text-gray-400">{{ review.timestamp ? (review.timestamp | date:'shortDate') : '' }}</span>
+                </div>
+                <p class="text-gray-700 text-sm italic">"{{ review.comment }}"</p>
+              </div>
+            </div>
+            <ng-template #noReviews>
+              <div class="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                No reviews yet.
+              </div>
+            </ng-template>
+          </ng-container>
+        </ng-template>
       </div>
     </div>
   </div>
