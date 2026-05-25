@@ -122,6 +122,9 @@ export class ReturnModalComponent implements OnInit, OnDestroy {
 
   setTab(tab: ReturnTab) {
     this.activeTab = tab;
+    if (tab === 'manual' && !this.itemNumber && this.item?.id) {
+      this.itemNumber = String(this.item.id);
+    }
     this.ensureTabAllowed();
     this.render();
   }
@@ -282,5 +285,24 @@ export class ReturnModalComponent implements OnInit, OnDestroy {
 
   onScannedCodeChange(val: string) {
     this.scannedCode = (val || '').replace(/\D/g, '').slice(0, 6);
+  }
+
+  useListingIdAsItemNumber() {
+    if (!this.item?.id) return;
+    this.itemNumber = String(this.item.id);
+    this.render();
+  }
+
+  async copyListingId() {
+    const id = this.item?.id ? String(this.item.id) : '';
+    if (!id) return;
+    try {
+      await navigator.clipboard.writeText(id);
+      this.notice = this.i18n.t('common.copied');
+    } catch {
+      this.notice = id;
+    } finally {
+      this.render();
+    }
   }
 }
