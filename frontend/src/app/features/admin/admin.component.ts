@@ -62,6 +62,7 @@ export class AdminComponent implements OnInit {
   partnerItemsTotal = 0;
   partnerItemsPage = 0;
   partnerItemsStatus = '';
+  partnerActivateLoadingId: string | null = null;
 
   partnerListingSelectedId: string | null = null;
   partnerListingSelected: Listing | null = null;
@@ -121,6 +122,9 @@ export class AdminComponent implements OnInit {
     if (this.isPartnerScopedAdmin) {
       this.activeTab = 'PARTNER_LISTINGS';
       this.partnerSubTab = 'BORROW_REQUESTS';
+    } else {
+      this.partnerSubTab = 'ITEMS';
+      this.partnerItemsStatus = 'PARTNER_INACTIVE';
     }
     await this.refreshActive();
   }
@@ -236,6 +240,34 @@ export class AdminComponent implements OnInit {
     this.partnerItemsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.partnerItemsPage = page;
     await this.ensurePartnerSelection();
+  }
+
+  canActivatePartnerItem(row: any): boolean {
+    if (this.isPartnerScopedAdmin) return false;
+    return String(row?.status || '') === 'PARTNER_INACTIVE';
+  }
+
+  async activatePartnerItem(row: any, checked: boolean) {
+    if (!checked) return;
+    if (!this.canActivatePartnerItem(row)) return;
+    const id = String(row?.id || '');
+    if (!id) return;
+
+    this.partnerActivateLoadingId = id;
+    this.error = null;
+    this.render();
+    try {
+      await this.api.adminActivatePartnerItem(id);
+      await this.loadPartnerItems(this.partnerItemsPage);
+      if (!this.isPartnerScopedAdmin) {
+        await this.loadSummary();
+      }
+    } catch (e: any) {
+      this.error = e instanceof Error ? e.message : (e?.message || 'Action failed.');
+    } finally {
+      this.partnerActivateLoadingId = null;
+      this.render();
+    }
   }
 
   private async ensurePartnerSelection() {

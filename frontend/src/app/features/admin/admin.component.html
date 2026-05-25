@@ -188,9 +188,8 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button *ngIf="!isPartnerScopedAdmin" type="button" (click)="setPartnerSubTab('SUBMISSIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'SUBMISSIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Inactive Items</button>
         <button type="button" (click)="setPartnerSubTab('BORROW_REQUESTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'BORROW_REQUESTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Borrow Approvals</button>
-        <button type="button" (click)="setPartnerSubTab('ITEMS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'ITEMS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Items</button>
+        <button type="button" (click)="setPartnerSubTab('ITEMS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'ITEMS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Partner Listing Request</button>
       </div>
 
       <div *ngIf="partnerSubTab === 'ITEMS'" class="flex flex-col md:flex-row md:items-center gap-3">
@@ -217,8 +216,9 @@
                 <th class="px-3 py-2 font-semibold">Partner</th>
                 <th class="px-3 py-2 font-semibold">Type</th>
                 <th class="px-3 py-2 font-semibold">Status</th>
-                <th *ngIf="partnerSubTab === 'SUBMISSIONS'" class="px-3 py-2 font-semibold">Submitted</th>
-                <th *ngIf="partnerSubTab !== 'SUBMISSIONS'" class="px-3 py-2 font-semibold">Borrower</th>
+                <th *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold">Submitted</th>
+                <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Borrower</th>
+                <th *ngIf="partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold text-center">Active</th>
                 <th *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 font-semibold text-right">Actions</th>
               </tr>
             </thead>
@@ -228,8 +228,17 @@
                 <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.status || '-'}}</td>
-                <td *ngIf="partnerSubTab === 'SUBMISSIONS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
-                <td *ngIf="partnerSubTab !== 'SUBMISSIONS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
+                <td *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
+                <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
+                <td *ngIf="partnerSubTab === 'ITEMS'" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4"
+                    [checked]="r.status === 'PARTNER_ACTIVE'"
+                    [disabled]="r.status !== 'PARTNER_INACTIVE' || isPartnerScopedAdmin || partnerActivateLoadingId === ('' + r.id)"
+                    (change)="activatePartnerItem(r, $any($event.target).checked)"
+                  />
+                </td>
                 <td *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 text-right">
                   <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
                     <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">

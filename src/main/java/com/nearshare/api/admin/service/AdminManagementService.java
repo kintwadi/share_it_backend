@@ -341,6 +341,11 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void activatePartnerItem(User admin, UUID listingId) {
+        approvePartnerListing(admin, listingId, null);
+    }
+
+    @Transactional
     public void rejectPartnerListing(User admin, UUID listingId, String reason) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
         if (l.getPartner() == null) {

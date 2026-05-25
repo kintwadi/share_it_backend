@@ -693,6 +693,10 @@ export class ApiService {
     return firstValueFrom(this.api.get<any>(`/admin/partner/items?page=${page}&size=${size}${status}`));
   }
 
+  async adminActivatePartnerItem(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/items/${encodeURIComponent(listingId)}/activate`, {}));
+  }
+
   async adminListPartnerBorrowRequests(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
     const page = typeof params.page === 'number' ? params.page : 0;
     const size = typeof params.size === 'number' ? params.size : 20;
