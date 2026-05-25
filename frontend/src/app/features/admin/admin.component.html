@@ -218,7 +218,7 @@
                 <th class="px-3 py-2 font-semibold">Status</th>
                 <th *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold">Submitted</th>
                 <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Borrower</th>
-                <th *ngIf="partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold text-center">Active</th>
+                <th *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 font-semibold text-center">Active</th>
                 <th *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 font-semibold text-right">Actions</th>
               </tr>
             </thead>
@@ -230,7 +230,7 @@
                 <td class="px-3 py-2 text-gray-700">{{r.status || '-'}}</td>
                 <td *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
                 <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
-                <td *ngIf="partnerSubTab === 'ITEMS'" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
+                <td *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
                   <input
                     type="checkbox"
                     class="h-4 w-4"
