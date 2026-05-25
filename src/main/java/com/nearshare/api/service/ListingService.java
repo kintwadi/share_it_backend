@@ -549,6 +549,8 @@ public class ListingService {
             .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
             .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
             .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
+            .partnerCity(l.getPartner() != null ? l.getPartner().getCity() : null)
+            .partnerCreatedAt(l.getPartner() != null ? l.getPartner().getCreatedAt() : null)
             .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
             .title(l.getTitle())
             .description(l.getDescription())

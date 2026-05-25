@@ -23,6 +23,8 @@ public class ListingDTO {
     private UUID ownerId;
     private UUID partnerId;
     private String partnerName;
+    private String partnerCity;
+    private LocalDateTime partnerCreatedAt;
     private UUID borrowerId;
     private String title;
     private String description;

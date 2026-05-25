@@ -100,6 +100,8 @@ export interface Listing {
   ownerId?: string | null;
   partnerId?: string | null;
   partnerName?: string | null;
+  partnerCity?: string | null;
+  partnerCreatedAt?: string | null;
   borrowerId?: string;
   borrower?: User;
   title: string;

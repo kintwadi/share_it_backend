@@ -449,9 +449,12 @@
             <img [src]="'https://picsum.photos/seed/' + (listing.partnerId || 'partner') + '/200/200'" [alt]="listing.partnerName || 'Partner'" class="w-20 h-20 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
             <div>
               <h4 class="text-2xl font-bold text-gray-900">{{ listing.partnerName || 'Partner' }}</h4>
+              <div class="mt-1 text-sm text-gray-500">
+                Partner since {{ listing.partnerCreatedAt ? (listing.partnerCreatedAt | date:'yyyy') : '—' }}
+              </div>
               <div class="mt-2 inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-semibold">
                 <lucide-icon [img]="MapPin" [size]="14" class="text-blue-500"></lucide-icon>
-                {{ pickupAreaLabel }}
+                {{ (listing.partnerCity || pickupAreaLabel) }}
               </div>
             </div>
           </div>
