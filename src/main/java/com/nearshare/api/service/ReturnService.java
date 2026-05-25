@@ -7,6 +7,7 @@ import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ReturnStatus;
+import com.nearshare.api.model.enums.ReturnMode;
 import com.nearshare.api.partner.model.PartnerAdminRole;
 import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import com.nearshare.api.repository.ListingRepository;
@@ -378,19 +379,28 @@ public class ReturnService {
 
     private boolean qrEnabled() {
         SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getQr() == null) return true;
+        if (returnsConfig == null) return true;
+        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.QR_CODE;
+        if (returnsConfig.getQr() == null) return true;
         return returnsConfig.getQr().isEnabled();
     }
 
     private boolean manualEnabled() {
         SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getManual() == null) return true;
+        if (returnsConfig == null) return true;
+        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.MANUAL;
+        if (returnsConfig.getManual() == null) return true;
         return returnsConfig.getManual().isEnabled();
     }
 
     private boolean disputeEnabled() {
         SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getDispute() == null) return true;
+        if (returnsConfig == null) return true;
+        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.DISPUTE;
+        if (returnsConfig.getDispute() == null) return true;
         return returnsConfig.getDispute().isEnabled();
     }
 }

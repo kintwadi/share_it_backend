@@ -22,6 +22,7 @@ public class SettingsProperties {
             private boolean enabled = true;
         }
 
+        private String mode;
         private ReturnMethodConfig qr = new ReturnMethodConfig();
         private ReturnMethodConfig manual = new ReturnMethodConfig();
         private ReturnMethodConfig dispute = new ReturnMethodConfig();
