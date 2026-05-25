@@ -30,6 +30,7 @@ public class PostgresCheckConstraintUpdater implements CommandLineRunner {
         }
 
         try {
+            jdbcTemplate.update("UPDATE listings SET status = 'PARTNER_INACTIVE' WHERE partner_id IS NOT NULL AND status = 'PARTNER_PENDING_APPROVAL'");
             jdbcTemplate.update("UPDATE listings SET status = 'PARTNER_ACTIVE' WHERE partner_id IS NOT NULL AND status = 'APPROVED'");
         } catch (Exception ignored) {
         }
