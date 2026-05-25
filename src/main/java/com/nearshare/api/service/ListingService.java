@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 
 @Service
 public class ListingService {
@@ -42,6 +43,7 @@ public class ListingService {
     private final ReviewRepository reviewRepository;
     private final SubscriptionService subscriptionService;
     private final TrustScoreService trustScoreService;
+    private final SecureRandom itemRefRandom = new SecureRandom();
 
     public ListingService(
             ListingRepository listingRepository,
@@ -398,9 +400,17 @@ public class ListingService {
 
         l.setBorrower(borrower);
         if (l.isAutoApprove()) {
-            if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
-            else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-            else l.setStatus(AvailabilityStatus.BORROWED);
+            if (l.getType() == ListingType.GIVE) {
+                l.setStatus(AvailabilityStatus.GIFTED);
+                l.setItemReference(null);
+            } else if (l.getType() == ListingType.SELL) {
+                l.setStatus(AvailabilityStatus.SOLD);
+                l.setItemReference(null);
+            }
+            else {
+                l.setStatus(AvailabilityStatus.BORROWED);
+                l.setItemReference(generateUniqueItemReference());
+            }
         } else {
             l.setStatus(AvailabilityStatus.PENDING);
         }
@@ -416,18 +426,21 @@ public class ListingService {
         }
         if (l.getType() == ListingType.GIVE) {
             l.setStatus(AvailabilityStatus.GIFTED);
+            l.setItemReference(null);
             if (l.getBorrower() != null) {
                 trustScoreService.updateTrustScore(l.getBorrower(), l);
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else if (l.getType() == ListingType.SELL) {
             l.setStatus(AvailabilityStatus.SOLD);
+            l.setItemReference(null);
             if (l.getBorrower() != null) {
                 trustScoreService.updateTrustScore(l.getBorrower(), l);
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else {
             l.setStatus(AvailabilityStatus.BORROWED);
+            l.setItemReference(generateUniqueItemReference());
         }
         listingRepository.save(l);
         return toDTO(l, owner);
@@ -441,6 +454,7 @@ public class ListingService {
         }
         l.setStatus(AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
+        l.setItemReference(null);
         listingRepository.save(l);
         return toDTO(l, owner);
     }
@@ -459,6 +473,7 @@ public class ListingService {
         
         l.setStatus(AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
+        l.setItemReference(null);
         listingRepository.save(l);
         return toDTO(l, owner);
     }
@@ -546,6 +561,7 @@ public class ListingService {
 
         return ListingDTO.builder()
             .id(l.getId())
+            .itemReference(l.getItemReference())
             .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
             .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
             .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
@@ -598,6 +614,17 @@ public class ListingService {
             .availableFrom(l.getAvailableFrom())
             .availableTo(l.getAvailableTo())
             .build();
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = itemRefRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new RuntimeException("failed_to_generate_item_reference");
     }
 
     private String safePickupCustom(String raw) {

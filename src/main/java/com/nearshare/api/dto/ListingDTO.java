@@ -20,6 +20,7 @@ import java.util.UUID;
 @Builder
 public class ListingDTO {
     private UUID id;
+    private String itemReference;
     private UUID ownerId;
     private UUID partnerId;
     private String partnerName;

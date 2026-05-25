@@ -97,8 +97,8 @@
                   {{ i18n.t('return.manual_hint') }}
                 </div>
                 <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg">
-                  <div class="text-[11px] font-bold text-gray-600 uppercase tracking-wide">Item Number (Listing ID)</div>
-                  <div class="mt-1 font-mono text-xs text-gray-900 break-all">{{ item.id }}</div>
+                  <div class="text-[11px] font-bold text-gray-600 uppercase tracking-wide">Item Reference</div>
+                  <div class="mt-1 font-mono text-xs text-gray-900 break-all">{{ item.itemReference || item.id }}</div>
                   <div class="mt-2 flex gap-2">
                     <button type="button" (click)="useListingIdAsItemNumber()" class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-800 hover:bg-gray-50">
                       Use

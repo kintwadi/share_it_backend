@@ -366,7 +366,8 @@
               <img [src]="item.imageUrl" [alt]="item.title" class="w-16 h-16 rounded-lg object-cover bg-gray-100 group-hover:scale-105 transition-transform" />
               <div class="flex-1 min-w-0">
                 <h4 class="font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors">{{item.title}}</h4>
-                <p class="text-xs text-gray-500 mb-2">Owner: {{item.owner?.name}}</p>
+                <p class="text-xs text-gray-500 mb-1">Owner: {{item.owner?.name}}</p>
+                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">Item Ref: {{item.itemReference}}</p>
 
                 <div *ngIf="item.status === AvailabilityStatus.PENDING" class="flex items-center text-xs text-indigo-600 bg-indigo-50 w-fit px-2 py-1 rounded animate-pulse">
                   <lucide-icon [img]="BellRing" size="12" class="mr-1"></lucide-icon>

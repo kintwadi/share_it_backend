@@ -25,5 +25,6 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     Page<Listing> findByPartnerIdIn(Set<UUID> partnerIds, Pageable pageable);
     Page<Listing> findByPartnerIdInAndStatus(Set<UUID> partnerIds, AvailabilityStatus status, Pageable pageable);
     Page<Listing> findByPartnerIdInAndStatusIn(Set<UUID> partnerIds, Collection<AvailabilityStatus> statuses, Pageable pageable);
+    boolean existsByItemReference(String itemReference);
     long countByStatus(AvailabilityStatus status);
 }

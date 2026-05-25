@@ -205,6 +205,7 @@
                 <th class="px-3 py-2 font-semibold">Partner</th>
                 <th class="px-3 py-2 font-semibold">Type</th>
                 <th class="px-3 py-2 font-semibold">Status</th>
+                <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Item Ref</th>
                 <th *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold">Submitted</th>
                 <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Borrower</th>
                 <th *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 font-semibold text-center">Active</th>
@@ -217,6 +218,7 @@
                 <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{partnerSubTab === 'BORROW_REQUESTS' && r.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (r.status || '-')}}</td>
+                <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700 font-mono">{{r.itemReference || '-'}}</td>
                 <td *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
                 <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
                 <td *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
@@ -247,7 +249,7 @@
                 </td>
               </tr>
               <tr *ngIf="partnerRows.length === 0">
-                <td colspan="6" class="px-3 py-8 text-center text-gray-500">No partner items.</td>
+                <td [attr.colspan]="partnerSubTab === 'BORROW_REQUESTS' ? 7 : 6" class="px-3 py-8 text-center text-gray-500">No partner items.</td>
               </tr>
             </tbody>
           </table>
@@ -294,6 +296,10 @@
               <div class="p-3 rounded-xl border border-gray-200">
                 <div class="text-[11px] font-semibold text-gray-500">Status</div>
                 <div class="mt-1 font-semibold text-gray-900">{{partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (partnerListingSelected.status || '-')}}</div>
+              </div>
+              <div *ngIf="partnerListingSelected.itemReference" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Item Ref</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono">{{partnerListingSelected.itemReference}}</div>
               </div>
               <div class="p-3 rounded-xl border border-gray-200">
                 <div class="text-[11px] font-semibold text-gray-500">Availability</div>

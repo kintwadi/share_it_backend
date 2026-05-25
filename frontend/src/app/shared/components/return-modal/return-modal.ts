@@ -122,8 +122,8 @@ export class ReturnModalComponent implements OnInit, OnDestroy {
 
   setTab(tab: ReturnTab) {
     this.activeTab = tab;
-    if (tab === 'manual' && !this.itemNumber && this.item?.id) {
-      this.itemNumber = String(this.item.id);
+    if (tab === 'manual' && !this.itemNumber && (this.item?.itemReference || this.item?.id)) {
+      this.itemNumber = String(this.item.itemReference || this.item.id);
     }
     this.ensureTabAllowed();
     this.render();
@@ -289,18 +289,18 @@ export class ReturnModalComponent implements OnInit, OnDestroy {
 
   useListingIdAsItemNumber() {
     if (!this.item?.id) return;
-    this.itemNumber = String(this.item.id);
+    this.itemNumber = String(this.item.itemReference || this.item.id);
     this.render();
   }
 
   async copyListingId() {
-    const id = this.item?.id ? String(this.item.id) : '';
-    if (!id) return;
+    const ref = this.item?.id ? String(this.item.itemReference || this.item.id) : '';
+    if (!ref) return;
     try {
-      await navigator.clipboard.writeText(id);
+      await navigator.clipboard.writeText(ref);
       this.notice = this.i18n.t('common.copied');
     } catch {
-      this.notice = id;
+      this.notice = ref;
     } finally {
       this.render();
     }

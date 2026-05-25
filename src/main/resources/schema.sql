@@ -12,6 +12,7 @@ ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_requested_by uuid;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_at timestamp;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_by uuid;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_rejection_reason varchar(500);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS item_reference varchar(8);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_scope varchar(20);
 
 UPDATE listings SET status = 'PARTNER_INACTIVE' WHERE partner_id IS NOT NULL AND status = 'PARTNER_PENDING_APPROVAL';

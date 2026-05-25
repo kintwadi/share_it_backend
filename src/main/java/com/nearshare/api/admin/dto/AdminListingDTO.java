@@ -13,6 +13,7 @@ import java.util.UUID;
 @Builder
 public class AdminListingDTO {
     private UUID id;
+    private String itemReference;
     private String title;
     private ListingType type;
     private AvailabilityStatus status;

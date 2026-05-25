@@ -97,6 +97,7 @@ export interface User {
 
 export interface Listing {
   id: string;
+  itemReference?: string | null;
   ownerId?: string | null;
   partnerId?: string | null;
   partnerName?: string | null;

@@ -406,10 +406,13 @@ public class AdminManagementService {
         }
         if (l.getType() != null && l.getType().name().equalsIgnoreCase("GIVE")) {
             l.setStatus(AvailabilityStatus.GIFTED);
+            l.setItemReference(null);
         } else if (l.getType() != null && l.getType().name().equalsIgnoreCase("SELL")) {
             l.setStatus(AvailabilityStatus.SOLD);
+            l.setItemReference(null);
         } else {
             l.setStatus(AvailabilityStatus.BORROWED);
+            l.setItemReference(generateUniqueItemReference());
         }
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(currentAdmin != null ? currentAdmin.getId() : null);
@@ -429,6 +432,7 @@ public class AdminManagementService {
         }
         l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setBorrower(null);
+        l.setItemReference(null);
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(currentAdmin != null ? currentAdmin.getId() : null);
         if (reason != null && !reason.isBlank()) {
@@ -486,6 +490,7 @@ public class AdminManagementService {
         }
 
         l.setBorrower(null);
+        l.setItemReference(null);
         l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         listingRepository.save(l);
 
@@ -509,6 +514,7 @@ public class AdminManagementService {
 
         l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
+        l.setItemReference(null);
         listingRepository.save(l);
 
         escrowService.adminAttemptReleaseForListing(listingId);
@@ -555,6 +561,17 @@ public class AdminManagementService {
     private String generateSixDigitCode() {
         int value = codeRandom.nextInt(900000) + 100000;
         return String.valueOf(value);
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = codeRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed_to_generate_item_reference");
     }
 
     private AdminUserDTO toAdminUserDTO(User u) {
@@ -618,6 +635,7 @@ public class AdminManagementService {
     private AdminListingDTO toAdminListingDTO(Listing l) {
         return AdminListingDTO.builder()
                 .id(l.getId())
+                .itemReference(l.getItemReference())
                 .title(l.getTitle())
                 .type(l.getType())
                 .status(l.getStatus())

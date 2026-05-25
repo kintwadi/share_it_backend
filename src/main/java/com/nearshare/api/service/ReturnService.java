@@ -55,6 +55,11 @@ public class ReturnService {
         if (listing.getBorrower() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
         }
+        if ((listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED)
+                && (listing.getItemReference() == null || listing.getItemReference().isBlank())) {
+            listing.setItemReference(generateUniqueItemReference());
+            listingRepository.save(listing);
+        }
 
         User lender = resolveLender(listing);
         if (lender == null || lender.getId() == null) {
@@ -102,7 +107,20 @@ public class ReturnService {
         }
         ReturnSession session = getActiveSession(listingId);
 
-        // Simple validation of item number (could be listing id or short id)
+        String provided = request != null ? request.getItemNumber() : null;
+        provided = provided != null ? provided.trim() : null;
+        String expected = session.getListing() != null ? session.getListing().getItemReference() : null;
+        expected = expected != null ? expected.trim() : null;
+        if (expected != null && !expected.isEmpty()) {
+            if (provided == null || !provided.equals(expected)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid item number");
+            }
+        } else {
+            if (provided == null || provided.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing item number");
+            }
+        }
+
         if (currentUser.getId().equals(session.getBorrower().getId())) {
             session.setManualBorrowerConfirmedAt(LocalDateTime.now());
         } else if (currentUser.getId().equals(session.getLender().getId())) {
@@ -168,6 +186,7 @@ public class ReturnService {
             Listing listing = session.getListing();
             listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
             listing.setBorrower(null);
+            listing.setItemReference(null);
             
             // Increase trust score (simple mock implementation for now)
             User lender = session.getLender();
@@ -225,6 +244,17 @@ public class ReturnService {
     private String generateSixDigitCode() {
         int value = codeRandom.nextInt(900000) + 100000;
         return String.valueOf(value);
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = codeRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed_to_generate_item_reference");
     }
     
     public ReturnDTOs.ReturnSessionResponse getSession(UUID listingId, User currentUser) {

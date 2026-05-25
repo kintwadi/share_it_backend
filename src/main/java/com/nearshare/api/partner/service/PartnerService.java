@@ -27,6 +27,7 @@ import com.nearshare.api.util.DistanceUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +42,7 @@ public class PartnerService {
     private final PartnerSettingsRepository partnerSettingsRepository;
     private final ListingRepository listingRepository;
     private final PickupLocationRepository pickupLocationRepository;
+    private final SecureRandom itemRefRandom = new SecureRandom();
 
     public PartnerService(
             PartnerRepository partnerRepository,
@@ -272,10 +274,13 @@ public class PartnerService {
 
         if (l.getType() != null && l.getType().name().equalsIgnoreCase("GIVE")) {
             l.setStatus(AvailabilityStatus.GIFTED);
+            l.setItemReference(null);
         } else if (l.getType() != null && l.getType().name().equalsIgnoreCase("SELL")) {
             l.setStatus(AvailabilityStatus.SOLD);
+            l.setItemReference(null);
         } else {
             l.setStatus(AvailabilityStatus.BORROWED);
+            l.setItemReference(generateUniqueItemReference());
         }
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(current.getId());
@@ -293,6 +298,7 @@ public class PartnerService {
 
         l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setBorrower(null);
+        l.setItemReference(null);
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(current.getId());
         l.setPartnerBorrowRejectionReason("partner_reject_borrow_request");
@@ -395,6 +401,7 @@ public class PartnerService {
 
         return ListingDTO.builder()
                 .id(l.getId())
+                .itemReference(l.getItemReference())
                 .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
                 .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
                 .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
@@ -447,6 +454,17 @@ public class PartnerService {
                 .availableFrom(l.getAvailableFrom())
                 .availableTo(l.getAvailableTo())
                 .build();
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = itemRefRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new RuntimeException("failed_to_generate_item_reference");
     }
 
     private String safePickupCustom(String raw) {

@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -87,6 +88,9 @@ public class Listing {
     private LocalDateTime partnerBorrowReviewedAt;
     private UUID partnerBorrowReviewedBy;
     private String partnerBorrowRejectionReason;
+
+    @Column(name = "item_reference")
+    private String itemReference;
 
     @PrePersist
     @PreUpdate
