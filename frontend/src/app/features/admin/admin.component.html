@@ -192,19 +192,8 @@
         <button type="button" (click)="setPartnerSubTab('ITEMS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'ITEMS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Partner Listing Request</button>
       </div>
 
-      <div *ngIf="partnerSubTab === 'ITEMS'" class="flex flex-col md:flex-row md:items-center gap-3">
-        <select [(ngModel)]="partnerItemsStatus" class="px-4 py-2 rounded-xl border border-gray-200 bg-white">
-          <option value="">ALL</option>
-          <option value="PARTNER_INACTIVE">PARTNER_INACTIVE</option>
-          <option value="PARTNER_ACTIVE">PARTNER_ACTIVE</option>
-          <option value="APPROVED">APPROVED</option>
-          <option value="PARTNER_BORROW_REQUESTED">PARTNER_BORROW_REQUESTED</option>
-          <option value="BORROWED">BORROWED</option>
-          <option value="SOLD">SOLD</option>
-          <option value="GIFTED">GIFTED</option>
-          <option value="BLOCKED">BLOCKED</option>
-        </select>
-        <button type="button" (click)="loadPartnerItems(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
+      <div *ngIf="partnerSubTab === 'ITEMS'" class="flex items-center justify-end">
+        <button type="button" (click)="loadPartnerItems(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Refresh</button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
@@ -235,8 +224,8 @@
                     type="checkbox"
                     class="h-4 w-4"
                     [checked]="r.status === 'PARTNER_ACTIVE'"
-                    [disabled]="r.status !== 'PARTNER_INACTIVE' || isPartnerScopedAdmin || partnerActivateLoadingId === ('' + r.id)"
-                    (change)="activatePartnerItem(r, $any($event.target).checked)"
+                    [disabled]="(r.status !== 'PARTNER_INACTIVE' && r.status !== 'PARTNER_ACTIVE') || isPartnerScopedAdmin || partnerActivateLoadingId === ('' + r.id)"
+                    (change)="togglePartnerActive(r, $any($event.target).checked)"
                   />
                 </td>
                 <td *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 text-right">

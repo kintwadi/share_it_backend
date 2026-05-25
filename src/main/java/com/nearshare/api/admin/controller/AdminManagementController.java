@@ -163,6 +163,15 @@ public class AdminManagementController {
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
+    @PostMapping("/partner/items/{listingId}/deactivate")
+    public ResponseEntity<Map<String, String>> deactivatePartnerItem(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.deactivatePartnerItem(admin, listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
     @PostMapping("/partner/listings/{listingId}/approve")
     public ResponseEntity<Map<String, String>> approvePartnerListingScoped(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,

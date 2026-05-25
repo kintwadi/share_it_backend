@@ -124,7 +124,7 @@ export class AdminComponent implements OnInit {
       this.partnerSubTab = 'BORROW_REQUESTS';
     } else {
       this.partnerSubTab = 'ITEMS';
-      this.partnerItemsStatus = 'PARTNER_INACTIVE';
+      this.partnerItemsStatus = '';
     }
     await this.refreshActive();
   }
@@ -234,7 +234,7 @@ export class AdminComponent implements OnInit {
   }
 
   async loadPartnerItems(page: number) {
-    const status = this.partnerItemsStatus || undefined;
+    const status = undefined;
     const res = await this.api.adminListPartnerItems({ status, page, size: this.pageSize });
     this.partnerItems = Array.isArray(res?.items) ? res.items : [];
     this.partnerItemsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
@@ -242,14 +242,16 @@ export class AdminComponent implements OnInit {
     await this.ensurePartnerSelection();
   }
 
-  canActivatePartnerItem(row: any): boolean {
+  canTogglePartnerActive(row: any): boolean {
     if (this.isPartnerScopedAdmin) return false;
-    return String(row?.status || '') === 'PARTNER_INACTIVE';
+    const st = String(row?.status || '');
+    if (st === 'PARTNER_INACTIVE') return true;
+    if (st === 'PARTNER_ACTIVE') return true;
+    return false;
   }
 
-  async activatePartnerItem(row: any, checked: boolean) {
-    if (!checked) return;
-    if (!this.canActivatePartnerItem(row)) return;
+  async togglePartnerActive(row: any, checked: boolean) {
+    if (!this.canTogglePartnerActive(row)) return;
     const id = String(row?.id || '');
     if (!id) return;
 
@@ -257,8 +259,17 @@ export class AdminComponent implements OnInit {
     this.error = null;
     this.render();
     try {
-      await this.api.adminActivatePartnerItem(id);
-      await this.loadPartnerItems(this.partnerItemsPage);
+      if (checked) {
+        await this.api.adminActivatePartnerItem(id);
+      } else {
+        await this.api.adminDeactivatePartnerItem(id);
+      }
+      const nextStatus = checked ? 'PARTNER_ACTIVE' : 'PARTNER_INACTIVE';
+      this.partnerItems = this.partnerItems.map(x => String(x?.id) === id ? { ...x, status: nextStatus } : x);
+      this.partnerSubmissions = this.partnerSubmissions.map(x => String(x?.id) === id ? { ...x, status: nextStatus } : x);
+      if (this.partnerListingSelectedId === id && this.partnerListingSelected) {
+        this.partnerListingSelected = { ...(this.partnerListingSelected as any), status: nextStatus } as any;
+      }
       if (!this.isPartnerScopedAdmin) {
         await this.loadSummary();
       }

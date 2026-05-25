@@ -346,6 +346,25 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void deactivatePartnerItem(User admin, UUID listingId) {
+        Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        if (l.getPartner() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a partner listing");
+        }
+        if (isPartnerScoped(admin)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+        }
+        if (l.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
+        }
+        if (l.getBorrower() != null || l.getStatus() == AvailabilityStatus.BORROWED || l.getStatus() == AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Listing has active borrower/request");
+        }
+        l.setStatus(AvailabilityStatus.PARTNER_INACTIVE);
+        listingRepository.save(l);
+    }
+
+    @Transactional
     public void rejectPartnerListing(User admin, UUID listingId, String reason) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
         if (l.getPartner() == null) {
