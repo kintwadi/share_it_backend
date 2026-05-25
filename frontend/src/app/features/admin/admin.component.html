@@ -183,6 +183,10 @@
         <div class="text-sm font-semibold text-gray-900">Partner management</div>
       </div>
 
+      <div *ngIf="isPartnerScopedAdmin" class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-900">
+        You are a Partner Admin. You can approve/reject borrow requests only. Partner item publishing (visibility approval) requires a Full Admin account via /connect/admin.
+      </div>
+
       <div class="flex flex-wrap items-center gap-2">
         <button *ngIf="!isPartnerScopedAdmin" type="button" (click)="setPartnerSubTab('SUBMISSIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'SUBMISSIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Submissions</button>
         <button type="button" (click)="setPartnerSubTab('BORROW_REQUESTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'BORROW_REQUESTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Borrow Requests</button>
