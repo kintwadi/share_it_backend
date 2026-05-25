@@ -226,15 +226,16 @@ public class AdminManagementService {
     @Transactional
     public AdminPageResponse<AdminListingDTO> listPartnerBorrowRequests(User currentAdmin, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "partnerBorrowRequestedAt", "createdAt"));
+        java.util.List<AvailabilityStatus> statuses = java.util.List.of(AvailabilityStatus.PARTNER_BORROW_REQUESTED, AvailabilityStatus.BORROWED);
         Page<Listing> p;
         if (isPartnerScoped(currentAdmin)) {
             java.util.Set<UUID> partnerIds = partnerIdsFor(currentAdmin);
             if (partnerIds.isEmpty()) {
                 return new AdminPageResponse<>(List.of(), 0, page, size);
             }
-            p = listingRepository.findByPartnerIdInAndStatus(partnerIds, AvailabilityStatus.PARTNER_BORROW_REQUESTED, pageable);
+            p = listingRepository.findByPartnerIdInAndStatusIn(partnerIds, statuses, pageable);
         } else {
-            p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_BORROW_REQUESTED, pageable);
+            p = listingRepository.findByPartnerIsNotNullAndStatusIn(statuses, pageable);
         }
         List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
         return new AdminPageResponse<>(items, p.getTotalElements(), page, size);

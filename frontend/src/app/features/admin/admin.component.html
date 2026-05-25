@@ -216,7 +216,7 @@
                 <td class="px-3 py-2 text-gray-900 font-semibold">{{r.title || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
                 <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
-                <td class="px-3 py-2 text-gray-700">{{r.status || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{partnerSubTab === 'BORROW_REQUESTS' && r.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (r.status || '-')}}</td>
                 <td *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
                 <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
                 <td *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
@@ -293,7 +293,7 @@
               </div>
               <div class="p-3 rounded-xl border border-gray-200">
                 <div class="text-[11px] font-semibold text-gray-500">Status</div>
-                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.status || '-'}}</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (partnerListingSelected.status || '-')}}</div>
               </div>
               <div class="p-3 rounded-xl border border-gray-200">
                 <div class="text-[11px] font-semibold text-gray-500">Availability</div>
