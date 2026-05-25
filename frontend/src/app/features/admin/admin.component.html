@@ -146,10 +146,10 @@
               <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || l.partnerName || '-'}}</td>
               <td class="px-3 py-2 text-right">
                 <div class="inline-flex gap-2">
-                  <button *ngIf="l.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                  <button *ngIf="l.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
                     Approve
                   </button>
-                  <button *ngIf="l.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                  <button *ngIf="l.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
                     Reject
                   </button>
                   <button type="button" (click)="confirmBlockListing(l, l.status !== 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
@@ -188,15 +188,16 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button *ngIf="!isPartnerScopedAdmin" type="button" (click)="setPartnerSubTab('SUBMISSIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'SUBMISSIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Submissions</button>
-        <button type="button" (click)="setPartnerSubTab('BORROW_REQUESTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'BORROW_REQUESTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Borrow Requests</button>
+        <button *ngIf="!isPartnerScopedAdmin" type="button" (click)="setPartnerSubTab('SUBMISSIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'SUBMISSIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Inactive Items</button>
+        <button type="button" (click)="setPartnerSubTab('BORROW_REQUESTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'BORROW_REQUESTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Borrow Approvals</button>
         <button type="button" (click)="setPartnerSubTab('ITEMS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'ITEMS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Items</button>
       </div>
 
       <div *ngIf="partnerSubTab === 'ITEMS'" class="flex flex-col md:flex-row md:items-center gap-3">
         <select [(ngModel)]="partnerItemsStatus" class="px-4 py-2 rounded-xl border border-gray-200 bg-white">
           <option value="">ALL</option>
-          <option value="PARTNER_PENDING_APPROVAL">PARTNER_PENDING_APPROVAL</option>
+          <option value="PARTNER_INACTIVE">PARTNER_INACTIVE</option>
+          <option value="PARTNER_ACTIVE">PARTNER_ACTIVE</option>
           <option value="APPROVED">APPROVED</option>
           <option value="PARTNER_BORROW_REQUESTED">PARTNER_BORROW_REQUESTED</option>
           <option value="BORROWED">BORROWED</option>
@@ -231,10 +232,10 @@
                 <td *ngIf="partnerSubTab !== 'SUBMISSIONS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
                 <td *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 text-right">
                   <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
-                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
-                      Approve
+                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                      Activate
                     </button>
-                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
                       Reject
                     </button>
 
@@ -321,8 +322,8 @@
             </div>
 
             <div class="flex items-center justify-end gap-2 pt-2">
-              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
-              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_PENDING_APPROVAL'" type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
+              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
+              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Activate</button>
               <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmRejectPartnerBorrowRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
               <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmApprovePartnerBorrowRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
             </div>

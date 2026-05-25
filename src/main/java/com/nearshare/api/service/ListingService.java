@@ -73,7 +73,7 @@ public class ListingService {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
-            .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL))
+            .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
             .filter(l -> {
                 if (l.getPartner() == null || l.getBorrower() == null) return true;
                 boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
@@ -96,7 +96,7 @@ public class ListingService {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() != null) {
             boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
-            if (l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL && !isAdmin) {
+            if (l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE && !isAdmin) {
                 throw new RuntimeException("listing_not_found");
             }
             if (l.getBorrower() != null && !isAdmin) {
@@ -243,7 +243,7 @@ public class ListingService {
 
         if (!isAdmin) {
             AvailabilityStatus st = l.getStatus();
-            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED) {
+            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
                 throw new RuntimeException("cannot_delete_active_listing");
             }
         }
@@ -282,7 +282,7 @@ public class ListingService {
             if (l.getBorrower() != null) {
                 throw new RuntimeException("not_available");
             }
-            if (st != AvailabilityStatus.APPROVED && st != AvailabilityStatus.AVAILABLE) {
+            if (st != AvailabilityStatus.PARTNER_ACTIVE && st != AvailabilityStatus.AVAILABLE) {
                 throw new RuntimeException("not_available");
             }
             l.setBorrower(borrower);
@@ -539,7 +539,7 @@ public class ListingService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);

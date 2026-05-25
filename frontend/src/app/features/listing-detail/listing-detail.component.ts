@@ -150,7 +150,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     const l = this.listing;
     if (!l) return false;
     if (l.status === AvailabilityStatus.AVAILABLE) return true;
-    if (l.partnerId && l.status === AvailabilityStatus.APPROVED && !l.borrowerId) return true;
+    if (l.partnerId && l.status === AvailabilityStatus.PARTNER_ACTIVE && !l.borrowerId) return true;
     return false;
   }
 
@@ -159,7 +159,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get isApproved(): boolean {
-    return this.listing?.status === AvailabilityStatus.APPROVED;
+    return this.listing?.status === AvailabilityStatus.APPROVED || this.listing?.status === AvailabilityStatus.PARTNER_ACTIVE;
   }
 
   get isPartnerBorrowRequested(): boolean {
@@ -367,12 +367,12 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     if (this.statusPollTimer) clearInterval(this.statusPollTimer);
     const listing = this.listing;
     if (!listing) return;
-    if (listing.status !== AvailabilityStatus.PENDING && listing.status !== AvailabilityStatus.APPROVED) return;
+    if (listing.status !== AvailabilityStatus.PENDING && listing.status !== AvailabilityStatus.APPROVED && listing.status !== AvailabilityStatus.PARTNER_BORROW_REQUESTED) return;
 
     this.statusPollTimer = setInterval(async () => {
       const current = this.listing;
       if (!current) return;
-      if (current.status !== AvailabilityStatus.PENDING && current.status !== AvailabilityStatus.APPROVED) {
+      if (current.status !== AvailabilityStatus.PENDING && current.status !== AvailabilityStatus.APPROVED && current.status !== AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
         if (this.statusPollTimer) clearInterval(this.statusPollTimer);
         this.statusPollTimer = null;
         return;

@@ -240,6 +240,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.myBorrows.filter(i =>
       (i.status === AvailabilityStatus.PENDING ||
         i.status === AvailabilityStatus.APPROVED ||
+        i.status === AvailabilityStatus.PARTNER_ACTIVE ||
         i.status === AvailabilityStatus.BORROWED ||
         i.status === AvailabilityStatus.DISPUTED) &&
       i.type !== ListingType.GIVE &&
@@ -289,6 +290,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   listingIsApproved(item: Listing): boolean {
+    if (item.partnerId) {
+      return item.status === AvailabilityStatus.PARTNER_ACTIVE;
+    }
     return item.status === AvailabilityStatus.APPROVED;
   }
 

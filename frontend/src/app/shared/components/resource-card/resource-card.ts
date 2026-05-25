@@ -33,7 +33,7 @@ export class ResourceCardComponent {
     const l = this.listing;
     if (!l) return false;
     if (l.status === AvailabilityStatus.AVAILABLE) return true;
-    if (l.partnerId && l.status === AvailabilityStatus.APPROVED && !l.borrowerId) return true;
+    if (l.partnerId && l.status === AvailabilityStatus.PARTNER_ACTIVE && !l.borrowerId) return true;
     return false;
   }
 

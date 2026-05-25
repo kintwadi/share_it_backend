@@ -191,9 +191,9 @@ public class AdminManagementService {
             if (partnerIds.isEmpty()) {
                 return new AdminPageResponse<>(List.of(), 0, page, size);
             }
-            p = listingRepository.findByPartnerIdInAndStatus(partnerIds, AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+            p = listingRepository.findByPartnerIdInAndStatus(partnerIds, AvailabilityStatus.PARTNER_INACTIVE, pageable);
         } else {
-            p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_PENDING_APPROVAL, pageable);
+            p = listingRepository.findByStatus(AvailabilityStatus.PARTNER_INACTIVE, pageable);
         }
         List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
         return new AdminPageResponse<>(items, p.getTotalElements(), page, size);
@@ -323,10 +323,10 @@ public class AdminManagementService {
         if (isPartnerScoped(admin)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
         }
-        if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+        if (l.getStatus() != AvailabilityStatus.PARTNER_INACTIVE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
-        l.setStatus(AvailabilityStatus.APPROVED);
+        l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setPartnerReviewedAt(java.time.LocalDateTime.now());
         l.setPartnerReviewedBy(admin != null ? admin.getId() : null);
         if (note != null && !note.isBlank()) {
@@ -349,7 +349,7 @@ public class AdminManagementService {
         if (isPartnerScoped(admin)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
         }
-        if (l.getStatus() != AvailabilityStatus.PARTNER_PENDING_APPROVAL) {
+        if (l.getStatus() != AvailabilityStatus.PARTNER_INACTIVE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
         l.setStatus(AvailabilityStatus.BLOCKED);
@@ -402,7 +402,7 @@ public class AdminManagementService {
         if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid status");
         }
-        l.setStatus(AvailabilityStatus.APPROVED);
+        l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setBorrower(null);
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(currentAdmin != null ? currentAdmin.getId() : null);
@@ -461,7 +461,7 @@ public class AdminManagementService {
         }
 
         l.setBorrower(null);
-        l.setStatus(l.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
+        l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         listingRepository.save(l);
 
         for (ReturnSession rs : returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.DISPUTED)) {
@@ -482,7 +482,7 @@ public class AdminManagementService {
         session.setExpiresAt(LocalDateTime.now());
         returnSessionRepository.save(session);
 
-        l.setStatus(l.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
+        l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
         listingRepository.save(l);
 

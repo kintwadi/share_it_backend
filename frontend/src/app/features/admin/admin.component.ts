@@ -94,7 +94,7 @@ export class AdminComponent implements OnInit {
 
   pageSize = 20;
 
-  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_PENDING_APPROVAL', 'PARTNER_BORROW_REQUESTED'];
+  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_INACTIVE', 'PARTNER_ACTIVE', 'PARTNER_BORROW_REQUESTED'];
   txStatusOptions = ['', 'ESCROWED', 'RELEASED', 'RELEASE_FAILED', 'DISPUTED', 'REFUNDED', 'PENDING', 'FAILED'];
   subStatusOptions = ['', 'active', 'trialing', 'past_due', 'canceled', 'incomplete'];
 

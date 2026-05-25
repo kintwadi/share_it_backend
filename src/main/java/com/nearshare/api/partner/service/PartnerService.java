@@ -129,7 +129,7 @@ public class PartnerService {
                 .hourlyRate(hourlyRate)
                 .autoApprove(req.isAutoApprove())
                 .insuranceRequired(req.isInsuranceRequired())
-                .status(AvailabilityStatus.PARTNER_PENDING_APPROVAL)
+                .status(AvailabilityStatus.PARTNER_INACTIVE)
                 .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
                 .owner(null)
                 .partner(partner)
@@ -196,7 +196,7 @@ public class PartnerService {
         l.setAvailableUnlimited(availableUnlimited);
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
         l.setAvailableTo(null);
-        if (l.getStatus() == AvailabilityStatus.PARTNER_PENDING_APPROVAL && l.getPartnerSubmittedAt() == null) {
+        if (l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE && l.getPartnerSubmittedAt() == null) {
             l.setPartnerSubmittedAt(LocalDateTime.now());
             l.setPartnerSubmittedBy(current.getId());
         }
@@ -234,7 +234,7 @@ public class PartnerService {
         requirePartnerAdmin(current, l.getPartner().getId());
 
         AvailabilityStatus st = l.getStatus();
-        if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED) {
+        if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
             throw new RuntimeException("cannot_delete_active_listing");
         }
         listingRepository.delete(l);
@@ -291,7 +291,7 @@ public class PartnerService {
         requirePartnerAdmin(current, l.getPartner().getId());
         if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) throw new RuntimeException("invalid_status");
 
-        l.setStatus(AvailabilityStatus.APPROVED);
+        l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setBorrower(null);
         l.setPartnerBorrowReviewedAt(LocalDateTime.now());
         l.setPartnerBorrowReviewedBy(current.getId());
@@ -388,7 +388,7 @@ public class PartnerService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);

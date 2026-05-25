@@ -376,7 +376,7 @@
                   <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
                   Disputed
                 </div>
-                <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
+                <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="CheckCircle2" size="12" class="mr-1"></lucide-icon>
                   Approved
                 </div>

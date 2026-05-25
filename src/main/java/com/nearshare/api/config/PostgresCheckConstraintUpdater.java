@@ -29,6 +29,11 @@ public class PostgresCheckConstraintUpdater implements CommandLineRunner {
             return;
         }
 
+        try {
+            jdbcTemplate.update("UPDATE listings SET status = 'PARTNER_ACTIVE' WHERE partner_id IS NOT NULL AND status = 'APPROVED'");
+        } catch (Exception ignored) {
+        }
+
         updateEnumCheckConstraint(
                 "listings",
                 "listings_status_check",
@@ -70,4 +75,3 @@ public class PostgresCheckConstraintUpdater implements CommandLineRunner {
         }
     }
 }
-

@@ -45,7 +45,7 @@ public class ReturnService {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
-        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.APPROVED) {
+        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.APPROVED && listing.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
             if (listing.getStatus() == AvailabilityStatus.AVAILABLE && listing.getBorrower() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing already returned");
             }
@@ -166,7 +166,7 @@ public class ReturnService {
         if (bothScanned || (bothManual && session.getConciergeWitnessId() != null)) {
             session.setStatus(ReturnStatus.COMPLETED);
             Listing listing = session.getListing();
-            listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.APPROVED : AvailabilityStatus.AVAILABLE);
+            listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
             listing.setBorrower(null);
             
             // Increase trust score (simple mock implementation for now)
@@ -238,7 +238,7 @@ public class ReturnService {
                 .orElse(null);
 
         if (session == null) {
-            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED || listing.getStatus() == AvailabilityStatus.DISPUTED;
+            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED || listing.getStatus() == AvailabilityStatus.PARTNER_ACTIVE || listing.getStatus() == AvailabilityStatus.DISPUTED;
             if (listingActive) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active return session");
             }
