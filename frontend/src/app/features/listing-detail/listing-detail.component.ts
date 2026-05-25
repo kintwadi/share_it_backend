@@ -159,7 +159,8 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get isApproved(): boolean {
-    return this.listing?.status === AvailabilityStatus.APPROVED || this.listing?.status === AvailabilityStatus.PARTNER_ACTIVE;
+    if (this.isPartnerListing) return false;
+    return this.listing?.status === AvailabilityStatus.APPROVED;
   }
 
   get isPartnerBorrowRequested(): boolean {
