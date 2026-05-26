@@ -1,62 +1,82 @@
-<div class="max-w-6xl mx-auto px-4 py-8 space-y-6">
-  <div class="border border-gray-200 bg-white rounded-xl p-6">
-    <div class="flex items-start justify-between gap-6">
-      <div>
-        <div class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Enterprise</div>
-        <div class="text-2xl font-bold text-gray-900 mt-1">Discovery</div>
-        <div class="text-sm text-gray-600 mt-1">Browse enterprise-grade inventory using the same platform listings API.</div>
-      </div>
-      <div class="flex items-center gap-2 text-gray-600">
-        <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
-        <div class="text-sm font-semibold">Enterprise Catalog</div>
-      </div>
+<div class="enterprise-shell">
+  <div class="enterprise-header">
+    <div class="enterprise-header__title">
+      <div class="enterprise-kicker">Enterprise</div>
+      <div class="enterprise-h1">Discovery</div>
+      <div class="enterprise-subtitle">Structured browsing for professional inventory.</div>
+    </div>
+    <div class="enterprise-header__actions">
+      <button type="button" class="btn btn--secondary md:hidden" (click)="toggleFilters()">
+        <lucide-icon [img]="Filter" [size]="16"></lucide-icon>
+        Filters
+      </button>
+      <button type="button" class="btn btn--secondary" (click)="clear()">
+        <lucide-icon [img]="X" [size]="16"></lucide-icon>
+        Reset
+      </button>
     </div>
   </div>
 
-  <div class="border border-gray-200 bg-white rounded-xl p-6 space-y-4">
-    <div class="text-sm font-bold text-gray-900">Search</div>
+  <div class="enterprise-grid">
+    <aside class="enterprise-sidebar" [class.enterprise-sidebar--open]="filterOpen()">
+      <div class="enterprise-sidebar__head">
+        <div class="enterprise-sidebar__title">
+          <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
+          Filters
+        </div>
+        <button type="button" class="btn-icon md:hidden" (click)="toggleFilters()">
+          <lucide-icon [img]="X" [size]="18"></lucide-icon>
+        </button>
+      </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label class="block text-xs font-semibold text-gray-600 mb-1">Sector</label>
-        <div class="relative">
-          <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" [ngModel]="selectedSector()" (ngModelChange)="onSectorChange($event)">
+      <div class="field">
+        <label class="label">Sector</label>
+        <div class="select">
+          <select [ngModel]="selectedSector()" (ngModelChange)="onSectorChange($event); onFilterChanged()">
             <option *ngFor="let s of sectors()" [ngValue]="s.label">{{ s.label }}</option>
           </select>
-          <lucide-icon [img]="ChevronDown" [size]="16" class="absolute right-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold text-gray-600 mb-1">Item Type</label>
-        <div class="relative">
-          <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" [ngModel]="selectedItemType()" (ngModelChange)="onItemTypeChange($event)">
+      <div class="field">
+        <label class="label">Group</label>
+        <div class="select">
+          <select [ngModel]="selectedGroup()" (ngModelChange)="onGroupChange($event); onFilterChanged()">
+            <option [ngValue]="''">All</option>
+            <option *ngFor="let g of sectorGroups()" [ngValue]="g">{{ g }}</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Item Type</label>
+        <div class="select">
+          <select [ngModel]="selectedItemType()" (ngModelChange)="onItemTypeChange($event); onFilterChanged()">
             <option [ngValue]="''">All</option>
             <option *ngFor="let it of sectorItems()" [ngValue]="it">{{ it }}</option>
           </select>
-          <lucide-icon [img]="ChevronDown" [size]="16" class="absolute right-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold text-gray-600 mb-1">Keywords</label>
-        <div class="relative">
-          <input class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm" [ngModel]="query()" (ngModelChange)="query.set($event); onQueryChange()" placeholder="Search listings…" />
-          <lucide-icon [img]="Search" [size]="16" class="absolute left-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
-        </div>
-      </div>
-    </div>
+      <div class="divider"></div>
 
-    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-      <div class="flex items-center gap-6">
-        <label class="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" class="h-4 w-4" [ngModel]="onlyAvailable()" (ngModelChange)="onlyAvailable.set(!!$event); loadListings()" />
-          Available only
-        </label>
+      <label class="check">
+        <input type="checkbox" [ngModel]="onlyAvailable()" (ngModelChange)="onlyAvailable.set(!!$event); onFilterChanged()" />
+        Available only
+      </label>
 
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-700">Type</span>
-          <select class="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white" [ngModel]="listingType()" (ngModelChange)="listingType.set($event); loadListings()">
+      <label class="check">
+        <input type="checkbox" [ngModel]="partnerOnly()" (ngModelChange)="partnerOnly.set(!!$event); onFilterChanged()" />
+        Partner listings only
+      </label>
+
+      <div class="field">
+        <label class="label">Listing Type</label>
+        <div class="select">
+          <select [ngModel]="listingType()" (ngModelChange)="listingType.set($event); onFilterChanged()">
             <option [ngValue]="'ALL'">All</option>
             <option [ngValue]="'GOODS'">Goods</option>
             <option [ngValue]="'SKILL'">Skill</option>
@@ -64,51 +84,100 @@
             <option [ngValue]="'SELL'">Sell</option>
             <option [ngValue]="'LEND'">Lend</option>
           </select>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
         </div>
       </div>
 
-      <button type="button" class="px-3 py-2 text-sm font-semibold rounded-lg border border-gray-300 bg-white hover:bg-gray-50" (click)="clear()">
-        Reset
-      </button>
-    </div>
-  </div>
+      <div class="field">
+        <label class="label">Rate Range</label>
+        <div class="range">
+          <input type="number" class="input" placeholder="Min" [ngModel]="minRate()" (ngModelChange)="minRate.set($event === '' ? null : +$event); onFilterChanged()" />
+          <span class="range__sep">—</span>
+          <input type="number" class="input" placeholder="Max" [ngModel]="maxRate()" (ngModelChange)="maxRate.set($event === '' ? null : +$event); onFilterChanged()" />
+        </div>
+      </div>
 
-  <div class="border border-gray-200 bg-white rounded-xl overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-      <div class="text-sm font-bold text-gray-900">Results</div>
-      <div class="text-xs text-gray-500">{{ rows().length }} items</div>
-    </div>
+      <div class="field">
+        <label class="label">Sort</label>
+        <div class="select">
+          <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event); onFilterChanged()">
+            <option [ngValue]="'RELEVANCE'">Relevance</option>
+            <option [ngValue]="'TITLE'">Title</option>
+            <option [ngValue]="'RATE'">Rate</option>
+            <option [ngValue]="'DISTANCE'">Distance</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+        </div>
+      </div>
 
-    <div *ngIf="loading()" class="px-6 py-8 text-sm text-gray-600">Loading…</div>
-    <div *ngIf="!loading() && error()" class="px-6 py-6 text-sm text-red-600">{{ error() }}</div>
-    <div *ngIf="!loading() && !error() && rows().length === 0" class="px-6 py-8 text-sm text-gray-600">
-      No matching listings.
-    </div>
+      <div class="field">
+        <label class="label">Rows per page</label>
+        <div class="select">
+          <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set(+$event); onFilterChanged()">
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="20">20</option>
+            <option [ngValue]="50">50</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" [size]="16"></lucide-icon>
+        </div>
+      </div>
+    </aside>
 
-    <div *ngIf="!loading() && rows().length > 0" class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-          <tr>
-            <th class="text-left px-6 py-3 font-semibold">Title</th>
-            <th class="text-left px-6 py-3 font-semibold">Category</th>
-            <th class="text-left px-6 py-3 font-semibold">Type</th>
-            <th class="text-left px-6 py-3 font-semibold">Rate</th>
-            <th class="text-left px-6 py-3 font-semibold">Partner</th>
-            <th class="text-left px-6 py-3 font-semibold">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of rows()" class="border-t border-gray-100 hover:bg-gray-50 cursor-pointer" (click)="openListing(r.id)">
-            <td class="px-6 py-3 font-semibold text-gray-900 whitespace-nowrap">{{ r.title }}</td>
-            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.category }}</td>
-            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.type }}</td>
-            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.hourlyRate ? (r.hourlyRate | currency:(i18n.currency() || 'EUR'):'symbol') : '-' }}</td>
-            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.partnerName || '-' }}</td>
-            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.status }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <section class="enterprise-main">
+      <div class="enterprise-search">
+        <div class="enterprise-search__input">
+          <lucide-icon [img]="Search" [size]="16"></lucide-icon>
+          <input class="input input--flat" [ngModel]="query()" (ngModelChange)="query.set($event); onQueryChange()" placeholder="Search enterprise listings…" />
+        </div>
+        <div class="enterprise-search__meta">
+          <div class="meta">
+            <span class="meta__label">Results</span>
+            <span class="meta__value">{{ filteredRows().length }}</span>
+          </div>
+          <div class="meta">
+            <span class="meta__label">Page</span>
+            <span class="meta__value">{{ page() }} / {{ totalPages() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="enterprise-panel">
+        <div *ngIf="loading()" class="state">Loading…</div>
+        <div *ngIf="!loading() && error()" class="state state--error">{{ error() }}</div>
+        <div *ngIf="!loading() && !error() && filteredRows().length === 0" class="state">No matching listings.</div>
+
+        <div *ngIf="!loading() && pagedRows().length > 0" class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th class="num">Rate</th>
+                <th class="num">Distance</th>
+                <th>Partner</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of pagedRows()" (click)="openListing(r.id)">
+                <td class="title">{{ r.title }}</td>
+                <td>{{ r.category }}</td>
+                <td>{{ r.type }}</td>
+                <td class="num">{{ r.hourlyRate ? (r.hourlyRate | currency:(i18n.currency() || 'EUR'):'symbol') : '-' }}</td>
+                <td class="num">{{ r.distanceMiles ? (r.distanceMiles | number:'1.0-1') : '-' }}</td>
+                <td>{{ r.partnerName || '-' }}</td>
+                <td>{{ r.status }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="!loading() && totalPages() > 1" class="pager">
+          <button type="button" class="btn btn--secondary" [disabled]="page() <= 1" (click)="setPage(page() - 1)">Prev</button>
+          <button type="button" class="btn btn--secondary" [disabled]="page() >= totalPages()" (click)="setPage(page() + 1)">Next</button>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
-
