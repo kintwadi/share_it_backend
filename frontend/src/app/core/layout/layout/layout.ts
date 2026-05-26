@@ -110,6 +110,11 @@ export class Layout {
   currentPath = signal('');
   isPartnerContext = computed(() => this.authStorage.authContext() === 'partner');
   isPartnerArea = computed(() => String(this.currentPath() || '').startsWith('/partner'));
+  enterpriseEnabled = computed(() => {
+    const cfg = this.settingsConfig.config();
+    const raw = cfg?.enable?.enterprise;
+    return raw === true || raw === 'true';
+  });
 
   constructor() {
     this.session.refresh();

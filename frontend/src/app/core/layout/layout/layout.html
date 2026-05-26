@@ -16,6 +16,11 @@
             <span>{{ i18n.t('nav.discover') }}</span>
           </a>
 
+          <a *ngIf="enterpriseEnabled() && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/connect/partner" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+            <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
+            <span>{{ i18n.t('nav.enterprise') }}</span>
+          </a>
+
           <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('dashboard') && !(isPartnerContext() || isPartnerArea())" routerLink="/dashboard" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
             <lucide-icon [img]="LayoutDashboard" [size]="18"></lucide-icon>
             <span>{{ i18n.t('nav.dashboard') }}</span>
@@ -154,6 +159,10 @@
       <div class="flex flex-col p-4 space-y-2">
           <a *ngIf="!(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/" routerLinkActive="bg-brand-50 text-brand-700" [routerLinkActiveOptions]="{exact: true}" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
           <lucide-icon [img]="Home" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.discover') }}
+        </a>
+
+        <a *ngIf="enterpriseEnabled() && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/connect/partner" routerLinkActive="bg-brand-50 text-brand-700" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
+          <lucide-icon [img]="Building2" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.enterprise') }}
         </a>
 
         <ng-container *ngIf="currentUser()">
