@@ -122,9 +122,19 @@ public class ReturnService {
             }
         }
 
-        if (currentUser.getId().equals(session.getBorrower().getId())) {
+        boolean isBorrower = currentUser.getId().equals(session.getBorrower().getId());
+        boolean isLender = currentUser.getId().equals(session.getLender().getId());
+        boolean isPartnerAdmin = false;
+        if (!isBorrower && !isLender) {
+            Listing listing = session.getListing();
+            if (listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
+                isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+            }
+        }
+
+        if (isBorrower) {
             session.setManualBorrowerConfirmedAt(LocalDateTime.now());
-        } else if (currentUser.getId().equals(session.getLender().getId())) {
+        } else if (isLender || isPartnerAdmin) {
             session.setManualLenderConfirmedAt(LocalDateTime.now());
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
@@ -135,6 +145,42 @@ public class ReturnService {
         }
 
         return checkAndCompleteSession(session);
+    }
+
+    @Transactional
+    public ReturnDTOs.ReturnSessionResponse denyManualReturn(UUID listingId, User currentUser, String reason) {
+        ReturnSession session = getActiveSession(listingId);
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
+
+        Listing listing = session.getListing();
+        boolean isBorrower = session.getBorrower() != null && currentUser.getId().equals(session.getBorrower().getId());
+        boolean isLender = session.getLender() != null && currentUser.getId().equals(session.getLender().getId());
+        boolean isPartnerAdmin = false;
+        if (!isBorrower && !isLender && listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
+            isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+        }
+        if (!isBorrower && !isLender && !isPartnerAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
+
+        if (session.getManualBorrowerConfirmedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Borrower has not confirmed manual return");
+        }
+
+        session.setStatus(ReturnStatus.DISPUTED);
+        session.setDisputeReason((reason != null && !reason.isBlank()) ? reason.trim() : "manual_return_denied");
+        session.setExpiresAt(LocalDateTime.now());
+        returnSessionRepository.save(session);
+
+        if (listing != null) {
+            listing.setStatus(AvailabilityStatus.DISPUTED);
+            listingRepository.save(listing);
+            escrowService.markDisputed(listingId, session.getDisputeReason());
+        }
+
+        return mapToResponse(session);
     }
 
     @Transactional

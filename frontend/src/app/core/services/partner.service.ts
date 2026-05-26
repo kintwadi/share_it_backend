@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiClientService } from './api-client.service';
-import { Listing, Partner, PartnerBorrowRequest, PartnerSettings } from '../models/types';
+import { Listing, Partner, PartnerBorrowRequest, PartnerReturnRequest, PartnerSettings } from '../models/types';
 
 @Injectable({
   providedIn: 'root'
@@ -45,6 +45,18 @@ export class PartnerService {
     return firstValueFrom(this.api.post<Listing>(`/partner/requests/${encodeURIComponent(listingId)}/reject`, {}));
   }
 
+  async getPendingManualReturns(): Promise<PartnerReturnRequest[]> {
+    return firstValueFrom(this.api.get<PartnerReturnRequest[]>('/partner/returns/manual/pending'));
+  }
+
+  async acceptManualReturn(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post(`/partner/returns/${encodeURIComponent(listingId)}/accept`, {}));
+  }
+
+  async denyManualReturn(listingId: string, reason?: string): Promise<any> {
+    return firstValueFrom(this.api.post(`/partner/returns/${encodeURIComponent(listingId)}/deny`, { reason: reason || null }));
+  }
+
   async getSettings(partnerId?: string | null): Promise<PartnerSettings> {
     const qs = partnerId ? `?partnerId=${encodeURIComponent(partnerId)}` : '';
     return firstValueFrom(this.api.get<PartnerSettings>(`/partner/settings${qs}`));
@@ -55,4 +67,3 @@ export class PartnerService {
     return firstValueFrom(this.api.put<PartnerSettings>(`/partner/settings${qs}`, payload));
   }
 }
-

@@ -5,6 +5,7 @@ import com.nearshare.api.partner.dto.PartnerBorrowRequestDTO;
 import com.nearshare.api.partner.dto.PartnerCreateListingRequest;
 import com.nearshare.api.partner.dto.PartnerDTO;
 import com.nearshare.api.partner.dto.PartnerRegistrationRequest;
+import com.nearshare.api.partner.dto.PartnerReturnRequestDTO;
 import com.nearshare.api.partner.dto.PartnerSettingsDTO;
 import com.nearshare.api.partner.service.PartnerService;
 import org.springframework.http.ResponseEntity;
@@ -100,6 +101,31 @@ public class PartnerController {
             @PathVariable("listingId") UUID listingId) {
         User current = userService.getByEmail(principal.getUsername());
         return ResponseEntity.ok(partnerService.rejectPartnerRequest(current, listingId));
+    }
+
+    @GetMapping("/returns/manual/pending")
+    public ResponseEntity<List<PartnerReturnRequestDTO>> pendingManualReturns(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(partnerService.getPendingManualReturns(current));
+    }
+
+    @PostMapping("/returns/{listingId}/accept")
+    public ResponseEntity<com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse> acceptManualReturn(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(partnerService.acceptManualReturn(current, listingId));
+    }
+
+    @PostMapping("/returns/{listingId}/deny")
+    public ResponseEntity<com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse> denyManualReturn(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) Map<String, String> body) {
+        User current = userService.getByEmail(principal.getUsername());
+        String reason = body != null ? body.get("reason") : null;
+        return ResponseEntity.ok(partnerService.denyManualReturn(current, listingId, reason));
     }
 
     @GetMapping("/settings")

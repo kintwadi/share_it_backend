@@ -294,6 +294,18 @@ export interface PartnerBorrowRequest {
   status?: AvailabilityStatus;
 }
 
+export interface PartnerReturnRequest {
+  listingId: string;
+  listingTitle?: string;
+  itemReference?: string | null;
+  partnerId?: string;
+  partnerName?: string;
+  borrowerId?: string | null;
+  borrowerName?: string | null;
+  borrowerEmail?: string | null;
+  borrowerConfirmedAt?: string | null;
+}
+
 export interface PartnerSettings {
   partnerId: string;
   maxLendingDays?: number | null;

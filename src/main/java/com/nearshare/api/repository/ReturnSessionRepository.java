@@ -14,6 +14,7 @@ public interface ReturnSessionRepository extends JpaRepository<ReturnSession, UU
     Optional<ReturnSession> findFirstByListingIdAndStatusOrderByCreatedAtDesc(UUID listingId, ReturnStatus status);
     Optional<ReturnSession> findFirstByListingIdOrderByCreatedAtDesc(UUID listingId);
     List<ReturnSession> findByStatusOrderByCreatedAtDesc(ReturnStatus status);
+    List<ReturnSession> findByStatusAndManualBorrowerConfirmedAtIsNotNullAndManualLenderConfirmedAtIsNullOrderByCreatedAtDesc(ReturnStatus status);
     List<ReturnSession> findByStatusAndExpiresAtBefore(ReturnStatus status, java.time.LocalDateTime now);
     long countByStatus(ReturnStatus status);
 }

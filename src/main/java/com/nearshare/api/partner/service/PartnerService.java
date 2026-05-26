@@ -12,6 +12,7 @@ import com.nearshare.api.partner.dto.PartnerBorrowRequestDTO;
 import com.nearshare.api.partner.dto.PartnerCreateListingRequest;
 import com.nearshare.api.partner.dto.PartnerDTO;
 import com.nearshare.api.partner.dto.PartnerRegistrationRequest;
+import com.nearshare.api.partner.dto.PartnerReturnRequestDTO;
 import com.nearshare.api.partner.dto.PartnerSettingsDTO;
 import com.nearshare.api.partner.model.Partner;
 import com.nearshare.api.partner.model.PartnerAdmin;
@@ -23,6 +24,8 @@ import com.nearshare.api.partner.repository.PartnerRepository;
 import com.nearshare.api.partner.repository.PartnerSettingsRepository;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ReturnSessionRepository;
+import com.nearshare.api.service.ReturnService;
 import com.nearshare.api.util.DistanceUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,18 +46,24 @@ public class PartnerService {
     private final ListingRepository listingRepository;
     private final PickupLocationRepository pickupLocationRepository;
     private final SecureRandom itemRefRandom = new SecureRandom();
+    private final ReturnSessionRepository returnSessionRepository;
+    private final ReturnService returnService;
 
     public PartnerService(
             PartnerRepository partnerRepository,
             PartnerAdminRepository partnerAdminRepository,
             PartnerSettingsRepository partnerSettingsRepository,
             ListingRepository listingRepository,
-            PickupLocationRepository pickupLocationRepository) {
+            PickupLocationRepository pickupLocationRepository,
+            ReturnSessionRepository returnSessionRepository,
+            ReturnService returnService) {
         this.partnerRepository = partnerRepository;
         this.partnerAdminRepository = partnerAdminRepository;
         this.partnerSettingsRepository = partnerSettingsRepository;
         this.listingRepository = listingRepository;
         this.pickupLocationRepository = pickupLocationRepository;
+        this.returnSessionRepository = returnSessionRepository;
+        this.returnService = returnService;
     }
 
     @Transactional(readOnly = true)
@@ -263,6 +272,57 @@ public class PartnerService {
                         .status(l.getStatus())
                         .build())
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartnerReturnRequestDTO> getPendingManualReturns(User current) {
+        Set<UUID> partnerIds = partnerAdminRepository.findAllByUserId(current.getId()).stream()
+                .map(pa -> pa.getPartner() != null ? pa.getPartner().getId() : null)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (partnerIds.isEmpty()) return List.of();
+
+        return returnSessionRepository
+                .findByStatusAndManualBorrowerConfirmedAtIsNotNullAndManualLenderConfirmedAtIsNullOrderByCreatedAtDesc(com.nearshare.api.model.enums.ReturnStatus.PENDING)
+                .stream()
+                .filter(rs -> rs.getListing() != null && rs.getListing().getPartner() != null && partnerIds.contains(rs.getListing().getPartner().getId()))
+                .map(rs -> PartnerReturnRequestDTO.builder()
+                        .listingId(rs.getListing().getId())
+                        .listingTitle(rs.getListing().getTitle())
+                        .itemReference(rs.getListing().getItemReference())
+                        .partnerId(rs.getListing().getPartner() != null ? rs.getListing().getPartner().getId() : null)
+                        .partnerName(rs.getListing().getPartner() != null ? rs.getListing().getPartner().getName() : null)
+                        .borrowerId(rs.getBorrower() != null ? rs.getBorrower().getId() : null)
+                        .borrowerName(rs.getBorrower() != null ? rs.getBorrower().getName() : null)
+                        .borrowerEmail(rs.getBorrower() != null ? rs.getBorrower().getEmail() : null)
+                        .borrowerConfirmedAt(rs.getManualBorrowerConfirmedAt())
+                        .build())
+                .toList();
+    }
+
+    @Transactional
+    public com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse acceptManualReturn(User current, UUID listingId) {
+        Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (listing.getPartner() == null || listing.getPartner().getId() == null) throw new RuntimeException("not_partner_listing");
+        requirePartnerAdmin(current, listing.getPartner().getId());
+        String itemRef = listing.getItemReference();
+        if (itemRef == null || itemRef.isBlank()) {
+            itemRef = generateUniqueItemReference();
+            listing.setItemReference(itemRef);
+            listingRepository.save(listing);
+        }
+        com.nearshare.api.dto.ReturnDTOs.ManualFallbackRequest req = new com.nearshare.api.dto.ReturnDTOs.ManualFallbackRequest();
+        req.setItemNumber(itemRef);
+        req.setConciergeWitnessId("PARTNER_ADMIN:" + current.getId());
+        return returnService.manualFallback(listingId, current, req);
+    }
+
+    @Transactional
+    public com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse denyManualReturn(User current, UUID listingId, String reason) {
+        Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (listing.getPartner() == null || listing.getPartner().getId() == null) throw new RuntimeException("not_partner_listing");
+        requirePartnerAdmin(current, listing.getPartner().getId());
+        return returnService.denyManualReturn(listingId, current, reason);
     }
 
     @Transactional
