@@ -71,11 +71,12 @@ public class ListingService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
+    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, boolean enterprise) {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
             .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
+            .filter(l -> enterprise || !l.isEnterpriseOnly())
             .filter(l -> {
                 if (l.getPartner() == null || l.getBorrower() == null) return true;
                 boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;

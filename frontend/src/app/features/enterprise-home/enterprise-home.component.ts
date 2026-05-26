@@ -203,8 +203,8 @@ export class EnterpriseHomeComponent implements OnInit {
     this.render();
     try {
       const data = this.query().trim()
-        ? await this.api.searchListings(this.query().trim())
-        : await this.api.getListings();
+        ? await this.api.searchListings(this.query().trim(), { enterprise: true })
+        : await this.api.getListings({ enterprise: true });
       this.allRows.set(data || []);
       this.page.set(1);
     } catch (e: any) {

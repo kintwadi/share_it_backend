@@ -32,10 +32,11 @@ public class ListingsController {
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "minPrice", required = false) Double minPrice,
+            @RequestParam(name = "enterprise", defaultValue = "false") boolean enterprise,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User current = principal != null ? userService.getByEmail(principal.getUsername()) : null;
-        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size));
+        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, enterprise));
     }
 
     @GetMapping("/recommended")

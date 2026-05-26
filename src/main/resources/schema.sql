@@ -13,6 +13,7 @@ ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_at timesta
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_by uuid;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_rejection_reason varchar(500);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS item_reference varchar(8);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS enterprise_only boolean DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_scope varchar(20);
 
 CREATE TABLE IF NOT EXISTS enterprise_categories (

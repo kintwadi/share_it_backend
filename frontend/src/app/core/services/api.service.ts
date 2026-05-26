@@ -69,9 +69,10 @@ export class ApiService {
     }
   }
 
-  async getListings(): Promise<Listing[]> {
+  async getListings(opts?: { enterprise?: boolean }): Promise<Listing[]> {
     try {
-      const page = await firstValueFrom(this.api.get<any>('/listings/?page=0&size=100'));
+      const enterprise = opts?.enterprise ? '&enterprise=true' : '';
+      const page = await firstValueFrom(this.api.get<any>(`/listings/?page=0&size=100${enterprise}`));
       return page.content || [];
     } catch {
       return [];
@@ -86,9 +87,10 @@ export class ApiService {
     }
   }
 
-  async searchListings(query: string): Promise<Listing[]> {
+  async searchListings(query: string, opts?: { enterprise?: boolean }): Promise<Listing[]> {
     try {
-      const page = await firstValueFrom(this.api.get<any>(`/listings/?search=${encodeURIComponent(query)}&page=0&size=100`));
+      const enterprise = opts?.enterprise ? '&enterprise=true' : '';
+      const page = await firstValueFrom(this.api.get<any>(`/listings/?search=${encodeURIComponent(query)}&page=0&size=100${enterprise}`));
       return page.content || [];
     } catch {
       return [];
