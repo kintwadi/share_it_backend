@@ -2,6 +2,10 @@
   display: block;
 }
 
+:host, :host * {
+  box-sizing: border-box;
+}
+
 .enterprise-shell {
   max-width: 1100px;
   margin: 0 auto;
@@ -10,13 +14,18 @@
 
 .enterprise-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 12px;
   padding: 18px 20px;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+}
+
+.enterprise-header__title {
+  min-width: 0;
 }
 
 .enterprise-kicker {
@@ -38,11 +47,14 @@
   color: #4b5563;
   font-size: 13px;
   margin-top: 4px;
+  max-width: 60ch;
 }
 
 .enterprise-header__actions {
   display: flex;
+  align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .enterprise-grid {
@@ -73,8 +85,11 @@
   background: #fff;
   border-radius: 12px;
   padding: 14px;
-  position: relative;
+  position: sticky;
+  top: 96px;
   z-index: 50;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
 }
 
 .enterprise-sidebar__head {
@@ -117,16 +132,18 @@
   border: 1px solid #d1d5db;
   background: #fff;
   border-radius: 10px;
-  padding: 10px 34px 10px 10px;
+  padding: 9px 34px 9px 10px;
   font-size: 13px;
   color: #111827;
   outline: none;
+  height: 40px;
 }
 
 .select lucide-icon {
   position: absolute;
   right: 10px;
-  top: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #9ca3af;
   pointer-events: none;
 }
@@ -136,16 +153,18 @@
   border: 1px solid #d1d5db;
   background: #fff;
   border-radius: 10px;
-  padding: 10px;
+  padding: 9px 10px;
   font-size: 13px;
   color: #111827;
   outline: none;
+  height: 40px;
 }
 
 .input--flat {
   border: none;
   padding: 0;
   border-radius: 0;
+  height: auto;
 }
 
 .range {
@@ -189,6 +208,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
 }
 
 .enterprise-search__input {
@@ -197,12 +217,14 @@
   gap: 10px;
   width: 100%;
   color: #9ca3af;
+  min-width: 0;
 }
 
 .enterprise-search__input input {
   width: 100%;
   color: #111827;
   font-size: 13px;
+  min-width: 0;
 }
 
 .enterprise-search__meta {
@@ -235,6 +257,7 @@
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
 }
 
 .state {
@@ -255,6 +278,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed;
 }
 
 .table thead th {
@@ -264,12 +288,14 @@
   font-weight: 800;
   padding: 12px 14px;
   border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
 }
 
 .table tbody td {
   padding: 12px 14px;
   border-bottom: 1px solid #f3f4f6;
   color: #111827;
+  vertical-align: middle;
 }
 
 .table tbody tr {
@@ -288,6 +314,8 @@
 .table .title {
   font-weight: 800;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pager {
@@ -301,13 +329,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 800;
   border: 1px solid #d1d5db;
   background: #fff;
   color: #111827;
+  height: 40px;
 }
 
 .btn:hover {
@@ -346,10 +375,29 @@
 
   .enterprise-sidebar {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(360px, 92vw);
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0 12px 12px 0;
+    padding: 14px 14px 18px;
+    overflow: auto;
   }
 
   .enterprise-sidebar.enterprise-sidebar--open {
     display: block;
+  }
+
+  .enterprise-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .enterprise-header__actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .enterprise-search {
