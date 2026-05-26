@@ -270,52 +270,11 @@
   color: #b91c1c;
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  table-layout: fixed;
-}
-
-.table thead th {
-  background: #f9fafb;
-  color: #4b5563;
-  text-align: left;
-  font-weight: 800;
-  padding: 12px 14px;
-  border-bottom: 1px solid #eef2f7;
-  white-space: nowrap;
-}
-
-.table tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f3f4f6;
-  color: #111827;
-  vertical-align: middle;
-}
-
-.table tbody tr {
-  cursor: pointer;
-}
-
-.table tbody tr:hover {
-  background: #fafafa;
-}
-
-.table .num {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.table .title {
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.cards {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .pager {
@@ -407,5 +366,11 @@
 
   .enterprise-search__meta {
     justify-content: space-between;
+  }
+}
+
+@media (min-width: 900px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
   }
 }

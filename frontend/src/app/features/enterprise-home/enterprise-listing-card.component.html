@@ -1,0 +1,35 @@
+<div class="e-card" (click)="cardClick.emit()">
+  <div class="e-card__imgWrap">
+    <img class="e-card__img" [src]="listing.imageUrl" [alt]="listing.title" (error)="onImgError($event)" />
+  </div>
+
+  <div class="e-card__body">
+    <div class="e-card__top">
+      <div class="e-card__title" title="{{ listing.title }}">{{ listing.title }}</div>
+      <div class="e-card__status" [class.e-card__status--ok]="isAvailable">
+        {{ listing.status }}
+      </div>
+    </div>
+
+    <div class="e-card__meta">
+      <span class="e-muted">{{ listing.category || '-' }}</span>
+      <span class="e-dot">•</span>
+      <span class="e-muted">{{ listing.type }}</span>
+      <span *ngIf="listing.distanceMiles" class="e-dot">•</span>
+      <span *ngIf="listing.distanceMiles" class="e-muted">{{ listing.distanceMiles | number:'1.0-1' }} {{ i18n.t('listing.distance_unit') }}</span>
+    </div>
+
+    <div class="e-card__row">
+      <div class="e-pill">
+        <span class="e-pill__k">Rate</span>
+        <span class="e-pill__v">{{ listing.hourlyRate ? (listing.hourlyRate | currency:(i18n.currency() || 'EUR'):'symbol') : '-' }}</span>
+      </div>
+
+      <div class="e-pill" *ngIf="listing.partnerName">
+        <span class="e-pill__k">Partner</span>
+        <span class="e-pill__v">{{ listing.partnerName }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+

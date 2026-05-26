@@ -148,31 +148,12 @@
         <div *ngIf="!loading() && error()" class="state state--error">{{ error() }}</div>
         <div *ngIf="!loading() && !error() && filteredRows().length === 0" class="state">No matching listings.</div>
 
-        <div *ngIf="!loading() && pagedRows().length > 0" class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Type</th>
-                <th class="num">Rate</th>
-                <th class="num">Distance</th>
-                <th>Partner</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let r of pagedRows()" (click)="openListing(r.id)">
-                <td class="title">{{ r.title }}</td>
-                <td>{{ r.category }}</td>
-                <td>{{ r.type }}</td>
-                <td class="num">{{ r.hourlyRate ? (r.hourlyRate | currency:(i18n.currency() || 'EUR'):'symbol') : '-' }}</td>
-                <td class="num">{{ r.distanceMiles ? (r.distanceMiles | number:'1.0-1') : '-' }}</td>
-                <td>{{ r.partnerName || '-' }}</td>
-                <td>{{ r.status }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div *ngIf="!loading() && pagedRows().length > 0" class="cards">
+          <app-enterprise-listing-card
+            *ngFor="let r of pagedRows()"
+            [listing]="r"
+            (cardClick)="openListing(r.id)"
+          ></app-enterprise-listing-card>
         </div>
 
         <div *ngIf="!loading() && totalPages() > 1" class="pager">

@@ -9,11 +9,12 @@ import { I18nService } from '../../core/services/i18n.service';
 import { AvailabilityStatus, Listing, ListingType } from '../../core/models/types';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { EnterpriseListingCardComponent } from './enterprise-listing-card.component';
 
 @Component({
   selector: 'app-enterprise-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, EnterpriseListingCardComponent],
   templateUrl: './enterprise-home.component.html',
   styleUrl: './enterprise-home.component.css'
 })
