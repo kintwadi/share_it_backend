@@ -53,11 +53,28 @@
   align-items: start;
 }
 
+.enterprise-grid--filters-hidden {
+  grid-template-columns: 1fr;
+}
+
+.enterprise-grid--filters-hidden .enterprise-sidebar {
+  display: none;
+}
+
+.enterprise-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.35);
+  z-index: 40;
+}
+
 .enterprise-sidebar {
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 12px;
   padding: 14px;
+  position: relative;
+  z-index: 50;
 }
 
 .enterprise-sidebar__head {

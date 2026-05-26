@@ -6,9 +6,9 @@
       <div class="enterprise-subtitle">Structured browsing for professional inventory.</div>
     </div>
     <div class="enterprise-header__actions">
-      <button type="button" class="btn btn--secondary md:hidden" (click)="toggleFilters()">
-        <lucide-icon [img]="Filter" [size]="16"></lucide-icon>
-        Filters
+      <button type="button" class="btn btn--secondary" (click)="toggleFilters()">
+        <lucide-icon [img]="filterOpen() ? X : Filter" [size]="16"></lucide-icon>
+        {{ filterOpen() ? 'Hide filters' : 'Show filters' }}
       </button>
       <button type="button" class="btn btn--secondary" (click)="clear()">
         <lucide-icon [img]="X" [size]="16"></lucide-icon>
@@ -17,7 +17,9 @@
     </div>
   </div>
 
-  <div class="enterprise-grid">
+  <div class="enterprise-grid" [class.enterprise-grid--filters-hidden]="!filterOpen()">
+    <div *ngIf="filterOpen()" class="enterprise-overlay md:hidden" (click)="closeFilters()"></div>
+
     <aside class="enterprise-sidebar" [class.enterprise-sidebar--open]="filterOpen()">
       <div class="enterprise-sidebar__head">
         <div class="enterprise-sidebar__title">

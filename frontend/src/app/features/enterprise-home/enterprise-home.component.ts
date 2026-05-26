@@ -162,6 +162,10 @@ export class EnterpriseHomeComponent implements OnInit {
   });
 
   async ngOnInit() {
+    try {
+      const m = (globalThis as any)?.matchMedia?.('(max-width: 768px)');
+      this.filterOpen.set(!(m && m.matches));
+    } catch { }
     this.searchSubject.pipe(debounceTime(300)).subscribe(() => {
       this.reloadFromApi();
     });
@@ -254,6 +258,10 @@ export class EnterpriseHomeComponent implements OnInit {
 
   toggleFilters() {
     this.filterOpen.update(v => !v);
+  }
+
+  closeFilters() {
+    this.filterOpen.set(false);
   }
 
   setPage(p: number) {
