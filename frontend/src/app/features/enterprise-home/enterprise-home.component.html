@@ -1,0 +1,114 @@
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+  <div class="border border-gray-200 bg-white rounded-xl p-6">
+    <div class="flex items-start justify-between gap-6">
+      <div>
+        <div class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Enterprise</div>
+        <div class="text-2xl font-bold text-gray-900 mt-1">Discovery</div>
+        <div class="text-sm text-gray-600 mt-1">Browse enterprise-grade inventory using the same platform listings API.</div>
+      </div>
+      <div class="flex items-center gap-2 text-gray-600">
+        <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
+        <div class="text-sm font-semibold">Enterprise Catalog</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border border-gray-200 bg-white rounded-xl p-6 space-y-4">
+    <div class="text-sm font-bold text-gray-900">Search</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Sector</label>
+        <div class="relative">
+          <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" [ngModel]="selectedSector()" (ngModelChange)="onSectorChange($event)">
+            <option *ngFor="let s of sectors()" [ngValue]="s.label">{{ s.label }}</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" [size]="16" class="absolute right-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Item Type</label>
+        <div class="relative">
+          <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" [ngModel]="selectedItemType()" (ngModelChange)="onItemTypeChange($event)">
+            <option [ngValue]="''">All</option>
+            <option *ngFor="let it of sectorItems()" [ngValue]="it">{{ it }}</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" [size]="16" class="absolute right-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1">Keywords</label>
+        <div class="relative">
+          <input class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm" [ngModel]="query()" (ngModelChange)="query.set($event); onQueryChange()" placeholder="Search listings…" />
+          <lucide-icon [img]="Search" [size]="16" class="absolute left-3 top-2.5 text-gray-400 pointer-events-none"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+      <div class="flex items-center gap-6">
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" class="h-4 w-4" [ngModel]="onlyAvailable()" (ngModelChange)="onlyAvailable.set(!!$event); loadListings()" />
+          Available only
+        </label>
+
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-700">Type</span>
+          <select class="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white" [ngModel]="listingType()" (ngModelChange)="listingType.set($event); loadListings()">
+            <option [ngValue]="'ALL'">All</option>
+            <option [ngValue]="'GOODS'">Goods</option>
+            <option [ngValue]="'SKILL'">Skill</option>
+            <option [ngValue]="'GIVE'">Give</option>
+            <option [ngValue]="'SELL'">Sell</option>
+            <option [ngValue]="'LEND'">Lend</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" class="px-3 py-2 text-sm font-semibold rounded-lg border border-gray-300 bg-white hover:bg-gray-50" (click)="clear()">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <div class="border border-gray-200 bg-white rounded-xl overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div class="text-sm font-bold text-gray-900">Results</div>
+      <div class="text-xs text-gray-500">{{ rows().length }} items</div>
+    </div>
+
+    <div *ngIf="loading()" class="px-6 py-8 text-sm text-gray-600">Loading…</div>
+    <div *ngIf="!loading() && error()" class="px-6 py-6 text-sm text-red-600">{{ error() }}</div>
+    <div *ngIf="!loading() && !error() && rows().length === 0" class="px-6 py-8 text-sm text-gray-600">
+      No matching listings.
+    </div>
+
+    <div *ngIf="!loading() && rows().length > 0" class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600">
+          <tr>
+            <th class="text-left px-6 py-3 font-semibold">Title</th>
+            <th class="text-left px-6 py-3 font-semibold">Category</th>
+            <th class="text-left px-6 py-3 font-semibold">Type</th>
+            <th class="text-left px-6 py-3 font-semibold">Rate</th>
+            <th class="text-left px-6 py-3 font-semibold">Partner</th>
+            <th class="text-left px-6 py-3 font-semibold">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of rows()" class="border-t border-gray-100 hover:bg-gray-50 cursor-pointer" (click)="openListing(r.id)">
+            <td class="px-6 py-3 font-semibold text-gray-900 whitespace-nowrap">{{ r.title }}</td>
+            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.category }}</td>
+            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.type }}</td>
+            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.hourlyRate ? (r.hourlyRate | currency:(i18n.currency() || 'EUR'):'symbol') : '-' }}</td>
+            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.partnerName || '-' }}</td>
+            <td class="px-6 py-3 text-gray-700 whitespace-nowrap">{{ r.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
