@@ -76,7 +76,7 @@ public class Listing {
     private LocalDateTime availableFrom;
     private LocalDateTime availableTo;
 
-    @Column(name = "enterprise_only")
+    @Column(name = "enterprise_only", nullable = false)
     private boolean enterpriseOnly;
 
     private LocalDateTime partnerSubmittedAt;

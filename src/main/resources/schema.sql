@@ -14,6 +14,9 @@ ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_by uuid;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_rejection_reason varchar(500);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS item_reference varchar(8);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS enterprise_only boolean DEFAULT false;
+UPDATE listings SET enterprise_only = false WHERE enterprise_only IS NULL;
+ALTER TABLE listings ALTER COLUMN enterprise_only SET DEFAULT false;
+ALTER TABLE listings ALTER COLUMN enterprise_only SET NOT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_scope varchar(20);
 
 CREATE TABLE IF NOT EXISTS enterprise_categories (
