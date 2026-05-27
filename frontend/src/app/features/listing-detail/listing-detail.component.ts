@@ -66,6 +66,16 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   activeImage = '';
   error: string | null = null;
 
+  get backToListingsUrl(): string {
+    const from = String(this.route.snapshot.queryParamMap.get('from') || '').toLowerCase();
+    if (from === 'enterprise') return '/enterprise';
+    return '/';
+  }
+
+  goBackToListings() {
+    this.router.navigate([this.backToListingsUrl]);
+  }
+
   showReportModal = false;
   showReportSuccess = false;
 
@@ -979,7 +989,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     try {
       await this.api.deleteListing(listing.id);
       this.closeDeleteModal();
-      this.router.navigate(['/']);
+      this.goBackToListings();
     } catch (e: any) {
       this.closeDeleteModal();
       this.notifyError(e?.message || 'Failed to delete listing');

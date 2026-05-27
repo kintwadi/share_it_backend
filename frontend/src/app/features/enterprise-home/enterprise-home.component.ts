@@ -239,7 +239,7 @@ export class EnterpriseHomeComponent implements OnInit {
   }
 
   openListing(id: string) {
-    this.router.navigate(['/listing', id]);
+    this.router.navigate(['/listing', id], { queryParams: { from: 'enterprise' } });
   }
 
   clear() {

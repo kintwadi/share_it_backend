@@ -33,7 +33,7 @@
   </div>
 
   <button 
-    (click)="router.navigate(['/'])"
+    (click)="goBackToListings()"
     class="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors bg-white w-fit px-4 py-2 rounded-full border border-gray-200 shadow-sm"
   >
     <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon> {{ i18n.t('listing.back_to_listings') }}
@@ -417,7 +417,7 @@
 <ng-template #notFoundTemplate>
   <div class="max-w-3xl mx-auto py-10">
     <button 
-      (click)="router.navigate(['/'])"
+      (click)="goBackToListings()"
       class="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors bg-white w-fit px-4 py-2 rounded-full border border-gray-200 shadow-sm"
     >
       <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon> {{ i18n.t('listing.back_to_listings') }}
