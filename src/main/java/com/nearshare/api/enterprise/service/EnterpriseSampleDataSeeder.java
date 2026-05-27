@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 public class EnterpriseSampleDataSeeder {
     private final EnterpriseSampleDataService service;
 
-    @Value("${settings.enterprise.sample-data.auto-load:true}")
+    @Value("${settings.enterprise.seeded-data.auto-load:${settings.enterprise.sample-data.auto-load:true}}")
     private boolean autoLoad;
 
-    @Value("${settings.enterprise.sample-data.limit:80}")
+    @Value("${settings.enterprise.seeded-data.limit:${settings.enterprise.sample-data.limit:80}}")
     private int limit;
 
     @PostConstruct
@@ -22,4 +22,3 @@ public class EnterpriseSampleDataSeeder {
         service.load(false, limit);
     }
 }
-

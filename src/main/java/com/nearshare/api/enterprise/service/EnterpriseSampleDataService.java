@@ -31,7 +31,7 @@ public class EnterpriseSampleDataService {
     private final PartnerRepository partners;
     private final ListingRepository listings;
 
-    @Value("${settings.enterprise.sample-data.enabled:false}")
+    @Value("${settings.enterprise.seeded-data.enabled:${settings.enterprise.sample-data.enabled:false}}")
     private boolean enabled;
 
     @Transactional
@@ -177,4 +177,3 @@ public class EnterpriseSampleDataService {
         }
     }
 }
-
