@@ -6,7 +6,6 @@ import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, S
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { Listing, User } from '../../core/models/types';
-import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 
 type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'PARTNER_LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS';
 type PartnerSubTab = 'SUBMISSIONS' | 'BORROW_REQUESTS' | 'ITEMS';
@@ -14,7 +13,7 @@ type PartnerSubTab = 'SUBMISSIONS' | 'BORROW_REQUESTS' | 'ITEMS';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -84,14 +83,6 @@ export class AdminComponent implements OnInit {
 
   reports: any[] = [];
   reportsLoading = false;
-
-  confirmOpen = false;
-  confirmTitle = '';
-  confirmMessage = '';
-  confirmVariant: 'danger' | 'warning' | 'info' = 'info';
-  confirmLabel = this.i18n.t('common.confirm');
-  confirmLoading = false;
-  confirmAction: (() => Promise<void>) | null = null;
 
   pageSize = 20;
 
@@ -343,37 +334,18 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  openConfirm(opts: { title: string; message: string; variant?: 'danger' | 'warning' | 'info'; confirmLabel?: string; action: () => Promise<void> }) {
-    this.confirmTitle = opts.title;
-    this.confirmMessage = opts.message;
-    this.confirmVariant = opts.variant ?? 'info';
-    this.confirmLabel = opts.confirmLabel ?? this.i18n.t('admin.confirm');
-    this.confirmAction = opts.action;
-    this.confirmOpen = true;
-    this.confirmLoading = false;
-    this.render();
-  }
-
-  closeConfirm() {
-    this.confirmOpen = false;
-    this.confirmAction = null;
-    this.confirmLoading = false;
-    this.render();
-  }
-
-  async confirmDo() {
-    if (!this.confirmAction) return;
-    this.confirmLoading = true;
-    this.render();
-    try {
-      await this.confirmAction();
-    } catch (e: any) {
-      this.error = e instanceof Error ? e.message : (e?.message || 'Action failed.');
-    } finally {
-      this.confirmLoading = false;
-      this.closeConfirm();
-      this.render();
-    }
+  openConfirm(opts: { title: string; message: string; variant?: 'danger' | 'warning' | 'info'; confirmLabel?: string; action: string; payload: any }) {
+    this.router.navigate(['/admin/confirm'], {
+      queryParams: { from: this.router.url },
+      state: {
+        title: opts.title,
+        message: opts.message,
+        variant: opts.variant ?? 'info',
+        confirmLabel: opts.confirmLabel ?? this.i18n.t('admin.confirm'),
+        action: opts.action,
+        payload: opts.payload ?? null,
+      } as any
+    });
   }
 
   confirmUserStatus(u: any, status: string) {
@@ -381,10 +353,8 @@ export class AdminComponent implements OnInit {
       title: status === 'BLOCKED' ? 'Block user?' : 'Unblock user?',
       message: String(u?.email || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminSetUserStatus(String(u.id), status);
-        await this.loadUsers(this.usersPage);
-      }
+      action: 'user-status',
+      payload: { userId: String(u?.id || ''), status }
     });
   }
 
@@ -394,9 +364,8 @@ export class AdminComponent implements OnInit {
       message: `${this.i18n.t('admin.confirm.approve_verification_msg')} ${u.email || u.displayName || u.name}?`,
       variant: 'warning',
       confirmLabel: this.i18n.t('admin.action.approve'),
-      action: async () => {
-        await this.api.approveVerification(String(u.id));
-      }
+      action: 'approve-verification',
+      payload: { userId: String(u?.id || '') }
     });
   }
 
@@ -406,9 +375,8 @@ export class AdminComponent implements OnInit {
       message: `${this.i18n.t('admin.confirm.revoke_verification_msg')} ${u.email || u.displayName || u.name}?`,
       variant: 'warning',
       confirmLabel: this.i18n.t('admin.action.revoke'),
-      action: async () => {
-        await this.api.revokeVerification(String(u.id));
-      }
+      action: 'revoke-verification',
+      payload: { userId: String(u?.id || '') }
     });
   }
 
@@ -417,10 +385,8 @@ export class AdminComponent implements OnInit {
       title: 'Delete user?',
       message: `This will attempt to delete ${u?.email || ''}. If they have related data, you must block instead.`,
       variant: 'danger',
-      action: async () => {
-        await this.api.adminDeleteUser(String(u.id));
-        await this.loadUsers(this.usersPage);
-      }
+      action: 'delete-user',
+      payload: { userId: String(u?.id || '') }
     });
   }
 
@@ -429,10 +395,8 @@ export class AdminComponent implements OnInit {
       title: blocked ? 'Block listing?' : 'Unblock listing?',
       message: String(l?.title || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminBlockListing(String(l.id), blocked);
-        await this.loadListings(this.listingsPage);
-      }
+      action: 'block-listing',
+      payload: { listingId: String(l?.id || ''), blocked: !!blocked }
     });
   }
 
@@ -441,10 +405,8 @@ export class AdminComponent implements OnInit {
       title: 'Delete listing?',
       message: String(l?.title || ''),
       variant: 'danger',
-      action: async () => {
-        await this.api.adminDeleteListing(String(l.id));
-        await this.loadListings(this.listingsPage);
-      }
+      action: 'delete-listing',
+      payload: { listingId: String(l?.id || '') }
     });
   }
 
@@ -454,12 +416,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'warning',
       confirmLabel: 'Approve',
-      action: async () => {
-        await this.api.adminApprovePartnerListing(String(l.id));
-        if (!this.isPartnerScopedAdmin) {
-          await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
-        }
-      }
+      action: 'approve-partner-listing',
+      payload: { listingId: String(l?.id || '') }
     });
   }
 
@@ -469,12 +427,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'danger',
       confirmLabel: 'Reject',
-      action: async () => {
-        await this.api.adminRejectPartnerListing(String(l.id));
-        if (!this.isPartnerScopedAdmin) {
-          await Promise.all([this.loadListings(this.listingsPage), this.loadSummary()]);
-        }
-      }
+      action: 'reject-partner-listing',
+      payload: { listingId: String(l?.id || '') }
     });
   }
 
@@ -484,11 +438,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'warning',
       confirmLabel: 'Approve',
-      action: async () => {
-        await this.api.adminApprovePartnerSubmission(String(l.id));
-        if (!this.isPartnerScopedAdmin) await this.loadSummary();
-        await this.loadPartnerSubmissions(this.partnerSubmissionsPage);
-      }
+      action: 'approve-partner-submission',
+      payload: { submissionId: String(l?.id || '') }
     });
   }
 
@@ -498,11 +449,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'danger',
       confirmLabel: 'Reject',
-      action: async () => {
-        await this.api.adminRejectPartnerSubmission(String(l.id));
-        if (!this.isPartnerScopedAdmin) await this.loadSummary();
-        await this.loadPartnerSubmissions(this.partnerSubmissionsPage);
-      }
+      action: 'reject-partner-submission',
+      payload: { submissionId: String(l?.id || '') }
     });
   }
 
@@ -512,11 +460,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'warning',
       confirmLabel: 'Approve',
-      action: async () => {
-        await this.api.adminApprovePartnerBorrowRequest(String(l.id));
-        if (!this.isPartnerScopedAdmin) await this.loadSummary();
-        await this.loadPartnerBorrowRequests(this.partnerBorrowRequestsPage);
-      }
+      action: 'approve-partner-borrow',
+      payload: { requestId: String(l?.id || '') }
     });
   }
 
@@ -526,11 +471,8 @@ export class AdminComponent implements OnInit {
       message: String(l?.title || ''),
       variant: 'danger',
       confirmLabel: 'Reject',
-      action: async () => {
-        await this.api.adminRejectPartnerBorrowRequest(String(l.id));
-        if (!this.isPartnerScopedAdmin) await this.loadSummary();
-        await this.loadPartnerBorrowRequests(this.partnerBorrowRequestsPage);
-      }
+      action: 'reject-partner-borrow',
+      payload: { requestId: String(l?.id || '') }
     });
   }
 
@@ -539,10 +481,8 @@ export class AdminComponent implements OnInit {
       title: 'Delete transaction?',
       message: String(t?.id || ''),
       variant: 'danger',
-      action: async () => {
-        await this.api.adminDeleteTransaction(String(t.id));
-        await this.loadTransactions(this.transactionsPage);
-      }
+      action: 'delete-transaction',
+      payload: { txId: String(t?.id || '') }
     });
   }
 
@@ -551,10 +491,8 @@ export class AdminComponent implements OnInit {
       title: 'Retry release?',
       message: String(t?.id || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminRetryTransactionRelease(String(t.id));
-        await Promise.all([this.loadTransactions(this.transactionsPage), this.loadSummary()]);
-      }
+      action: 'retry-release',
+      payload: { txId: String(t?.id || '') }
     });
   }
 
@@ -564,10 +502,8 @@ export class AdminComponent implements OnInit {
       title: 'Accept return?',
       message: String(d?.listingTitle || d?.listingId || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminAcceptReturnDispute(listingId, 'admin_accept_return');
-        await Promise.all([this.loadDisputes(this.disputesPage), this.loadTransactions(0), this.loadListings(0), this.loadSummary()]);
-      }
+      action: 'accept-return',
+      payload: { listingId, reason: 'admin_accept_return' }
     });
   }
 
@@ -577,10 +513,8 @@ export class AdminComponent implements OnInit {
       title: 'Reopen return window?',
       message: String(d?.listingTitle || d?.listingId || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminReopenReturn(listingId, 10);
-        await Promise.all([this.loadDisputes(this.disputesPage), this.loadSummary()]);
-      }
+      action: 'reopen-return',
+      payload: { listingId, days: 10 }
     });
   }
 
@@ -590,10 +524,8 @@ export class AdminComponent implements OnInit {
       title: 'Cancel & refund?',
       message: String(d?.listingTitle || d?.listingId || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminCancelAndRefundDispute(listingId, 'admin_cancel_refund');
-        await Promise.all([this.loadDisputes(this.disputesPage), this.loadTransactions(0), this.loadListings(0), this.loadSummary()]);
-      }
+      action: 'cancel-refund',
+      payload: { listingId, reason: 'admin_cancel_refund' }
     });
   }
 
@@ -602,10 +534,8 @@ export class AdminComponent implements OnInit {
       title: 'Dismiss report?',
       message: String(r?.reason || ''),
       variant: 'warning',
-      action: async () => {
-        await this.api.adminDeleteReport(String(r.id));
-        await Promise.all([this.loadReports(), this.loadSummary()]);
-      }
+      action: 'dismiss-report',
+      payload: { reportId: String(r?.id || '') }
     });
   }
 }

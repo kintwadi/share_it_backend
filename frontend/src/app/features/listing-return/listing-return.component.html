@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="title">{{ i18n.t('return.title') }}</div>
+        <div class="subtitle" *ngIf="item">{{ item.title }}</div>
+      </div>
+
+      <div class="panel__body">
+        <div *ngIf="loading && !session" class="state">
+          <lucide-icon [img]="RefreshCw" class="spin" [size]="18"></lucide-icon>
+          {{ i18n.t('return.initializing') }}
+        </div>
+
+        <div *ngIf="!loading && error" class="error">
+          <lucide-icon [img]="AlertTriangle" [size]="18"></lucide-icon>
+          <div>
+            <div class="error__t">{{ i18n.t('return.error') }}</div>
+            <div>{{ error }}</div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="session && !error">
+          <div *ngIf="notice" class="notice">
+            <lucide-icon [img]="CheckCircle2" [size]="18"></lucide-icon>
+            <div>
+              <div class="notice__t">{{ i18n.t('return.update') }}</div>
+              <div>{{ notice }}</div>
+            </div>
+          </div>
+
+          <div class="statusRow">
+            <div class="badge" [class.badge--on]="myScanStatus">{{ myScanStatus ? i18n.t('return.you_scanned') : i18n.t('return.waiting_for_you') }}</div>
+            <div class="badge" [class.badge--on]="theirScanStatus">{{ theirScanStatus ? i18n.t('return.they_scanned') : i18n.t('return.waiting_for_them') }}</div>
+          </div>
+
+          <div class="tabs">
+            <button *ngIf="qrEnabled" type="button" class="tab" [class.tab--on]="activeTab === 'qr'" (click)="setTab('qr')">{{ i18n.t('return.my_code') }}</button>
+            <button *ngIf="qrEnabled" type="button" class="tab" [class.tab--on]="activeTab === 'scan'" (click)="setTab('scan')">{{ i18n.t('return.enter_code') }}</button>
+            <button *ngIf="manualEnabled" type="button" class="tab" [class.tab--on]="activeTab === 'manual'" (click)="setTab('manual')">{{ i18n.t('return.manual') }}</button>
+            <button *ngIf="disputeEnabled" type="button" class="tab tab--danger" [class.tab--on]="activeTab === 'dispute'" (click)="setTab('dispute')">{{ i18n.t('return.dispute') }}</button>
+          </div>
+
+          <div class="tabBody">
+            <div *ngIf="activeTab === 'qr' && qrEnabled" class="qr">
+              <div class="qr__hint">{{ i18n.t('return.scan_hint') }}</div>
+              <div class="qr__box">
+                <lucide-icon [img]="QrCode" [size]="120" class="qr__icon"></lucide-icon>
+                <div class="qr__code">{{ myQrCode }}</div>
+              </div>
+            </div>
+
+            <div *ngIf="activeTab === 'scan' && qrEnabled" class="scan">
+              <label class="label">{{ i18n.t('return.enter_code') }}</label>
+              <input [(ngModel)]="scannedCode" maxlength="6" class="input code" placeholder="000000" />
+              <button type="button" class="btn btn--primary" [disabled]="loading || scannedCode.length !== 6" (click)="handleScan()">
+                {{ i18n.t('return.verify') }}
+              </button>
+            </div>
+
+            <div *ngIf="activeTab === 'manual' && manualEnabled" class="manual">
+              <label class="label">{{ i18n.t('return.item_number') }}</label>
+              <input [(ngModel)]="itemNumber" class="input" placeholder="Item reference" />
+              <label class="label">{{ i18n.t('return.concierge_optional') }}</label>
+              <input [(ngModel)]="conciergeId" class="input" placeholder="Concierge witness ID (optional)" />
+              <button type="button" class="btn btn--primary" [disabled]="loading || !itemNumber" (click)="handleManualFallback()">
+                {{ i18n.t('return.submit_manual') }}
+              </button>
+            </div>
+
+            <div *ngIf="activeTab === 'dispute' && disputeEnabled" class="manual">
+              <div class="hint">{{ i18n.t('return.dispute_hint') }}</div>
+              <textarea [(ngModel)]="disputeReason" class="textarea" rows="5" placeholder="Describe the issue…"></textarea>
+              <div class="hint">{{ i18n.t('return.dispute_contact') }}</div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,42 @@
+<div class="max-w-lg mx-auto px-4 py-8">
+  <button type="button" class="back" (click)="cancel()">
+    <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+    {{ i18n.t('connect.mfa.cancel') || 'Back' }}
+  </button>
+
+  <div class="card">
+    <div class="head">
+      <div class="icon">
+        <lucide-icon [img]="Shield" [size]="26"></lucide-icon>
+      </div>
+      <div class="title">{{ i18n.t('connect.mfa.title') || 'Two-Factor Authentication' }}</div>
+      <div class="subtitle">
+        {{ i18n.t('connect.mfa.desc') || 'Enter the 6-digit code from your authenticator app.' }}
+      </div>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <lucide-icon [img]="AlertCircle" [size]="18"></lucide-icon>
+      <div class="error__msg">{{ error }}</div>
+    </div>
+
+    <form (submit)="$event.preventDefault(); submit()" class="form">
+      <input
+        [ngModel]="code"
+        (ngModelChange)="onCodeChange($event)"
+        name="code"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="6"
+        class="code"
+        placeholder="000000"
+      />
+
+      <app-button type="submit" variant="primary" [fullWidth]="true" size="lg" [isLoading]="loading">
+        {{ i18n.t('connect.mfa.cta') || 'Verify' }}
+      </app-button>
+    </form>
+  </div>
+</div>
+

@@ -7,15 +7,11 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
-import { TransactionOverviewModalComponent } from '../../shared/components/transaction-overview-modal/transaction-overview-modal';
-import { ReturnModalComponent } from '../../shared/components/return-modal/return-modal';
-import { ReviewModalComponent } from '../../shared/components/review-modal/review-modal';
-import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, TransactionOverviewModalComponent, ReturnModalComponent, ReviewModalComponent, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -67,21 +63,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   recommendations: Listing[] = [];
   currentSub: { planType: string; status: string } | null = null;
   today = new Date();
-  overviewItem: Listing | { listing: Listing; borrowedDate?: string; returnedDate?: string } | null = null;
-  returningItem: Listing | null = null;
-  reviewingItem: Listing | null = null;
-  deleteTarget: Listing | null = null;
-  deleteConfirmOpen = false;
-  reportTarget: Listing | null = null;
-  showReportModal = false;
-  showReportSuccess = false;
-  reportReason = '';
-  reportDetails = '';
-  reporting = false;
-  reportError: string | null = null;
-  subscriptionGateOpen = false;
-  userPreviewOpen = false;
-  userPreview: User | null = null;
 
   isLoadingListings = false;
   isLoadingBorrows = false;
@@ -97,11 +78,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       this.cdr.detectChanges();
     } catch { }
-  }
-
-  get deleteConfirmMessage(): string {
-    const title = this.deleteTarget?.title || '';
-    return `${this.i18n.t('dashboard.delete_listing_msg')} "${title}"? ${this.i18n.t('dashboard.delete_listing_cannot_undo')}`;
   }
 
   get returnsEnabled(): boolean {
@@ -379,7 +355,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const status = String(this.currentSub?.status || '').toLowerCase();
       const subscribed = !!this.currentSub && status !== 'canceled' && status !== 'cancelled';
       if (!subscribed) {
-        this.subscriptionGateOpen = true;
+        this.router.navigate(['/subscription/required'], { queryParams: { from: '/dashboard' } });
         return;
       }
 
@@ -388,17 +364,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.actionLoading = null;
       this.render();
     }
-  }
-
-  closeSubscriptionGate() {
-    this.subscriptionGateOpen = false;
-    this.render();
-  }
-
-  confirmSubscriptionGate() {
-    this.subscriptionGateOpen = false;
-    this.router.navigate(['/subscription']);
-    this.render();
   }
 
   handleEdit(item: Listing) {
@@ -415,9 +380,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.render();
       return;
     }
-    this.deleteTarget = item;
-    this.deleteConfirmOpen = true;
-    this.render();
+    this.router.navigate(['/listing', item.id, 'delete'], { queryParams: { from: '/dashboard' } });
   }
 
   handleToggleStatus(item: Listing) {
@@ -452,85 +415,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  closeDeleteConfirm() {
-    this.deleteConfirmOpen = false;
-    this.deleteTarget = null;
-    this.render();
-  }
-
   openReportModal(listing: Listing) {
     if (!this.user) return;
     if (!listing) return;
     if (listing.ownerId === this.user.id) return;
     if (listing.borrowerId !== this.user.id) return;
-    this.reportTarget = listing;
-    this.reportReason = '';
-    this.reportDetails = '';
-    this.reportError = null;
-    this.showReportModal = true;
-    this.render();
-  }
-
-  closeReportModal() {
-    this.showReportModal = false;
-    this.reportTarget = null;
-    this.reportReason = '';
-    this.reportDetails = '';
-    this.reporting = false;
-    this.reportError = null;
-    this.render();
-  }
-
-  closeReportSuccess() {
-    this.showReportSuccess = false;
-    this.render();
-  }
-
-  async submitReport() {
-    const listing = this.reportTarget;
-    if (!listing) return;
-    if (!this.user) return;
-    if (!this.reportReason) return;
-    if (listing.ownerId === this.user.id) return;
-    if (listing.borrowerId !== this.user.id) return;
-
-    this.reporting = true;
-    this.reportError = null;
-    this.render();
-    try {
-      await this.api.reportListing(listing.id, this.reportReason, this.reportDetails);
-      this.showReportModal = false;
-      this.showReportSuccess = true;
-      this.reportTarget = null;
-      this.reportReason = '';
-      this.reportDetails = '';
-    } catch (e: any) {
-      const msg = e?.message || this.i18n.t('listing.error.report_failed');
-      this.showReportModal = false;
-      this.reportError = msg.includes('already_reported_for_reason')
-        ? this.i18n.t('listing.report.already_reported')
-        : msg;
-    } finally {
-      this.reporting = false;
-      this.render();
-    }
-  }
-
-  confirmDeleteListing() {
-    const item = this.deleteTarget;
-    if (!item) return;
-    this.actionLoading = item.id;
-    this.deleteConfirmOpen = false;
-    this.render();
-    this.api.deleteListing(item.id)
-      .then(() => {
-        this.fetchListings();
-      })
-      .finally(() => {
-        this.actionLoading = null;
-        this.deleteTarget = null;
-        this.render();
-      });
+    this.router.navigate(['/listing', listing.id, 'report'], { queryParams: { from: '/dashboard' } });
   }
 
   handleApprove(id: string) {
@@ -558,27 +448,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   handleMessageUser(u?: User) {
     if (!u) return;
     const email = String(u.email || '').trim();
-    if (email) {
-      this.router.navigate(['/mailbox'], { queryParams: { receiverEmail: email } });
-      return;
-    }
     const id = String(u.id || '').trim();
-    if (id) {
-      this.router.navigate(['/mailbox'], { queryParams: { receiverId: id } });
-    }
+    const qp: any = {};
+    if (email) qp.receiverEmail = email;
+    else if (id) qp.receiverId = id;
+    this.router.navigate(['/mailbox/compose'], { queryParams: qp, state: { returnTo: '/dashboard' } as any });
   }
 
   openUserPreview(u?: User) {
     if (!u) return;
-    this.userPreview = u;
-    this.userPreviewOpen = true;
-    this.render();
-  }
-
-  closeUserPreview() {
-    this.userPreviewOpen = false;
-    this.userPreview = null;
-    this.render();
+    this.router.navigate(['/user/preview'], { state: { user: u, returnTo: '/dashboard' } as any });
   }
 
   navigateToListing(id: string) {
@@ -587,41 +466,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   handleReturnClick(item: Listing) {
     if (!this.returnsEnabled) return;
-    this.returningItem = item;
-    this.render();
+    this.router.navigate(['/listing', item.id, 'return'], { queryParams: { from: '/dashboard' } });
   }
 
   setOverviewItem(item: any) {
     if (!item) return;
-    if ((item as any).listing) {
-      this.overviewItem = item;
-    } else {
-      this.overviewItem = item as Listing;
-    }
-    this.render();
-  }
-
-  closeOverview() {
-    this.overviewItem = null;
-    this.render();
-  }
-
-  closeReturn() {
-    this.returningItem = null;
-    this.render();
-  }
-
-  handleReturnComplete() {
-    const item = this.returningItem;
-    this.returningItem = null;
-    this.reviewingItem = item;
-    this.fetchListings();
-    this.fetchHistory();
-    this.render();
-  }
-
-  closeReview() {
-    this.reviewingItem = null;
-    this.render();
+    this.router.navigate(['/dashboard/transaction'], { state: { item, currentUser: this.user, returnTo: '/dashboard' } as any });
   }
 }

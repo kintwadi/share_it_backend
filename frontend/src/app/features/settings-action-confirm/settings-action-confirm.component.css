@@ -1,0 +1,147 @@
+:host {
+  display: block;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.card {
+  margin-top: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #111827;
+  flex: 0 0 auto;
+}
+
+.icon.security {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.icon.payment {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.icon.device {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.icon.warning {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 18px;
+  color: #111827;
+}
+
+.subtitle {
+  margin-top: 4px;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.error {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+.actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 800;
+  border: 1px solid transparent;
+}
+
+.btn.ghost {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+.btn.danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+

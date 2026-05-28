@@ -2,21 +2,22 @@ import { ChangeDetectorRef, Component, ElementRef, ViewChild, inject } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Loader2, CreditCard, Trash2, Plus, ArrowDownToLine, RefreshCcw, AlertTriangle } from 'lucide-angular';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { StripeClientService } from '../../../core/services/stripe-client.service';
-import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal';
 import { Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
 import { I18nService } from '../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-payment-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './payment-settings.html',
   styleUrl: './payment-settings.css'
 })
 export class PaymentSettingsComponent {
   private api = inject(ApiService);
+  private router = inject(Router);
   private stripeClient = inject(StripeClientService);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
@@ -51,16 +52,7 @@ export class PaymentSettingsComponent {
   addProcessing = false;
   addError: string | null = null;
 
-  confirmOpen = false;
-  confirmTitle = '';
-  confirmMessage = '';
-  confirmLabel = this.i18n.t('common.confirm');
-  confirmLoading = false;
-  confirmAction: (() => Promise<void>) | null = null;
-
-  infoOpen = false;
-  infoTitle = '';
-  infoMessage = '';
+  notice: { variant: 'error' | 'info'; title: string; message: string } | null = null;
 
   constructor() {
     this.init();
@@ -228,39 +220,11 @@ export class PaymentSettingsComponent {
   confirmRemove(pm: any) {
     const id = String(pm?.id || '');
     if (!id) return;
-    this.confirmTitle = this.i18n.t('payments.confirm.remove_title');
-    this.confirmMessage = `${this.i18n.t('payments.confirm.remove_msg')} ${pm.brand || this.i18n.t('payments.card')} •••• ${pm.last4 || ''}?`;
-    this.confirmLabel = this.i18n.t('payments.confirm.remove_cta');
-    this.confirmLoading = false;
-    this.confirmAction = async () => {
-      await this.api.removePaymentMethod(id);
-      await this.refreshPaymentMethods();
-    };
-    this.confirmOpen = true;
-    this.render();
-  }
-
-  closeConfirm() {
-    this.confirmOpen = false;
-    this.confirmLoading = false;
-    this.confirmAction = null;
-    this.render();
-  }
-
-  async doConfirm() {
-    if (!this.confirmAction) return;
-    this.confirmLoading = true;
-    this.render();
-    try {
-      await this.confirmAction();
-      this.closeConfirm();
-    } catch (e: any) {
-      this.confirmLoading = false;
-      this.infoTitle = this.i18n.t('payments.modal.action_failed_title');
-      this.infoMessage = e?.message || this.i18n.t('payments.modal.action_failed_msg');
-      this.infoOpen = true;
-      this.render();
-    }
+    const from = '/settings?tab=payments';
+    this.router.navigate(['/settings/payments/method', id, 'remove'], {
+      queryParams: { from },
+      state: { paymentMethod: { id, brand: pm?.brand, last4: pm?.last4 } } as any
+    });
   }
 
   async openInvoice(tx: any) {
@@ -270,18 +234,13 @@ export class PaymentSettingsComponent {
       const res = await this.api.getPaymentTransactionInvoiceUrl(id);
       if (res?.url) window.open(res.url, '_blank');
     } catch (e: any) {
-      this.infoTitle = this.i18n.t('payments.modal.invoice_failed_title');
-      this.infoMessage = e?.message || this.i18n.t('payments.error.invoice_unavailable');
-      this.infoOpen = true;
+      this.notice = {
+        variant: 'error',
+        title: this.i18n.t('payments.modal.invoice_failed_title') || this.i18n.t('common.error'),
+        message: e?.message || this.i18n.t('payments.error.invoice_unavailable')
+      };
       this.render();
     }
-  }
-
-  closeInfo() {
-    this.infoOpen = false;
-    this.infoTitle = '';
-    this.infoMessage = '';
-    this.render();
   }
 
   formatRequirements(v: any): string {

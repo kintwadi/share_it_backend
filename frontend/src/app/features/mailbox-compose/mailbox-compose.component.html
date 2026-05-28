@@ -1,0 +1,50 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-3xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back to mailbox
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="title">New message</div>
+      </div>
+
+      <div class="panel__body">
+        <div *ngIf="error" class="error">
+          <lucide-icon [img]="AlertTriangle" [size]="18"></lucide-icon>
+          <div>{{ error }}</div>
+        </div>
+
+        <div class="field">
+          <label class="label">To (Email)</label>
+          <input
+            [(ngModel)]="receiver"
+            class="input"
+            placeholder="Enter recipient email…"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="field">
+          <label class="label">Message</label>
+          <textarea
+            [(ngModel)]="content"
+            rows="10"
+            class="textarea"
+            placeholder="Write your message here…"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <button type="button" class="btn btn--secondary" (click)="back()">Cancel</button>
+        <button type="button" class="btn btn--primary" [disabled]="sending" (click)="send()">
+          <lucide-icon [img]="SendIcon" [size]="16"></lucide-icon>
+          Send message
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

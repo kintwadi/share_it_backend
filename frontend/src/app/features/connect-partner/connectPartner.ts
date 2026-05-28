@@ -46,10 +46,6 @@ export class ConnectPartnerComponent implements OnInit {
   partnerCity = '';
   contactPerson = '';
 
-  showMfaInput = false;
-  mfaCode = '';
-  tempToken: string | null = null;
-
   async ngOnInit() {
     try {
       if (this.authStorage.getAuthContext() === 'partner' && this.authStorage.getToken()) {
@@ -72,9 +68,6 @@ export class ConnectPartnerComponent implements OnInit {
   toggleMode(isLoginMode: boolean) {
     this.isLogin = isLoginMode;
     this.error = null;
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
     if (!isLoginMode) {
       this.userName = '';
       this.email = '';
@@ -83,39 +76,6 @@ export class ConnectPartnerComponent implements OnInit {
     if (isLoginMode) {
       this.partnerPassword = '';
     }
-    this.render();
-  }
-
-  onMfaCodeChange(val: string) {
-    this.mfaCode = val.replace(/[^0-9]/g, '');
-  }
-
-  async handleMfaSubmit() {
-    if (!this.tempToken) return;
-    this.isLoading = true;
-    this.error = null;
-    this.render();
-    try {
-      const data = await this.api.verify2FALoginPartner(this.mfaCode, this.tempToken);
-      if (data?.token) this.authStorage.setToken(data.token);
-      if (data?.user?.id) this.authStorage.setUserId(data.user.id);
-      this.authStorage.setAuthContext('partner');
-      await this.session.refresh();
-      this.isLoading = false;
-      this.render();
-      this.router.navigate(['/partner/fill-request']);
-    } catch (e: any) {
-      this.error = e?.message || 'Invalid code';
-      this.isLoading = false;
-      this.render();
-    }
-  }
-
-  cancelMfa() {
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
-    this.error = null;
     this.render();
   }
 
@@ -156,10 +116,9 @@ export class ConnectPartnerComponent implements OnInit {
       this.router.navigate(['/partner/fill-request']);
     } catch (err: any) {
       if (err?.code === 'MFA_REQUIRED') {
-        this.tempToken = err.token;
-        this.showMfaInput = true;
         this.isLoading = false;
         this.render();
+        this.router.navigate(['/connect/mfa'], { state: { context: 'partner', token: err.token, returnTo: '/partner/fill-request', cancelTo: '/connect/partner' } as any });
         return;
       }
       this.error = err?.message || 'Something went wrong';

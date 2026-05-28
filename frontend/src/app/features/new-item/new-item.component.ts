@@ -83,8 +83,6 @@ export class NewItemComponent implements OnInit {
   private recommendationSubject = new Subject<void>();
 
   requiredPlan: 'plus' | 'pro' = 'pro';
-  showPremiumModal = false;
-  showPayoutSetupModal = false;
   payoutSetupLoading = false;
   private connectStatus: any | null = null;
   isSaving = false;
@@ -289,8 +287,7 @@ export class NewItemComponent implements OnInit {
     if (type === ListingType.LEND) {
       if (this.plan === 'starter') {
         this.requiredPlan = 'plus';
-        this.showPremiumModal = true;
-        this.render();
+        this.goToUpgrade();
         return;
       }
       if (!this.editId && this.plan === 'plus') {
@@ -302,8 +299,7 @@ export class NewItemComponent implements OnInit {
       if (!this.subscriptionConfig.pro) return;
       if (!this.isPro) {
         this.requiredPlan = 'pro';
-        this.showPremiumModal = true;
-        this.render();
+        this.goToUpgrade();
         return;
       }
     }
@@ -318,8 +314,8 @@ export class NewItemComponent implements OnInit {
     this.render();
   }
 
-  private async ensurePayoutsReadyForPaidLending() {
-    if (this.payoutSetupLoading) return;
+  private async ensurePayoutsReadyForPaidLending(): Promise<boolean> {
+    if (this.payoutSetupLoading) return false;
     this.payoutSetupLoading = true;
     this.render();
     try {
@@ -328,23 +324,20 @@ export class NewItemComponent implements OnInit {
       }
       const ready = !!(this.connectStatus?.connected && this.connectStatus?.payoutsEnabled);
       if (!ready) {
-        this.showPayoutSetupModal = true;
-        return;
+        this.router.navigate(['/new-item/payout-setup']);
+        return false;
       }
       this.type = ListingType.LEND;
       if (this.isPremiumLender) this.autoApprove = true;
       this.triggerRecommendation();
+      return true;
     } catch {
-      this.showPayoutSetupModal = true;
+      this.router.navigate(['/new-item/payout-setup']);
+      return false;
     } finally {
       this.payoutSetupLoading = false;
       this.render();
     }
-  }
-
-  goToManagePayouts() {
-    this.showPayoutSetupModal = false;
-    this.router.navigate(['/settings'], { queryParams: { tab: 'payments' } });
   }
 
   triggerRecommendation() {
@@ -440,7 +433,6 @@ export class NewItemComponent implements OnInit {
   }
 
   goToUpgrade() {
-    this.showPremiumModal = false;
     this.router.navigate(['/subscription'], {
       queryParams: { fromUpgrade: true, requiredPlan: this.requiredPlan, from: '/new-item' },
       state: { fromUpgrade: true, requiredPlan: this.requiredPlan, from: '/new-item' } as any
@@ -489,13 +481,12 @@ export class NewItemComponent implements OnInit {
 
     if (this.type === ListingType.LEND && this.plan === 'starter') {
       this.requiredPlan = 'plus';
-      this.showPremiumModal = true;
-      this.render();
+      this.goToUpgrade();
       return;
     }
     if (this.type === ListingType.LEND && this.plan === 'plus' && Number(this.hourlyRate || 0) > 0) {
-      await this.ensurePayoutsReadyForPaidLending();
-      if (this.showPayoutSetupModal) return;
+      const ok = await this.ensurePayoutsReadyForPaidLending();
+      if (!ok) return;
     }
 
     this.saving = true;

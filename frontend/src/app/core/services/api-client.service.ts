@@ -1,78 +1,84 @@
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+
+function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = String(baseUrl || '').trim();
+  if (!trimmed) return '';
+  return trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
+}
+
+function joinUrl(baseUrl: string, path: string): string {
+  const base = normalizeBaseUrl(baseUrl);
+  const p = String(path || '').trim();
+  if (!p) return base;
+  if (p.startsWith('http://') || p.startsWith('https://')) return p;
+  if (p.startsWith('/')) return `${base}${p}`;
+  return `${base}/${p}`;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiClientService {
   private http = inject(HttpClient);
-  private apiUrl = this.resolveApiUrl();
 
-  private resolveApiUrl(): string {
-    try {
-      const w = globalThis as any;
-      const runtime = String(w?.__env?.API_URL || '').trim();
-      if (runtime) return runtime.replace(/\/+$/, '');
-    } catch { }
-    return String(environment.apiUrl || '').replace(/\/+$/, '');
-  }
+  private baseUrl = (() => {
+    const runtime = (globalThis as any)?.__env?.API_URL;
+    const url = typeof runtime === 'string' && runtime.trim() ? runtime.trim() : environment.apiUrl;
+    return normalizeBaseUrl(url);
+  })();
 
   getBaseUrl(): string {
-    return this.apiUrl;
+    return this.baseUrl;
   }
 
-  get<T>(path: string): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}${path}`).pipe(
-      catchError(this.handleError)
-    );
+  get<T>(path: string, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.get<T>(url, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 
-  post<T>(path: string, body: any): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}${path}`, body).pipe(
-      catchError(this.handleError)
-    );
+  post<T>(path: string, body: any, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.post<T>(url, body, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 
-  postFormData<T>(path: string, formData: FormData): Observable<T> {
-    return this.http.post<T>(`${this.apiUrl}${path}`, formData).pipe(
-      catchError(this.handleError)
-    );
+  put<T>(path: string, body: any, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.put<T>(url, body, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 
-  put<T>(path: string, body: any): Observable<T> {
-    return this.http.put<T>(`${this.apiUrl}${path}`, body).pipe(
-      catchError(this.handleError)
-    );
+  patch<T>(path: string, body: any, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.patch<T>(url, body, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 
-  patch<T>(path: string, body: any): Observable<T> {
-    return this.http.patch<T>(`${this.apiUrl}${path}`, body).pipe(
-      catchError(this.handleError)
-    );
+  delete<T>(path: string, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.delete<T>(url, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 
-  delete<T>(path: string): Observable<T> {
-    return this.http.delete<T>(`${this.apiUrl}${path}`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'request_failed';
-    if (error.status === 401) {
-      errorMessage = 'unauthorized';
-    } else if (error.error instanceof ErrorEvent) {
-      errorMessage = error.error.message;
-    } else if (error.error && error.error.error) {
-      errorMessage = error.error.error;
-    } else if (error.error && error.error.message) {
-      errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    return throwError(() => new Error(errorMessage));
+  postFormData<T>(path: string, form: FormData, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.post<T>(url, form, {
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
   }
 }

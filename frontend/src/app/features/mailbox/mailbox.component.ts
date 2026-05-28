@@ -2,24 +2,22 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Inbox, Send, Trash2, Edit } from 'lucide-angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { Message } from '../../core/models/types';
-import { SessionService } from '../../core/services/session.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 
 @Component({
   selector: 'app-mailbox',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './mailbox.component.html'
 })
 export class MailboxComponent implements OnInit {
   api = inject(ApiService);
-  session = inject(SessionService);
   i18n = inject(I18nService);
   route = inject(ActivatedRoute);
+  router = inject(Router);
 
   readonly InboxIcon = Inbox;
   readonly SendIcon = Send;
@@ -33,14 +31,7 @@ export class MailboxComponent implements OnInit {
   selectedMessageId = signal<string | null>(null);
   filterText = signal('');
   
-  showComposeModal = signal(false);
-  composeReceiverId = signal('');
-  composeContent = signal('');
-  composeError = signal<string | null>(null);
-
-  deleteConfirmOpen = signal(false);
-  deleteTargetId = signal<string | null>(null);
-  deletingMessage = signal(false);
+  composeNotice = signal<string | null>(null);
 
   messages = computed(() => {
     const list = this.currentTab() === 'inbox' ? this.inboxMessages() : this.outboxMessages();
@@ -78,13 +69,15 @@ export class MailboxComponent implements OnInit {
   ngOnInit() {
     this.loadMessages();
     const receiverEmail = String(this.route.snapshot.queryParamMap.get('receiverEmail') || '').trim();
-    if (receiverEmail) {
-      this.openCompose(receiverEmail);
+    const receiverId = String(this.route.snapshot.queryParamMap.get('receiverId') || '').trim();
+    if (receiverEmail || receiverId) {
+      this.composeTo(receiverEmail || receiverId);
       return;
     }
-    const receiverId = String(this.route.snapshot.queryParamMap.get('receiverId') || '').trim();
-    if (receiverId) {
-      this.openCompose(receiverId);
+    const st: any = history.state || {};
+    if (st.composeSuccess) {
+      this.composeNotice.set('Message sent');
+      setTimeout(() => this.composeNotice.set(null), 3000);
     }
   }
 
@@ -118,37 +111,15 @@ export class MailboxComponent implements OnInit {
     this.selectedMessageId.set(msg.id);
   }
 
-  openDeleteConfirm(id: string) {
-    this.deleteTargetId.set(id);
-    this.deleteConfirmOpen.set(true);
-  }
-
-  closeDeleteConfirm() {
-    this.deleteConfirmOpen.set(false);
-    this.deleteTargetId.set(null);
-    this.deletingMessage.set(false);
-  }
-
-  async confirmDeleteMessage() {
-    const id = this.deleteTargetId();
-    if (!id) return;
-    if (this.deletingMessage()) return;
-    this.deletingMessage.set(true);
-    try {
-      await this.api.deleteMessage(id);
-      this.closeDeleteConfirm();
-      await this.loadMessages();
-    } catch (e) {
-      console.error(e);
-      this.deletingMessage.set(false);
+  composeTo(receiver?: string) {
+    const qp: any = {};
+    const v = String(receiver || '').trim();
+    if (v) {
+      if (v.includes('@')) qp.receiverEmail = v;
+      else qp.receiverId = v;
     }
-  }
-
-  openCompose(receiverId?: string) {
-    this.composeReceiverId.set(receiverId || '');
-    this.composeContent.set('');
-    this.composeError.set(null);
-    this.showComposeModal.set(true);
+    this.selectedMessageId.set(null);
+    this.router.navigate(['/mailbox/compose'], { queryParams: qp, state: { returnTo: '/mailbox' } as any });
   }
 
   replyToSelected() {
@@ -157,37 +128,11 @@ export class MailboxComponent implements OnInit {
     if (this.currentTab() !== 'inbox') return;
     const receiver = String(msg.senderEmail || msg.senderId || '').trim();
     if (!receiver) return;
-    this.openCompose(receiver);
+    this.composeTo(receiver);
   }
 
-  closeCompose() {
-    this.showComposeModal.set(false);
-  }
-
-  async sendMessage() {
-    const receiver = this.composeReceiverId().trim();
-    const content = this.composeContent().trim();
-    if (!receiver || !content) {
-      this.composeError.set('Please fill out all fields');
-      return;
-    }
-
-    const isEmail = receiver.includes('@');
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(receiver);
-    if (!isEmail && !isUuid) {
-      this.composeError.set('Enter a valid recipient email');
-      return;
-    }
-    
-    try {
-      this.composeError.set(null);
-      await this.api.sendMessage(receiver, content);
-      this.closeCompose();
-      await this.loadMessages();
-    } catch (e) {
-      const msg = (e as any)?.message || 'Failed to send message';
-      this.composeError.set(msg);
-      console.error(e);
-    }
+  confirmDelete(id: string) {
+    if (!id) return;
+    this.router.navigate(['/mailbox/delete', id], { state: { returnTo: '/mailbox' } as any });
   }
 }

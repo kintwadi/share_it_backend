@@ -7,7 +7,6 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { AvailabilityStatus, User } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
-import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { PaymentSettingsComponent } from '../../shared/components/payment-settings/payment-settings';
 import { UserPreferencesService } from '../../core/services/user-preferences.service';
@@ -34,7 +33,7 @@ interface TabConfig {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, ConfirmationModalComponent, PaymentSettingsComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, PaymentSettingsComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
@@ -718,9 +717,7 @@ export class SettingsComponent implements OnInit {
       return;
     }
     if (!this.twoFactorEnabled) return;
-    this.disable2FAOpen = true;
-    this.isDisabling2FA = false;
-    this.render();
+    this.router.navigate(['/settings/security/2fa/disable'], { queryParams: { from: this.router.url } });
   }
 
   closeDisable2FA() {
@@ -827,10 +824,9 @@ export class SettingsComponent implements OnInit {
   }
 
   openRevokeDevice(device: any) {
-    this.revokeDeviceTarget = device;
-    this.revokeDeviceOpen = true;
-    this.revokeDeviceLoading = false;
-    this.render();
+    const id = String(device?.id || '').trim();
+    if (!id) return;
+    this.router.navigate(['/settings/security/device', id, 'revoke'], { queryParams: { from: this.router.url }, state: { device } as any });
   }
 
   closeRevokeDevice() {
@@ -891,10 +887,7 @@ export class SettingsComponent implements OnInit {
   }
 
   openCancelSubscription() {
-    this.cancelConfirmOpen = true;
-    this.cancelConfirmLoading = false;
-    this.cancelError = null;
-    this.render();
+    this.router.navigate(['/settings/subscription/cancel'], { queryParams: { from: this.router.url } });
   }
 
   closeCancelSubscription() {
@@ -938,10 +931,8 @@ export class SettingsComponent implements OnInit {
   }
 
   openDeleteAccount() {
-    this.deleteAccountOpen = true;
-    this.deleteAccountLoading = false;
     this.deleteAccountError = null;
-    this.render();
+    this.router.navigate(['/settings/account/delete'], { queryParams: { from: this.router.url } });
   }
 
   closeDeleteAccount() {

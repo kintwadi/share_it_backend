@@ -65,4 +65,3 @@ export class PartnerReturnRequestsComponent implements OnInit {
     }
   }
 }
-

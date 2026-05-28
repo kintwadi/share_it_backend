@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel" *ngIf="listing; else emptyTpl">
+      <div class="panel__head">
+        <div class="title">{{ i18n.t('modal.transaction_overview') }}</div>
+        <div class="subtitle">{{ listing.title }}</div>
+      </div>
+
+      <div class="panel__body">
+        <div class="row">
+          <div class="k">{{ i18n.t('modal.status') }}</div>
+          <div class="v">{{ statusLabel }}</div>
+        </div>
+
+        <div class="row">
+          <div class="k">{{ i18n.t('modal.date') }}</div>
+          <div class="v">{{ dateStr }} • {{ timeStr }}</div>
+        </div>
+
+        <div class="row">
+          <div class="k">{{ userLabel }}</div>
+          <div class="v">{{ otherUser?.name || otherUser?.email || '-' }}</div>
+        </div>
+
+        <div class="row">
+          <div class="k">{{ i18n.t('modal.pickup') }}</div>
+          <div class="v">{{ locationName }}</div>
+        </div>
+
+        <div class="row">
+          <div class="k">{{ i18n.t('modal.address') }}</div>
+          <div class="v">{{ locationAddress }}</div>
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <button type="button" class="btn btn--secondary" (click)="back()">Close</button>
+      </div>
+    </div>
+
+    <ng-template #emptyTpl>
+      <div class="panel">
+        <div class="panel__head">
+          <div class="title">{{ i18n.t('modal.transaction_overview') }}</div>
+          <div class="subtitle">Not available</div>
+        </div>
+        <div class="panel__foot">
+          <button type="button" class="btn btn--secondary" (click)="back()">Back</button>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+

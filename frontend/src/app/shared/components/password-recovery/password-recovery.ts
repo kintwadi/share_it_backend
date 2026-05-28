@@ -136,4 +136,3 @@ export class PasswordRecoveryComponent {
     this.render();
   }
 }
-

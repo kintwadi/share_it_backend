@@ -24,10 +24,7 @@ export class ConnectComponent implements OnInit {
   email = '';
   password = '';
   acceptedTerms = false;
-  mfaCode = '';
-  showMfaInput = false;
   showPasswordRecovery = false;
-  tempToken: string | null = null;
   connectConfig: any = {};
   error: string | null = null;
   demoNotice: { type: 'success' | 'error'; message: string } | null = null;
@@ -115,31 +112,6 @@ export class ConnectComponent implements OnInit {
     }
   }
 
-  onMfaCodeChange(val: string) {
-    this.mfaCode = val.replace(/[^0-9]/g, '');
-  }
-
-  async handleMfaSubmit() {
-    if (!this.tempToken) return;
-    this.isLoading = true;
-    this.error = null;
-    this.render();
-    try {
-      const data = await this.api.verify2FALogin(this.mfaCode, this.tempToken);
-      if (data?.token) this.authStorage.setToken(data.token);
-      if (data?.user?.id) this.authStorage.setUserId(data.user.id);
-      await this.session.refresh();
-      this.isLoading = false;
-      this.render();
-      this.router.navigate(['/dashboard']);
-    } catch (err: any) {
-      console.error('MFA error', err);
-      this.error = err?.message || this.i18n.t('connect.mfa.invalid') || 'Invalid code';
-      this.isLoading = false;
-      this.render();
-    }
-  }
-
   async handleSubmit() {
     this.isLoading = true;
     this.error = null;
@@ -167,10 +139,9 @@ export class ConnectComponent implements OnInit {
     } catch (err: any) {
       console.error('Auth error', err);
       if (err.code === 'MFA_REQUIRED') {
-        this.tempToken = err.token;
-        this.showMfaInput = true;
         this.isLoading = false;
         this.render();
+        this.router.navigate(['/connect/mfa'], { state: { context: 'user', token: err.token, returnTo: '/dashboard', cancelTo: '/connect' } as any });
         return;
       }
       this.error = err?.message || this.i18n.t('connect.mfa.error') || 'Something went wrong';
@@ -182,14 +153,6 @@ export class ConnectComponent implements OnInit {
   toggleMode(isLoginMode: boolean) {
     this.isLogin = isLoginMode;
     this.acceptedTerms = false;
-    this.render();
-  }
-
-  cancelMfa() {
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
-    this.error = null;
     this.render();
   }
 

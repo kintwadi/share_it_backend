@@ -39,10 +39,6 @@ export class ConnectAdminComponent implements OnInit {
   signupSecret = '';
   adminScope: 'FULL' | 'PARTNER' = 'FULL';
 
-  showMfaInput = false;
-  mfaCode = '';
-  tempToken: string | null = null;
-
   async ngOnInit() {
     this.render();
   }
@@ -55,42 +51,6 @@ export class ConnectAdminComponent implements OnInit {
 
   toggleMode(isLoginMode: boolean) {
     this.isLogin = isLoginMode;
-    this.error = null;
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
-    this.render();
-  }
-
-  onMfaCodeChange(val: string) {
-    this.mfaCode = val.replace(/[^0-9]/g, '');
-  }
-
-  async handleMfaSubmit() {
-    if (!this.tempToken) return;
-    this.isLoading = true;
-    this.error = null;
-    this.render();
-    try {
-      const data = await this.api.verify2FALoginAdmin(this.mfaCode, this.tempToken);
-      if (data?.token) this.authStorage.setToken(data.token);
-      if (data?.user?.id) this.authStorage.setUserId(data.user.id);
-      this.authStorage.setAuthContext('admin');
-      await this.session.refresh();
-      this.isLoading = false;
-      this.render();
-      this.router.navigate(['/admin']);
-    } catch (e: any) {
-      this.error = e?.message || 'Invalid code';
-      this.isLoading = false;
-      this.render();
-    }
-  }
-
-  cancelMfa() {
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
     this.error = null;
     this.render();
   }
@@ -122,10 +82,9 @@ export class ConnectAdminComponent implements OnInit {
       this.router.navigate(['/admin']);
     } catch (err: any) {
       if (err?.code === 'MFA_REQUIRED') {
-        this.tempToken = err.token;
-        this.showMfaInput = true;
         this.isLoading = false;
         this.render();
+        this.router.navigate(['/connect/mfa'], { state: { context: 'admin', token: err.token, returnTo: '/admin', cancelTo: '/connect/admin' } as any });
         return;
       }
       this.error = err?.message || 'Something went wrong';
