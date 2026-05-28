@@ -20,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(modifiedReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
+      if (error.status === 401 || error.status === 403) {
         authStorage.clear();
         const currentUrl = String(router.url || '');
         if (!currentUrl.startsWith('/connect')) {
