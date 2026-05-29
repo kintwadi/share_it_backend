@@ -18,6 +18,11 @@ public class SettingsProperties {
     }
 
     @Data
+    public static class ServiceConfig {
+        private double fee = 2.99;
+    }
+
+    @Data
     public static class TabConfig {
         private boolean enabled = true;
     }
@@ -111,4 +116,5 @@ public class SettingsProperties {
     private Map<String, TabConfig> header = new HashMap<>();
     private Map<String, TabConfig> footer = new HashMap<>();
     private EnableConfig enable = new EnableConfig();
+    private ServiceConfig service = new ServiceConfig();
 }

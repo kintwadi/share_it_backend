@@ -19,6 +19,8 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findByCategoryAndTitleContainingIgnoreCase(String category, String titleKeyword);
     List<Listing> findByStatusOrderByCreatedAtDesc(AvailabilityStatus status);
     Page<Listing> findByStatus(AvailabilityStatus status, Pageable pageable);
+    Page<Listing> findByPartnerIsNull(Pageable pageable);
+    Page<Listing> findByPartnerIsNullAndStatus(AvailabilityStatus status, Pageable pageable);
     Page<Listing> findByPartnerIsNotNull(Pageable pageable);
     Page<Listing> findByPartnerIsNotNullAndStatus(AvailabilityStatus status, Pageable pageable);
     Page<Listing> findByPartnerIsNotNullAndStatusIn(Collection<AvailabilityStatus> statuses, Pageable pageable);

@@ -47,6 +47,9 @@ export class AdminComponent implements OnInit {
   listingsTotal = 0;
   listingsPage = 0;
   listingsStatus = '';
+  listingSelectedId: string | null = null;
+  listingSelected: Listing | null = null;
+  listingSelectedLoading = false;
 
   partnerSubTab: PartnerSubTab = 'SUBMISSIONS';
   partnerSubmissions: any[] = [];
@@ -91,7 +94,7 @@ export class AdminComponent implements OnInit {
 
   pageSize = 20;
 
-  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_INACTIVE', 'PARTNER_ACTIVE', 'PARTNER_BORROW_REQUESTED'];
+  listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED'];
   txStatusOptions = ['', 'ESCROWED', 'RELEASED', 'RELEASE_FAILED', 'DISPUTED', 'REFUNDED', 'PENDING', 'FAILED'];
   subStatusOptions = ['', 'active', 'trialing', 'past_due', 'canceled', 'incomplete'];
 
@@ -242,6 +245,34 @@ export class AdminComponent implements OnInit {
     this.listings = Array.isArray(res?.items) ? res.items : [];
     this.listingsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.listingsPage = page;
+    await this.ensureListingSelection();
+  }
+
+  private async ensureListingSelection() {
+    const rows = this.listings;
+    if (this.listingSelectedId && !rows.some(r => String(r?.id) === String(this.listingSelectedId))) {
+      this.listingSelectedId = null;
+      this.listingSelected = null;
+    }
+    if (!this.listingSelectedId && rows.length > 0) {
+      await this.selectListing(rows[0]);
+    }
+  }
+
+  async selectListing(row: any) {
+    const id = String(row?.id || '');
+    if (!id) return;
+    this.listingSelectedId = id;
+    this.listingSelected = null;
+    this.listingSelectedLoading = true;
+    this.render();
+    try {
+      const listing = await this.api.getListingById(id);
+      this.listingSelected = listing;
+    } finally {
+      this.listingSelectedLoading = false;
+      this.render();
+    }
   }
 
   get partnerRows(): any[] {

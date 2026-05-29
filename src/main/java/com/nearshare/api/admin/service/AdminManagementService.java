@@ -168,7 +168,7 @@ public class AdminManagementService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Listing> p;
         if (status == null || status.isBlank()) {
-            p = listingRepository.findAll(pageable);
+            p = listingRepository.findByPartnerIsNull(pageable);
         } else {
             AvailabilityStatus s;
             try {
@@ -176,7 +176,7 @@ public class AdminManagementService {
             } catch (IllegalArgumentException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status");
             }
-            p = listingRepository.findByStatus(s, pageable);
+            p = listingRepository.findByPartnerIsNullAndStatus(s, pageable);
         }
         List<AdminListingDTO> items = p.getContent().stream().map(this::toAdminListingDTO).toList();
         return new AdminPageResponse<>(items, p.getTotalElements(), page, size);

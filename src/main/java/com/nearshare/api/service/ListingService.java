@@ -349,7 +349,13 @@ public class ListingService {
         totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
 
         String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
-        if ("FEE".equals(borrowerPath)) {
+        boolean subscriptionEnabled = subscriptionService == null || subscriptionService.isSubscriptionEnabled();
+        if (l.getType() == ListingType.LEND && !subscriptionEnabled) {
+            BigDecimal fixed = BigDecimal.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getDouble("settings.service.fee", 2.99) : 2.99);
+            if (fixed.compareTo(BigDecimal.ZERO) > 0) {
+                serviceFee = fixed.setScale(2, java.math.RoundingMode.HALF_UP);
+            }
+        } else if ("FEE".equals(borrowerPath)) {
             serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
         } else if ("DEPOSIT".equals(borrowerPath)) {
             depositAmount = new BigDecimal("50.00");

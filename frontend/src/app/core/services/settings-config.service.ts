@@ -74,4 +74,13 @@ export class SettingsConfigService {
     if (v && typeof v === 'object' && 'enabled' in v) return isEnabledValue((v as any).enabled);
     return isEnabledValue(v);
   }
+
+  getNumber(section: string, key: string, defaultValue: number): number {
+    const cfg = this.configSignal();
+    const root = cfg?.[section];
+    const v = getByPath(root, key);
+    const n = Number(v);
+    if (!Number.isNaN(n)) return n;
+    return defaultValue;
+  }
 }

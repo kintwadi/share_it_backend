@@ -224,8 +224,20 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
   get serviceFee() {
     if (this.isPartnerListing) return 0;
+    if (this.subscriptionDisabledLendFee > 0) return this.subscriptionDisabledLendFee;
     if (this.selectedPath !== 'FEE') return 0;
     return Math.round(this.baseTotal * 0.08 * 100) / 100;
+  }
+
+  get subscriptionDisabledLendFee() {
+    if (this.isPartnerListing) return 0;
+    if (!this.listing) return 0;
+    const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
+    if (subscriptionEnabled) return 0;
+    if (this.listing.type !== ListingType.LEND) return 0;
+    const fee = this.settingsConfig.getNumber('service', 'fee', 2.99);
+    if (!Number.isFinite(fee) || fee <= 0) return 0;
+    return Math.round(fee * 100) / 100;
   }
 
   get depositAmount() {
