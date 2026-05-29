@@ -42,6 +42,8 @@ export class AdminComponent implements OnInit {
   users: any[] = [];
   usersTotal = 0;
   usersPage = 0;
+  userSelectedId: string | null = null;
+  userSelected: any | null = null;
 
   listings: any[] = [];
   listingsTotal = 0;
@@ -74,6 +76,8 @@ export class AdminComponent implements OnInit {
   transactionsTotal = 0;
   transactionsPage = 0;
   transactionsStatus = '';
+  transactionSelectedId: string | null = null;
+  transactionSelected: any | null = null;
 
   subscriptions: any[] = [];
   subscriptionsTotal = 0;
@@ -238,6 +242,26 @@ export class AdminComponent implements OnInit {
     this.users = Array.isArray(res?.items) ? res.items : [];
     this.usersTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.usersPage = page;
+    this.ensureUserSelection();
+  }
+
+  private ensureUserSelection() {
+    const rows = this.users;
+    if (this.userSelectedId && !rows.some(r => String(r?.id) === String(this.userSelectedId))) {
+      this.userSelectedId = null;
+      this.userSelected = null;
+    }
+    if (!this.userSelectedId && rows.length > 0) {
+      this.selectUser(rows[0]);
+    }
+  }
+
+  selectUser(row: any) {
+    const id = String(row?.id || '');
+    if (!id) return;
+    this.userSelectedId = id;
+    this.userSelected = row;
+    this.render();
   }
 
   async loadListings(page: number) {
@@ -408,6 +432,26 @@ export class AdminComponent implements OnInit {
     this.transactions = Array.isArray(res?.items) ? res.items : [];
     this.transactionsTotal = typeof res?.total === 'number' ? res.total : Number(res?.total || 0);
     this.transactionsPage = page;
+    this.ensureTransactionSelection();
+  }
+
+  private ensureTransactionSelection() {
+    const rows = this.transactions;
+    if (this.transactionSelectedId && !rows.some(r => String(r?.id) === String(this.transactionSelectedId))) {
+      this.transactionSelectedId = null;
+      this.transactionSelected = null;
+    }
+    if (!this.transactionSelectedId && rows.length > 0) {
+      this.selectTransaction(rows[0]);
+    }
+  }
+
+  selectTransaction(row: any) {
+    const id = String(row?.id || '');
+    if (!id) return;
+    this.transactionSelectedId = id;
+    this.transactionSelected = row;
+    this.render();
   }
 
   async loadSubscriptions(page: number) {

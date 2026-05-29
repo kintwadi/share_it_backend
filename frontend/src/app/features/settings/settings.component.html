@@ -238,7 +238,7 @@
                   </span>
                   <div>
                     <p class="text-sm font-semibold text-gray-900">{{ i18n.t('settings.overview.security_devices_title') }}</p>
-                    <p class="text-xs text-gray-500">{{ trustedDevicesCount > 0 ? (trustedDevicesCount + ' active devices') : i18n.t('settings.overview.security_devices_hint') }}</p>
+                    <p class="text-xs text-gray-500">{{ trustedDevicesSummary }}</p>
                   </div>
                 </div>
               </div>
@@ -647,8 +647,8 @@
               <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.security.help') }}</p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6">
-              <div class="space-y-4">
+            <div class="space-y-6">
+              <div class="space-y-4 max-w-2xl">
                 <div *ngIf="passwordError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2">
                   <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
                   {{ passwordError }}
@@ -683,8 +683,8 @@
                 </app-button>
               </div>
 
-              <div class="space-y-4">
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div class="max-w-2xl">
+                <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
                   <div *ngIf="twoFactorError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-2 mb-3">
                     <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
                     {{ twoFactorError }}
@@ -694,7 +694,7 @@
                     {{ securitySuccess }}
                   </div>
 
-                  <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-start justify-between gap-4">
                     <div>
                       <p class="text-sm font-semibold text-gray-900">
                         {{ i18n.t('settings.security.2fa_title') }}
@@ -768,15 +768,15 @@
                 {{ devicesSuccess }}
               </div>
 
-              <div *ngIf="isLoadingDevices" class="text-sm text-gray-500 italic px-3 py-2">
+              <div *ngIf="isLoadingDevices" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
                 {{ i18n.t('settings.security.loading_devices') }}
               </div>
 
-              <div *ngIf="!isLoadingDevices && devices.length === 0" class="text-sm text-gray-500 italic px-3 py-2">
+              <div *ngIf="!isLoadingDevices && devices.length === 0" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
                 {{ i18n.t('settings.security.no_devices') || 'No trusted devices found.' }}
               </div>
 
-              <div *ngFor="let d of devices" class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2.5">
+              <div *ngFor="let d of devices" class="flex items-center justify-between border border-gray-200 bg-white rounded-xl px-4 py-3 shadow-sm">
                 <div class="flex-1 min-w-0 mr-4">
                   <div class="flex items-center gap-2 mb-0.5">
                     <p class="text-sm font-semibold text-gray-900 truncate" [title]="d.userAgent">
@@ -798,12 +798,12 @@
               </div>
             </div>
 
-            <div class="mt-4 flex justify-between items-center">
-              <app-button variant="destructive" size="sm">
+            <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100">
+              <app-button variant="destructive" size="sm" class="w-full sm:w-auto">
                 <lucide-icon [img]="Trash2" [size]="14" class="mr-2"></lucide-icon>
                 {{ i18n.t('settings.security.devices_logout_all') }}
               </app-button>
-              <p class="text-xs text-gray-500">
+              <p class="text-xs text-gray-500 leading-relaxed sm:text-right sm:max-w-md">
                 {{ i18n.t('settings.security.devices_warning') }}
               </p>
             </div>
@@ -819,7 +819,7 @@
               <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.security.identity_help') }}</p>
             </div>
 
-            <div class="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
               <div class="flex items-center justify-between">
                 <div class="text-gray-700">{{ i18n.t('settings.security.status') }}</div>
                 <div class="font-bold text-gray-900">{{verificationStatusLabel}}</div>
@@ -1114,10 +1114,22 @@
               <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.payments.title') }}</h2>
               <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.payments.help') }}</p>
             </div>
-            <app-payment-settings></app-payment-settings>
-            <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
-              {{ i18n.t('settings.payments.footer') }}
-            </div>
+            <ng-container *ngIf="paymentsLocked; else paymentsEnabled">
+              <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div class="text-sm font-bold text-amber-900">
+                  {{ i18n.t('settings.payments.locked_title') }}
+                </div>
+                <div class="text-xs text-amber-800 mt-1 leading-relaxed">
+                  {{ i18n.t('settings.payments.locked_desc') }}
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #paymentsEnabled>
+              <app-payment-settings></app-payment-settings>
+              <div class="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+                {{ i18n.t('settings.payments.footer') }}
+              </div>
+            </ng-template>
           </section>
         </ng-container>
 

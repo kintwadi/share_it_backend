@@ -5,7 +5,7 @@ import { LucideAngularModule, Bell, Shield, User as UserIcon, CreditCard, Lock, 
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { AvailabilityStatus, User } from '../../core/models/types';
+import { AvailabilityStatus, ListingType, User } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { PaymentSettingsComponent } from '../../shared/components/payment-settings/payment-settings';
@@ -75,6 +75,7 @@ export class SettingsComponent implements OnInit {
 
   overviewLoading = true;
   overviewListingCount = 0;
+  hasLendListing = false;
   loading = true;
   activeTab: SettingsTabId = 'overview';
   sidebarOpen = false;
@@ -188,6 +189,11 @@ export class SettingsComponent implements OnInit {
       (!admin || t.id !== 'subscription') &&
       (subscriptionEnabled || t.id !== 'subscription')
     );
+  }
+
+  get paymentsLocked(): boolean {
+    const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
+    return !subscriptionEnabled && !this.hasLendListing;
   }
 
   get subscriptionPlanLabel(): string {
@@ -458,6 +464,8 @@ export class SettingsComponent implements OnInit {
       this.subscription = sub;
       const user = this.user;
       if (user) {
+        const owned = listings.filter(l => l.ownerId === user.id);
+        this.hasLendListing = owned.some(l => l.type === ListingType.LEND);
         const myListings = listings.filter(l =>
           l.ownerId === user.id &&
           l.status !== AvailabilityStatus.BLOCKED &&
@@ -468,9 +476,11 @@ export class SettingsComponent implements OnInit {
         this.overviewListingCount = myListings.length;
       } else {
         this.overviewListingCount = 0;
+        this.hasLendListing = false;
       }
     } catch {
       this.overviewListingCount = 0;
+      this.hasLendListing = false;
     } finally {
       this.overviewLoading = false;
       this.render();
@@ -479,6 +489,13 @@ export class SettingsComponent implements OnInit {
 
   get trustedDevicesCount(): number {
     return Array.isArray(this.devices) ? this.devices.filter((d: any) => !!d?.trusted).length : 0;
+  }
+
+  get trustedDevicesSummary(): string {
+    const n = this.trustedDevicesCount;
+    if (n <= 0) return this.i18n.t('settings.overview.security_devices_hint');
+    const unit = this.i18n.t(n === 1 ? 'settings.overview.security_devices_active_one' : 'settings.overview.security_devices_active_many');
+    return `${n} ${unit}`;
   }
 
   get isVerifiedSubscriber(): boolean {

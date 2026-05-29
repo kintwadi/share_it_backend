@@ -116,41 +116,107 @@
           Search
         </button>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full text-xs">
-          <thead class="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th class="px-3 py-2 font-semibold">Name</th>
-              <th class="px-3 py-2 font-semibold">Email</th>
-              <th class="px-3 py-2 font-semibold">Role</th>
-              <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr *ngFor="let u of users">
-              <td class="px-3 py-2 text-gray-900 font-semibold">{{u.displayName || u.name || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.email || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.role || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.status || '-'}}</td>
-              <td class="px-3 py-2 text-right">
-                <div class="inline-flex gap-2">
-                  <button type="button" (click)="confirmUserStatus(u, ('' + (u.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
-                    {{ ('' + (u.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
-                  </button>
-                  <button type="button" (click)="confirmDeleteUser(u)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="users.length === 0">
-              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No users found.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Name</th>
+                <th class="px-3 py-2 font-semibold">Email</th>
+                <th class="px-3 py-2 font-semibold">Role</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let u of users" class="cursor-pointer" [ngClass]="userSelectedId === ('' + u.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectUser(u)">
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{u.displayName || u.name || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.email || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.role || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.status || '-'}}</td>
+                <td class="px-3 py-2 text-right" (click)="$event.stopPropagation()">
+                  <div class="inline-flex gap-2">
+                    <button type="button" (click)="confirmUserStatus(u, ('' + (u.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                      {{ ('' + (u.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
+                    </button>
+                    <button type="button" (click)="confirmDeleteUser(u)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="users.length === 0">
+                <td colspan="5" class="px-3 py-8 text-center text-gray-500">No users found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+          </div>
+
+          <div *ngIf="!userSelected" class="text-sm text-gray-500">
+            Select a user to review.
+          </div>
+
+          <div *ngIf="userSelected" class="space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-lg font-extrabold text-gray-900 truncate">{{userSelected.displayName || userSelected.name || '-'}}</div>
+                <div class="text-xs text-gray-500 mt-1 truncate">{{userSelected.email || '-'}}</div>
+              </div>
+              <div class="shrink-0 text-right">
+                <div class="text-xs text-gray-500">Role</div>
+                <div class="text-sm font-bold text-gray-900">{{userSelected.role || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Verification</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.verificationStatus || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Trust score</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.trustScore ?? '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">2FA</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.twoFactorEnabled ? 'Enabled' : 'Disabled'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Phone</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.phone || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Address</div>
+                <div class="mt-1 font-semibold text-gray-900 whitespace-pre-line">{{userSelected.address || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-100">
+              <button type="button" (click)="confirmUserStatus(userSelected, ('' + (userSelected.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                {{ ('' + (userSelected.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
+              </button>
+              <button type="button" (click)="confirmDeleteUser(userSelected)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex items-center justify-between">
         <div class="text-xs text-gray-500">Total: {{usersTotal}}</div>
@@ -460,48 +526,129 @@
         </select>
         <button type="button" (click)="loadTransactions(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full text-xs">
-          <thead class="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th class="px-3 py-2 font-semibold">Date</th>
-              <th class="px-3 py-2 font-semibold">Listing</th>
-              <th class="px-3 py-2 font-semibold">Amount</th>
-              <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold">Payer</th>
-              <th class="px-3 py-2 font-semibold">Payee</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr *ngFor="let t of transactions">
-              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.timestamp ? (t.timestamp | date:'short') : '-'}}</td>
-              <td class="px-3 py-2 text-gray-900 font-semibold">{{t.listingTitle || t.listingId || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.amount}} {{(t.currency || 'USD') | uppercase}}</td>
-              <td class="px-3 py-2 text-gray-700">
-                <div class="font-semibold">{{t.status || '-'}}</div>
-                <div *ngIf="t.releaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="t.releaseError">{{t.releaseError}}</div>
-              </td>
-              <td class="px-3 py-2 text-gray-700">{{t.payerEmail || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{t.payeeEmail || '-'}}</td>
-              <td class="px-3 py-2 text-right">
-                <div class="inline-flex gap-2">
-                  <button *ngIf="t.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(t)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
-                    Retry
-                  </button>
-                  <button type="button" (click)="confirmDeleteTransaction(t)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
-                    Delete
-                  </button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Date</th>
+                <th class="px-3 py-2 font-semibold">Listing</th>
+                <th class="px-3 py-2 font-semibold">Amount</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th class="px-3 py-2 font-semibold">Payer</th>
+                <th class="px-3 py-2 font-semibold">Payee</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let t of transactions" class="cursor-pointer" [ngClass]="transactionSelectedId === ('' + t.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectTransaction(t)">
+                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.timestamp ? (t.timestamp | date:'short') : '-'}}</td>
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{t.listingTitle || t.listingId || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.amount}} {{(t.currency || 'USD') | uppercase}}</td>
+                <td class="px-3 py-2 text-gray-700">
+                  <div class="font-semibold">{{t.status || '-'}}</div>
+                  <div *ngIf="t.releaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="t.releaseError">{{t.releaseError}}</div>
+                </td>
+                <td class="px-3 py-2 text-gray-700">{{t.payerEmail || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{t.payeeEmail || '-'}}</td>
+                <td class="px-3 py-2 text-right" (click)="$event.stopPropagation()">
+                  <div class="inline-flex gap-2">
+                    <button *ngIf="t.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(t)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                      Retry
+                    </button>
+                    <button type="button" (click)="confirmDeleteTransaction(t)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="transactions.length === 0">
+                <td colspan="7" class="px-3 py-8 text-center text-gray-500">No transactions found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+            <div class="text-xs text-gray-500 font-mono truncate" *ngIf="transactionSelected?.id">{{transactionSelected.id}}</div>
+          </div>
+
+          <div *ngIf="!transactionSelected" class="text-sm text-gray-500">
+            Select a transaction to review.
+          </div>
+
+          <div *ngIf="transactionSelected" class="space-y-4">
+            <div class="min-w-0">
+              <div class="text-lg font-extrabold text-gray-900 truncate">{{transactionSelected.listingTitle || transactionSelected.listingId || '-'}}</div>
+              <div class="text-xs text-gray-500 mt-1">{{transactionSelected.timestamp ? (transactionSelected.timestamp | date:'short') : '-'}}</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Method</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.paymentMethod || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Total</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.amount}} {{(transactionSelected.currency || 'USD') | uppercase}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Breakdown</div>
+                <div class="mt-1 text-gray-900">
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Rental</span><span class="font-semibold">{{transactionSelected.rentalAmount ?? 0}}</span></div>
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Fee</span><span class="font-semibold">{{transactionSelected.serviceFeeAmount ?? 0}}</span></div>
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Deposit</span><span class="font-semibold">{{transactionSelected.depositAmount ?? 0}}</span></div>
                 </div>
-              </td>
-            </tr>
-            <tr *ngIf="transactions.length === 0">
-              <td colspan="7" class="px-3 py-8 text-center text-gray-500">No transactions found.</td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Payer</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.payerEmail || transactionSelected.payerId || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Payee</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.payeeEmail || transactionSelected.payeeId || '-'}}</div>
+              </div>
+            </div>
+
+            <div *ngIf="transactionSelected.releaseError" class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-900">
+              <div class="font-semibold">Release error</div>
+              <div class="mt-1 whitespace-pre-line">{{transactionSelected.releaseError}}</div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div *ngIf="transactionSelected.stripeTransferId" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Stripe transfer</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono break-all">{{transactionSelected.stripeTransferId}}</div>
+              </div>
+              <div *ngIf="transactionSelected.stripeRefundId" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Stripe refund</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono break-all">{{transactionSelected.stripeRefundId}}</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-100">
+              <button *ngIf="transactionSelected.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(transactionSelected)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                Retry
+              </button>
+              <button type="button" (click)="confirmDeleteTransaction(transactionSelected)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex items-center justify-between">
         <div class="text-xs text-gray-500">Total: {{transactionsTotal}}</div>

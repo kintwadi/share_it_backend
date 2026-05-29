@@ -2,12 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
 import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
+import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private api = inject(ApiClientService);
+  private authStorage = inject(AuthStorageService);
 
   async getPublicConfig(): Promise<any> {
     try {
@@ -22,8 +24,18 @@ export class ApiService {
   }
 
   async getCurrentUser(): Promise<User | null> {
+    if (!this.authStorage.getToken()) return null;
     try {
       return await firstValueFrom(this.api.get<User>('/users/me'));
+    } catch {
+      return null;
+    }
+  }
+
+  async getCurrentSubscription(): Promise<any | null> {
+    if (!this.authStorage.getToken()) return null;
+    try {
+      return await firstValueFrom(this.api.get<any>('/subscriptions/me'));
     } catch {
       return null;
     }
@@ -446,15 +458,6 @@ export class ApiService {
 
   async syncSubscriptionFromSession(sessionId: string): Promise<any> {
     return firstValueFrom(this.api.post<any>('/subscriptions/sync-session', { sessionId }));
-  }
-
-  async getCurrentSubscription(): Promise<any | null> {
-    try {
-      const data = await firstValueFrom(this.api.get<any>('/subscriptions/me'));
-      return data || null;
-    } catch {
-      return null;
-    }
   }
 
   async cancelSubscription(): Promise<any> {
