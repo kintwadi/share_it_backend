@@ -53,9 +53,15 @@ After a transaction, users can review each other.
 ### 2.2 Borrowing Process
 When a user wants to borrow an item:
 1. **Cost Calculation**:
-   - `Base Cost` = `Hourly Rate` * `Duration (hours)`
-   - `Service Fee` = `Base Cost` * **5%** (0.05)
-   - `Total Amount` = `Base Cost` + `Service Fee`
+   - `Base Cost` = `Hourly Rate` * `Duration (hours)` (time-based listings)
+   - Borrowing paths can add extra amounts:
+     - `VERIFIED`: no extra amount
+     - `DEPOSIT`: adds a fixed deposit (currently `50.00`)
+     - `FEE`: adds a service fee (currently `8%` of base cost)
+   - Subscription-disabled rule (runtime setting):
+     - If `settings.enable.subscription=false` and the listing type is `LEND`, a fixed service fee is added:
+       - `settings.service.fee` (default `2.99`)
+   - `Total Amount` = `Base Cost` + `Service Fee` + `Deposit`
 2. **Payment Processing**:
    - If `Total Amount > 0` and method is not "CASH", a payment is processed via `PaymentManager`.
    - Supported methods: Card, etc.

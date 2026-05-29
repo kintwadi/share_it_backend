@@ -6,7 +6,7 @@ This document describes the REST API exposed by the NearShare backend.
 
 - Context path: `/shareit`
 - API prefix: `/shareit/api`
-- Example (local): `https://localhost:443/shareit/api`
+- Example (local): `http://localhost:8081/shareit/api` (HTTPS optional)
 
 ## Authentication
 
@@ -79,10 +79,10 @@ Clients should treat non-2xx responses as failures and prefer the `error` field 
     - `connect: object` (feature flags / UI config)
     - `home: object`
     - `borrowing: object`
-    - `subscription: { plusTrialDays, plusMonthlyAmountCents, currency }`
+    - `subscription: { plusTrialDays, plusMonthlyAmountCents, currency }` (supports runtime overrides)
 
 - `GET /api/config/settings`
-  - Returns `SettingsProperties` (feature flags / sections).
+  - Returns effective `SettingsProperties` (feature flags / sections) after applying runtime overrides.
 
 ### Listings (Read)
 
@@ -629,7 +629,7 @@ Base path: `/api/admin`
 - `GET /api/admin/users?q=&page=&size=`
 - `PATCH /api/admin/users/{id}/status` body `{ "status": "ACTIVE|SUSPENDED|..." }`
 - `DELETE /api/admin/users/{id}`
-- `GET /api/admin/listings?status=&page=&size=`
+- `GET /api/admin/listings?status=&page=&size=` (excludes partner-owned listings; use partner endpoints below)
 - `POST /api/admin/listings/{listingId}/block` body `{ "blocked": true|false }`
 - `DELETE /api/admin/listings/{listingId}`
 - `GET /api/admin/transactions?status=&page=&size=`
@@ -641,6 +641,40 @@ Base path: `/api/admin`
 - `POST /api/admin/returns/{listingId}/accept` body `{ "reason": "string" }`
 - `POST /api/admin/returns/{listingId}/reopen` body `{ "minutes": 15 }`
 
+### Runtime App Settings (Admin)
+
+Base path: `/api/admin/app-settings`
+
+- `GET /api/admin/app-settings`
+  - Response:
+    ```json
+    {
+      "sections": [
+        {
+          "id": "enable",
+          "title": "Enable",
+          "items": [
+            {
+              "key": "settings.enable.subscription",
+              "type": "boolean",
+              "value": true,
+              "defaultValue": true,
+              "overridden": false
+            }
+          ]
+        }
+      ]
+    }
+    ```
+
+- `PUT /api/admin/app-settings`
+  - Body:
+    ```json
+    { "updates": [ { "key": "settings.enable.subscription", "value": false } ] }
+    ```
+  - Notes:
+    - Send `value: null` to remove an override and revert to default.
+
 ### Reports (legacy/simple)
 
 - `GET /api/admin/reports`
@@ -648,4 +682,3 @@ Base path: `/api/admin`
 
 - `DELETE /api/admin/reports/{id}`
   - Response: `{ "status": "deleted" }`
-

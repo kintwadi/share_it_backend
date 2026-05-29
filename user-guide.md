@@ -32,7 +32,8 @@ The frontend uses these key routes:
 1. Go to `/connect`.
 2. Create an account (name, email, password).
 3. After signup, you are redirected to `/subscription`.
-4. Complete subscription steps as required, then go to `/dashboard`.
+4. If subscriptions are enabled, complete subscription steps as required, then go to `/dashboard`.
+5. If subscriptions are disabled, you can go directly to `/dashboard`.
 
 Login is also done at `/connect`.
 
@@ -164,12 +165,18 @@ Partner listings do not use these payment steps for borrower checkout.
 
 ## Subscription
 
-Regular users typically complete subscription steps after signup:
+Subscription availability is controlled by runtime settings (`settings.enable.subscription`).
+
+When subscriptions are enabled:
 1. Go to `/subscription`.
 2. Choose a plan (starter/plus/pro depending on configuration).
 3. Verify email code if prompted.
 4. Complete checkout (Stripe) for paid plans.
 5. Return to `/dashboard`.
+
+When subscriptions are disabled:
+- The app does not require a subscription to use protected flows.
+- A service fee can be applied to every `LEND` checkout using `settings.service.fee` (configured by admins).
 
 ## Messaging
 
@@ -192,9 +199,9 @@ Admin functions are accessed from `/admin` after logging in via `/connect/admin`
 Capabilities (depending on enabled UI):
 - View platform summary metrics
 - Manage users (status changes, deletion)
-- Manage listings (block/delete)
+- Manage listings (block/delete) (excludes partner-owned listings)
 - View transactions and retry releases
 - View subscriptions and disputes
 - Manage return disputes (accept/reopen)
 - View reported listings/users via reports
-
+- Edit runtime app settings (Admin → Settings)

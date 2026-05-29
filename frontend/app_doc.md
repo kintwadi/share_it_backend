@@ -3,42 +3,31 @@
 ## Prerequisites
 
 - Node.js + npm (this repo is set to `npm@11.11.0`)
-- A running backend API (ShareIt Spring Boot) at `http://localhost:8081`
+- A running backend API (ShareIt Spring Boot) at `http://localhost:8081/shareit/api`
 
 ## Install
 
 ```bash
-cd shareit_angular_client
+cd frontend
 npm install
 ```
 
-## Configure API Base URL
+## API Routing (Dev)
 
-The Angular app uses [`environment.ts`](file:///c:/Users/core101/Desktop/desk/shareit_angular_client/src/environments/environment.ts) to build API requests.
+In development, the app uses relative URLs:
+- `apiUrl: /shareit/api`
+- `wsUrl: /shareit/ws`
 
-- `apiUrl` should point to the backend API root (must include `/api`)
-- Example:
-
-```ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8081/api',
-  wsUrl: 'ws://localhost:8081/ws'
-};
-```
+The dev server proxies `/shareit/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
 ## Run (Dev)
 
 ```bash
-npm start -- --host 127.0.0.1 --port 4201
+npm start
 ```
 
 Open:
-- http://127.0.0.1:4201/
-
-This app uses hash-based routing, so routes look like:
-- `http://127.0.0.1:4201/#/`
-- `http://127.0.0.1:4201/#/listing/<listingId>`
+- http://localhost:4200/
 
 ## Run Backend (Required for Live Endpoints)
 
@@ -50,7 +39,7 @@ mvn spring-boot:run
 ```
 
 Backend health check:
-- http://localhost:8081/api/health
+- http://localhost:8081/shareit/api/health
 
 ## Build
 
@@ -66,5 +55,4 @@ Output:
 Static assets are served from:
 - `src/assets/...` (for example `src/assets/images/logo.png`)
 
-The build includes `src/assets` via [`angular.json`](file:///c:/Users/core101/Desktop/desk/shareit_angular_client/angular.json).
-
+The build includes `src/assets` via [`angular.json`](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/angular.json).
