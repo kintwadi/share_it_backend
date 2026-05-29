@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, Mail, ArrowLeft, Loader2, RefreshCcw, CheckCircle2, AlertTriangle, Shield, Info } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 
 @Component({
   selector: 'app-email-verification',
@@ -19,6 +21,8 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  private settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
 
   readonly Mail = Mail;
   readonly ArrowLeft = ArrowLeft;
@@ -52,7 +56,12 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     } catch { }
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.settingsConfig.ensureLoaded();
+    if (!this.subscriptionFeature.enabled()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.route.queryParams.subscribe(params => {
       this.plan = params['plan'] || 'plus';
       this.render();

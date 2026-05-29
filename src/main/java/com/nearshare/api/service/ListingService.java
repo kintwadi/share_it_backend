@@ -5,6 +5,7 @@ import com.nearshare.api.dto.ListingDTO;
 import com.nearshare.api.dto.LocationDTO;
 import com.nearshare.api.dto.PickupLocationDTO;
 import com.nearshare.api.dto.UserSummaryDTO;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.Report;
@@ -43,6 +44,7 @@ public class ListingService {
     private final ReviewRepository reviewRepository;
     private final SubscriptionService subscriptionService;
     private final TrustScoreService trustScoreService;
+    private final RuntimeSettingsService runtimeSettingsService;
     private final SecureRandom itemRefRandom = new SecureRandom();
 
     public ListingService(
@@ -56,7 +58,8 @@ public class ListingService {
             ReportRepository reportRepository,
             ReviewRepository reviewRepository,
             SubscriptionService subscriptionService,
-            TrustScoreService trustScoreService) {
+            TrustScoreService trustScoreService,
+            RuntimeSettingsService runtimeSettingsService) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.pickupLocationRepository = pickupLocationRepository;
@@ -68,6 +71,11 @@ public class ListingService {
         this.reviewRepository = reviewRepository;
         this.subscriptionService = subscriptionService;
         this.trustScoreService = trustScoreService;
+        this.runtimeSettingsService = runtimeSettingsService;
+    }
+
+    private boolean isSellEnabled() {
+        return runtimeSettingsService != null && runtimeSettingsService.isEnabled("settings.enable.sell", false);
     }
 
     @Transactional(readOnly = true)
@@ -113,6 +121,9 @@ public class ListingService {
 
     @Transactional
     public ListingDTO create(User owner, CreateListingRequest req) {
+        if (req.getType() == ListingType.SELL && !isSellEnabled()) {
+            throw new RuntimeException("selling_disabled");
+        }
         // Enforce subscription tiers
         if (req.getType() == ListingType.LEND) {
             if (!subscriptionService.isLenderPlan(owner)) {
@@ -177,6 +188,9 @@ public class ListingService {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() != null) {
             throw new RuntimeException("forbidden");
+        }
+        if (req.getType() == ListingType.SELL && !isSellEnabled()) {
+            throw new RuntimeException("selling_disabled");
         }
         
         // Enforce subscription tiers

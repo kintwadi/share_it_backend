@@ -1,6 +1,6 @@
 package com.nearshare.api.service;
 
-import com.nearshare.api.config.SettingsProperties;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.dto.ReturnDTOs;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.ReturnSession;
@@ -32,7 +32,7 @@ public class ReturnService {
     private final ReturnSessionRepository returnSessionRepository;
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
-    private final SettingsProperties settingsProperties;
+    private final RuntimeSettingsService runtimeSettingsService;
     private final EscrowService escrowService;
     private final ReviewInviteService reviewInviteService;
     private final PartnerAdminRepository partnerAdminRepository;
@@ -424,29 +424,23 @@ public class ReturnService {
     }
 
     private boolean qrEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null) return true;
-        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
         if (mode != ReturnMode.ANY) return mode == ReturnMode.QR_CODE;
-        if (returnsConfig.getQr() == null) return true;
-        return returnsConfig.getQr().isEnabled();
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.qr.enabled", true);
     }
 
     private boolean manualEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null) return true;
-        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
         if (mode != ReturnMode.ANY) return mode == ReturnMode.MANUAL;
-        if (returnsConfig.getManual() == null) return true;
-        return returnsConfig.getManual().isEnabled();
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.manual.enabled", true);
     }
 
     private boolean disputeEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null) return true;
-        ReturnMode mode = ReturnMode.from(returnsConfig.getMode());
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
         if (mode != ReturnMode.ANY) return mode == ReturnMode.DISPUTE;
-        if (returnsConfig.getDispute() == null) return true;
-        return returnsConfig.getDispute().isEnabled();
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.dispute.enabled", true);
     }
 }

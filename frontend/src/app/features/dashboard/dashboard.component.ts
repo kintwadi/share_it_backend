@@ -86,6 +86,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.settingsConfig.isSectionEnabled('returns', 'dispute');
   }
 
+  get subscriptionEnabled(): boolean {
+    return this.settingsConfig.isSectionEnabled('enable', 'subscription');
+  }
+
   ngOnInit() {
     this.settingsConfig.ensureLoaded();
     this.api.getCurrentUser().then(u => {
@@ -345,6 +349,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.actionLoading = 'add_new';
     this.render();
     try {
+      await this.settingsConfig.ensureLoaded();
+      if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) {
+        this.router.navigate(['/new-item']);
+        return;
+      }
       const sub = await this.api.getCurrentSubscription().catch(() => null);
       if (sub) {
         this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };

@@ -767,6 +767,14 @@ export class ApiService {
     return firstValueFrom(this.api.get<any>(`/admin/disputes?page=${page}&size=${size}`));
   }
 
+  async adminGetAppSettings(): Promise<any> {
+    return firstValueFrom(this.api.get<any>('/admin/app-settings'));
+  }
+
+  async adminUpdateAppSettings(updates: { key: string; value: any }[]): Promise<any> {
+    return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
+  }
+
   async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {
     return firstValueFrom(this.api.post<any>(`/admin/disputes/${encodeURIComponent(listingId)}/cancel-refund`, { reason }));
   }

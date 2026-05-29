@@ -73,21 +73,21 @@
             <span class="text-blue-900">{{user.trustScore}}</span>
           </span>
 
-          <span *ngIf="currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
+          <span *ngIf="subscriptionEnabled && currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
             <span class="uppercase">Plan</span>
             <span class="text-emerald-900 normal-case">
               {{ currentSub.status === 'canceled' ? 'Standard (Lender)' : (currentSub.planType + ' • ' + currentSub.status) }}
             </span>
           </span>
 
-          <span *ngIf="currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
+          <span *ngIf="subscriptionEnabled && currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
             <lucide-icon [img]="Shield" size="12" class="text-amber-700"></lucide-icon>
             <span class="uppercase">Premium</span>
           </span>
         </div>
 
         <button
-          *ngIf="!currentSub"
+          *ngIf="subscriptionEnabled && !currentSub"
           type="button"
           (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
           class="w-full lg:w-[320px] p-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 transition-colors text-left shadow-sm"

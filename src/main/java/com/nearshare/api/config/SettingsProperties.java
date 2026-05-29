@@ -13,6 +13,8 @@ public class SettingsProperties {
     @Data
     public static class EnableConfig {
         private boolean enterprise = false;
+        private boolean subscription = true;
+        private boolean sell = false;
     }
 
     @Data

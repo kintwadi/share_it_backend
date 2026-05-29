@@ -6,6 +6,8 @@ import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Spar
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ListingType, Category, PickupLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
 
@@ -22,6 +24,8 @@ export class NewItemComponent implements OnInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
 
   readonly Package = Package;
   readonly Upload = Upload;
@@ -101,6 +105,7 @@ export class NewItemComponent implements OnInit {
   }
 
   get plan(): string {
+    if (!this.subscriptionFeature.enabled()) return 'pro';
     return String(this.subscription?.planType ?? 'starter').toLowerCase();
   }
 
@@ -120,6 +125,10 @@ export class NewItemComponent implements OnInit {
 
   get showTypeSkill(): boolean {
     return this.type === ListingType.SKILL;
+  }
+
+  get sellEnabled(): boolean {
+    return this.settingsConfig.isSectionEnabled('enable', 'sell');
   }
 
   get pickupConcierge(): PickupLocation | null {
@@ -204,11 +213,13 @@ export class NewItemComponent implements OnInit {
         return;
       }
 
+      await this.settingsConfig.ensureLoaded();
+      const subscriptionEnabled = this.subscriptionFeature.enabled();
       const [cats, locs, subCfg, sub] = await Promise.all([
         this.api.getCategories(),
         this.api.getPickupLocations(),
-        this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })),
-        this.api.getCurrentSubscription().catch(() => null),
+        subscriptionEnabled ? this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })) : Promise.resolve({ starter: true, plus: true, pro: true }),
+        subscriptionEnabled ? this.api.getCurrentSubscription().catch(() => null) : Promise.resolve(null),
       ]);
 
       this.categories = cats;
@@ -284,20 +295,22 @@ export class NewItemComponent implements OnInit {
   }
 
   onTypeSelect(type: ListingType, rate?: number) {
+    if (type === ListingType.SELL && !this.sellEnabled) return;
+    const subscriptionEnabled = this.subscriptionFeature.enabled();
     if (type === ListingType.LEND) {
-      if (this.plan === 'starter') {
+      if (subscriptionEnabled && this.plan === 'starter') {
         this.requiredPlan = 'plus';
         this.goToUpgrade();
         return;
       }
-      if (!this.editId && this.plan === 'plus') {
+      if (subscriptionEnabled && !this.editId && this.plan === 'plus') {
         this.ensurePayoutsReadyForPaidLending();
         return;
       }
     }
     if (type === ListingType.SELL) {
-      if (!this.subscriptionConfig.pro) return;
-      if (!this.isPro) {
+      if (subscriptionEnabled && !this.subscriptionConfig.pro) return;
+      if (subscriptionEnabled && !this.isPro) {
         this.requiredPlan = 'pro';
         this.goToUpgrade();
         return;
@@ -479,7 +492,7 @@ export class NewItemComponent implements OnInit {
       }
     }
 
-    if (this.type === ListingType.LEND && this.plan === 'starter') {
+    if (this.subscriptionFeature.enabled() && this.type === ListingType.LEND && this.plan === 'starter') {
       this.requiredPlan = 'plus';
       this.goToUpgrade();
       return;

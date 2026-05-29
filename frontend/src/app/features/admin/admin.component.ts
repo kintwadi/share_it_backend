@@ -7,7 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { Listing, User } from '../../core/models/types';
 
-type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'PARTNER_LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS';
+type AdminTab = 'OVERVIEW' | 'USERS' | 'LISTINGS' | 'PARTNER_LISTINGS' | 'TRANSACTIONS' | 'SUBSCRIPTIONS' | 'DISPUTES' | 'REPORTS' | 'SETTINGS';
 type PartnerSubTab = 'SUBMISSIONS' | 'BORROW_REQUESTS' | 'ITEMS';
 
 @Component({
@@ -84,6 +84,11 @@ export class AdminComponent implements OnInit {
   reports: any[] = [];
   reportsLoading = false;
 
+  settingsSections: any[] = [];
+  settingsOriginal: Record<string, any> = {};
+  settingsSaving = false;
+  settingsSaved = false;
+
   pageSize = 20;
 
   listingsStatusOptions = ['', 'AVAILABLE', 'BORROWED', 'PENDING', 'APPROVED', 'SCHEDULED', 'BLOCKED', 'HIDDEN', 'DISPUTED', 'SOLD', 'GIFTED', 'PARTNER_INACTIVE', 'PARTNER_ACTIVE', 'PARTNER_BORROW_REQUESTED'];
@@ -144,12 +149,80 @@ export class AdminComponent implements OnInit {
         if (this.activeTab === 'SUBSCRIPTIONS') await this.loadSubscriptions(this.subscriptionsPage);
         if (this.activeTab === 'DISPUTES') await this.loadDisputes(this.disputesPage);
         if (this.activeTab === 'REPORTS') await this.loadReports();
+        if (this.activeTab === 'SETTINGS') await this.loadAppSettings();
       }
     } catch (e: any) {
       this.error = e instanceof Error ? e.message : this.i18n.t('admin.error.load_failed');
     } finally {
       this.loading = false;
       this.render();
+    }
+  }
+
+  async loadAppSettings() {
+    const res = await this.api.adminGetAppSettings();
+    const sections = Array.isArray(res?.sections) ? res.sections : [];
+    this.settingsSections = sections;
+    const original: Record<string, any> = {};
+    for (const s of sections) {
+      const items = Array.isArray(s?.items) ? s.items : [];
+      for (const it of items) {
+        if (it?.key) {
+          original[String(it.key)] = it.value;
+        }
+      }
+    }
+    this.settingsOriginal = original;
+    this.settingsSaved = false;
+    this.settingsSaving = false;
+    this.render();
+  }
+
+  private isDirtySetting(item: any): boolean {
+    const key = String(item?.key || '');
+    if (!key) return false;
+    return JSON.stringify(this.settingsOriginal[key]) !== JSON.stringify(item?.value);
+  }
+
+  resetSetting(item: any) {
+    if (!item) return;
+    item.value = item.defaultValue;
+    this.settingsSaved = false;
+    this.render();
+  }
+
+  async saveSettings() {
+    if (this.settingsSaving) return;
+    this.settingsSaving = true;
+    this.settingsSaved = false;
+    this.error = null;
+    this.render();
+    try {
+      const updates: { key: string; value: any }[] = [];
+      for (const section of this.settingsSections) {
+        const items = Array.isArray(section?.items) ? section.items : [];
+        for (const it of items) {
+          if (!it?.key) continue;
+          if (!this.isDirtySetting(it)) continue;
+          const isOverridden = !!it.overridden;
+          const nowEqualsDefault = JSON.stringify(it.value) === JSON.stringify(it.defaultValue);
+          updates.push({ key: String(it.key), value: isOverridden && nowEqualsDefault ? null : it.value });
+        }
+      }
+      await this.api.adminUpdateAppSettings(updates);
+      await this.loadAppSettings();
+      this.settingsSaved = true;
+    } catch (e: any) {
+      this.error = e?.message || this.i18n.t('admin.error.load_failed');
+    } finally {
+      this.settingsSaving = false;
+      this.render();
+      if (this.settingsSaved) {
+        setTimeout(() => {
+          this.settingsSaved = false;
+          this.render();
+        }, 2000);
+      }
     }
   }
 

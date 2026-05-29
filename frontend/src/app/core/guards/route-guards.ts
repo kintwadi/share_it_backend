@@ -99,6 +99,9 @@ export const canMatchSubscription: CanMatchFn = async () => {
   const authStorage = inject(AuthStorageService);
   const session = inject(SessionService);
   await settingsConfig.ensureLoaded();
+  if (!settingsConfig.isSectionEnabled('enable', 'subscription')) {
+    return router.createUrlTree(['/dashboard']);
+  }
   if (!settingsConfig.isSectionEnabled('header', 'subscribe')) {
     return router.createUrlTree(['/']);
   }

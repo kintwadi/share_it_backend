@@ -182,7 +182,12 @@ export class SettingsComponent implements OnInit {
 
   get visibleTabs(): TabConfig[] {
     const admin = this.isAdminUser();
-    return this.tabs.filter(t => this.settingsConfig.isTabEnabled(t.id) && (!admin || t.id !== 'subscription'));
+    const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
+    return this.tabs.filter(t =>
+      this.settingsConfig.isTabEnabled(t.id) &&
+      (!admin || t.id !== 'subscription') &&
+      (subscriptionEnabled || t.id !== 'subscription')
+    );
   }
 
   get subscriptionPlanLabel(): string {
@@ -246,6 +251,10 @@ export class SettingsComponent implements OnInit {
   }
 
   goToSubscriptionPlans() {
+    if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.router.navigate(['/subscription'], { state: { fromUpgrade: true } as any });
   }
 
@@ -960,10 +969,18 @@ export class SettingsComponent implements OnInit {
   }
 
   upgradeToPremium() {
+    if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.router.navigate(['/subscription/upgrade'], { queryParams: { plan: 'premium' } });
   }
 
   upgradeToVerified() {
+    if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.router.navigate(['/subscription/upgrade'], { queryParams: { plan: 'verified' } });
   }
 }

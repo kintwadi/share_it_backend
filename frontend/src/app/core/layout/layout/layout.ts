@@ -78,6 +78,7 @@ export class Layout {
     return String((this.currentUser() as any)?.adminScope ?? '').toUpperCase() === 'PARTNER';
   });
   hasSubscription = computed(() => {
+    if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) return !!this.currentUser();
     const sub = this.subscription();
     if (!sub) return false;
     const status = String(sub.status || '').toLowerCase();

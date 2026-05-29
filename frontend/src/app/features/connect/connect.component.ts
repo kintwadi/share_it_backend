@@ -7,6 +7,8 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { AuthStorageService } from '../../core/services/auth-storage.service';
 import { SessionService } from '../../core/services/session.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ButtonComponent } from '../../shared/components/button/button';
 import { PasswordRecoveryComponent } from '../../shared/components/password-recovery/password-recovery';
 
@@ -34,6 +36,8 @@ export class ConnectComponent implements OnInit {
   i18n = inject(I18nService);
   authStorage = inject(AuthStorageService);
   session = inject(SessionService);
+  settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
 
@@ -132,9 +136,10 @@ export class ConnectComponent implements OnInit {
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
         this.authStorage.setAuthContext('user');
         await this.session.refresh();
+        await this.settingsConfig.ensureLoaded();
         this.isLoading = false;
         this.render();
-        this.router.navigate(['/subscription']);
+        this.router.navigate([this.subscriptionFeature.enabled() ? '/subscription' : '/dashboard']);
       }
     } catch (err: any) {
       console.error('Auth error', err);

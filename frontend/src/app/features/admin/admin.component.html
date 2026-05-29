@@ -30,6 +30,7 @@
       <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('SUBSCRIPTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SUBSCRIPTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.subscriptions') }}</button>
       <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('DISPUTES')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'DISPUTES' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.disputes') }}</button>
       <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('REPORTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'REPORTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.reports') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('SETTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SETTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.settings') }}</button>
     </div>
 
     <div *ngIf="error" class="p-4 bg-red-50 border-b border-red-100 text-red-700 text-sm flex items-start gap-2">
@@ -62,6 +63,65 @@
         <div class="p-4 bg-white border border-gray-200 rounded-xl">
           <div class="text-xs font-semibold text-gray-500">{{ i18n.t('admin.metric.release_failed') }}</div>
           <div class="mt-1 text-2xl font-extrabold text-gray-900">{{summary?.releaseFailedTransactions ?? '-'}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'SETTINGS'" class="p-4 space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="text-sm font-semibold text-gray-900">{{ i18n.t('admin.settings.title') }}</div>
+        <div class="flex items-center gap-2">
+          <div *ngIf="settingsSaved" class="text-xs font-semibold text-emerald-700 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-100">{{ i18n.t('admin.settings.saved') }}</div>
+          <button type="button" (click)="saveSettings()" [disabled]="settingsSaving" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60">
+            <lucide-icon *ngIf="settingsSaving" [img]="Loader2" [size]="18" class="animate-spin inline-block mr-2"></lucide-icon>
+            {{ i18n.t('admin.settings.save') }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="settingsSections.length === 0" class="p-6 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600">
+        {{ i18n.t('admin.settings.empty') }}
+      </div>
+
+      <div *ngFor="let s of settingsSections" class="rounded-xl border border-gray-200 overflow-hidden bg-white">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 text-sm font-bold text-gray-900">{{ s.title || s.id }}</div>
+        <div class="p-4 overflow-x-auto">
+          <table class="min-w-full text-xs">
+            <thead class="text-left text-gray-500">
+              <tr>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.key') }}</th>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.value') }}</th>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.default') }}</th>
+                <th class="py-2 text-right font-semibold">{{ i18n.t('admin.settings.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let it of s.items">
+                <td class="py-2 pr-4 font-semibold text-gray-900 whitespace-nowrap">{{ it.key }}</td>
+                <td class="py-2 pr-4">
+                  <ng-container [ngSwitch]="it.type">
+                    <label *ngSwitchCase="'boolean'" class="inline-flex items-center gap-2 cursor-pointer select-none">
+                      <input type="checkbox" [(ngModel)]="it.value" class="h-4 w-4" />
+                      <span class="text-gray-700">{{ it.value ? 'true' : 'false' }}</span>
+                    </label>
+                    <input *ngSwitchCase="'number'" type="number" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-40" />
+                    <input *ngSwitchDefault type="text" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-[420px] max-w-full" />
+                  </ng-container>
+                </td>
+                <td class="py-2 pr-4 text-gray-600">
+                  {{ it.defaultValue }}
+                </td>
+                <td class="py-2 text-right">
+                  <button type="button" (click)="resetSetting(it)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50">
+                    {{ i18n.t('admin.settings.reset') }}
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!s.items || s.items.length === 0">
+                <td colspan="4" class="py-6 text-center text-gray-500">{{ i18n.t('admin.settings.section_empty') }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

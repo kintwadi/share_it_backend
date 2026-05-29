@@ -46,7 +46,7 @@
                     <span class="text-base">🎁</span>
                     {{ i18n.t('new_item.type.give') }}
                   </button>
-                  <button *ngIf="subscriptionConfig.pro" type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <button *ngIf="sellEnabled && subscriptionConfig.pro" type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
                     <span class="text-base">💰</span>
                     {{ i18n.t('new_item.type.sell') }}
                   </button>
@@ -74,7 +74,7 @@
                       <p class="text-[11px] text-blue-700 mt-1 leading-relaxed" *ngIf="recommendationLoading">{{ i18n.t('new_item.loading') }}</p>
                       <ng-container *ngIf="!recommendationLoading">
                         <p class="text-[11px] text-blue-700 mt-1 leading-relaxed">
-                          {{ recommendation?.recommendedAction === 'SELL' ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
+                          {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
                           <span *ngIf="recommendation?.reasoning"> — {{ recommendation?.reasoning }}</span>
                         </p>
                         <div class="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-blue-800">
@@ -88,10 +88,10 @@
                         <div class="mt-2 flex gap-2">
                           <button 
                             type="button" 
-                            (click)="onTypeSelect(recommendation?.recommendedAction === 'SELL' ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
+                            (click)="onTypeSelect((recommendation?.recommendedAction === 'SELL' && sellEnabled) ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
                             class="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                           >
-                            {{ recommendation?.recommendedAction === 'SELL' ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
+                            {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
                           </button>
                           <button type="button" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-600 text-[10px] font-bold rounded-lg hover:bg-blue-50 transition-colors">
                             {{ i18n.t('new_item.keep_as_gift') }}
