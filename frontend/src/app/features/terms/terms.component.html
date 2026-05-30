@@ -1,0 +1,39 @@
+<div class="max-w-3xl mx-auto py-10">
+  <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+    <div class="flex items-center justify-between gap-3 mb-6">
+      <h1 class="text-2xl font-bold text-slate-900">{{ i18n.t('terms.title') }}</h1>
+      <a routerLink="/" class="text-sm font-semibold text-slate-600 hover:text-slate-900 underline underline-offset-2">{{ i18n.t('legal.back_to_discover') }}</a>
+    </div>
+
+    <div class="prose prose-slate max-w-none">
+      <p>{{ i18n.t('terms.intro') }}</p>
+
+      <h2>{{ i18n.t('terms.use.title') }}</h2>
+      <ul>
+        <li>{{ i18n.t('terms.use.item1') }}</li>
+        <li>{{ i18n.t('terms.use.item2') }}</li>
+        <li>{{ i18n.t('terms.use.item3') }}</li>
+      </ul>
+
+      <h2>{{ i18n.t('terms.accounts.title') }}</h2>
+      <ul>
+        <li>{{ i18n.t('terms.accounts.item1') }}</li>
+        <li>{{ i18n.t('terms.accounts.item2') }}</li>
+      </ul>
+
+      <h2>{{ i18n.t('terms.content.title') }}</h2>
+      <p>{{ i18n.t('terms.content.text') }}</p>
+
+      <h2>{{ i18n.t('terms.liability.title') }}</h2>
+      <p>{{ i18n.t('terms.liability.text') }}</p>
+
+      <h2>{{ i18n.t('terms.privacy.title') }}</h2>
+      <p>
+        {{ i18n.t('terms.privacy.text_prefix') }}
+        <a routerLink="/privacy">{{ i18n.t('footer.privacy') }}</a>
+        {{ i18n.t('terms.privacy.text_suffix') }}
+      </p>
+    </div>
+  </div>
+</div>
+

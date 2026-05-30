@@ -191,11 +191,11 @@
               [(ngModel)]="acceptedTerms"
             />
             <label for="acceptTerms" class="leading-snug">
-              {{ i18n.t('connect.terms.prefix') }} <a href="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a href="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
+              {{ i18n.t('connect.terms.prefix') }} <a routerLink="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a routerLink="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
             </label>
           </div>
           <p *ngIf="!show('showTermsCheckbox')" class="leading-snug">
-            {{ i18n.t('connect.terms.prefix') }} <a href="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a href="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
+            {{ i18n.t('connect.terms.prefix') }} <a routerLink="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a routerLink="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
           </p>
         </div>
 

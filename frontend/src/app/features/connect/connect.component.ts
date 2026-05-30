@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Shield, Mail, Lock, User as UserIcon, ArrowRight, UserCheck, Sparkles, Key, AlertCircle } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -15,7 +15,7 @@ import { PasswordRecoveryComponent } from '../../shared/components/password-reco
 @Component({
   selector: 'app-connect',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, PasswordRecoveryComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule, ButtonComponent, PasswordRecoveryComponent],
   templateUrl: './connect.component.html',
   styleUrl: './connect.component.css'
 })
