@@ -5,6 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, Mail, ArrowLeft, Loader2, RefreshCcw, CheckCircle2, AlertTriangle, Shield, Info } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
+import { AuthStorageService } from '../../core/services/auth-storage.service';
+import { SessionService } from '../../core/services/session.service';
 
 @Component({
   selector: 'app-email-verification',
@@ -19,6 +23,10 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  private settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
+  private authStorage = inject(AuthStorageService);
+  private session = inject(SessionService);
 
   readonly Mail = Mail;
   readonly ArrowLeft = ArrowLeft;
@@ -34,6 +42,8 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   plan = 'plus';
   digits: string[] = ['', '', '', ''];
   userEmail = '';
+  flow: 'subscription' | 'signup' = 'subscription';
+  verificationToken = '';
   loading = true;
   submitting = false;
   sending = false;
@@ -52,11 +62,56 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     } catch { }
   }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.settingsConfig.ensureLoaded();
+    const initParams = this.route.snapshot.queryParams || {};
+    this.plan = initParams['plan'] || 'plus';
+    const initFlow = String(initParams['flow'] || '').toLowerCase();
+    this.flow = initFlow === 'signup' ? 'signup' : 'subscription';
+    this.verificationToken = String(initParams['token'] || '');
+    const initEmail = String(initParams['email'] || '');
+    if (initEmail) this.userEmail = initEmail;
+    if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
+      this.flow = 'signup';
+    }
+    this.render();
+
     this.route.queryParams.subscribe(params => {
-      this.plan = params['plan'] || 'plus';
+      this.plan = params['plan'] || this.plan;
+      const flow = String(params['flow'] || '').toLowerCase();
+      this.flow = flow === 'signup' ? 'signup' : 'subscription';
+      this.verificationToken = String(params['token'] || this.verificationToken);
+      const email = String(params['email'] || '');
+      if (email) this.userEmail = email;
+      if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
+        this.flow = 'signup';
+      }
       this.render();
     });
+
+    if (this.flow === 'signup') {
+      if (this.subscriptionFeature.enabled()) {
+        this.router.navigate(['/subscription']);
+        return;
+      }
+      if (!this.verificationToken && this.userEmail) {
+        try {
+          const started = await this.api.startEmailVerification(this.userEmail, this.i18n.language());
+          this.verificationToken = String(started?.token || '');
+        } catch { }
+      }
+      if (!this.userEmail) {
+        this.router.navigate(['/connect']);
+        return;
+      }
+      await this.bootstrap();
+      return;
+    }
+
+    if (!this.subscriptionFeature.enabled()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
 
     this.api.getCurrentUser().then(u => {
       if (!u) {
@@ -77,7 +132,12 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.error = null;
     this.render();
     try {
-      await this.sendCode();
+      if (this.flow === 'signup') {
+        this.sent = true;
+        this.startResendCooldown(30);
+      } else {
+        await this.sendCode();
+      }
     } finally {
       this.loading = false;
       this.render();
@@ -103,7 +163,12 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.error = null;
     this.render();
     try {
-      await this.api.sendSubscriptionVerificationCode(this.plan, this.i18n.language());
+      if (this.flow === 'signup') {
+        if (!this.verificationToken) throw new Error('Missing token');
+        await this.api.resendEmailVerification(this.verificationToken, this.i18n.language());
+      } else {
+        await this.api.sendSubscriptionVerificationCode(this.plan, this.i18n.language());
+      }
       this.sent = true;
       this.startResendCooldown(30);
     } catch (e: any) {
@@ -152,6 +217,17 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.error = null;
     this.render();
     try {
+      if (this.flow === 'signup') {
+        if (!this.verificationToken) throw new Error('Missing token');
+        const data = await this.api.verifyEmailVerification(this.verificationToken, this.codeValue);
+        if (data?.token) this.authStorage.setToken(data.token);
+        if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('user');
+        if (data?.user) this.session.user.set(data.user);
+        this.router.navigate(['/dashboard']);
+        return;
+      }
+
       await this.api.verifySubscriptionVerificationCode(this.codeValue);
 
       if (this.plan === 'starter') {
@@ -179,6 +255,10 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
+    if (this.flow === 'signup') {
+      this.router.navigate(['/connect']);
+      return;
+    }
     this.router.navigate(['/subscription/confirm'], { queryParams: { plan: this.plan } });
   }
 }

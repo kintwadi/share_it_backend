@@ -2,18 +2,20 @@ import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
 import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
+import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private api = inject(ApiClientService);
+  private authStorage = inject(AuthStorageService);
 
   async getPublicConfig(): Promise<any> {
     try {
       return await firstValueFrom(this.api.get<any>('/config/public'));
     } catch {
-      return { allowAdminToggle: false };
+      return {};
     }
   }
 
@@ -22,8 +24,18 @@ export class ApiService {
   }
 
   async getCurrentUser(): Promise<User | null> {
+    if (!this.authStorage.getToken()) return null;
     try {
       return await firstValueFrom(this.api.get<User>('/users/me'));
+    } catch {
+      return null;
+    }
+  }
+
+  async getCurrentSubscription(): Promise<any | null> {
+    if (!this.authStorage.getToken()) return null;
+    try {
+      return await firstValueFrom(this.api.get<any>('/subscriptions/me'));
     } catch {
       return null;
     }
@@ -144,11 +156,84 @@ export class ApiService {
     return data;
   }
 
-  async registerUser(name: string, email: string, password: string, isAdmin?: boolean): Promise<any> {
-    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0, isAdmin: !!isAdmin };
-    await firstValueFrom(this.api.post('/auth/register', body));
+  async loginAdmin(email: string, password: string): Promise<any> {
+    const data = await firstValueFrom(this.api.post<any>('/admin/auth/login', { email, password }));
+    if (data.mfaRequired) {
+      throw { code: 'MFA_REQUIRED', token: data.token };
+    }
+    return data;
+  }
+
+  async verify2FALoginAdmin(code: string, token: string): Promise<any> {
+    const res = await fetch(`${this.api.getBaseUrl()}/admin/auth/verify-2fa-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) throw new Error('Invalid code');
+    return res.json();
+  }
+
+  async registerAdmin(name: string, email: string, password: string, signupSecret?: string, adminScope?: 'FULL' | 'PARTNER'): Promise<any> {
+    const body = { name, email, password, signupSecret: signupSecret ?? '', adminScope: adminScope ?? 'FULL' };
+    const data = await firstValueFrom(this.api.post<any>('/admin/auth/register', body));
+    return data;
+  }
+
+  async loginPartner(email: string, password: string): Promise<any> {
+    const data = await firstValueFrom(this.api.post<any>('/partner/auth/login', { email, password }));
+    if (data.mfaRequired) {
+      throw { code: 'MFA_REQUIRED', token: data.token };
+    }
+    return data;
+  }
+
+  async verify2FALoginPartner(code: string, token: string): Promise<any> {
+    const res = await fetch(`${this.api.getBaseUrl()}/partner/auth/verify-2fa-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) throw new Error('Invalid code');
+    return res.json();
+  }
+
+  async registerPartner(payload: { partner: any; partnerPassword: string }): Promise<any> {
+    const body = {
+      partner: payload.partner,
+      partnerPassword: payload.partnerPassword
+    };
+    const data = await firstValueFrom(this.api.post<any>('/partner/auth/register', body));
+    return data;
+  }
+
+  async registerUser(name: string, email: string, password: string): Promise<any> {
+    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0 };
+    const reg = await firstValueFrom(this.api.post<any>('/auth/register', body));
+    if (reg?.requiresEmailVerification) {
+      return reg;
+    }
     const data = await firstValueFrom(this.api.post<any>('/auth/login', { email, password }));
     return data;
+  }
+
+  async startEmailVerification(email: string, language?: string): Promise<{ token: string }> {
+    const data = await firstValueFrom(this.api.post<any>('/auth/email-verification/start', { email, language: language ?? 'en' }));
+    return { token: String(data?.token || '') };
+  }
+
+  async resendEmailVerification(token: string, language?: string): Promise<void> {
+    await firstValueFrom(this.api.post<any>('/auth/email-verification/resend', { token, language: language ?? 'en' }));
+  }
+
+  async verifyEmailVerification(token: string, code: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/auth/email-verification/verify', { token, code }));
   }
 
   async requestPasswordReset(email: string): Promise<void> {
@@ -247,6 +332,9 @@ export class ApiService {
     pickupLocationHouseNumber?: string | null;
     pickupLocationCity?: string | null;
     pickupLocationZip?: string | null;
+    availableUnlimited?: boolean;
+    availableFrom?: string | null;
+    availableTo?: string | null;
   }): Promise<Listing> {
     const body = {
       title: payload.title,
@@ -260,6 +348,9 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      availableUnlimited: !!payload.availableUnlimited,
+      availableFrom: payload.availableFrom ?? null,
+      availableTo: payload.availableTo ?? null,
       pickupLocationId: payload.pickupLocationId ?? null,
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
@@ -288,6 +379,9 @@ export class ApiService {
     pickupLocationHouseNumber?: string | null;
     pickupLocationCity?: string | null;
     pickupLocationZip?: string | null;
+    availableUnlimited?: boolean;
+    availableFrom?: string | null;
+    availableTo?: string | null;
   }): Promise<Listing> {
     const body = {
       title: payload.title,
@@ -301,6 +395,9 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      availableUnlimited: !!payload.availableUnlimited,
+      availableFrom: payload.availableFrom ?? null,
+      availableTo: payload.availableTo ?? null,
       pickupLocationId: payload.pickupLocationId ?? null,
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
@@ -377,15 +474,6 @@ export class ApiService {
 
   async syncSubscriptionFromSession(sessionId: string): Promise<any> {
     return firstValueFrom(this.api.post<any>('/subscriptions/sync-session', { sessionId }));
-  }
-
-  async getCurrentSubscription(): Promise<any | null> {
-    try {
-      const data = await firstValueFrom(this.api.get<any>('/subscriptions/me'));
-      return data || null;
-    } catch {
-      return null;
-    }
   }
 
   async cancelSubscription(): Promise<any> {
@@ -598,12 +686,76 @@ export class ApiService {
     return firstValueFrom(this.api.get<any>(`/admin/listings?page=${page}&size=${size}${status}`));
   }
 
+  async adminListPartnerListingRequests(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/listing-requests?page=${page}&size=${size}`));
+  }
+
+  async adminListPartnerSubmissions(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/submissions?page=${page}&size=${size}`));
+  }
+
+  async adminListPartnerListings(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/listings?page=${page}&size=${size}${status}`));
+  }
+
+  async adminListPartnerItems(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const status = params.status ? `&status=${encodeURIComponent(params.status)}` : '';
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/items?page=${page}&size=${size}${status}`));
+  }
+
+  async adminActivatePartnerItem(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/items/${encodeURIComponent(listingId)}/activate`, {}));
+  }
+
+  async adminDeactivatePartnerItem(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/items/${encodeURIComponent(listingId)}/deactivate`, {}));
+  }
+
+  async adminListPartnerBorrowRequests(params: { page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
+    const page = typeof params.page === 'number' ? params.page : 0;
+    const size = typeof params.size === 'number' ? params.size : 20;
+    return firstValueFrom(this.api.get<any>(`/admin/partner/borrow-requests?page=${page}&size=${size}`));
+  }
+
   async adminBlockListing(listingId: string, blocked: boolean): Promise<any> {
     return firstValueFrom(this.api.post<any>(`/admin/listings/${encodeURIComponent(listingId)}/block`, { blocked }));
   }
 
   async adminDeleteListing(listingId: string): Promise<any> {
     return firstValueFrom(this.api.delete<any>(`/admin/listings/${encodeURIComponent(listingId)}`));
+  }
+
+  async adminApprovePartnerListing(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/listings/${encodeURIComponent(listingId)}/approve`, {}));
+  }
+
+  async adminRejectPartnerListing(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/listings/${encodeURIComponent(listingId)}/reject`, {}));
+  }
+
+  async adminApprovePartnerSubmission(listingId: string, note?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/submissions/${encodeURIComponent(listingId)}/approve`, note ? { note } : {}));
+  }
+
+  async adminRejectPartnerSubmission(listingId: string, reason?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/submissions/${encodeURIComponent(listingId)}/reject`, reason ? { reason } : {}));
+  }
+
+  async adminApprovePartnerBorrowRequest(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/borrow-requests/${encodeURIComponent(listingId)}/approve`, {}));
+  }
+
+  async adminRejectPartnerBorrowRequest(listingId: string, reason?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/admin/partner/borrow-requests/${encodeURIComponent(listingId)}/reject`, reason ? { reason } : {}));
   }
 
   async adminListTransactions(params: { status?: string; page?: number; size?: number }): Promise<{ items: any[]; total: number; page: number; size: number }> {
@@ -632,6 +784,14 @@ export class ApiService {
     const page = typeof params.page === 'number' ? params.page : 0;
     const size = typeof params.size === 'number' ? params.size : 20;
     return firstValueFrom(this.api.get<any>(`/admin/disputes?page=${page}&size=${size}`));
+  }
+
+  async adminGetAppSettings(): Promise<any> {
+    return firstValueFrom(this.api.get<any>('/admin/app-settings'));
+  }
+
+  async adminUpdateAppSettings(updates: { key: string; value: any }[]): Promise<any> {
+    return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
   }
 
   async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {

@@ -6,6 +6,8 @@ import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Spar
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ListingType, Category, PickupLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
 
@@ -22,6 +24,8 @@ export class NewItemComponent implements OnInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
 
   readonly Package = Package;
   readonly Upload = Upload;
@@ -60,6 +64,8 @@ export class NewItemComponent implements OnInit {
   hourlyRate: number = 0;
   imageUrl = '';
   gallery: string[] = [];
+  x: number | null = null;
+  y: number | null = null;
   autoApprove = false;
   insuranceRequired = false;
   pickupLocationId: string | null = null;
@@ -74,8 +80,6 @@ export class NewItemComponent implements OnInit {
   timeError: string | null = null;
   availableFromDate = '';
   availableFromTime = '10:00';
-  availableToDate = '';
-  availableToTime = '18:00';
   availableUnlimited = false;
   availabilityError: string | null = null;
 
@@ -85,8 +89,6 @@ export class NewItemComponent implements OnInit {
   private recommendationSubject = new Subject<void>();
 
   requiredPlan: 'plus' | 'pro' = 'pro';
-  showPremiumModal = false;
-  showPayoutSetupModal = false;
   payoutSetupLoading = false;
   private connectStatus: any | null = null;
   isSaving = false;
@@ -105,6 +107,7 @@ export class NewItemComponent implements OnInit {
   }
 
   get plan(): string {
+    if (!this.subscriptionFeature.enabled()) return 'pro';
     return String(this.subscription?.planType ?? 'starter').toLowerCase();
   }
 
@@ -124,6 +127,10 @@ export class NewItemComponent implements OnInit {
 
   get showTypeSkill(): boolean {
     return this.type === ListingType.SKILL;
+  }
+
+  get sellEnabled(): boolean {
+    return this.settingsConfig.isSectionEnabled('enable', 'sell');
   }
 
   get pickupConcierge(): PickupLocation | null {
@@ -182,10 +189,6 @@ export class NewItemComponent implements OnInit {
   setUnlimited(val: boolean) {
     this.availableUnlimited = val;
     this.availabilityError = null;
-    if (val) {
-      this.availableToDate = '';
-      this.availableToTime = '';
-    }
     this.render();
   }
 
@@ -212,11 +215,13 @@ export class NewItemComponent implements OnInit {
         return;
       }
 
+      await this.settingsConfig.ensureLoaded();
+      const subscriptionEnabled = this.subscriptionFeature.enabled();
       const [cats, locs, subCfg, sub] = await Promise.all([
         this.api.getCategories(),
         this.api.getPickupLocations(),
-        this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })),
-        this.api.getCurrentSubscription().catch(() => null),
+        subscriptionEnabled ? this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })) : Promise.resolve({ starter: true, plus: true, pro: true }),
+        subscriptionEnabled ? this.api.getCurrentSubscription().catch(() => null) : Promise.resolve(null),
       ]);
 
       this.categories = cats;
@@ -279,27 +284,39 @@ export class NewItemComponent implements OnInit {
     if (!this.pickupLocationId && (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip)) {
       this.pickupOption = 'custom';
     }
+    const availableUnlimited = !!(listing as any).availableUnlimited;
+    const availableFrom = (listing as any).availableFrom ? String((listing as any).availableFrom) : '';
+    this.availableUnlimited = availableUnlimited;
+    this.x = typeof (listing as any)?.location?.x === 'number' ? (listing as any).location.x : null;
+    this.y = typeof (listing as any)?.location?.y === 'number' ? (listing as any).location.y : null;
+    if (!availableUnlimited && availableFrom && availableFrom.length >= 16) {
+      this.availableFromDate = availableFrom.slice(0, 10);
+      this.availableFromTime = availableFrom.slice(11, 16) || this.availableFromTime;
+    } else {
+      this.availableFromDate = '';
+      this.availableFromTime = '10:00';
+    }
   }
 
   onTypeSelect(type: ListingType, rate?: number) {
+    if (type === ListingType.SELL && !this.sellEnabled) return;
+    const subscriptionEnabled = this.subscriptionFeature.enabled();
     if (type === ListingType.LEND) {
-      if (this.plan === 'starter') {
+      if (subscriptionEnabled && this.plan === 'starter') {
         this.requiredPlan = 'plus';
-        this.showPremiumModal = true;
-        this.render();
+        this.goToUpgrade();
         return;
       }
-      if (!this.editId && this.plan === 'plus') {
+      if (subscriptionEnabled && !this.editId && this.plan === 'plus') {
         this.ensurePayoutsReadyForPaidLending();
         return;
       }
     }
     if (type === ListingType.SELL) {
-      if (!this.subscriptionConfig.pro) return;
-      if (!this.isPro) {
+      if (subscriptionEnabled && !this.subscriptionConfig.pro) return;
+      if (subscriptionEnabled && !this.isPro) {
         this.requiredPlan = 'pro';
-        this.showPremiumModal = true;
-        this.render();
+        this.goToUpgrade();
         return;
       }
     }
@@ -314,8 +331,8 @@ export class NewItemComponent implements OnInit {
     this.render();
   }
 
-  private async ensurePayoutsReadyForPaidLending() {
-    if (this.payoutSetupLoading) return;
+  private async ensurePayoutsReadyForPaidLending(): Promise<boolean> {
+    if (this.payoutSetupLoading) return false;
     this.payoutSetupLoading = true;
     this.render();
     try {
@@ -324,23 +341,20 @@ export class NewItemComponent implements OnInit {
       }
       const ready = !!(this.connectStatus?.connected && this.connectStatus?.payoutsEnabled);
       if (!ready) {
-        this.showPayoutSetupModal = true;
-        return;
+        this.router.navigate(['/new-item/payout-setup']);
+        return false;
       }
       this.type = ListingType.LEND;
       if (this.isPremiumLender) this.autoApprove = true;
       this.triggerRecommendation();
+      return true;
     } catch {
-      this.showPayoutSetupModal = true;
+      this.router.navigate(['/new-item/payout-setup']);
+      return false;
     } finally {
       this.payoutSetupLoading = false;
       this.render();
     }
-  }
-
-  goToManagePayouts() {
-    this.showPayoutSetupModal = false;
-    this.router.navigate(['/settings'], { queryParams: { tab: 'payments' } });
   }
 
   triggerRecommendation() {
@@ -436,7 +450,6 @@ export class NewItemComponent implements OnInit {
   }
 
   goToUpgrade() {
-    this.showPremiumModal = false;
     this.router.navigate(['/subscription'], {
       queryParams: { fromUpgrade: true, requiredPlan: this.requiredPlan, from: '/new-item' },
       state: { fromUpgrade: true, requiredPlan: this.requiredPlan, from: '/new-item' } as any
@@ -448,15 +461,8 @@ export class NewItemComponent implements OnInit {
     this.timeError = null;
     this.availabilityError = null;
 
-    if (
-      this.availableFromDate &&
-      this.availableToDate &&
-      (
-        this.availableToDate < this.availableFromDate ||
-        (this.availableToDate === this.availableFromDate && this.availableToTime <= this.availableFromTime)
-      )
-    ) {
-      this.availabilityError = this.i18n.t('new_item.error_time_order');
+    if (!this.availableUnlimited && !this.availableFromDate) {
+      this.availabilityError = this.i18n.t('new_item.error_available_from_required');
       this.render();
       return;
     }
@@ -490,20 +496,21 @@ export class NewItemComponent implements OnInit {
       }
     }
 
-    if (this.type === ListingType.LEND && this.plan === 'starter') {
+    if (this.subscriptionFeature.enabled() && this.type === ListingType.LEND && this.plan === 'starter') {
       this.requiredPlan = 'plus';
-      this.showPremiumModal = true;
-      this.render();
+      this.goToUpgrade();
       return;
     }
     if (this.type === ListingType.LEND && this.plan === 'plus' && Number(this.hourlyRate || 0) > 0) {
-      await this.ensurePayoutsReadyForPaidLending();
-      if (this.showPayoutSetupModal) return;
+      const ok = await this.ensurePayoutsReadyForPaidLending();
+      if (!ok) return;
     }
 
     this.saving = true;
     this.render();
     try {
+      const availableUnlimited = !!this.availableUnlimited;
+      const availableFrom = availableUnlimited || !this.availableFromDate ? null : `${this.availableFromDate}T${this.availableFromTime}:00`;
       const payload = {
         title: this.title.trim(),
         description: this.description ?? '',
@@ -514,8 +521,11 @@ export class NewItemComponent implements OnInit {
         gallery: this.gallery,
         autoApprove: this.isPremiumLender ? true : !!this.autoApprove,
         insuranceRequired: !!this.insuranceRequired,
-        x: 0,
-        y: 0,
+        x: this.x ?? undefined,
+        y: this.y ?? undefined,
+        availableUnlimited,
+        availableFrom,
+        availableTo: null,
         pickupLocationId: this.pickupOption === 'custom' ? null : this.pickupLocationId,
         pickupLocationCustom: null,
         pickupLocationStreet: this.pickupOption === 'custom' ? (this.pickupLocationStreet || null) : null,

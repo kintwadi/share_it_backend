@@ -73,21 +73,21 @@
             <span class="text-blue-900">{{user.trustScore}}</span>
           </span>
 
-          <span *ngIf="currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
+          <span *ngIf="subscriptionEnabled && currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
             <span class="uppercase">Plan</span>
             <span class="text-emerald-900 normal-case">
               {{ currentSub.status === 'canceled' ? 'Standard (Lender)' : (currentSub.planType + ' • ' + currentSub.status) }}
             </span>
           </span>
 
-          <span *ngIf="currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
+          <span *ngIf="subscriptionEnabled && currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
             <lucide-icon [img]="Shield" size="12" class="text-amber-700"></lucide-icon>
             <span class="uppercase">Premium</span>
           </span>
         </div>
 
         <button
-          *ngIf="!currentSub"
+          *ngIf="subscriptionEnabled && !currentSub"
           type="button"
           (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
           class="w-full lg:w-[320px] p-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 transition-colors text-left shadow-sm"
@@ -366,7 +366,8 @@
               <img [src]="item.imageUrl" [alt]="item.title" class="w-16 h-16 rounded-lg object-cover bg-gray-100 group-hover:scale-105 transition-transform" />
               <div class="flex-1 min-w-0">
                 <h4 class="font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors">{{item.title}}</h4>
-                <p class="text-xs text-gray-500 mb-2">Owner: {{item.owner?.name}}</p>
+                <p class="text-xs text-gray-500 mb-1">Owner: {{item.owner?.name}}</p>
+                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">Item Ref: {{item.itemReference}}</p>
 
                 <div *ngIf="item.status === AvailabilityStatus.PENDING" class="flex items-center text-xs text-indigo-600 bg-indigo-50 w-fit px-2 py-1 rounded animate-pulse">
                   <lucide-icon [img]="BellRing" size="12" class="mr-1"></lucide-icon>
@@ -376,7 +377,7 @@
                   <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
                   Disputed
                 </div>
-                <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
+                <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="CheckCircle2" size="12" class="mr-1"></lucide-icon>
                   Approved
                 </div>
@@ -608,203 +609,3 @@
     </div>
   </div>
 </div>
-
-<app-transaction-overview-modal
-  [item]="overviewItem"
-  [isOpen]="!!overviewItem"
-  [currentUser]="user"
-  (close)="closeOverview()"
-></app-transaction-overview-modal>
-
-<app-return-modal
-  *ngIf="returnsEnabled"
-  [item]="returningItem"
-  [currentUser]="user"
-  [isOpen]="!!returningItem"
-  (close)="closeReturn()"
-  (complete)="handleReturnComplete()"
-></app-return-modal>
-
-<app-review-modal
-  [item]="reviewingItem"
-  [currentUser]="user"
-  [isOpen]="!!reviewingItem"
-  (close)="closeReview()"
-></app-review-modal>
-
-<app-confirmation-modal
-  [isOpen]="deleteConfirmOpen"
-  [title]="i18n.t('dashboard.delete_listing_title')"
-  [message]="deleteConfirmMessage"
-  [confirmLabel]="i18n.t('dashboard.delete_cta')"
-  variant="danger"
-  (cancel)="closeDeleteConfirm()"
-  (confirm)="confirmDeleteListing()"
-></app-confirmation-modal>
-
-<ng-container *ngIf="userPreviewOpen && userPreview">
-  <div class="fixed inset-0 z-[75] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4" (click)="closeUserPreview()">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-fade-in-down" (click)="$event.stopPropagation()">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="font-bold text-gray-900 text-lg">User Preview</h3>
-        <button type="button" (click)="closeUserPreview()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
-          <lucide-icon [img]="X" [size]="20"></lucide-icon>
-        </button>
-      </div>
-      <div class="p-6">
-        <div class="flex items-center gap-4">
-          <img [src]="userPreview.avatarUrl || 'https://via.placeholder.com/80'" class="w-16 h-16 rounded-full border border-gray-200 object-cover" />
-          <div class="min-w-0">
-            <div class="font-bold text-gray-900 truncate">{{ userPreview.name }}</div>
-            <div class="text-sm text-gray-600 truncate">{{ userPreview.email }}</div>
-            <div class="mt-2 inline-flex items-center gap-2 text-xs font-bold text-brand-700 bg-brand-50 border border-brand-100 px-2 py-1 rounded-full">
-              {{ userPreview.trustScore }}% Trust
-              <span class="text-gray-300">•</span>
-              {{ userPreview.vouchCount }} Vouches
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 flex gap-3">
-          <button type="button" (click)="handleMessageUser(userPreview)" class="flex-1 py-3 px-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-sm transition-colors flex items-center justify-center gap-2">
-            <lucide-icon [img]="MessageSquare" [size]="18"></lucide-icon>
-            Message
-          </button>
-          <button type="button" (click)="closeUserPreview()" class="flex-1 py-3 px-4 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="subscriptionGateOpen">
-  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4" (click)="closeSubscriptionGate()">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 animate-fade-in-down" (click)="$event.stopPropagation()">
-      <div class="relative p-6 bg-gradient-to-b from-amber-50 to-white">
-        <button type="button" (click)="closeSubscriptionGate()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
-          <lucide-icon [img]="X" [size]="18"></lucide-icon>
-        </button>
-
-        <div class="flex items-start gap-4">
-          <div class="shrink-0 w-12 h-12 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shadow-sm">
-            <lucide-icon [img]="ShieldAlert" [size]="22"></lucide-icon>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-gray-900">
-              {{ i18n.t('dash.subscription_required_title') }}
-            </h3>
-            <p class="text-sm text-gray-600 mt-1">
-              {{ i18n.t('dash.subscription_required_message') }}
-            </p>
-          </div>
-        </div>
-
-        <div class="mt-4 rounded-xl border border-amber-100 bg-white/70 px-4 py-3">
-          <div class="flex items-start gap-2 text-xs text-gray-700">
-            <lucide-icon [img]="CheckCircle2" [size]="16" class="text-emerald-600 mt-0.5"></lucide-icon>
-            <div>
-              <div class="font-semibold text-gray-900">Unlock posting</div>
-              <div class="text-gray-600">Subscribe to list items and reach verified neighbors.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-6 pt-0">
-        <div class="flex gap-3">
-          <button type="button" (click)="closeSubscriptionGate()" class="flex-1 py-3 px-4 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
-            {{ i18n.t('dash.subscription_required_cancel') }}
-          </button>
-          <button type="button" (click)="confirmSubscriptionGate()" class="flex-1 py-3 px-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 shadow-sm transition-colors">
-            {{ i18n.t('dash.subscription_required_confirm') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="showReportModal && reportTarget">
-  <div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-down">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
-          <lucide-icon [img]="Flag" [size]="20" class="text-red-500"></lucide-icon>
-          {{ i18n.t('listing.report.title') }}
-        </h3>
-        <button type="button" (click)="closeReportModal()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
-          <lucide-icon [img]="X" [size]="20"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="p-6">
-        <p class="text-sm text-gray-500 mb-4">
-          {{ reportTarget.title }}
-        </p>
-
-        <div class="mb-4">
-          <label class="block text-sm font-bold text-gray-700 mb-2">{{ i18n.t('listing.report.reason') }}</label>
-          <select [(ngModel)]="reportReason" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
-            <option [ngValue]="''">Select a reason</option>
-            <option [ngValue]="'inappropriate'">{{ i18n.t('listing.report.reason_inappropriate') }}</option>
-            <option [ngValue]="'spam'">{{ i18n.t('listing.report.reason_spam') }}</option>
-            <option [ngValue]="'scam'">{{ i18n.t('listing.report.reason_scam') }}</option>
-            <option [ngValue]="'unsafe'">{{ i18n.t('listing.report.reason_unsafe') }}</option>
-            <option [ngValue]="'other'">{{ i18n.t('listing.report.reason_other') }}</option>
-          </select>
-        </div>
-
-        <div class="mb-6">
-          <label class="block text-sm font-bold text-gray-700 mb-2">{{ i18n.t('listing.report.details') }}</label>
-          <textarea [(ngModel)]="reportDetails" [placeholder]="i18n.t('listing.report.details_placeholder')" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all min-h-[100px]"></textarea>
-        </div>
-
-        <div class="flex gap-3">
-          <button type="button" (click)="closeReportModal()" class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-50 rounded-xl transition-colors">
-            {{ i18n.t('common.cancel') }}
-          </button>
-          <button type="button" (click)="submitReport()" [disabled]="!reportReason || reporting" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-200 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-            <lucide-icon *ngIf="reporting" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
-            <span *ngIf="!reporting">{{ i18n.t('listing.report.submit') }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="showReportSuccess">
-  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-down text-center p-8">
-      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <lucide-icon [img]="CheckCircle2" [size]="32"></lucide-icon>
-      </div>
-      <h3 class="font-bold text-gray-900 text-xl mb-2">{{ i18n.t('listing.report_submitted') }}</h3>
-      <p class="text-gray-500 mb-6">
-        {{ i18n.t('listing.report_thanks') }}
-      </p>
-      <button type="button" (click)="closeReportSuccess()" class="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-colors">
-        Close
-      </button>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="reportError">
-  <div class="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-down text-center p-8">
-      <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <lucide-icon [img]="AlertTriangle" [size]="32"></lucide-icon>
-      </div>
-      <h3 class="font-bold text-gray-900 text-xl mb-2">{{ i18n.t('common.error') }}</h3>
-      <p class="text-gray-500 mb-6">
-        {{ reportError }}
-      </p>
-      <button type="button" (click)="reportError = null" class="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-bold transition-colors">
-        Close
-      </button>
-    </div>
-  </div>
-</ng-container>

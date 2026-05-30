@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,7 +70,27 @@ public class Listing {
     private String pickupLocationHouseNumber;
     private String pickupLocationCity;
     private String pickupLocationZip;
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
+
+    private boolean availableUnlimited;
+    private LocalDateTime availableFrom;
+    private LocalDateTime availableTo;
+
+    private LocalDateTime partnerSubmittedAt;
+    private UUID partnerSubmittedBy;
+    private LocalDateTime partnerReviewedAt;
+    private UUID partnerReviewedBy;
+    private String partnerReviewNote;
+    private String partnerRejectionReason;
+
+    private LocalDateTime partnerBorrowRequestedAt;
+    private UUID partnerBorrowRequestedBy;
+    private LocalDateTime partnerBorrowReviewedAt;
+    private UUID partnerBorrowReviewedBy;
+    private String partnerBorrowRejectionReason;
+
+    @Column(name = "item_reference")
+    private String itemReference;
 
     @PrePersist
     @PreUpdate

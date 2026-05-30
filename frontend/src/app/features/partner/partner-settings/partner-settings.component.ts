@@ -84,4 +84,3 @@ export class PartnerSettingsComponent implements OnInit {
     }
   }
 }
-

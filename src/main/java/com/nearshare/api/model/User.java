@@ -1,6 +1,7 @@
 package com.nearshare.api.model;
 
 import com.nearshare.api.model.embeddable.Location;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
@@ -50,6 +51,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "admin_scope")
+    private AdminScope adminScope;
+
     @Column(name = "two_factor_enabled")
     @Builder.Default
     private Boolean twoFactorEnabled = false;
@@ -79,4 +84,8 @@ public class User {
     @Column(name = "show_ratings")
     @Builder.Default
     private Boolean showRatings = true;
+
+    @Column(name = "email_verified")
+    @Builder.Default
+    private Boolean emailVerified = false;
 }

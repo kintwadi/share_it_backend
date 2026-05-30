@@ -1,6 +1,7 @@
 package com.nearshare.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nearshare.api.model.enums.AdminScope;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.model.enums.VerificationStatus;
 import lombok.AllArgsConstructor;
@@ -34,4 +35,6 @@ public class UserDTO {
     private boolean twoFactorEnabled;
     private Boolean profileVisible;
     private Boolean showRatings;
+    private AdminScope adminScope;
+    private Boolean emailVerified;
 }

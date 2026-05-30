@@ -1,0 +1,26 @@
+<div *ngIf="decision() === null" class="fixed inset-x-0 bottom-0 z-[60]">
+  <div class="mx-auto max-w-7xl px-4 md:px-6 lg:px-8 pb-4">
+    <div class="rounded-2xl border border-slate-200 bg-white/95 backdrop-blur shadow-xl px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 text-slate-500">
+          <lucide-icon [img]="Cookie" [size]="18"></lucide-icon>
+        </div>
+        <div class="text-sm text-slate-700 leading-relaxed">
+          <span class="font-semibold text-slate-900">{{ i18n.t('cookie.banner.title') }}</span>
+          {{ i18n.t('cookie.banner.text') }}
+          <a routerLink="/cookies" class="underline underline-offset-2 text-slate-700 hover:text-slate-900">{{ i18n.t('cookie.banner.learn_more') }}</a>
+          {{ i18n.t('cookie.banner.and') }}
+          <a routerLink="/privacy" class="underline underline-offset-2 text-slate-700 hover:text-slate-900">{{ i18n.t('cookie.banner.privacy') }}</a>.
+        </div>
+      </div>
+      <div class="flex items-center gap-2 justify-end">
+        <button type="button" (click)="deny()" class="px-4 py-2 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition-colors">
+          {{ i18n.t('cookie.banner.deny') }}
+        </button>
+        <button type="button" (click)="accept()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm">
+          {{ i18n.t('cookie.banner.accept') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

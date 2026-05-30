@@ -6,7 +6,7 @@ This document explains how to convert the existing React application in:
 
 into an Angular application located in:
 
-- `shareit_angular_client`
+- `frontend`
 
 without changing the Spring Boot REST API backend (`shareit_back`).
 
@@ -40,12 +40,12 @@ Write down:
 
 That inventory becomes the Angular migration checklist.
 
-## 2) Create the Angular project in `shareit_angular_client`
+## 2) Create the Angular project in `frontend`
 
 Recommended approach: a fresh Angular workspace, with one app.
 
 1. Scaffold
-   - Create the Angular app inside `shareit_angular_client` using Angular CLI (standalone APIs are fine).
+   - Create the Angular app inside `frontend` using Angular CLI (standalone APIs are fine).
 2. Routing mode
    - Use **hash-based routing** to stay compatible with current links: the React app uses `HashRouter`, and backend emails currently point to `/#/...`.
    - In Angular, use `provideRouter(..., withHashLocation())` (standalone) or `HashLocationStrategy` (NgModule approach).
@@ -275,7 +275,7 @@ Copy/paste and adapt this prompt into your AI tool:
 You are a senior full-stack engineer. Convert an existing React/Tailwind/Vite app located at:
 `c:/Users/core101/Desktop/desk/shareit_client/share_it_client`
 into an Angular app located at:
-`c:/Users/core101/Desktop/desk/shareit_angular_client`.
+`c:/Users/core101/Desktop/desk/shareit_back/frontend`.
 
 Hard constraints:
 - Do NOT change the Spring Boot backend API or any endpoints.

@@ -1,0 +1,81 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
+  <div class="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-gray-100 bg-gray-50">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center">
+          <lucide-icon [img]="Shield" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <div class="text-lg font-bold text-gray-900">Admin Connect</div>
+          <div class="text-xs text-gray-500">Dedicated admin login and signup.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 space-y-5">
+      <div class="flex rounded-xl bg-gray-100 p-1">
+        <button type="button" (click)="toggleMode(true)" class="flex-1 py-2 text-sm font-semibold rounded-lg" [ngClass]="isLogin ? 'bg-white shadow text-gray-900' : 'text-gray-600'">Login</button>
+        <button type="button" (click)="toggleMode(false)" class="flex-1 py-2 text-sm font-semibold rounded-lg" [ngClass]="!isLogin ? 'bg-white shadow text-gray-900' : 'text-gray-600'">Sign up</button>
+      </div>
+
+      <div *ngIf="error" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex gap-2">
+        <lucide-icon [img]="AlertCircle" [size]="16" class="mt-0.5"></lucide-icon>
+        <div>{{ error }}</div>
+      </div>
+
+      <form (ngSubmit)="handleSubmit()" class="space-y-4">
+        <div *ngIf="!isLogin">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Name</label>
+          <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
+            <lucide-icon [img]="UserIcon" [size]="16" class="text-gray-400"></lucide-icon>
+            <input [(ngModel)]="name" name="name" class="w-full outline-none text-sm" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
+            <lucide-icon [img]="Mail" [size]="16" class="text-gray-400"></lucide-icon>
+            <input [(ngModel)]="email" name="email" type="email" class="w-full outline-none text-sm" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+          <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
+            <lucide-icon [img]="Lock" [size]="16" class="text-gray-400"></lucide-icon>
+            <input [(ngModel)]="password" name="password" type="password" class="w-full outline-none text-sm" />
+          </div>
+        </div>
+
+        <div *ngIf="!isLogin">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Signup Secret</label>
+          <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 bg-white">
+            <lucide-icon [img]="Key" [size]="16" class="text-gray-400"></lucide-icon>
+            <input [(ngModel)]="signupSecret" name="signupSecret" type="password" class="w-full outline-none text-sm" />
+          </div>
+        </div>
+
+        <div *ngIf="!isLogin">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Admin type</label>
+          <select [(ngModel)]="adminScope" name="adminScope" class="w-full border border-gray-200 rounded-xl px-3 py-2 bg-white text-sm outline-none">
+            <option value="FULL">Admin</option>
+            <option value="PARTNER">Partner</option>
+          </select>
+        </div>
+
+        <button type="submit" [disabled]="isLoading" class="w-full py-3 rounded-xl bg-gray-900 text-white font-semibold disabled:opacity-60 flex items-center justify-center gap-2">
+          <span>{{ isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Create Admin') }}</span>
+          <lucide-icon *ngIf="!isLoading" [img]="ArrowRight" [size]="16"></lucide-icon>
+        </button>
+      </form>
+
+      <div class="text-xs text-gray-500 text-center">
+        <a routerLink="/connect" class="hover:text-gray-900">Go to user connect</a>
+
+      <div class="text-xs text-gray-500 text-center">
+        <a routerLink="/connect" class="hover:text-gray-900">Go to user connect</a>
+      </div>
+    </div>
+  </div>
+</div>

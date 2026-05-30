@@ -48,8 +48,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.HEAD, "/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/config/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payments/webhook", "/api/health", "/api/seed").permitAll()
                 .requestMatchers("/api/auth/verify-2fa-login").authenticated()
+                .requestMatchers("/api/admin/auth/verify-2fa-login", "/api/partner/auth/verify-2fa-login").authenticated()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/auth/email-verification/**", "/api/admin/auth/login", "/api/admin/auth/register", "/api/partner/auth/login", "/api/partner/auth/register", "/api/config/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payments/webhook", "/api/health", "/api/seed").permitAll()
                 .requestMatchers("/api/subscriptions/**").permitAll()
                 .requestMatchers("/api/insurance/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()

@@ -1,1 +1,20 @@
-/* Home specific styles if any */
+.home-view-enter {
+  animation: homeViewEnter 180ms ease both;
+}
+
+@keyframes homeViewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-view-enter {
+    animation: none;
+  }
+}

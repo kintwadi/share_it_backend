@@ -5,17 +5,6 @@
   </div>
 </ng-container>
 
-<app-confirmation-modal
-  [isOpen]="showDeleteModal"
-  [title]="i18n.t('dashboard.delete_listing_title')"
-  [message]="deleteConfirmMessage"
-  [confirmLabel]="i18n.t('dashboard.delete_cta')"
-  [confirmDisabled]="deleting"
-  variant="danger"
-  (cancel)="closeDeleteModal()"
-  (confirm)="confirmDeleteListing()"
-></app-confirmation-modal>
-
 <ng-template #loadedTemplate>
 <div class="max-w-6xl mx-auto py-10 px-4" *ngIf="listing; else notFoundTemplate">
   
@@ -33,7 +22,7 @@
   </div>
 
   <button 
-    (click)="router.navigate(['/'])"
+    (click)="backToListings()"
     class="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors bg-white w-fit px-4 py-2 rounded-full border border-gray-200 shadow-sm"
   >
     <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon> {{ i18n.t('listing.back_to_listings') }}
@@ -172,7 +161,7 @@
           </div>
         </div>
 
-        <div (click)="openUserProfile()" class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl mb-8 transition-colors group cursor-pointer hover:bg-gray-100">
+        <div (click)="goToOwnerProfile()" class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl mb-8 transition-colors group cursor-pointer hover:bg-gray-100">
           <div class="flex items-center gap-3">
             <div class="relative">
               <img [src]="(isPartnerListing ? ('https://picsum.photos/seed/' + displayAvatarSeed + '/200/200') : (listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + displayAvatarSeed + '/200/200'))" [alt]="displayOwnerName" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
@@ -201,7 +190,17 @@
 
         <div class="flex items-center text-sm text-gray-500 bg-blue-50/50 p-3 rounded-xl border border-blue-100 mb-8">
           <lucide-icon [img]="MapPin" [size]="16" class="mr-2 text-blue-500"></lucide-icon>
-          <span>~{{ listing.distanceMiles }} miles away ({{ pickupAreaLabel }})</span>
+          <ng-container *ngIf="listing.distanceMiles >= 1; else nearbyTpl">
+            <span>~{{ listing.distanceMiles | number:'1.0-1' }} miles away ({{ pickupAreaLabel }})</span>
+          </ng-container>
+          <ng-template #nearbyTpl>
+            <ng-container *ngIf="listing.distanceMiles > 0; else unknownTpl">
+              <span>~&lt;1 mile away ({{ pickupAreaLabel }})</span>
+            </ng-container>
+          </ng-template>
+          <ng-template #unknownTpl>
+            <span>{{ pickupAreaLabel }}</span>
+          </ng-template>
         </div>
 
         <ng-container *ngIf="showSuccess; else actionsTemplate">
@@ -332,7 +331,7 @@
                       </div>
                       <button
                         type="button"
-                        (click)="openDeleteModal()"
+                        (click)="goToDeleteListing()"
                         [disabled]="!canOwnerDelete"
                         class="w-full py-3 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl font-bold transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -417,7 +416,7 @@
 <ng-template #notFoundTemplate>
   <div class="max-w-3xl mx-auto py-10">
     <button 
-      (click)="router.navigate(['/'])"
+      (click)="backToListings()"
       class="mb-6 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors bg-white w-fit px-4 py-2 rounded-full border border-gray-200 shadow-sm"
     >
       <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon> {{ i18n.t('listing.back_to_listings') }}
@@ -431,426 +430,3 @@
     </div>
   </div>
 </ng-template>
-
-<ng-container *ngIf="showProfileModal && listing">
-  <div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="absolute inset-0" (click)="closeUserProfile()"></div>
-    <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-down max-h-[85vh] flex flex-col">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="font-bold text-gray-900 text-lg">Member Profile</h3>
-        <button type="button" (click)="closeUserProfile()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
-          <lucide-icon [img]="X" [size]="20"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="p-6 overflow-y-auto">
-        <div class="flex items-center gap-4 mb-6">
-          <img [src]="listing.owner?.avatarUrl || 'https://picsum.photos/seed/' + listing.owner?.id + '/200/200'" [alt]="listing.owner?.name" class="w-20 h-20 rounded-full object-cover border-4 border-gray-50 shadow-sm" />
-          <div>
-            <h4 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              {{ listing.owner?.name }}
-              <lucide-icon *ngIf="listing.owner?.verificationStatus === 'VERIFIED'" [img]="BadgeCheck" [size]="20" class="text-blue-500"></lucide-icon>
-            </h4>
-            <p class="text-sm text-gray-500">
-              Joined {{ ownerJoinedYear }}
-            </p>
-            <div class="flex items-center gap-3 mt-2">
-              <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
-                <lucide-icon [img]="ShieldCheck" [size]="14" class="mr-1 text-emerald-600"></lucide-icon>
-                {{ listing.owner?.trustScore }}% Trust
-              </span>
-              <span class="flex items-center text-sm font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-lg">
-                <lucide-icon [img]="ThumbsUp" [size]="14" class="mr-1 text-brand-600"></lucide-icon>
-                {{ listing.owner?.vouchCount || 0 }} Vouches
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          *ngIf="!isOwner && currentUser"
-          type="button"
-          (click)="handleVouch()"
-          [disabled]="vouching || hasVouched"
-          class="w-full py-3 mb-8 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-bold transition-colors flex items-center justify-center border border-brand-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <lucide-icon *ngIf="vouching" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
-          <span *ngIf="!vouching">{{ hasVouched ? 'Vouched!' : 'Vouch for this User' }}</span>
-        </button>
-
-        <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <lucide-icon [img]="Star" [size]="18" class="text-yellow-400 fill-current"></lucide-icon>
-          Reviews ({{ reviews.length }})
-        </h4>
-
-        <div *ngIf="loadingReviews" class="flex justify-center py-8">
-          <lucide-icon [img]="Loader2" [size]="20" class="animate-spin text-gray-400"></lucide-icon>
-        </div>
-
-        <ng-container *ngIf="!loadingReviews">
-          <div *ngIf="reviews.length > 0; else noReviews" class="space-y-4">
-            <div *ngFor="let review of reviews" class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-1 text-yellow-500">
-                  <lucide-icon
-                    *ngFor="let _ of [0,1,2,3,4]; let i = index"
-                    [img]="Star"
-                    [size]="12"
-                    [ngClass]="i < review.rating ? '' : 'text-gray-300'"
-                  ></lucide-icon>
-                </div>
-                <span class="text-xs text-gray-400">{{ review.timestamp ? (review.timestamp | date:'shortDate') : '' }}</span>
-              </div>
-              <p class="text-gray-700 text-sm italic">"{{ review.comment }}"</p>
-            </div>
-          </div>
-          <ng-template #noReviews>
-            <div class="text-center py-8 text-gray-500 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              No reviews yet.
-            </div>
-          </ng-template>
-        </ng-container>
-      </div>
-    </div>
-  </div>
-</ng-container>
-
-<ng-container *ngIf="showBookingModal && listing && currentUser">
-  <div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="absolute inset-0" (click)="closeBookingModal()"></div>
-    <div class="relative bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-gray-200 flex flex-col max-h-[90vh]">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="font-bold text-gray-900 text-lg">
-          {{ bookingStep === 'DURATION' ? 'Request Details' : (bookingStep === 'INSURANCE' ? 'Insurance' : 'Checkout') }}
-        </h3>
-        <button type="button" (click)="closeBookingModal()" class="text-gray-400 hover:text-gray-600 p-1 bg-white rounded-full border border-gray-200">
-          <lucide-icon [img]="X" [size]="20"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="p-6 overflow-y-auto space-y-6">
-        <div *ngIf="bookingStep !== 'PATH_SELECTION'" class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-          <div class="flex items-center justify-between">
-            <div>{{ i18n.t('listing.borrow.base') }}</div>
-            <div class="font-bold">{{i18n.formatPrice(baseTotal)}}</div>
-          </div>
-          <div *ngIf="requiresInsurance" class="flex items-center justify-between mt-2">
-            <div>Insurance</div>
-            <div class="font-bold">{{i18n.formatPrice(insuranceCost)}}</div>
-          </div>
-          <div *ngIf="serviceFee > 0" class="flex items-center justify-between mt-2">
-            <div>{{ i18n.t('listing.borrow.service_fee') }}</div>
-            <div class="font-bold">{{i18n.formatPrice(serviceFee)}}</div>
-          </div>
-          <div *ngIf="depositAmount > 0" class="flex items-center justify-between mt-2">
-            <div>{{ i18n.t('listing.borrow.deposit') }}</div>
-            <div class="font-bold">{{i18n.formatPrice(depositAmount)}}</div>
-          </div>
-          <div class="h-px bg-gray-200 my-3"></div>
-          <div class="flex items-center justify-between">
-            <div class="font-bold">{{ i18n.t('listing.borrow.total') }}</div>
-            <div class="font-black text-gray-900">{{i18n.formatPrice(finalTotalWithInsurance)}}</div>
-          </div>
-        </div>
-
-        <div *ngIf="bookingStep === 'PATH_SELECTION' && !isPartnerListing" class="animate-fade-in">
-          <h4 class="font-bold text-gray-900 mb-6 text-center text-xl">How would you like to borrow?</h4>
-
-          <div class="space-y-4 mb-8">
-            <div
-              *ngIf="borrowTierEnabled.verified"
-              (click)="selectedPath='VERIFIED'"
-              class="relative p-5 rounded-2xl border-2 transition-all cursor-pointer"
-              [ngClass]="selectedPath === 'VERIFIED' ? 'border-brand-500 bg-brand-50 shadow-md ring-1 ring-brand-200' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'"
-            >
-              <div class="absolute top-0 right-0 bg-brand-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl tracking-wide">
-                RECOMMENDED
-              </div>
-              <div class="flex items-start gap-4">
-                <div class="mt-1 p-2 rounded-full" [ngClass]="selectedPath === 'VERIFIED' ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-400'">
-                  <lucide-icon [img]="Zap" [size]="20"></lucide-icon>
-                </div>
-                <div>
-                  <h5 class="font-bold text-gray-900 text-base">Start Verified Trial</h5>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ verifiedTrialCaption }}</p>
-                  <ul class="mt-3 space-y-1.5">
-                    <li class="flex items-center text-xs text-gray-600 font-medium">
-                      <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      No Transaction fee
-                    </li>
-                    <li class="flex items-center text-xs text-gray-600 font-medium">
-                      <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Instant borrowing
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div
-              *ngIf="borrowTierEnabled.deposit"
-              (click)="selectedPath='DEPOSIT'"
-              class="p-5 rounded-2xl border-2 transition-all cursor-pointer"
-              [ngClass]="selectedPath === 'DEPOSIT' ? 'border-brand-500 bg-brand-50 shadow-md ring-1 ring-brand-200' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'"
-            >
-              <div class="flex items-start gap-4">
-                <div class="mt-1 p-2 rounded-full" [ngClass]="selectedPath === 'DEPOSIT' ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-400'">
-                  <lucide-icon [img]="LockIcon" [size]="20"></lucide-icon>
-                </div>
-                <div>
-                  <h5 class="font-bold text-gray-900 text-base">Refundable Deposit</h5>
-                  <p class="text-xs text-gray-500 mt-0.5">€50 held until return</p>
-                  <ul class="mt-3 space-y-1.5">
-                    <li class="flex items-center text-xs text-gray-600 font-medium">
-                      <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Refund on return
-                    </li>
-                    <li class="flex items-center text-xs text-gray-600 font-medium">
-                      <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Instant borrowing
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div
-              *ngIf="borrowTierEnabled.fee"
-              (click)="selectedPath='FEE'"
-              class="p-5 rounded-2xl border-2 transition-all cursor-pointer"
-              [ngClass]="selectedPath === 'FEE' ? 'border-brand-500 bg-brand-50 shadow-md ring-1 ring-brand-200' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'"
-            >
-              <div class="flex items-start gap-4">
-                <div class="mt-1 p-2 rounded-full" [ngClass]="selectedPath === 'FEE' ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-400'">
-                  <lucide-icon [img]="DollarSign" [size]="20"></lucide-icon>
-                </div>
-                <div>
-                  <h5 class="font-bold text-gray-900 text-base">One-time Fee</h5>
-                  <p class="text-xs text-gray-500 mt-0.5">8% transaction fee</p>
-                  <ul class="mt-3 space-y-1.5">
-                    <li class="flex items-center text-xs text-gray-600 font-medium">
-                      <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      No subscription required
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            (click)="continueFromPath()"
-            [disabled]="!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee"
-            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Continue
-          </button>
-
-          <p class="text-[10px] text-gray-400 text-center mt-6 flex items-center justify-center gap-1.5">
-            <lucide-icon [img]="ShieldCheck" [size]="12" class="text-emerald-500"></lucide-icon>
-            Your address is never shared. Handoffs at neutral locations only.
-          </p>
-        </div>
-
-        <div *ngIf="bookingStep === 'DURATION'" class="animate-fade-in">
-          <button
-            *ngIf="!isFree && isTimeBased"
-            type="button"
-            (click)="backToPath()"
-            class="text-sm text-gray-500 hover:text-gray-800 mb-4 flex items-center"
-          >
-            <lucide-icon [img]="ChevronLeft" [size]="16" class="mr-1"></lucide-icon>
-            Back
-          </button>
-
-          <div class="flex gap-4 mb-6 relative">
-            <img [src]="listing.imageUrl" class="w-16 h-16 rounded-lg object-cover bg-gray-100" />
-            <div>
-              <h4 class="font-bold text-gray-900 line-clamp-1">{{ listing.title }}</h4>
-              <p class="text-sm text-gray-500">{{ listing.category }}</p>
-              <p class="text-xs text-brand-600 font-medium mt-1">
-                {{ isFree ? 'Free' : (i18n.formatPrice(listing.hourlyRate || 0) + '/hr') }}
-              </p>
-            </div>
-          </div>
-
-          <div *ngIf="isTimeBased" class="mb-6">
-            <label class="block text-sm font-bold text-gray-700 mb-2">How long do you need it?</label>
-            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200">
-              <button
-                type="button"
-                (click)="decBookingDuration()"
-                class="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-gray-600 hover:text-brand-600 border border-gray-200 hover:border-brand-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                [disabled]="bookingDuration <= 1"
-              >
-                <lucide-icon [img]="Minus" [size]="18"></lucide-icon>
-              </button>
-              <div class="text-center px-4">
-                <div class="text-2xl font-black text-gray-900">{{ bookingDuration }}</div>
-                <div class="text-xs text-gray-500">hours</div>
-              </div>
-              <button
-                type="button"
-                (click)="incBookingDuration()"
-                class="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-gray-600 hover:text-brand-600 border border-gray-200 hover:border-brand-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                [disabled]="bookingDuration >= 24"
-              >
-                <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
-              </button>
-            </div>
-          </div>
-
-          <button type="button" (click)="proceedFromDuration()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-xl shadow-lg transition-colors">
-            Proceed to Checkout
-          </button>
-        </div>
-
-        <div *ngIf="bookingStep === 'INSURANCE'" class="animate-fade-in space-y-4">
-          <button
-            type="button"
-            (click)="backToDuration()"
-            class="text-sm text-gray-500 hover:text-gray-800 flex items-center"
-          >
-            <lucide-icon [img]="ChevronLeft" [size]="16" class="mr-1"></lucide-icon>
-            Back
-          </button>
-
-          <div class="text-sm font-bold text-gray-900">Select insurance</div>
-          <div class="text-xs text-gray-500">Required for this item</div>
-
-          <div class="rounded-xl border border-gray-200 bg-white p-3">
-            <label class="block text-xs font-bold text-gray-700 mb-2">Zip code (optional)</label>
-            <input
-              [(ngModel)]="insuranceZipCode"
-              (blur)="selectedInsuranceType && selectInsuranceType(selectedInsuranceType)"
-              class="w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm"
-              placeholder="e.g. 90001"
-            />
-          </div>
-
-          <div *ngIf="insuranceError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
-            {{insuranceError}}
-          </div>
-
-          <div *ngIf="insuranceLoading && insuranceTypes.length === 0" class="p-3 bg-gray-50 text-gray-700 text-sm rounded-xl border border-gray-200 flex items-center gap-2">
-            <lucide-icon [img]="Loader2" size="16" class="animate-spin"></lucide-icon>
-            Loading insurance options...
-          </div>
-
-          <div class="space-y-2" *ngIf="insuranceTypes.length > 0">
-            <button
-              *ngFor="let t of insuranceTypes"
-              type="button"
-              (click)="selectInsuranceType(t.insuranceType)"
-              class="w-full flex items-center justify-between p-3 rounded-xl border transition-all"
-              [ngClass]="selectedInsuranceType === t.insuranceType ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-gray-300'"
-            >
-              <div class="text-left">
-                <div class="text-sm font-bold text-gray-900">{{t.insuranceType}}</div>
-                <div class="text-xs text-gray-500">{{ (t.percent * 100) | number:'1.0-2' }}% (min {{i18n.formatPrice(t.min)}}, max {{i18n.formatPrice(t.max)}})</div>
-              </div>
-              <div class="text-sm font-black text-gray-900" *ngIf="selectedInsuranceType === t.insuranceType">
-                {{ insuranceLoading ? '...' : i18n.formatPrice(insuranceCost) }}
-              </div>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            (click)="proceedFromInsurance()"
-            [disabled]="insuranceLoading || (requiresInsurance && !insuranceQuote)"
-            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl disabled:opacity-60"
-          >
-            Continue
-          </button>
-        </div>
-
-        <div *ngIf="bookingStep === 'PAYMENT' && !isPartnerListing" class="space-y-4">
-          <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.borrow.payment') }}</div>
-          <div *ngIf="isFree" class="text-sm text-gray-600 rounded-xl border border-gray-200 bg-gray-50 p-4">
-            {{ i18n.t('listing.borrow.free_confirm') }}
-          </div>
-          <div *ngIf="!isFree" class="space-y-3">
-            <button *ngIf="paymentOptions.card" (click)="paymentMethod='CARD'" class="w-full flex items-center p-3 rounded-xl border transition-all" [ngClass]="paymentMethod === 'CARD' ? 'border-brand-500 bg-brand-50 text-brand-900' : 'border-gray-200 hover:border-gray-300'">
-              <div class="p-2 bg-white rounded-full border border-gray-200 mr-3">
-                <lucide-icon [img]="CreditCard" size="20" class="text-gray-700"></lucide-icon>
-              </div>
-              <div class="text-left flex-1">
-                <div class="font-bold text-sm">{{ i18n.t('listing.borrow.card') }}</div>
-                <div class="text-xs opacity-70">{{ i18n.t('listing.borrow.card_help') }}</div>
-              </div>
-              <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center" [ngClass]="paymentMethod === 'CARD' ? 'border-brand-600' : ''">
-                <div *ngIf="paymentMethod === 'CARD'" class="w-2.5 h-2.5 rounded-full bg-brand-600"></div>
-              </div>
-            </button>
-            <button *ngIf="paymentOptions.paypal" (click)="paymentMethod='PAYPAL'" class="w-full flex items-center p-3 rounded-xl border transition-all" [ngClass]="paymentMethod === 'PAYPAL' ? 'border-brand-500 bg-brand-50 text-brand-900' : 'border-gray-200 hover:border-gray-300'">
-              <div class="p-2 bg-white rounded-full border border-gray-200 mr-3">
-                <lucide-icon [img]="Wallet" size="20" class="text-blue-600"></lucide-icon>
-              </div>
-              <div class="text-left flex-1">
-                <div class="font-bold text-sm">{{ i18n.t('listing.borrow.paypal') }}</div>
-                <div class="text-xs opacity-70">{{ i18n.t('listing.borrow.paypal_help') }}</div>
-              </div>
-              <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center" [ngClass]="paymentMethod === 'PAYPAL' ? 'border-brand-600' : ''">
-                <div *ngIf="paymentMethod === 'PAYPAL'" class="w-2.5 h-2.5 rounded-full bg-brand-600"></div>
-              </div>
-            </button>
-            <button *ngIf="paymentOptions.cash" (click)="paymentMethod='CASH'" class="w-full flex items-center p-3 rounded-xl border transition-all" [ngClass]="paymentMethod === 'CASH' ? 'border-brand-500 bg-brand-50 text-brand-900' : 'border-gray-200 hover:border-gray-300'">
-              <div class="p-2 bg-white rounded-full border border-gray-200 mr-3">
-                <lucide-icon [img]="DollarSign" size="20" class="text-emerald-600"></lucide-icon>
-              </div>
-              <div class="text-left flex-1">
-                <div class="font-bold text-sm">{{ i18n.t('listing.borrow.cash') }}</div>
-                <div class="text-xs opacity-70">{{ i18n.t('listing.borrow.cash_help') }}</div>
-              </div>
-              <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center" [ngClass]="paymentMethod === 'CASH' ? 'border-brand-600' : ''">
-                <div *ngIf="paymentMethod === 'CASH'" class="w-2.5 h-2.5 rounded-full bg-brand-600"></div>
-              </div>
-            </button>
-          </div>
-          <button (click)="proceedFromPayment()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl">
-            {{ isFree ? i18n.t('listing.borrow.confirm_request') : (paymentMethod === 'CARD' ? i18n.t('listing.borrow.continue_to_card') : i18n.t('listing.borrow.confirm')) }}
-          </button>
-        </div>
-
-        <div *ngIf="bookingStep === 'CARD_FORM' && !isPartnerListing" class="space-y-4">
-          <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.borrow.pay_by_card') }}</div>
-          <div *ngIf="!stripeReady" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
-            {{ i18n.t('listing.borrow.stripe_not_configured') }}
-          </div>
-
-          <div *ngIf="stripeReady && paymentMethods.length > 0" class="space-y-2">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">{{ i18n.t('listing.borrow.saved_cards') }}</div>
-            <button *ngFor="let pm of paymentMethods" type="button" (click)="selectedSavedPaymentMethodId = pm.id" class="w-full p-3 rounded-xl border flex items-center justify-between" [ngClass]="selectedSavedPaymentMethodId === pm.id ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:border-gray-300'">
-              <div class="text-left">
-                <div class="text-sm font-bold text-gray-900 capitalize">{{pm.brand}} •••• {{pm.last4}}</div>
-                <div class="text-xs text-gray-500">{{ i18n.t('listing.borrow.expires') }} {{pm.expMonth}}/{{pm.expYear}}</div>
-              </div>
-              <div class="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center" [ngClass]="selectedSavedPaymentMethodId === pm.id ? 'border-brand-600' : ''">
-                <div *ngIf="selectedSavedPaymentMethodId === pm.id" class="w-2.5 h-2.5 rounded-full bg-brand-600"></div>
-              </div>
-            </button>
-            <button type="button" (click)="selectedSavedPaymentMethodId = null; mountPaymentCard()" class="text-xs font-bold text-gray-500 hover:text-gray-900 mt-1">
-              {{ i18n.t('listing.borrow.use_new_card') }}
-            </button>
-          </div>
-
-          <div *ngIf="stripeReady && !selectedSavedPaymentMethodId" class="space-y-3">
-            <div #cardPayMount class="p-3 border border-gray-200 rounded-xl bg-white"></div>
-          </div>
-
-          <div *ngIf="cardError" class="p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-start gap-2">
-            <lucide-icon [img]="AlertTriangle" size="16" class="mt-0.5"></lucide-icon>
-            <div>{{cardError}}</div>
-          </div>
-
-          <button (click)="submitCardPayment()" [disabled]="cardProcessing || !stripeReady" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl disabled:opacity-60 flex items-center justify-center">
-            <lucide-icon *ngIf="cardProcessing" [img]="Loader2" size="18" class="animate-spin mr-2"></lucide-icon>
-            {{ i18n.t('listing.borrow.pay') }} {{i18n.formatPrice(finalTotalWithInsurance)}}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</ng-container>

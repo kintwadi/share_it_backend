@@ -85,9 +85,14 @@
           </div>
         </div>
 
-        <div *ngIf="prefs.prefs().locationData" class="flex items-center text-slate-500 text-xs font-medium bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+        <div *ngIf="prefs.prefs().locationData && listing.distanceMiles" class="flex items-center text-slate-500 text-xs font-medium bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
             <lucide-icon [img]="MapPin" [size]="12" class="mr-1 text-slate-400"></lucide-icon>
-            {{ listing.distanceMiles }} {{ i18n.t('listing.distance_unit') }}
+            <ng-container *ngIf="listing.distanceMiles >= 0.1; else veryCloseTpl">
+              {{ listing.distanceMiles | number:'1.0-1' }} {{ i18n.t('listing.distance_unit') }}
+            </ng-container>
+            <ng-template #veryCloseTpl>
+              &lt;0.1 {{ i18n.t('listing.distance_unit') }}
+            </ng-template>
         </div>
       </div>
     </div>

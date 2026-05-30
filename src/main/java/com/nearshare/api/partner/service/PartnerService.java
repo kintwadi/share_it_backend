@@ -12,6 +12,7 @@ import com.nearshare.api.partner.dto.PartnerBorrowRequestDTO;
 import com.nearshare.api.partner.dto.PartnerCreateListingRequest;
 import com.nearshare.api.partner.dto.PartnerDTO;
 import com.nearshare.api.partner.dto.PartnerRegistrationRequest;
+import com.nearshare.api.partner.dto.PartnerReturnRequestDTO;
 import com.nearshare.api.partner.dto.PartnerSettingsDTO;
 import com.nearshare.api.partner.model.Partner;
 import com.nearshare.api.partner.model.PartnerAdmin;
@@ -23,10 +24,13 @@ import com.nearshare.api.partner.repository.PartnerRepository;
 import com.nearshare.api.partner.repository.PartnerSettingsRepository;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ReturnSessionRepository;
+import com.nearshare.api.service.ReturnService;
 import com.nearshare.api.util.DistanceUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,18 +45,25 @@ public class PartnerService {
     private final PartnerSettingsRepository partnerSettingsRepository;
     private final ListingRepository listingRepository;
     private final PickupLocationRepository pickupLocationRepository;
+    private final SecureRandom itemRefRandom = new SecureRandom();
+    private final ReturnSessionRepository returnSessionRepository;
+    private final ReturnService returnService;
 
     public PartnerService(
             PartnerRepository partnerRepository,
             PartnerAdminRepository partnerAdminRepository,
             PartnerSettingsRepository partnerSettingsRepository,
             ListingRepository listingRepository,
-            PickupLocationRepository pickupLocationRepository) {
+            PickupLocationRepository pickupLocationRepository,
+            ReturnSessionRepository returnSessionRepository,
+            ReturnService returnService) {
         this.partnerRepository = partnerRepository;
         this.partnerAdminRepository = partnerAdminRepository;
         this.partnerSettingsRepository = partnerSettingsRepository;
         this.listingRepository = listingRepository;
         this.pickupLocationRepository = pickupLocationRepository;
+        this.returnSessionRepository = returnSessionRepository;
+        this.returnService = returnService;
     }
 
     @Transactional(readOnly = true)
@@ -114,6 +125,9 @@ public class PartnerService {
         if (req.getType() == null) throw new RuntimeException("type_required");
         if (hourlyRate == null) hourlyRate = BigDecimal.ZERO;
         if (req.getType().name().equalsIgnoreCase("GIVE")) hourlyRate = BigDecimal.ZERO;
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
+        LocalDateTime availableTo = null;
 
         Listing l = Listing.builder()
                 .id(UUID.randomUUID())
@@ -126,7 +140,7 @@ public class PartnerService {
                 .hourlyRate(hourlyRate)
                 .autoApprove(req.isAutoApprove())
                 .insuranceRequired(req.isInsuranceRequired())
-                .status(AvailabilityStatus.AVAILABLE)
+                .status(AvailabilityStatus.PARTNER_INACTIVE)
                 .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
                 .owner(null)
                 .partner(partner)
@@ -137,6 +151,11 @@ public class PartnerService {
                 .pickupLocationHouseNumber(pickupHouse)
                 .pickupLocationCity(pickupCity)
                 .pickupLocationZip(pickupZip)
+                .availableUnlimited(availableUnlimited)
+                .availableFrom(availableFrom)
+                .availableTo(availableTo)
+                .partnerSubmittedAt(LocalDateTime.now())
+                .partnerSubmittedBy(current.getId())
                 .createdAt(LocalDateTime.now())
                 .build();
         listingRepository.save(l);
@@ -184,6 +203,14 @@ public class PartnerService {
         if (req.getType().name().equalsIgnoreCase("GIVE")) hourlyRate = BigDecimal.ZERO;
         l.setHourlyRate(hourlyRate);
         l.setLocation(Location.builder().lat(req.getX()).lng(req.getY()).build());
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        l.setAvailableUnlimited(availableUnlimited);
+        l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
+        l.setAvailableTo(null);
+        if (l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE && l.getPartnerSubmittedAt() == null) {
+            l.setPartnerSubmittedAt(LocalDateTime.now());
+            l.setPartnerSubmittedBy(current.getId());
+        }
 
         if (req.getPickupLocationId() != null) {
             com.nearshare.api.model.PickupLocation pickup = pickupLocationRepository.findById(req.getPickupLocationId())
@@ -218,7 +245,7 @@ public class PartnerService {
         requirePartnerAdmin(current, l.getPartner().getId());
 
         AvailabilityStatus st = l.getStatus();
-        if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED) {
+        if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
             throw new RuntimeException("cannot_delete_active_listing");
         }
         listingRepository.delete(l);
@@ -233,7 +260,7 @@ public class PartnerService {
 
         return listingRepository.findAll().stream()
                 .filter(l -> l.getPartner() != null && partnerIds.contains(l.getPartner().getId()))
-                .filter(l -> l.getStatus() == AvailabilityStatus.PENDING)
+                .filter(l -> l.getStatus() == AvailabilityStatus.PARTNER_BORROW_REQUESTED)
                 .map(l -> PartnerBorrowRequestDTO.builder()
                         .listingId(l.getId())
                         .listingTitle(l.getTitle())
@@ -247,20 +274,77 @@ public class PartnerService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<PartnerReturnRequestDTO> getPendingManualReturns(User current) {
+        Set<UUID> partnerIds = partnerAdminRepository.findAllByUserId(current.getId()).stream()
+                .map(pa -> pa.getPartner() != null ? pa.getPartner().getId() : null)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (partnerIds.isEmpty()) return List.of();
+
+        return returnSessionRepository
+                .findByStatusAndManualBorrowerConfirmedAtIsNotNullAndManualLenderConfirmedAtIsNullOrderByCreatedAtDesc(com.nearshare.api.model.enums.ReturnStatus.PENDING)
+                .stream()
+                .filter(rs -> rs.getListing() != null && rs.getListing().getPartner() != null && partnerIds.contains(rs.getListing().getPartner().getId()))
+                .map(rs -> PartnerReturnRequestDTO.builder()
+                        .listingId(rs.getListing().getId())
+                        .listingTitle(rs.getListing().getTitle())
+                        .itemReference(rs.getListing().getItemReference())
+                        .partnerId(rs.getListing().getPartner() != null ? rs.getListing().getPartner().getId() : null)
+                        .partnerName(rs.getListing().getPartner() != null ? rs.getListing().getPartner().getName() : null)
+                        .borrowerId(rs.getBorrower() != null ? rs.getBorrower().getId() : null)
+                        .borrowerName(rs.getBorrower() != null ? rs.getBorrower().getName() : null)
+                        .borrowerEmail(rs.getBorrower() != null ? rs.getBorrower().getEmail() : null)
+                        .borrowerConfirmedAt(rs.getManualBorrowerConfirmedAt())
+                        .build())
+                .toList();
+    }
+
+    @Transactional
+    public com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse acceptManualReturn(User current, UUID listingId) {
+        Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (listing.getPartner() == null || listing.getPartner().getId() == null) throw new RuntimeException("not_partner_listing");
+        requirePartnerAdmin(current, listing.getPartner().getId());
+        String itemRef = listing.getItemReference();
+        if (itemRef == null || itemRef.isBlank()) {
+            itemRef = generateUniqueItemReference();
+            listing.setItemReference(itemRef);
+            listingRepository.save(listing);
+        }
+        com.nearshare.api.dto.ReturnDTOs.ManualFallbackRequest req = new com.nearshare.api.dto.ReturnDTOs.ManualFallbackRequest();
+        req.setItemNumber(itemRef);
+        req.setConciergeWitnessId("PARTNER_ADMIN:" + current.getId());
+        return returnService.manualFallback(listingId, current, req);
+    }
+
+    @Transactional
+    public com.nearshare.api.dto.ReturnDTOs.ReturnSessionResponse denyManualReturn(User current, UUID listingId, String reason) {
+        Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (listing.getPartner() == null || listing.getPartner().getId() == null) throw new RuntimeException("not_partner_listing");
+        requirePartnerAdmin(current, listing.getPartner().getId());
+        return returnService.denyManualReturn(listingId, current, reason);
+    }
+
     @Transactional
     public ListingDTO approvePartnerRequest(User current, UUID listingId) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() == null) throw new RuntimeException("not_partner_listing");
         requirePartnerAdmin(current, l.getPartner().getId());
-        if (l.getStatus() != AvailabilityStatus.PENDING) throw new RuntimeException("invalid_status");
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) throw new RuntimeException("invalid_status");
 
         if (l.getType() != null && l.getType().name().equalsIgnoreCase("GIVE")) {
             l.setStatus(AvailabilityStatus.GIFTED);
+            l.setItemReference(null);
         } else if (l.getType() != null && l.getType().name().equalsIgnoreCase("SELL")) {
             l.setStatus(AvailabilityStatus.SOLD);
+            l.setItemReference(null);
         } else {
-            l.setStatus(AvailabilityStatus.APPROVED);
+            l.setStatus(AvailabilityStatus.BORROWED);
+            l.setItemReference(generateUniqueItemReference());
         }
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(current.getId());
+        l.setPartnerBorrowRejectionReason(null);
         listingRepository.save(l);
         return toListingDTO(l, current);
     }
@@ -270,10 +354,14 @@ public class PartnerService {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() == null) throw new RuntimeException("not_partner_listing");
         requirePartnerAdmin(current, l.getPartner().getId());
-        if (l.getStatus() != AvailabilityStatus.PENDING) throw new RuntimeException("invalid_status");
+        if (l.getStatus() != AvailabilityStatus.PARTNER_BORROW_REQUESTED) throw new RuntimeException("invalid_status");
 
-        l.setStatus(AvailabilityStatus.AVAILABLE);
+        l.setStatus(AvailabilityStatus.PARTNER_ACTIVE);
         l.setBorrower(null);
+        l.setItemReference(null);
+        l.setPartnerBorrowReviewedAt(LocalDateTime.now());
+        l.setPartnerBorrowReviewedBy(current.getId());
+        l.setPartnerBorrowRejectionReason("partner_reject_borrow_request");
         listingRepository.save(l);
         return toListingDTO(l, current);
     }
@@ -366,16 +454,19 @@ public class PartnerService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);
 
         return ListingDTO.builder()
                 .id(l.getId())
+                .itemReference(l.getItemReference())
                 .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
                 .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
                 .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
+                .partnerCity(l.getPartner() != null ? l.getPartner().getCity() : null)
+                .partnerCreatedAt(l.getPartner() != null ? l.getPartner().getCreatedAt() : null)
                 .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
                 .title(l.getTitle())
                 .description(l.getDescription())
@@ -419,7 +510,21 @@ public class PartnerService {
                 .pickupLocationHouseNumber(canSeeExactPickup ? l.getPickupLocationHouseNumber() : null)
                 .pickupLocationCity(l.getPickupLocationCity())
                 .pickupLocationZip(l.getPickupLocationZip())
+                .availableUnlimited(l.isAvailableUnlimited())
+                .availableFrom(l.getAvailableFrom())
+                .availableTo(l.getAvailableTo())
                 .build();
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = itemRefRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new RuntimeException("failed_to_generate_item_reference");
     }
 
     private String safePickupCustom(String raw) {

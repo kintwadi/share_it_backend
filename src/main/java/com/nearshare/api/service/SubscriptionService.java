@@ -6,6 +6,7 @@ import com.nearshare.api.model.Subscription;
 import com.nearshare.api.model.SubscriptionInvoice;
 import com.nearshare.api.model.SubscriptionVerificationCode;
 import com.nearshare.api.model.User;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.repository.SubscriptionInvoiceRepository;
 import com.nearshare.api.repository.SubscriptionRepository;
 import com.nearshare.api.repository.SubscriptionVerificationCodeRepository;
@@ -34,6 +35,7 @@ public class SubscriptionService {
     private final EmailService emailService;
     private final com.nearshare.api.payment.StripePayment stripePayment;
     private final TrustScoreService trustScoreService;
+    private final RuntimeSettingsService runtimeSettingsService;
 
     @Value("${subscription.pro.plan_type:pro}")
     private String proPlanType;
@@ -73,7 +75,8 @@ public class SubscriptionService {
             UserRepository userRepository,
             EmailService emailService,
             com.nearshare.api.payment.StripePayment stripePayment,
-            TrustScoreService trustScoreService
+            TrustScoreService trustScoreService,
+            RuntimeSettingsService runtimeSettingsService
     ) {
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionInvoiceRepository = subscriptionInvoiceRepository;
@@ -82,12 +85,24 @@ public class SubscriptionService {
         this.emailService = emailService;
         this.stripePayment = stripePayment;
         this.trustScoreService = trustScoreService;
+        this.runtimeSettingsService = runtimeSettingsService;
+    }
+
+    public boolean isSubscriptionEnabled() {
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true);
+    }
+
+    private boolean isSubscriptionEnforced() {
+        return isSubscriptionEnabled();
     }
 
 
 
     @Transactional
     public void sendVerificationCode(User user, String planType, String language) {
+        if (!isSubscriptionEnforced()) {
+            throw new RuntimeException("subscription_disabled");
+        }
         String requestedPlan = planType != null && !planType.isBlank() ? planType.trim().toLowerCase() : null;
         String requestedLanguage = language != null && !language.isBlank() ? language.trim().toLowerCase() : null;
         // Check if there's already an active verification code for this user
@@ -150,6 +165,9 @@ public class SubscriptionService {
 
     @Transactional
     public void createStarterSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            throw new RuntimeException("subscription_disabled");
+        }
         // Cancel existing active subscriptions
         List<String> activeStatuses = List.of("active", "trialing", "trial_active");
         List<Subscription> activeSubs = subscriptionRepository.findByUserAndStatusIn(user, activeStatuses);
@@ -179,6 +197,9 @@ public class SubscriptionService {
 
     @Transactional
     public void verifyEmailCode(User user, String code) {
+        if (!isSubscriptionEnforced()) {
+            throw new RuntimeException("subscription_disabled");
+        }
         Optional<SubscriptionVerificationCode> codeOpt = verificationCodeRepository.findByUserAndCode(user, code);
         if (codeOpt.isEmpty()) {
             throw new RuntimeException("invalid_verification_code");
@@ -206,10 +227,16 @@ public class SubscriptionService {
     }
 
     public Optional<SubscriptionDTO> getCurrentSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            return Optional.empty();
+        }
         return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user).map(this::toDTO);
     }
 
     public boolean isLenderPlan(User user) {
+        if (!isSubscriptionEnforced()) {
+            return true;
+        }
         return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user)
                 .map(sub -> {
                     if (sub.getPlanType() == null) {
@@ -230,6 +257,9 @@ public class SubscriptionService {
     }
 
     public boolean isPremiumLender(User user) {
+        if (!isSubscriptionEnforced()) {
+            return true;
+        }
         return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user)
                 .map(sub -> {
                     if (sub.getPlanType() == null) {
@@ -249,6 +279,9 @@ public class SubscriptionService {
     }
 
     public boolean isProSeller(User user) {
+        if (!isSubscriptionEnforced()) {
+            return true;
+        }
         return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user)
                 .map(sub -> {
                     if (sub.getPlanType() == null) {
@@ -269,6 +302,9 @@ public class SubscriptionService {
     }
 
     public boolean hasActiveSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            return false;
+        }
         // Only consider "active" and "trialing" as active subscriptions that should block new purchases
         List<String> activeStatuses = List.of("active", "trialing");
         List<Subscription> activeSubscriptions = subscriptionRepository.findByUserAndStatusIn(user, activeStatuses);
@@ -276,6 +312,9 @@ public class SubscriptionService {
     }
 
     public boolean hasActivePaidSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            return false;
+        }
         List<String> activeStatuses = List.of("active", "trialing", "trial_active");
         List<Subscription> activeSubscriptions = subscriptionRepository.findByUserAndStatusIn(user, activeStatuses);
         for (Subscription sub : activeSubscriptions) {
@@ -290,6 +329,9 @@ public class SubscriptionService {
     }
 
     public boolean canCancelSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            return false;
+        }
         Optional<Subscription> subscriptionWithStripeId = subscriptionRepository.findFirstByUserAndStripeSubscriptionIdIsNotNullOrderByCreatedAtDesc(user);
         if (subscriptionWithStripeId.isPresent()) {
             Subscription sub = subscriptionWithStripeId.get();
@@ -300,6 +342,9 @@ public class SubscriptionService {
 
     @Transactional
     public String fixSubscriptionStatus(User user) {
+        if (!isSubscriptionEnforced()) {
+            return "Subscription feature is disabled";
+        }
         List<Subscription> subscriptions = subscriptionRepository.findByUser(user);
         if (subscriptions.isEmpty()) {
             return "No subscriptions found for user";
@@ -317,6 +362,9 @@ public class SubscriptionService {
 
     @Transactional
     public void syncProSubscriptionFromStripe(User user, String stripeSubscriptionId, String stripeStatus, String planType) {
+        if (!isSubscriptionEnforced()) {
+            return;
+        }
         logger.info("Syncing Stripe subscription for user {}, id: {}, status: {}, plan: {}", 
                    user.getId(), stripeSubscriptionId, stripeStatus, planType);
         LocalDateTime now = LocalDateTime.now();
@@ -364,6 +412,9 @@ public class SubscriptionService {
 
     @Transactional
     public void updateInvoiceInfoFromStripe(String stripeSubscriptionId, String invoicePdfUrl, LocalDateTime invoiceDate) {
+        if (!isSubscriptionEnforced()) {
+            return;
+        }
         if (stripeSubscriptionId == null || stripeSubscriptionId.isBlank()) {
             return;
         }
@@ -383,6 +434,9 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public java.util.List<SubscriptionInvoiceDTO> getInvoicesForUser(User user) {
+        if (!isSubscriptionEnforced()) {
+            return java.util.List.of();
+        }
         Optional<Subscription> subOpt = subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user);
         if (subOpt.isEmpty()) {
             return java.util.List.of();
@@ -400,6 +454,9 @@ public class SubscriptionService {
 
     @Transactional
     public void cancelProSubscription(User user) {
+        if (!isSubscriptionEnforced()) {
+            return;
+        }
         // First try to find a subscription with a Stripe ID
         Optional<Subscription> existing = subscriptionRepository.findFirstByUserAndStripeSubscriptionIdIsNotNullOrderByCreatedAtDesc(user);
         
@@ -440,6 +497,9 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public com.nearshare.api.dto.SubscriptionUpgradePreviewDTO previewUpgrade(User user, String newPlanType) {
+        if (!isSubscriptionEnforced()) {
+            throw new RuntimeException("subscription_disabled");
+        }
         String normalizedPlanType = normalizePlanType(newPlanType);
         // Mock logic for proration calculation
         // In reality, this would query Stripe or calculate based on DB subscription
@@ -493,6 +553,9 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionDTO confirmUpgrade(User user, String newPlanType) {
+        if (!isSubscriptionEnforced()) {
+            throw new RuntimeException("subscription_disabled");
+        }
         String normalizedPlanType = normalizePlanType(newPlanType);
         // Execute the upgrade
         // In reality, call Stripe to update subscription with proration behavior

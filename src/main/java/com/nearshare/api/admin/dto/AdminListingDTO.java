@@ -13,14 +13,33 @@ import java.util.UUID;
 @Builder
 public class AdminListingDTO {
     private UUID id;
+    private String itemReference;
     private String title;
     private ListingType type;
     private AvailabilityStatus status;
     private BigDecimal hourlyRate;
     private UUID ownerId;
     private String ownerEmail;
+    private UUID partnerId;
+    private String partnerName;
     private UUID borrowerId;
     private String borrowerEmail;
     private LocalDateTime createdAt;
-}
 
+    private boolean availableUnlimited;
+    private LocalDateTime availableFrom;
+    private LocalDateTime availableTo;
+
+    private LocalDateTime partnerSubmittedAt;
+    private UUID partnerSubmittedBy;
+    private LocalDateTime partnerReviewedAt;
+    private UUID partnerReviewedBy;
+    private String partnerReviewNote;
+    private String partnerRejectionReason;
+
+    private LocalDateTime partnerBorrowRequestedAt;
+    private UUID partnerBorrowRequestedBy;
+    private LocalDateTime partnerBorrowReviewedAt;
+    private UUID partnerBorrowReviewedBy;
+    private String partnerBorrowRejectionReason;
+}

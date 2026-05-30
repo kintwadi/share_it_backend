@@ -1,62 +1,4 @@
 <div class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 relative">
-  <div *ngIf="showPayoutSetupModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" (click)="showPayoutSetupModal = false"></div>
-    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 relative overflow-hidden z-10 border border-slate-200">
-      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-300 via-indigo-500 to-indigo-300"></div>
-      <button (click)="showPayoutSetupModal = false" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1 bg-slate-50 rounded-full transition-colors">
-        <lucide-icon [img]="X" size="18"></lucide-icon>
-      </button>
-      <div class="flex flex-col items-center text-center">
-        <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 text-indigo-600 shadow-sm border border-indigo-100">
-          <lucide-icon [img]="CreditCard" size="32"></lucide-icon>
-        </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">Set up payouts first</h3>
-        <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-          Before you post a paid “Lend” listing, configure your linked account in Manage payouts so you can receive payments.
-        </p>
-        <div class="w-full space-y-3">
-          <button (click)="goToManagePayouts()" class="w-full py-3 px-4 bg-gray-900 hover:bg-black active:bg-black text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
-            {{ i18n.t('payments.payouts.manage') }}
-          </button>
-          <button (click)="showPayoutSetupModal = false" class="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
-            {{ i18n.t('common.cancel') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div *ngIf="showPremiumModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" (click)="showPremiumModal = false"></div>
-    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 relative overflow-hidden z-10 border border-slate-200">
-      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-300 via-amber-500 to-amber-300"></div>
-      <button (click)="showPremiumModal = false" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 p-1 bg-slate-50 rounded-full transition-colors">
-        <lucide-icon [img]="X" size="18"></lucide-icon>
-      </button>
-      <div class="flex flex-col items-center text-center">
-        <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4 text-amber-500 shadow-sm border border-amber-100">
-          <lucide-icon [img]="ShieldCheck" size="32"></lucide-icon>
-        </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">{{ i18n.t('new_item.premium_title') }}</h3>
-        <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-          {{ requiredPlan === 'plus' ? i18n.t('new_item.premium_desc_lend') : i18n.t('new_item.premium_desc_sell') }}
-        </p>
-        <div class="w-full space-y-3">
-          <button (click)="goToUpgrade()" class="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 group">
-            <lucide-icon [img]="Zap" size="18" class="group-hover:scale-110 transition-transform"></lucide-icon>
-            {{ i18n.t('new_item.premium_upgrade') }}
-          </button>
-          <button (click)="showPremiumModal = false" class="w-full py-2.5 px-4 bg-white border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors">
-            {{ i18n.t('new_item.premium_later') }}
-          </button>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-4">
-          {{ i18n.t('new_item.premium_footer') }}
-        </p>
-      </div>
-    </div>
-  </div>
-
   <ng-container *ngIf="loading; else formTpl">
     <div class="min-h-screen flex items-center justify-center text-slate-500">
       <lucide-icon [img]="Loader2" size="40" class="animate-spin"></lucide-icon>
@@ -104,7 +46,7 @@
                     <span class="text-base">🎁</span>
                     {{ i18n.t('new_item.type.give') }}
                   </button>
-                  <button *ngIf="subscriptionConfig.pro" type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
+                  <button *ngIf="sellEnabled && subscriptionConfig.pro" type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
                     <span class="text-base">💰</span>
                     {{ i18n.t('new_item.type.sell') }}
                   </button>
@@ -132,7 +74,7 @@
                       <p class="text-[11px] text-blue-700 mt-1 leading-relaxed" *ngIf="recommendationLoading">{{ i18n.t('new_item.loading') }}</p>
                       <ng-container *ngIf="!recommendationLoading">
                         <p class="text-[11px] text-blue-700 mt-1 leading-relaxed">
-                          {{ recommendation?.recommendedAction === 'SELL' ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
+                          {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
                           <span *ngIf="recommendation?.reasoning"> — {{ recommendation?.reasoning }}</span>
                         </p>
                         <div class="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-blue-800">
@@ -146,10 +88,10 @@
                         <div class="mt-2 flex gap-2">
                           <button 
                             type="button" 
-                            (click)="onTypeSelect(recommendation?.recommendedAction === 'SELL' ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
+                            (click)="onTypeSelect((recommendation?.recommendedAction === 'SELL' && sellEnabled) ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
                             class="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                           >
-                            {{ recommendation?.recommendedAction === 'SELL' ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
+                            {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
                           </button>
                           <button type="button" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-600 text-[10px] font-bold rounded-lg hover:bg-blue-50 transition-colors">
                             {{ i18n.t('new_item.keep_as_gift') }}
@@ -416,16 +358,6 @@
                 <div class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 transition-all">
                   <input type="date" [(ngModel)]="availableFromDate" class="flex-1 px-3 py-3 text-sm bg-transparent outline-none border-r border-slate-100" />
                   <select [(ngModel)]="availableFromTime" class="px-3 py-3 text-sm bg-slate-50 outline-none w-24 text-center font-medium text-slate-700">
-                    <option *ngFor="let tVal of timeOptions" [value]="tVal">{{ tVal }}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div *ngIf="!availableUnlimited" class="relative group animate-in fade-in slide-in-from-top-2 duration-200">
-                <label class="absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ i18n.t('new_item.available_to') }}</label>
-                <div class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 transition-all">
-                  <input type="date" [(ngModel)]="availableToDate" class="flex-1 px-3 py-3 text-sm bg-transparent outline-none border-r border-slate-100" />
-                  <select [(ngModel)]="availableToTime" class="px-3 py-3 text-sm bg-slate-50 outline-none w-24 text-center font-medium text-slate-700">
                     <option *ngFor="let tVal of timeOptions" [value]="tVal">{{ tVal }}</option>
                   </select>
                 </div>

@@ -8,6 +8,15 @@
     <div>{{error}}</div>
   </div>
 
+  <div *ngIf="notice" class="p-3 rounded-xl border text-sm flex items-start gap-2" [ngClass]="notice.variant === 'error' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-gray-50 border-gray-200 text-gray-700'">
+    <lucide-icon [img]="AlertTriangle" [size]="16" class="mt-0.5"></lucide-icon>
+    <div class="flex-1">
+      <div class="font-bold">{{notice.title}}</div>
+      <div class="text-xs mt-1">{{notice.message}}</div>
+    </div>
+    <button type="button" class="text-xs font-bold px-2 py-1 rounded-lg border border-gray-200 bg-white" (click)="notice = null">Close</button>
+  </div>
+
   <div class="rounded-xl border border-gray-200 overflow-hidden">
     <div class="bg-gray-50 p-3 border-b border-gray-200 flex gap-2">
       <button type="button" (click)="setTab('overview')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'overview' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">
@@ -239,25 +248,3 @@
     </div>
   </div>
 </div>
-
-<app-confirmation-modal
-  [isOpen]="confirmOpen"
-  [title]="confirmTitle"
-  [message]="confirmMessage"
-  [confirmLabel]="confirmLabel"
-  [confirmDisabled]="confirmLoading"
-  variant="danger"
-  (cancel)="closeConfirm()"
-  (confirm)="doConfirm()"
-></app-confirmation-modal>
-
-<app-confirmation-modal
-  [isOpen]="infoOpen"
-  [title]="infoTitle"
-  [message]="infoMessage"
-  confirmLabel="OK"
-  cancelLabel="Close"
-  variant="info"
-  (cancel)="closeInfo()"
-  (confirm)="closeInfo()"
-></app-confirmation-modal>

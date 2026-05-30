@@ -30,7 +30,11 @@ export class ResourceCardComponent {
   }
 
   get isAvailable(): boolean {
-    return this.listing?.status === AvailabilityStatus.AVAILABLE;
+    const l = this.listing;
+    if (!l) return false;
+    if (l.status === AvailabilityStatus.AVAILABLE) return true;
+    if (l.partnerId && l.status === AvailabilityStatus.PARTNER_ACTIVE && !l.borrowerId) return true;
+    return false;
   }
 
   get isFree(): boolean {

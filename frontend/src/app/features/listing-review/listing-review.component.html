@@ -1,0 +1,67 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="title">Leave a review</div>
+        <div class="subtitle" *ngIf="listing">{{ listing.title }}</div>
+      </div>
+
+      <div class="panel__body">
+        <div *ngIf="loading" class="state">
+          <lucide-icon [img]="Loader2" [size]="18" class="spin"></lucide-icon>
+          Loading…
+        </div>
+
+        <div *ngIf="!loading && done" class="success">
+          <div class="success__icon">
+            <lucide-icon [img]="CheckCircle2" [size]="28"></lucide-icon>
+          </div>
+          <div class="success__title">Thanks!</div>
+          <div class="success__text">Your review was submitted.</div>
+          <button type="button" class="btn btn--primary" (click)="back()">Close</button>
+        </div>
+
+        <div *ngIf="!loading && !done">
+          <div *ngIf="error" class="error">
+            <lucide-icon [img]="AlertTriangle" [size]="18"></lucide-icon>
+            <div>{{ error }}</div>
+          </div>
+
+          <div class="field">
+            <label class="label">Rating</label>
+            <div class="stars">
+              <button
+                *ngFor="let i of [1,2,3,4,5]"
+                type="button"
+                class="star"
+                [class.star--on]="rating >= i"
+                (click)="setRating(i)"
+              >
+                <lucide-icon [img]="Star" [size]="20"></lucide-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label">Comment</label>
+            <textarea [(ngModel)]="comment" class="textarea" rows="6" placeholder="Write a short note…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel__foot" *ngIf="!loading && !done">
+        <button type="button" class="btn btn--secondary" (click)="back()">{{ i18n.t('common.cancel') }}</button>
+        <button type="button" class="btn btn--primary" [disabled]="submitting || !listing" (click)="submit()">
+          <lucide-icon *ngIf="submitting" [img]="Loader2" [size]="16" class="spin"></lucide-icon>
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

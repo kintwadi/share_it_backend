@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, MapPin, Sparkles } from 'lucide-angular';
+import { LucideAngularModule, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, MapPin, Sparkles, LayoutGrid, List } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { Listing, ListingType, AvailabilityStatus, User } from '../../core/models/types';
@@ -31,15 +31,18 @@ export class HomeComponent implements OnInit {
   readonly ChevronRight = ChevronRight;
   readonly MapPin = MapPin;
   readonly Sparkles = Sparkles;
+  readonly LayoutGrid = LayoutGrid;
+  readonly ListIcon = List;
   readonly ListingType = ListingType;
 
   listings: Listing[] = [];
   loading = true;
-  filterType: 'ALL' | ListingType = 'ALL';
+  filterType: 'ALL' | 'ITEMS' | ListingType = 'ALL';
   searchQuery = '';
   locationQuery = '';
   selectedCategory = '';
   currentPage = 1;
+  viewMode: 'modern' | 'list' = 'modern';
   currentUser: User | null = null;
   recommended: Listing[] = [];
   borrowCats = new Set<string>();
@@ -47,6 +50,7 @@ export class HomeComponent implements OnInit {
 
   readonly ITEMS_PER_PAGE = 6;
   private searchSubject = new Subject<void>();
+  private readonly viewModeStorageKey = 'home_view_mode';
 
   private render() {
     try {
@@ -68,11 +72,26 @@ export class HomeComponent implements OnInit {
   }
 
   get pagesArray(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const maxVisiblePages = 10;
+    const blockStart = Math.floor((this.currentPage - 1) / maxVisiblePages) * maxVisiblePages + 1;
+    const blockEnd = Math.min(this.totalPages, blockStart + maxVisiblePages - 1);
+    return Array.from({ length: blockEnd - blockStart + 1 }, (_, i) => blockStart + i);
+  }
+
+  setViewMode(mode: 'modern' | 'list') {
+    this.viewMode = mode;
+    try {
+      localStorage.setItem(this.viewModeStorageKey, mode);
+    } catch { }
+    this.render();
   }
 
   ngOnInit() {
     this.selectedCategory = this.i18n.t('home.category_all');
+    try {
+      const v = String(localStorage.getItem(this.viewModeStorageKey) || '').toLowerCase();
+      if (v === 'modern' || v === 'list') this.viewMode = v as any;
+    } catch { }
     this.render();
 
     this.api.getPublicConfig().then(cfg => {
@@ -108,7 +127,7 @@ export class HomeComponent implements OnInit {
     this.searchSubject.next();
   }
 
-  onFilterChange(type: 'ALL' | ListingType) {
+  onFilterChange(type: 'ALL' | 'ITEMS' | ListingType) {
     this.filterType = type;
     this.fetchData();
   }
@@ -131,7 +150,9 @@ export class HomeComponent implements OnInit {
         l.status !== AvailabilityStatus.HIDDEN
       );
 
-      if (this.filterType !== 'ALL') {
+      if (this.filterType === 'ITEMS') {
+        filtered = filtered.filter(l => l.type !== ListingType.SKILL);
+      } else if (this.filterType !== 'ALL') {
         filtered = filtered.filter(l => l.type === this.filterType);
       }
 
@@ -185,7 +206,8 @@ export class HomeComponent implements OnInit {
     const scored = candidates.map(l => {
       let score = 0;
       if (this.borrowCats.has(l.category)) score += 2;
-      if (this.filterType !== 'ALL' && l.type === this.filterType) score += 1;
+        if (this.filterType === 'ITEMS' && l.type !== ListingType.SKILL) score += 1;
+        if (this.filterType !== 'ALL' && this.filterType !== 'ITEMS' && l.type === this.filterType) score += 1;
       if (this.selectedCategory !== this.i18n.t('home.category_all') && l.category === this.selectedCategory) score += 1;
       const distBoost = l.distanceMiles ? Math.max(0, 10 - l.distanceMiles) / 10 : 0;
       score += distBoost;
@@ -204,6 +226,7 @@ export class HomeComponent implements OnInit {
 
   clearFilters() {
     this.searchQuery = '';
+    this.locationQuery = '';
     this.filterType = 'ALL';
     this.selectedCategory = this.i18n.t('home.category_all');
     this.fetchData();

@@ -1,0 +1,39 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div *ngIf="loading" class="card center">
+      <lucide-icon [img]="Loader2" [size]="26" class="spin"></lucide-icon>
+      <div class="muted">Loading…</div>
+    </div>
+
+    <div *ngIf="!loading" class="card">
+      <div class="header">
+        <div class="icon" [ngClass]="variant">
+          <lucide-icon [img]="variant === 'info' ? Shield : AlertTriangle" [size]="22"></lucide-icon>
+        </div>
+        <div>
+          <div class="title">{{ title }}</div>
+          <div class="subtitle" *ngIf="message">{{ message }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="error">
+        <lucide-icon [img]="AlertTriangle" [size]="16"></lucide-icon>
+        <div>{{ error }}</div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn ghost" (click)="back()" [disabled]="confirming">Cancel</button>
+        <button type="button" class="btn" [ngClass]="variant === 'danger' ? 'danger' : (variant === 'warning' ? 'warning' : 'primary')" (click)="confirm()" [disabled]="confirming || !action">
+          <lucide-icon *ngIf="confirming" [img]="Loader2" [size]="16" class="spin"></lucide-icon>
+          <span>{{ confirmLabel }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

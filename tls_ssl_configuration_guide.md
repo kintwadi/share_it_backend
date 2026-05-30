@@ -13,6 +13,8 @@ keytool -genkeypair -alias springboot -keyalg RSA -keysize 4096 -storetype PKCS1
 ## 2. Configure application.properties
 Use external file paths and environment variables for sensitive passwords.
 
+These values are an example production configuration and are meant to override the local defaults (which run HTTP on a non-privileged port).
+
 ```properties
 # Port and SSL Activation
 server.port=443

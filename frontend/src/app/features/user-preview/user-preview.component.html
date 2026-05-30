@@ -1,0 +1,52 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel" *ngIf="user; else missingTpl">
+      <div class="panel__head">
+        <div class="icon">
+          <lucide-icon [img]="UserIcon" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <div class="title">User</div>
+          <div class="subtitle">{{ user.name }}</div>
+        </div>
+      </div>
+
+      <div class="panel__body">
+        <div class="row">
+          <div class="k">Email</div>
+          <div class="v">{{ user.email }}</div>
+        </div>
+        <div class="row">
+          <div class="k">Trust</div>
+          <div class="v">{{ user.trustScore }}% • {{ user.vouchCount }} Vouches</div>
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <button type="button" class="btn btn--secondary" (click)="back()">Close</button>
+        <button type="button" class="btn btn--primary" (click)="message()">
+          <lucide-icon [img]="MessageSquare" [size]="16"></lucide-icon>
+          Message
+        </button>
+      </div>
+    </div>
+
+    <ng-template #missingTpl>
+      <div class="panel">
+        <div class="panel__head">
+          <div class="title">User</div>
+          <div class="subtitle">Not available</div>
+        </div>
+        <div class="panel__foot">
+          <button type="button" class="btn btn--secondary" (click)="back()">Back</button>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>
+

@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="icon">
+          <lucide-icon [img]="Flag" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <div class="title">{{ i18n.t('listing.report.title') }}</div>
+          <div class="subtitle" *ngIf="listing">{{ listing.title }}</div>
+        </div>
+      </div>
+
+      <div class="panel__body">
+        <div *ngIf="loading" class="state">
+          <lucide-icon [img]="Loader2" [size]="18" class="spin"></lucide-icon>
+          Loading…
+        </div>
+
+        <div *ngIf="!loading && done" class="success">
+          <div class="success__icon">
+            <lucide-icon [img]="CheckCircle2" [size]="28"></lucide-icon>
+          </div>
+          <div class="success__title">{{ i18n.t('listing.report_submitted') }}</div>
+          <div class="success__text">{{ i18n.t('listing.report_thanks') }}</div>
+          <button type="button" class="btn btn--primary" (click)="back()">Close</button>
+        </div>
+
+        <div *ngIf="!loading && !done">
+          <div *ngIf="error" class="error">
+            <lucide-icon [img]="AlertTriangle" [size]="18"></lucide-icon>
+            <div>{{ error }}</div>
+          </div>
+
+          <div class="field">
+            <label class="label">{{ i18n.t('listing.report.reason') }}</label>
+            <select [(ngModel)]="reason" class="select">
+              <option [ngValue]="''">Select a reason</option>
+              <option [ngValue]="'inappropriate'">{{ i18n.t('listing.report.reason_inappropriate') }}</option>
+              <option [ngValue]="'spam'">{{ i18n.t('listing.report.reason_spam') }}</option>
+              <option [ngValue]="'scam'">{{ i18n.t('listing.report.reason_scam') }}</option>
+              <option [ngValue]="'unsafe'">{{ i18n.t('listing.report.reason_unsafe') }}</option>
+              <option [ngValue]="'other'">{{ i18n.t('listing.report.reason_other') }}</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label">{{ i18n.t('listing.report.details') }}</label>
+            <textarea [(ngModel)]="details" class="textarea" rows="6" [placeholder]="i18n.t('listing.report.details_placeholder')"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel__foot" *ngIf="!loading && !done">
+        <button type="button" class="btn btn--secondary" (click)="back()">{{ i18n.t('common.cancel') }}</button>
+        <button type="button" class="btn btn--danger" [disabled]="!reason || submitting || !listing" (click)="submit()">
+          <lucide-icon *ngIf="submitting" [img]="Loader2" [size]="16" class="spin"></lucide-icon>
+          {{ i18n.t('listing.report.submit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

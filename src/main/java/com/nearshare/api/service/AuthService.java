@@ -3,8 +3,10 @@ package com.nearshare.api.service;
 import com.nearshare.api.dto.LocationDTO;
 import com.nearshare.api.dto.LoginRequest;
 import com.nearshare.api.dto.RegisterRequest;
+import com.nearshare.api.dto.RegisterResponse;
 import com.nearshare.api.dto.TokenResponse;
 import com.nearshare.api.dto.UserDTO;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.embeddable.Location;
 import com.nearshare.api.model.enums.UserRole;
@@ -25,16 +27,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-    private final boolean allowAdminToggle;
+    private final RuntimeSettingsService runtimeSettingsService;
+    private final EmailVerificationService emailVerificationService;
 
     private final TwoFactorService twoFactorService;
     private final DeviceService deviceService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider, @Value("${nearshare.allowAdminToggle:false}") boolean allowAdminToggle, TwoFactorService twoFactorService, DeviceService deviceService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider, RuntimeSettingsService runtimeSettingsService, EmailVerificationService emailVerificationService, TwoFactorService twoFactorService, DeviceService deviceService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
-        this.allowAdminToggle = allowAdminToggle;
+        this.runtimeSettingsService = runtimeSettingsService;
+        this.emailVerificationService = emailVerificationService;
         this.twoFactorService = twoFactorService;
         this.deviceService = deviceService;
     }
@@ -52,6 +56,11 @@ public class AuthService {
     public TokenResponse login(LoginRequest request, String userAgent, String ipAddress) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("user_not_found"));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new RuntimeException("invalid_credentials");
+
+        boolean subscriptionEnabled = runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true);
+        if (!subscriptionEnabled && Boolean.FALSE.equals(user.getEmailVerified())) {
+            throw new IllegalArgumentException("email_not_verified");
+        }
         
         if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
             deviceService.trackDevice(user, userAgent, ipAddress, false);
@@ -64,15 +73,26 @@ public class AuthService {
         return new TokenResponse(token, toUserDTO(user));
     }
 
-    public UserDTO register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) throw new IllegalArgumentException("email_exists");
-        // Determine role (Default to MEMBER, but allow Admin if enabled)
-        UserRole role = (Boolean.TRUE.equals(request.getIsAdmin()) && allowAdminToggle)
-                ? UserRole.ADMIN
-                : UserRole.MEMBER;
-        User user = User.builder().id(UUID.randomUUID()).name(request.getName()).email(request.getEmail()).password(passwordEncoder.encode(request.getPassword())).phone(request.getPhone()).address(request.getAddress()).avatarUrl(request.getAvatarUrl()).trustScore(50).vouchCount(0).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(request.getLat()).lng(request.getLng()).build()).joinedDate(LocalDateTime.now()).status(UserStatus.ACTIVE).role(role).build();
+        boolean subscriptionEnabled = runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true);
+        User user = User.builder().id(UUID.randomUUID()).name(request.getName()).email(request.getEmail()).password(passwordEncoder.encode(request.getPassword())).phone(request.getPhone()).address(request.getAddress()).avatarUrl(request.getAvatarUrl()).trustScore(50).vouchCount(0).verificationStatus(VerificationStatus.UNVERIFIED).location(Location.builder().lat(request.getLat()).lng(request.getLng()).build()).joinedDate(LocalDateTime.now()).status(UserStatus.ACTIVE).role(UserRole.MEMBER).emailVerified(subscriptionEnabled).build();
         userRepository.save(user);
-        return toUserDTO(user);
+        String token = null;
+        if (!subscriptionEnabled) {
+            token = emailVerificationService.startForUser(user, null);
+        }
+        return RegisterResponse.builder()
+                .user(toUserDTO(user))
+                .requiresEmailVerification(!subscriptionEnabled)
+                .verificationToken(token)
+                .build();
+    }
+
+    public TokenResponse tokenForUser(User user) {
+        if (user == null) throw new RuntimeException("user_not_found");
+        String token = tokenProvider.generateToken(user.getEmail());
+        return new TokenResponse(token, toUserDTO(user));
     }
 
     private UserDTO toUserDTO(User user) {
@@ -92,6 +112,8 @@ public class AuthService {
                 .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
+                .adminScope(user.getAdminScope())
+                .emailVerified(Boolean.TRUE.equals(user.getEmailVerified()))
                 .build();
     }
 }

@@ -1,12 +1,13 @@
 package com.nearshare.api.service;
 
-import com.nearshare.api.config.SettingsProperties;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.dto.ReturnDTOs;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ReturnStatus;
+import com.nearshare.api.model.enums.ReturnMode;
 import com.nearshare.api.partner.model.PartnerAdminRole;
 import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import com.nearshare.api.repository.ListingRepository;
@@ -31,7 +32,7 @@ public class ReturnService {
     private final ReturnSessionRepository returnSessionRepository;
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
-    private final SettingsProperties settingsProperties;
+    private final RuntimeSettingsService runtimeSettingsService;
     private final EscrowService escrowService;
     private final ReviewInviteService reviewInviteService;
     private final PartnerAdminRepository partnerAdminRepository;
@@ -45,7 +46,7 @@ public class ReturnService {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
-        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.APPROVED) {
+        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.APPROVED && listing.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
             if (listing.getStatus() == AvailabilityStatus.AVAILABLE && listing.getBorrower() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing already returned");
             }
@@ -54,6 +55,11 @@ public class ReturnService {
 
         if (listing.getBorrower() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
+        }
+        if ((listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED)
+                && (listing.getItemReference() == null || listing.getItemReference().isBlank())) {
+            listing.setItemReference(generateUniqueItemReference());
+            listingRepository.save(listing);
         }
 
         User lender = resolveLender(listing);
@@ -102,10 +108,33 @@ public class ReturnService {
         }
         ReturnSession session = getActiveSession(listingId);
 
-        // Simple validation of item number (could be listing id or short id)
-        if (currentUser.getId().equals(session.getBorrower().getId())) {
+        String provided = request != null ? request.getItemNumber() : null;
+        provided = provided != null ? provided.trim() : null;
+        String expected = session.getListing() != null ? session.getListing().getItemReference() : null;
+        expected = expected != null ? expected.trim() : null;
+        if (expected != null && !expected.isEmpty()) {
+            if (provided == null || !provided.equals(expected)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid item number");
+            }
+        } else {
+            if (provided == null || provided.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing item number");
+            }
+        }
+
+        boolean isBorrower = currentUser.getId().equals(session.getBorrower().getId());
+        boolean isLender = currentUser.getId().equals(session.getLender().getId());
+        boolean isPartnerAdmin = false;
+        if (!isBorrower && !isLender) {
+            Listing listing = session.getListing();
+            if (listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
+                isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+            }
+        }
+
+        if (isBorrower) {
             session.setManualBorrowerConfirmedAt(LocalDateTime.now());
-        } else if (currentUser.getId().equals(session.getLender().getId())) {
+        } else if (isLender || isPartnerAdmin) {
             session.setManualLenderConfirmedAt(LocalDateTime.now());
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
@@ -116,6 +145,42 @@ public class ReturnService {
         }
 
         return checkAndCompleteSession(session);
+    }
+
+    @Transactional
+    public ReturnDTOs.ReturnSessionResponse denyManualReturn(UUID listingId, User currentUser, String reason) {
+        ReturnSession session = getActiveSession(listingId);
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
+
+        Listing listing = session.getListing();
+        boolean isBorrower = session.getBorrower() != null && currentUser.getId().equals(session.getBorrower().getId());
+        boolean isLender = session.getLender() != null && currentUser.getId().equals(session.getLender().getId());
+        boolean isPartnerAdmin = false;
+        if (!isBorrower && !isLender && listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
+            isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+        }
+        if (!isBorrower && !isLender && !isPartnerAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
+
+        if (session.getManualBorrowerConfirmedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Borrower has not confirmed manual return");
+        }
+
+        session.setStatus(ReturnStatus.DISPUTED);
+        session.setDisputeReason((reason != null && !reason.isBlank()) ? reason.trim() : "manual_return_denied");
+        session.setExpiresAt(LocalDateTime.now());
+        returnSessionRepository.save(session);
+
+        if (listing != null) {
+            listing.setStatus(AvailabilityStatus.DISPUTED);
+            listingRepository.save(listing);
+            escrowService.markDisputed(listingId, session.getDisputeReason());
+        }
+
+        return mapToResponse(session);
     }
 
     @Transactional
@@ -166,8 +231,9 @@ public class ReturnService {
         if (bothScanned || (bothManual && session.getConciergeWitnessId() != null)) {
             session.setStatus(ReturnStatus.COMPLETED);
             Listing listing = session.getListing();
-            listing.setStatus(AvailabilityStatus.AVAILABLE);
+            listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
             listing.setBorrower(null);
+            listing.setItemReference(null);
             
             // Increase trust score (simple mock implementation for now)
             User lender = session.getLender();
@@ -226,6 +292,17 @@ public class ReturnService {
         int value = codeRandom.nextInt(900000) + 100000;
         return String.valueOf(value);
     }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = codeRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed_to_generate_item_reference");
+    }
     
     public ReturnDTOs.ReturnSessionResponse getSession(UUID listingId, User currentUser) {
         if (!anyReturnMethodEnabled()) {
@@ -238,7 +315,7 @@ public class ReturnService {
                 .orElse(null);
 
         if (session == null) {
-            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED || listing.getStatus() == AvailabilityStatus.DISPUTED;
+            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED || listing.getStatus() == AvailabilityStatus.PARTNER_ACTIVE || listing.getStatus() == AvailabilityStatus.DISPUTED;
             if (listingActive) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active return session");
             }
@@ -347,20 +424,23 @@ public class ReturnService {
     }
 
     private boolean qrEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getQr() == null) return true;
-        return returnsConfig.getQr().isEnabled();
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.QR_CODE;
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.qr.enabled", true);
     }
 
     private boolean manualEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getManual() == null) return true;
-        return returnsConfig.getManual().isEnabled();
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.MANUAL;
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.manual.enabled", true);
     }
 
     private boolean disputeEnabled() {
-        SettingsProperties.ReturnsConfig returnsConfig = settingsProperties != null ? settingsProperties.getReturns() : null;
-        if (returnsConfig == null || returnsConfig.getDispute() == null) return true;
-        return returnsConfig.getDispute().isEnabled();
+        String rawMode = String.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getValue("settings.returns.mode") : "");
+        ReturnMode mode = ReturnMode.from(rawMode);
+        if (mode != ReturnMode.ANY) return mode == ReturnMode.DISPUTE;
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.dispute.enabled", true);
     }
 }

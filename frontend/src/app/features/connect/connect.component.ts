@@ -1,19 +1,21 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Shield, Mail, Lock, User as UserIcon, ArrowRight, UserCheck, Sparkles, Key, AlertCircle } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { AuthStorageService } from '../../core/services/auth-storage.service';
 import { SessionService } from '../../core/services/session.service';
+import { SettingsConfigService } from '../../core/services/settings-config.service';
+import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ButtonComponent } from '../../shared/components/button/button';
 import { PasswordRecoveryComponent } from '../../shared/components/password-recovery/password-recovery';
 
 @Component({
   selector: 'app-connect',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent, PasswordRecoveryComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule, ButtonComponent, PasswordRecoveryComponent],
   templateUrl: './connect.component.html',
   styleUrl: './connect.component.css'
 })
@@ -24,13 +26,8 @@ export class ConnectComponent implements OnInit {
   email = '';
   password = '';
   acceptedTerms = false;
-  mfaCode = '';
-  showMfaInput = false;
   showPasswordRecovery = false;
-  tempToken: string | null = null;
-  allowAdminToggle = false;
   connectConfig: any = {};
-  isAdmin = false;
   error: string | null = null;
   demoNotice: { type: 'success' | 'error'; message: string } | null = null;
   private demoNoticeTimer: any = null;
@@ -39,6 +36,8 @@ export class ConnectComponent implements OnInit {
   i18n = inject(I18nService);
   authStorage = inject(AuthStorageService);
   session = inject(SessionService);
+  settingsConfig = inject(SettingsConfigService);
+  subscriptionFeature = inject(SubscriptionFeatureService);
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
 
@@ -54,10 +53,9 @@ export class ConnectComponent implements OnInit {
 
   ngOnInit() {
     this.api.getPublicConfig().then(cfg => {
-      this.allowAdminToggle = !!cfg.allowAdminToggle;
       if (cfg.connect) this.connectConfig = cfg.connect;
       this.render();
-    }).catch(() => this.allowAdminToggle = false);
+    }).catch(() => { });
   }
 
   private render() {
@@ -118,64 +116,60 @@ export class ConnectComponent implements OnInit {
     }
   }
 
-  onMfaCodeChange(val: string) {
-    this.mfaCode = val.replace(/[^0-9]/g, '');
-  }
-
-  async handleMfaSubmit() {
-    if (!this.tempToken) return;
-    this.isLoading = true;
-    this.error = null;
-    this.render();
-    try {
-      const data = await this.api.verify2FALogin(this.mfaCode, this.tempToken);
-      if (data?.token) this.authStorage.setToken(data.token);
-      if (data?.user?.id) this.authStorage.setUserId(data.user.id);
-      await this.session.refresh();
-      this.isLoading = false;
-      this.render();
-      this.router.navigate(['/dashboard']);
-    } catch (err: any) {
-      console.error('MFA error', err);
-      this.error = err?.message || this.i18n.t('connect.mfa.invalid') || 'Invalid code';
-      this.isLoading = false;
-      this.render();
-    }
-  }
-
   async handleSubmit() {
     this.isLoading = true;
     this.error = null;
     this.render();
     try {
+      await this.settingsConfig.ensureLoaded();
       if (this.isLogin) {
         const data = await this.api.loginWithEmail(this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('user');
         await this.session.refresh();
         this.isLoading = false;
         this.render();
         this.router.navigate(['/dashboard']);
       } else {
-        const data = await this.api.registerUser(this.name, this.email, this.password, this.isAdmin);
+        const data = await this.api.registerUser(this.name, this.email, this.password);
+        if (data?.requiresEmailVerification) {
+          const token = String(data?.verificationToken || '');
+          const email = String(data?.user?.email || this.email || '');
+          this.isLoading = false;
+          this.render();
+          this.router.navigate(['/verification/email'], { queryParams: { flow: 'signup', token, email } });
+          return;
+        }
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
+        this.authStorage.setAuthContext('user');
         await this.session.refresh();
+        await this.settingsConfig.ensureLoaded();
         this.isLoading = false;
         this.render();
-        if (this.isAdmin) {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/subscription']);
-        }
+        this.router.navigate([this.subscriptionFeature.enabled() ? '/subscription' : '/dashboard']);
       }
     } catch (err: any) {
       console.error('Auth error', err);
+      const apiError = String(err?.error?.error || err?.error || err?.message || '').toLowerCase();
+      const subscriptionEnabled = this.subscriptionFeature.enabled();
+      if (this.isLogin && apiError.includes('email_not_verified') && !subscriptionEnabled) {
+        try {
+          const started = await this.api.startEmailVerification(this.email, this.i18n.language());
+          const token = String(started?.token || '');
+          this.isLoading = false;
+          this.render();
+          this.router.navigate(['/verification/email'], { queryParams: { flow: 'signup', token, email: this.email } });
+          return;
+        } catch {
+          this.error = this.i18n.t('settings.security.email_not_verified') || 'Email not verified';
+        }
+      }
       if (err.code === 'MFA_REQUIRED') {
-        this.tempToken = err.token;
-        this.showMfaInput = true;
         this.isLoading = false;
         this.render();
+        this.router.navigate(['/connect/mfa'], { state: { context: 'user', token: err.token, returnTo: '/dashboard', cancelTo: '/connect' } as any });
         return;
       }
       this.error = err?.message || this.i18n.t('connect.mfa.error') || 'Something went wrong';
@@ -187,14 +181,6 @@ export class ConnectComponent implements OnInit {
   toggleMode(isLoginMode: boolean) {
     this.isLogin = isLoginMode;
     this.acceptedTerms = false;
-    this.render();
-  }
-
-  cancelMfa() {
-    this.showMfaInput = false;
-    this.tempToken = null;
-    this.mfaCode = '';
-    this.error = null;
     this.render();
   }
 
