@@ -189,9 +189,16 @@
     <ng-content></ng-content>
   </main>
 
+  <app-cookie-consent></app-cookie-consent>
+
   <footer class="w-full border-t border-gray-100 bg-white/70 backdrop-blur">
-    <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-5 text-center text-xs text-gray-500">
-      ShareIt © 2026. All rights reserved.
+    <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-5 text-center text-xs text-gray-500 flex flex-col gap-2">
+      <div class="flex items-center justify-center gap-4">
+        <a routerLink="/privacy" class="hover:text-gray-900 underline underline-offset-2">{{ i18n.t('footer.privacy') }}</a>
+        <span class="text-gray-300">|</span>
+        <a routerLink="/cookies" class="hover:text-gray-900 underline underline-offset-2">{{ i18n.t('footer.cookies') }}</a>
+      </div>
+      <div>ShareIt © 2026. All rights reserved.</div>
     </div>
   </footer>
 </div>

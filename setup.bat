@@ -52,6 +52,9 @@ if "%PORT%"=="" set "PORT=8081"
 if "%SSL_ENABLED%"=="" set "SSL_ENABLED=false"
 if "%SETTINGS_HTTP_ENABLED%"=="" set "SETTINGS_HTTP_ENABLED=false"
 
+:: Geolocation (FreeIPAPI)
+if "%GEOLOCATION_BASE_URL%"=="" set "GEOLOCATION_BASE_URL=https://free.freeipapi.com/api/json/"
+
 :: AWS Configuration (Placeholder values - update with actual AWS credentials)
 if "%AWS_ACCESS_KEY_ID%"=="" set "AWS_ACCESS_KEY_ID=example"
 if "%AWS_SECRET_ACCESS_KEY%"=="" set "AWS_SECRET_ACCESS_KEY=example"
@@ -93,6 +96,7 @@ echo - DB_USERNAME: %DB_USERNAME%
 echo - PORT: %PORT%
 echo - SSL_ENABLED: %SSL_ENABLED%
 echo - SETTINGS_HTTP_ENABLED: %SETTINGS_HTTP_ENABLED%
+echo - GEOLOCATION_BASE_URL: %GEOLOCATION_BASE_URL%
 echo - JWT_KEYSTORE_LOCATION: %JWT_KEYSTORE_LOCATION%
 echo - FRONTEND_BASE_URL: %FRONTEND_BASE_URL%
 echo - LOCAL_HOST: %LOCAL_HOST%

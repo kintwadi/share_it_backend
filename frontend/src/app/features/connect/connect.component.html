@@ -181,17 +181,22 @@
            </button>
         </div>
 
-        <div *ngIf="!isLogin && show('showTermsCheckbox')" class="flex items-start gap-2 text-xs text-gray-600">
-          <input
-            id="acceptTerms"
-            name="acceptTerms"
-            type="checkbox"
-            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-            [(ngModel)]="acceptedTerms"
-          />
-          <label for="acceptTerms" class="leading-snug">
+        <div *ngIf="!isLogin" class="text-xs text-gray-600">
+          <div *ngIf="show('showTermsCheckbox')" class="flex items-start gap-2">
+            <input
+              id="acceptTerms"
+              name="acceptTerms"
+              type="checkbox"
+              class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              [(ngModel)]="acceptedTerms"
+            />
+            <label for="acceptTerms" class="leading-snug">
+              {{ i18n.t('connect.terms.prefix') }} <a href="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a href="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
+            </label>
+          </div>
+          <p *ngIf="!show('showTermsCheckbox')" class="leading-snug">
             {{ i18n.t('connect.terms.prefix') }} <a href="/terms" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.terms') }}</a> {{ i18n.t('connect.terms.and') }} <a href="/privacy" class="underline hover:text-brand-600">{{ i18n.t('connect.terms.privacy') }}</a>
-          </label>
+          </p>
         </div>
 
         <app-button

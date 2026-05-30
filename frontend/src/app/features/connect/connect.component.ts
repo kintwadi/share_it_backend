@@ -121,6 +121,7 @@ export class ConnectComponent implements OnInit {
     this.error = null;
     this.render();
     try {
+      await this.settingsConfig.ensureLoaded();
       if (this.isLogin) {
         const data = await this.api.loginWithEmail(this.email, this.password);
         if (data?.token) this.authStorage.setToken(data.token);
@@ -132,6 +133,14 @@ export class ConnectComponent implements OnInit {
         this.router.navigate(['/dashboard']);
       } else {
         const data = await this.api.registerUser(this.name, this.email, this.password);
+        if (data?.requiresEmailVerification) {
+          const token = String(data?.verificationToken || '');
+          const email = String(data?.user?.email || this.email || '');
+          this.isLoading = false;
+          this.render();
+          this.router.navigate(['/verification/email'], { queryParams: { flow: 'signup', token, email } });
+          return;
+        }
         if (data?.token) this.authStorage.setToken(data.token);
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
         this.authStorage.setAuthContext('user');
@@ -143,6 +152,20 @@ export class ConnectComponent implements OnInit {
       }
     } catch (err: any) {
       console.error('Auth error', err);
+      const apiError = String(err?.error?.error || err?.error || err?.message || '').toLowerCase();
+      const subscriptionEnabled = this.subscriptionFeature.enabled();
+      if (this.isLogin && apiError.includes('email_not_verified') && !subscriptionEnabled) {
+        try {
+          const started = await this.api.startEmailVerification(this.email, this.i18n.language());
+          const token = String(started?.token || '');
+          this.isLoading = false;
+          this.render();
+          this.router.navigate(['/verification/email'], { queryParams: { flow: 'signup', token, email: this.email } });
+          return;
+        } catch {
+          this.error = this.i18n.t('settings.security.email_not_verified') || 'Email not verified';
+        }
+      }
       if (err.code === 'MFA_REQUIRED') {
         this.isLoading = false;
         this.render();

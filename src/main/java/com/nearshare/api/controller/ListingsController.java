@@ -3,8 +3,11 @@ package com.nearshare.api.controller;
 import com.nearshare.api.dto.CreateListingRequest;
 import com.nearshare.api.dto.ListingDTO;
 import com.nearshare.api.dto.ReportRequest;
+import com.nearshare.api.geolocation.GeolocationService;
+import com.nearshare.api.geolocation.IpAddressResolver;
 import com.nearshare.api.model.User;
 import com.nearshare.api.service.ListingService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,15 +22,18 @@ import java.util.UUID;
 public class ListingsController {
     private final ListingService listingService;
     private final com.nearshare.api.service.UserService userService;
+    private final GeolocationService geolocationService;
 
-    public ListingsController(ListingService listingService, com.nearshare.api.service.UserService userService) {
+    public ListingsController(ListingService listingService, com.nearshare.api.service.UserService userService, GeolocationService geolocationService) {
         this.listingService = listingService;
         this.userService = userService;
+        this.geolocationService = geolocationService;
     }
 
     @GetMapping("/")
     public ResponseEntity<Page<ListingDTO>> list(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            HttpServletRequest request,
             @RequestParam(name = "search", required = false) String search,
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "type", required = false) String type,
@@ -35,7 +41,10 @@ public class ListingsController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User current = principal != null ? userService.getByEmail(principal.getUsername()) : null;
-        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size));
+        var geo = geolocationService.resolve(IpAddressResolver.resolveClientIp(request));
+        Double lat = geo != null ? geo.latitude() : null;
+        Double lng = geo != null ? geo.longitude() : null;
+        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, lat, lng));
     }
 
     @GetMapping("/recommended")
@@ -53,9 +62,12 @@ public class ListingsController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<ListingDTO> create(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @RequestBody CreateListingRequest req) {
+    public ResponseEntity<ListingDTO> create(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, HttpServletRequest request, @RequestBody CreateListingRequest req) {
         User owner = userService.getByEmail(principal.getUsername());
-        return ResponseEntity.ok(listingService.create(owner, req));
+        var geo = geolocationService.resolve(IpAddressResolver.resolveClientIp(request));
+        Double lat = geo != null ? geo.latitude() : null;
+        Double lng = geo != null ? geo.longitude() : null;
+        return ResponseEntity.ok(listingService.create(owner, req, lat, lng));
     }
 
     @PutMapping("/{id}")

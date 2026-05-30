@@ -36,4 +36,5 @@ public class UserDTO {
     private Boolean profileVisible;
     private Boolean showRatings;
     private AdminScope adminScope;
+    private Boolean emailVerified;
 }

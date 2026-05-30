@@ -333,6 +333,8 @@ public class RuntimeSettingsService implements ConfigProvider {
         out.add(new ExtraKeyDef("image.max.size.mb", "number", "uploads", "Uploads", 5));
         out.add(new ExtraKeyDef("allowed.image.types", "string", "uploads", "Uploads", "jpg,jpeg,png,gif,webp"));
 
+        out.add(new ExtraKeyDef("geolocation.freeipapi.base_url", "string", "geolocation", "Geolocation", "https://free.freeipapi.com/api/json/"));
+
         return out;
     }
 
@@ -527,7 +529,8 @@ public class RuntimeSettingsService implements ConfigProvider {
             new ExtraKeyDef("insurance.rules.extended_warranty.min", "number", "insurance", "Insurance", 3),
             new ExtraKeyDef("insurance.rules.extended_warranty.max", "number", "insurance", "Insurance", 30),
             new ExtraKeyDef("image.max.size.mb", "number", "uploads", "Uploads", 5),
-            new ExtraKeyDef("allowed.image.types", "string", "uploads", "Uploads", "jpg,jpeg,png,gif,webp")
+            new ExtraKeyDef("allowed.image.types", "string", "uploads", "Uploads", "jpg,jpeg,png,gif,webp"),
+            new ExtraKeyDef("geolocation.freeipapi.base_url", "string", "geolocation", "Geolocation", "https://free.freeipapi.com/api/json/")
     );
 
     private static final class ExtraKeyDef {

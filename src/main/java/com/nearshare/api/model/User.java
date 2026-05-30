@@ -84,4 +84,8 @@ public class User {
     @Column(name = "show_ratings")
     @Builder.Default
     private Boolean showRatings = true;
+
+    @Column(name = "email_verified")
+    @Builder.Default
+    private Boolean emailVerified = false;
 }

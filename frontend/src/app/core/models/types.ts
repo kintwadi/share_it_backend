@@ -76,6 +76,7 @@ export interface User {
   name: string;
   displayName?: string;
   email: string;
+  emailVerified?: boolean;
   phone: string;
   address: string;
   avatarUrl: string;

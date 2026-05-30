@@ -215,9 +215,25 @@ export class ApiService {
 
   async registerUser(name: string, email: string, password: string): Promise<any> {
     const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0 };
-    await firstValueFrom(this.api.post('/auth/register', body));
+    const reg = await firstValueFrom(this.api.post<any>('/auth/register', body));
+    if (reg?.requiresEmailVerification) {
+      return reg;
+    }
     const data = await firstValueFrom(this.api.post<any>('/auth/login', { email, password }));
     return data;
+  }
+
+  async startEmailVerification(email: string, language?: string): Promise<{ token: string }> {
+    const data = await firstValueFrom(this.api.post<any>('/auth/email-verification/start', { email, language: language ?? 'en' }));
+    return { token: String(data?.token || '') };
+  }
+
+  async resendEmailVerification(token: string, language?: string): Promise<void> {
+    await firstValueFrom(this.api.post<any>('/auth/email-verification/resend', { token, language: language ?? 'en' }));
+  }
+
+  async verifyEmailVerification(token: string, code: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/auth/email-verification/verify', { token, code }));
   }
 
   async requestPasswordReset(email: string): Promise<void> {

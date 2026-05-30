@@ -190,7 +190,17 @@
 
         <div class="flex items-center text-sm text-gray-500 bg-blue-50/50 p-3 rounded-xl border border-blue-100 mb-8">
           <lucide-icon [img]="MapPin" [size]="16" class="mr-2 text-blue-500"></lucide-icon>
-          <span>~{{ listing.distanceMiles }} miles away ({{ pickupAreaLabel }})</span>
+          <ng-container *ngIf="listing.distanceMiles >= 1; else nearbyTpl">
+            <span>~{{ listing.distanceMiles | number:'1.0-1' }} miles away ({{ pickupAreaLabel }})</span>
+          </ng-container>
+          <ng-template #nearbyTpl>
+            <ng-container *ngIf="listing.distanceMiles > 0; else unknownTpl">
+              <span>~&lt;1 mile away ({{ pickupAreaLabel }})</span>
+            </ng-container>
+          </ng-template>
+          <ng-template #unknownTpl>
+            <span>{{ pickupAreaLabel }}</span>
+          </ng-template>
         </div>
 
         <ng-container *ngIf="showSuccess; else actionsTemplate">

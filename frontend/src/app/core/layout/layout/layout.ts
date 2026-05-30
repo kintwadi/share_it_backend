@@ -28,11 +28,12 @@ import { SettingsConfigService } from '../../services/settings-config.service';
 import { I18nService } from '../../services/i18n.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
 import { AuthStorageService } from '../../services/auth-storage.service';
+import { CookieConsentComponent } from '../../../shared/components/cookie-consent/cookie-consent.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule, CookieConsentComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })

@@ -34,6 +34,11 @@
       </div>
 
       <ng-container *ngIf="!loading">
+        <div class="mb-4 p-3 bg-amber-50 text-amber-900 text-sm rounded-xl border border-amber-100 flex items-start gap-2">
+          <lucide-icon [img]="Info" [size]="16" class="mt-0.5 text-amber-700"></lucide-icon>
+          <div>{{ i18n.t('verification.email.check_inbox') }}</div>
+        </div>
+
         <div class="mb-4 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 flex items-center gap-3">
           <div class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500">
             <lucide-icon [img]="Mail" size="16"></lucide-icon>

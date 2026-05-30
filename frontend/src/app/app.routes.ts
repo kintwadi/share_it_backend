@@ -42,5 +42,7 @@ export const routes: Routes = [
   { path: 'subscription/upgrade', canMatch: [canMatchSubscription], loadComponent: () => import('./features/subscription-upgrade/subscription-upgrade.component').then(m => m.SubscriptionUpgradeComponent) },
   { path: 'borrower-subscription', canMatch: [canMatchBorrowerSubscription], loadComponent: () => import('./features/borrower-subscription/borrower-subscription.component').then(m => m.BorrowerSubscriptionComponent) },
   { path: 'verification/email', loadComponent: () => import('./features/email-verification/email-verification.component').then(m => m.EmailVerificationComponent) },
+  { path: 'privacy', loadComponent: () => import('./features/privacy-policy/privacy-policy.component').then(m => m.PrivacyPolicyComponent) },
+  { path: 'cookies', loadComponent: () => import('./features/cookie-notice/cookie-notice.component').then(m => m.CookieNoticeComponent) },
   { path: '**', redirectTo: '' }
 ];

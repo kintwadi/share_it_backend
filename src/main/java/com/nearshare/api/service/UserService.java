@@ -314,6 +314,7 @@ public class UserService {
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
                 .adminScope(user.getAdminScope())
+                .emailVerified(Boolean.TRUE.equals(user.getEmailVerified()))
                 .build();
     }
 }

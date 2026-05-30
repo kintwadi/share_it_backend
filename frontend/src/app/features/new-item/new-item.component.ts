@@ -64,6 +64,8 @@ export class NewItemComponent implements OnInit {
   hourlyRate: number = 0;
   imageUrl = '';
   gallery: string[] = [];
+  x: number | null = null;
+  y: number | null = null;
   autoApprove = false;
   insuranceRequired = false;
   pickupLocationId: string | null = null;
@@ -285,6 +287,8 @@ export class NewItemComponent implements OnInit {
     const availableUnlimited = !!(listing as any).availableUnlimited;
     const availableFrom = (listing as any).availableFrom ? String((listing as any).availableFrom) : '';
     this.availableUnlimited = availableUnlimited;
+    this.x = typeof (listing as any)?.location?.x === 'number' ? (listing as any).location.x : null;
+    this.y = typeof (listing as any)?.location?.y === 'number' ? (listing as any).location.y : null;
     if (!availableUnlimited && availableFrom && availableFrom.length >= 16) {
       this.availableFromDate = availableFrom.slice(0, 10);
       this.availableFromTime = availableFrom.slice(11, 16) || this.availableFromTime;
@@ -517,8 +521,8 @@ export class NewItemComponent implements OnInit {
         gallery: this.gallery,
         autoApprove: this.isPremiumLender ? true : !!this.autoApprove,
         insuranceRequired: !!this.insuranceRequired,
-        x: 0,
-        y: 0,
+        x: this.x ?? undefined,
+        y: this.y ?? undefined,
         availableUnlimited,
         availableFrom,
         availableTo: null,

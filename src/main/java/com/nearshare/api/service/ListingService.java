@@ -80,6 +80,11 @@ public class ListingService {
 
     @Transactional(readOnly = true)
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
+        return findAll(current, search, category, type, minPrice, page, size, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, Double viewerLat, Double viewerLng) {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
@@ -95,9 +100,15 @@ public class ListingService {
             .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
             .filter(l -> minPrice == null || (l.getHourlyRate() != null && l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0))
             .toList();
+
+        if (viewerLat != null && viewerLng != null) {
+            filtered = filtered.stream()
+                    .sorted((a, b) -> Double.compare(distanceForSort(viewerLat, viewerLng, a), distanceForSort(viewerLat, viewerLng, b)))
+                    .toList();
+        }
         int start = Math.min(page * size, filtered.size());
         int end = Math.min(start + size, filtered.size());
-        List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current)).toList();
+        List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current, viewerLat, viewerLng)).toList();
         return new PageImpl<>(content, PageRequest.of(page, size), filtered.size());
     }
 
@@ -121,6 +132,11 @@ public class ListingService {
 
     @Transactional
     public ListingDTO create(User owner, CreateListingRequest req) {
+        return create(owner, req, null, null);
+    }
+
+    @Transactional
+    public ListingDTO create(User owner, CreateListingRequest req, Double viewerLat, Double viewerLng) {
         if (req.getType() == ListingType.SELL && !isSellEnabled()) {
             throw new RuntimeException("selling_disabled");
         }
@@ -150,6 +166,21 @@ public class ListingService {
         if (req.getType() == ListingType.GIVE) {
             hourlyRate = BigDecimal.ZERO;
         }
+        Double lat = req.getX();
+        Double lng = req.getY();
+        if (lat != null && lng != null && Math.abs(lat) < 1e-9 && Math.abs(lng) < 1e-9) {
+            lat = null;
+            lng = null;
+        }
+        if (lat == null || lng == null) {
+            if (viewerLat != null && viewerLng != null) {
+                lat = viewerLat;
+                lng = viewerLng;
+            } else if (owner != null && owner.getLocation() != null && owner.getLocation().getLat() != null && owner.getLocation().getLng() != null) {
+                lat = owner.getLocation().getLat();
+                lng = owner.getLocation().getLng();
+            }
+        }
         boolean availableUnlimited = req.isAvailableUnlimited();
         java.time.LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
         java.time.LocalDateTime availableTo = null;
@@ -165,7 +196,7 @@ public class ListingService {
                 .autoApprove(autoApprove)
                 .insuranceRequired(req.isInsuranceRequired())
                 .status(AvailabilityStatus.AVAILABLE)
-                .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
+                .location(Location.builder().lat(lat).lng(lng).build())
                 .owner(owner)
                 .borrower(null)
                 .pickupLocation(pickup)
@@ -217,7 +248,19 @@ public class ListingService {
             l.setHourlyRate(req.getHourlyRate());
         }
         l.setAutoApprove(subscriptionService.isPremiumLender(current));
-        l.setLocation(Location.builder().lat(req.getX()).lng(req.getY()).build());
+        Double nextLat = req.getX();
+        Double nextLng = req.getY();
+        if (nextLat != null && nextLng != null && Math.abs(nextLat) < 1e-9 && Math.abs(nextLng) < 1e-9) {
+            nextLat = null;
+            nextLng = null;
+        }
+        if (nextLat == null || nextLng == null) {
+            if (l.getLocation() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+                nextLat = l.getLocation().getLat();
+                nextLng = l.getLocation().getLng();
+            }
+        }
+        l.setLocation(Location.builder().lat(nextLat).lng(nextLng).build());
         boolean availableUnlimited = req.isAvailableUnlimited();
         l.setAvailableUnlimited(availableUnlimited);
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
@@ -563,8 +606,14 @@ public class ListingService {
     }
 
     private ListingDTO toDTO(Listing l, User current) {
+        return toDTO(l, current, null, null);
+    }
+
+    private ListingDTO toDTO(Listing l, User current, Double viewerLat, Double viewerLng) {
         double dist = 0;
-        if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+        if (viewerLat != null && viewerLng != null && l.getLocation() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+            dist = DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
+        } else if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
             dist = DistanceUtil.haversineMiles(current.getLocation().getLat(), current.getLocation().getLng(), l.getLocation().getLat(), l.getLocation().getLng());
         }
 
@@ -634,6 +683,12 @@ public class ListingService {
             .availableFrom(l.getAvailableFrom())
             .availableTo(l.getAvailableTo())
             .build();
+    }
+
+    private double distanceForSort(Double viewerLat, Double viewerLng, Listing l) {
+        if (viewerLat == null || viewerLng == null) return Double.MAX_VALUE;
+        if (l == null || l.getLocation() == null || l.getLocation().getLat() == null || l.getLocation().getLng() == null) return Double.MAX_VALUE;
+        return DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
     }
 
     private String generateUniqueItemReference() {
