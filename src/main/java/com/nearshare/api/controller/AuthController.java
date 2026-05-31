@@ -14,6 +14,7 @@ import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.service.AuthService;
 import com.nearshare.api.service.EmailVerificationService;
 import com.nearshare.api.service.PasswordRecoveryService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,9 @@ public class AuthController {
     private final PasswordRecoveryService passwordRecoveryService;
     private final EmailVerificationService emailVerificationService;
     private final RuntimeSettingsService runtimeSettingsService;
+
+    @Value("${setting.signup.email.verification.required:true}")
+    private boolean signupEmailVerificationRequired;
 
     public AuthController(AuthService authService, PasswordRecoveryService passwordRecoveryService, EmailVerificationService emailVerificationService, RuntimeSettingsService runtimeSettingsService) {
         this.authService = authService;
@@ -53,7 +57,7 @@ public class AuthController {
 
     @PostMapping("/email-verification/start")
     public ResponseEntity<java.util.Map<String, Object>> startEmailVerification(@RequestBody StartEmailVerificationRequest request) {
-        if (runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true)) {
+        if (!signupEmailVerificationRequired) {
             throw new IllegalArgumentException("email_verification_not_required");
         }
         String token = emailVerificationService.startByEmail(request != null ? request.getEmail() : null, request != null ? request.getLanguage() : null);
@@ -62,7 +66,7 @@ public class AuthController {
 
     @PostMapping("/email-verification/verify")
     public ResponseEntity<TokenResponse> verifyEmailVerification(@RequestBody VerifyEmailVerificationRequest request) {
-        if (runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true)) {
+        if (!signupEmailVerificationRequired) {
             throw new IllegalArgumentException("email_verification_not_required");
         }
         com.nearshare.api.model.User user = emailVerificationService.verify(request != null ? request.getToken() : null, request != null ? request.getCode() : null);
@@ -71,7 +75,7 @@ public class AuthController {
 
     @PostMapping("/email-verification/resend")
     public ResponseEntity<java.util.Map<String, Object>> resendEmailVerification(@RequestBody ResendEmailVerificationRequest request) {
-        if (runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true)) {
+        if (!signupEmailVerificationRequired) {
             throw new IllegalArgumentException("email_verification_not_required");
         }
         emailVerificationService.resend(request != null ? request.getToken() : null, request != null ? request.getLanguage() : null);
