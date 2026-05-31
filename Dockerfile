@@ -36,6 +36,7 @@ EXPOSE 8080
 ENV PORT=8080
 ENV SSL_ENABLED=false
 ENV SETTINGS_HTTP_ENABLED=false
+ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \

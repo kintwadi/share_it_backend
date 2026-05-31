@@ -110,7 +110,7 @@ The application requires these environment variables when running the container:
 
 ```bash
 # Database
-DB_URL=jdbc:postgresql://host:5432/database
+DB_URL=jdbc:postgresql://host:5432/database?sslmode=require
 DB_USERNAME=username
 DB_PASSWORD=password
 
@@ -132,6 +132,21 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 STRIPE_PUBLIC_KEY=test_public_key
 STRIPE_SECRET_KEY=test_secret_key
 ```
+
+## Render (Supabase Postgres) notes
+
+If your Render deploy fails with `java.net.SocketException: Network unreachable` while connecting to Postgres, the app is typically trying to use an IPv6 address without IPv6 egress available in the runtime.
+
+Recommended fixes:
+
+1. Use the Supabase connection pooler host (shown in Supabase → Database → Connection string / Pooler). It often provides IPv4 connectivity even when the direct `db.<project>.supabase.co` hostname is IPv6-only.
+2. Set `JAVA_TOOL_OPTIONS` in Render to force Java to prefer IPv4:
+
+```bash
+JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false
+```
+
+Also make sure you set your environment variables in Render’s Environment tab (Render does not automatically use your local `.env` file).
 
 ## Troubleshooting
 

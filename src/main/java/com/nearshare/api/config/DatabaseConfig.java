@@ -56,6 +56,11 @@ public class DatabaseConfig {
         if (connectionTimeout != null) cfg.setConnectionTimeout(connectionTimeout);
         if (maximumPoolSize != null) cfg.setMaximumPoolSize(maximumPoolSize);
         if (maximumPoolSize == null && "sqlite".equals(dbType)) cfg.setMaximumPoolSize(1);
+        if ("postgres".equals(dbType) && isSupabasePoolerUrl(url)) {
+            cfg.addDataSourceProperty("preferQueryMode", "simple");
+            cfg.addDataSourceProperty("preparedStatementCacheQueries", "0");
+            cfg.addDataSourceProperty("preparedStatementCacheSizeMiB", "0");
+        }
 
         return new HikariDataSource(cfg);
     }
@@ -206,5 +211,11 @@ public class DatabaseConfig {
 
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private boolean isSupabasePoolerUrl(String url) {
+        if (isBlank(url)) return false;
+        String u = url.trim().toLowerCase(Locale.ROOT);
+        return u.contains("pooler.supabase.com") || u.contains("pgbouncer");
     }
 }
