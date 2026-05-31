@@ -17,12 +17,14 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     
     private final JavaMailSender mailSender;
+    private final RESTMailSender restMailSender;
     
     @Value("${spring.mail.from:noreply@nearshare.com}")
     private String fromEmail;
     
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, RESTMailSender restMailSender) {
         this.mailSender = mailSender;
+        this.restMailSender = restMailSender;
     }
     
     public void sendPasswordResetEmail(String toEmail, String code) {
@@ -66,15 +68,24 @@ public class EmailService {
     }
 
     public void sendSignupEmailVerificationEmail(String toEmail, String recipientName, String code, String language) {
+        String subject = buildSignupVerificationSubject(language);
+        String htmlContent = buildSignupVerificationEmail(recipientName, code, language);
+        if (restMailSender != null && restMailSender.isConfigured()) {
+            try {
+                restMailSender.sendTransactionalEmail(toEmail, recipientName, subject, htmlContent);
+                logger.info("Signup email verification email sent via Brevo API to: {}", toEmail);
+                return;
+            } catch (Exception e) {
+                logger.error("Brevo API send failed for signup email verification to: {}", toEmail, e);
+            }
+        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject(buildSignupVerificationSubject(language));
-
-            String htmlContent = buildSignupVerificationEmail(recipientName, code, language);
+            helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
