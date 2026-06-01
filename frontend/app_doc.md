@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Node.js + npm (this repo is set to `npm@11.11.0`)
-- A running backend API (ShareIt Spring Boot) at `http://localhost:8081/shareit/api`
+- A running backend API (ShareIt Spring Boot) at `http://localhost:8081/api/v1`
 
 ## Install
 
@@ -15,10 +15,10 @@ npm install
 ## API Routing (Dev)
 
 In development, the app uses relative URLs:
-- `apiUrl: /shareit/api`
-- `wsUrl: /shareit/ws`
+- `apiUrl: /api/v1`
+- `wsUrl: /ws`
 
-The dev server proxies `/shareit/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
+The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
 ## Run (Dev)
 
@@ -39,7 +39,7 @@ mvn spring-boot:run
 ```
 
 Backend health check:
-- http://localhost:8081/shareit/api/health
+- http://localhost:8081/api/v1/health
 
 ## Build
 

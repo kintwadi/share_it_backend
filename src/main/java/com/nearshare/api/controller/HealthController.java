@@ -1,6 +1,7 @@
 package com.nearshare.api.controller;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,15 @@ public class HealthController {
 
     private final ObjectProvider<DataSource> dataSourceProvider;
 
+    @Value("${spring.application.name:}")
+    private String applicationName;
+
+    @Value("${application.version:}")
+    private String applicationVersion;
+
+    @Value("${api.version:v1}")
+    private String apiVersion;
+
     public HealthController(ObjectProvider<DataSource> dataSourceProvider) {
         this.dataSourceProvider = dataSourceProvider;
     }
@@ -27,6 +37,9 @@ public class HealthController {
         Map<String, Object> db = new LinkedHashMap<>();
 
         body.put("status", "UP");
+        body.put("service", String.valueOf(applicationName == null ? "" : applicationName));
+        body.put("version", String.valueOf(applicationVersion == null ? "" : applicationVersion));
+        body.put("apiVersion", String.valueOf(apiVersion == null ? "" : apiVersion));
         body.put("database", db);
 
         DataSource ds = dataSourceProvider.getIfAvailable();

@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: '/shareit/api',
-  wsUrl: '/shareit/ws'
+  apiUrl: '/api/v1',
+  wsUrl: '/ws'
 };

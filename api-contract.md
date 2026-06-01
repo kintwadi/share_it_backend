@@ -4,9 +4,8 @@ This document describes the REST API exposed by the NearShare backend.
 
 ## Base URL
 
-- Context path: `/shareit`
-- API prefix: `/shareit/api`
-- Example (local): `http://localhost:8081/shareit/api` (HTTPS optional)
+- API prefix: `/api/v1`
+- Example (local): `http://localhost:8081/api/v1` (HTTPS optional)
 
 ## Authentication
 

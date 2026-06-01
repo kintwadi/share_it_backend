@@ -56,7 +56,7 @@ echo ========================================
 echo Container started successfully!
 echo ========================================
 echo.
-echo Application is now running at: https://localhost/shareit
+echo Application is now running at: https://localhost/
 echo.
 echo To view logs, run: docker logs -f shareit-backend-container
 echo To stop the container, run: docker stop shareit-backend-container
@@ -76,7 +76,7 @@ docker logs --tail 20 shareit-backend-container
 echo.
 echo ========================================
 echo NearShare Backend is now running!
-echo Access: https://localhost/shareit
+echo Access: https://localhost/
 echo ========================================
 echo.
 pause

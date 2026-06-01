@@ -17,14 +17,12 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     
     private final JavaMailSender mailSender;
-    private final RESTMailSender restMailSender;
     
-    @Value("${spring.mail.from:noreply@nearshare.com}")
+    @Value("${spring.mail.from:noreply@vicinity24.com}")
     private String fromEmail;
     
-    public EmailService(JavaMailSender mailSender, RESTMailSender restMailSender) {
+    public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
-        this.restMailSender = restMailSender;
     }
     
     public void sendPasswordResetEmail(String toEmail, String code) {
@@ -34,7 +32,7 @@ public class EmailService {
             
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Password Reset Code - NearShare");
+            helper.setSubject("Password Reset Code - Vicinity24");
             
             String htmlContent = buildPasswordResetEmail(code);
             helper.setText(htmlContent, true);
@@ -70,15 +68,6 @@ public class EmailService {
     public void sendSignupEmailVerificationEmail(String toEmail, String recipientName, String code, String language) {
         String subject = buildSignupVerificationSubject(language);
         String htmlContent = buildSignupVerificationEmail(recipientName, code, language);
-        if (restMailSender != null && restMailSender.isConfigured()) {
-            try {
-                restMailSender.sendTransactionalEmail(toEmail, recipientName, subject, htmlContent);
-                logger.info("Signup email verification email sent via Brevo API to: {}", toEmail);
-                return;
-            } catch (Exception e) {
-                logger.error("Brevo API send failed for signup email verification to: {}", toEmail, e);
-            }
-        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -102,7 +91,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Rate your recent handover");
+            helper.setSubject("Rate your recent handover - Vicinity24");
 
             String htmlContent = buildReturnRatingEmail(recipientName, otherPartyName, listingTitle, ratingLink);
             helper.setText(htmlContent, true);
@@ -139,7 +128,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2>NearShare Password Reset</h2>
+                        <h2>Vicinity24 Password Reset</h2>
                     </div>
                     <div class="content">
                         <p>Hello,</p>
@@ -151,13 +140,11 @@ public class EmailService {
                         
                         <p>If you didn't request this reset, please ignore this email or contact support if you have concerns.</p>
                     </div>
-                    <div class="footer">
-                        <p>This is an automated message from NearShare. Please do not reply to this email.</p>
-                    </div>
+                    %s
                 </div>
             </body>
             </html>
-            """.formatted(code);
+            """.formatted(code, buildStandardFooter());
     }
     
     private String buildSubscriptionVerificationSubject(String planType, String language) {
@@ -165,22 +152,22 @@ public class EmailService {
         String plan = planType != null ? planType.toLowerCase() : "plus";
         if ("pt".equals(lang)) {
             return switch (plan) {
-                case "starter" -> "Verifique seu e-mail para o NeighborShare Starter";
-                case "pro" -> "Verifique seu e-mail para o NeighborShare Pro";
-                default -> "Confirme seu teste do NeighborShare Plus";
+                case "starter" -> "Verifique seu e-mail para o Vicinity24 Starter";
+                case "pro" -> "Verifique seu e-mail para o Vicinity24 Pro";
+                default -> "Confirme seu teste do Vicinity24 Plus";
             };
         }
         if ("de".equals(lang)) {
             return switch (plan) {
-                case "starter" -> "Bestätige deine E-Mail für NeighborShare Starter";
-                case "pro" -> "Bestätige deine E-Mail für NeighborShare Pro";
-                default -> "Bestätige deinen NeighborShare Plus-Test";
+                case "starter" -> "Bestätige deine E-Mail für Vicinity24 Starter";
+                case "pro" -> "Bestätige deine E-Mail für Vicinity24 Pro";
+                default -> "Bestätige deinen Vicinity24 Plus-Test";
             };
         }
         return switch (plan) {
-            case "starter" -> "Verify your email for NeighborShare Starter";
-            case "pro" -> "Verify your email for NeighborShare Pro";
-            default -> "Confirm your NeighborShare Plus trial";
+            case "starter" -> "Verify your email for Vicinity24 Starter";
+            case "pro" -> "Verify your email for Vicinity24 Pro";
+            default -> "Confirm your Vicinity24 Plus trial";
         };
     }
 
@@ -196,9 +183,9 @@ public class EmailService {
 
         if ("pt".equals(lang)) {
             headerTitle = switch (plan) {
-                case "starter" -> "Verifique seu e-mail para o NeighborShare Starter";
-                case "pro" -> "Verifique seu e-mail para o NeighborShare Pro";
-                default -> "Verifique seu e-mail para o NeighborShare Plus";
+                case "starter" -> "Verifique seu e-mail para o Vicinity24 Starter";
+                case "pro" -> "Verifique seu e-mail para o Vicinity24 Pro";
+                default -> "Verifique seu e-mail para o Vicinity24 Plus";
             };
             greeting = "Olá %s,".formatted(safeRecipient);
             intro = switch (plan) {
@@ -210,9 +197,9 @@ public class EmailService {
             ignore = "Se você não solicitou isso, pode ignorar este e-mail.";
         } else if ("de".equals(lang)) {
             headerTitle = switch (plan) {
-                case "starter" -> "Bestätige deine E-Mail für NeighborShare Starter";
-                case "pro" -> "Bestätige deine E-Mail für NeighborShare Pro";
-                default -> "Bestätige deine E-Mail für NeighborShare Plus";
+                case "starter" -> "Bestätige deine E-Mail für Vicinity24 Starter";
+                case "pro" -> "Bestätige deine E-Mail für Vicinity24 Pro";
+                default -> "Bestätige deine E-Mail für Vicinity24 Plus";
             };
             greeting = "Hallo %s,".formatted(safeRecipient);
             intro = switch (plan) {
@@ -224,15 +211,15 @@ public class EmailService {
             ignore = "Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren.";
         } else {
             headerTitle = switch (plan) {
-                case "starter" -> "Verify your email for NeighborShare Starter";
-                case "pro" -> "Verify your email for NeighborShare Pro";
-                default -> "Verify your email for NeighborShare Plus";
+                case "starter" -> "Verify your email for Vicinity24 Starter";
+                case "pro" -> "Verify your email for Vicinity24 Pro";
+                default -> "Verify your email for Vicinity24 Plus";
             };
             greeting = "Hello %s,".formatted(safeRecipient);
             intro = switch (plan) {
                 case "starter" -> "To activate your Starter plan, enter the verification code below in the app:";
                 case "pro" -> "To activate your Pro plan, enter the verification code below in the app:";
-                default -> "To start your 14-day NeighborShare Plus trial, enter the verification code below in the app:";
+                default -> "To start your 14-day Vicinity24 Plus trial, enter the verification code below in the app:";
             };
             validity = "This code is valid for a short time for security reasons.";
             ignore = "If you did not request this, you can ignore this email.";
@@ -274,20 +261,18 @@ public class EmailService {
                         
                         <p>%s</p>
                     </div>
-                    <div class="footer">
-                        <p>This is an automated message from NeighborShare. Please do not reply to this email.</p>
-                    </div>
+                    %s
                 </div>
             </body>
             </html>
-            """.formatted(headerTitle, greeting, intro, code, validity, ignore);
+            """.formatted(headerTitle, greeting, intro, code, validity, ignore, buildStandardFooter());
     }
 
     private String buildSignupVerificationSubject(String language) {
         String lang = language != null ? language.toLowerCase() : "en";
-        if ("pt".equals(lang)) return "Confirme o seu e-mail - ShareIt";
-        if ("de".equals(lang)) return "Bestätige deine E-Mail - ShareIt";
-        return "Verify your email - ShareIt";
+        if ("pt".equals(lang)) return "Confirme o seu e-mail - Vicinity24";
+        if ("de".equals(lang)) return "Bestätige deine E-Mail - Vicinity24";
+        return "Verify your email - Vicinity24";
     }
 
     private String buildSignupVerificationEmail(String recipientName, String code, String language) {
@@ -352,13 +337,11 @@ public class EmailService {
                         <p>%s</p>
                         <p>%s</p>
                     </div>
-                    <div class="footer">
-                        <p>This is an automated message from ShareIt. Please do not reply to this email.</p>
-                    </div>
+                    %s
                 </div>
             </body>
             </html>
-            """.formatted(headerTitle, greeting, intro, code, validity, ignore);
+            """.formatted(headerTitle, greeting, intro, code, validity, ignore, buildStandardFooter());
     }
 
     private String buildReturnRatingEmail(String recipientName, String otherPartyName, String listingTitle, String ratingLink) {
@@ -382,7 +365,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h2 style="margin:0;">Thanks for using share it</h2>
+                        <h2 style="margin:0;">Thanks for using Vicinity24</h2>
                     </div>
                     <div class="content">
                         <p>Hi %s,</p>
@@ -391,9 +374,20 @@ public class EmailService {
                         <p><a class="btn" href="%s" target="_blank" rel="noopener noreferrer">Rate now</a></p>
                         <p class="meta">This link is personal to your account. If you did not complete this handover, you can ignore this email.</p>
                     </div>
+                    %s
                 </div>
             </body>
             </html>
-            """.formatted(safeRecipient, safeTitle, safeOther, ratingLink);
+            """.formatted(safeRecipient, safeTitle, safeOther, ratingLink, buildStandardFooter());
+    }
+
+    private String buildStandardFooter() {
+        return """
+            <div class="footer">
+                <p>This is an automated message. Please do not reply to this email.</p>
+                <p>Team Vicinity24</p>
+                <p><a href="https://vicinity24.com" target="_blank" rel="noopener noreferrer">vicinity24.com</a> · <a href="mailto:info@vicinity24.com">info@vicinity24.com</a></p>
+            </div>
+            """;
     }
 }

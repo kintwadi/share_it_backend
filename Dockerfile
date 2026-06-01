@@ -40,7 +40,7 @@ ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addr
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f "http://localhost:${PORT}/shareit/api/health" || exit 1
+  CMD curl -f "http://localhost:${PORT}/api/v1/health" || exit 1
 
 # Run the application
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
