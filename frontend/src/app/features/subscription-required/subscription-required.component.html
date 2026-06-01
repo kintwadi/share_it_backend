@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="icon">
+          <lucide-icon [img]="ShieldAlert" [size]="20"></lucide-icon>
+        </div>
+        <div>
+          <div class="title">{{ i18n.t('dash.subscription_required_title') }}</div>
+          <div class="subtitle">{{ i18n.t('dash.subscription_required_message') }}</div>
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <button type="button" class="btn btn--secondary" (click)="back()">
+          {{ i18n.t('dash.subscription_required_cancel') }}
+        </button>
+        <button type="button" class="btn btn--primary" (click)="upgrade()">
+          {{ i18n.t('dash.subscription_required_confirm') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

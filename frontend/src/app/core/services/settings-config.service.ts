@@ -1,100 +1,86 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
+
+function getByPath(obj: any, path: string): any {
+  if (!obj || !path) return obj;
+  const parts = String(path).split('.').map(p => p.trim()).filter(Boolean);
+  let cur = obj;
+  for (const p of parts) {
+    if (cur == null) return undefined;
+    cur = cur[p];
+  }
+  return cur;
+}
+
+function isEnabledValue(v: any): boolean {
+  if (v == null) return true;
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'number') return v !== 0;
+  const s = String(v).trim().toLowerCase();
+  if (s === 'false' || s === '0' || s === 'off' || s === 'disabled') return false;
+  if (s === 'true' || s === '1' || s === 'on' || s === 'enabled') return true;
+  return true;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class SettingsConfigService {
-  config = signal<any | null>(null);
-  loading = signal(false);
-  private warnedMissing = new Set<string>();
+  private api = inject(ApiService);
 
-  constructor(private api: ApiService) {}
+  private loaded = false;
+  private loadPromise: Promise<void> | null = null;
 
-  async ensureLoaded() {
-    if (this.config()) return;
-    await this.reload();
+  private configSignal = signal<any>({});
+  config = this.configSignal.asReadonly();
+
+  async ensureLoaded(): Promise<void> {
+    if (this.loaded) return;
+    if (!this.loadPromise) {
+      this.loadPromise = this.reload().finally(() => {
+        this.loadPromise = null;
+      });
+    }
+    return this.loadPromise;
   }
 
-  async reload() {
-    this.loading.set(true);
+  async reload(): Promise<void> {
     try {
       const cfg = await this.api.getSettingsConfig();
-      this.config.set(cfg);
+      this.configSignal.set(cfg || {});
     } catch {
-      this.config.set(null);
+      this.configSignal.set({});
     } finally {
-      this.loading.set(false);
+      this.loaded = true;
     }
   }
 
-  isTabEnabled(tab: string): boolean {
-    const cfg = this.config();
-    if (!cfg) return true;
-    if (!cfg.tabs) return true;
-
-    const t = cfg.tabs[tab];
-    if (t && typeof t === 'object' && 'enabled' in t) {
-      return (t as any).enabled !== false && (t as any).enabled !== 'false';
-    }
-    const flatKey = `${tab}.enabled`;
-    if (cfg.tabs && typeof cfg.tabs === 'object' && flatKey in cfg.tabs) {
-      return cfg.tabs[flatKey] !== false && cfg.tabs[flatKey] !== 'false';
-    }
-    return true;
-    if (typeof t === 'boolean') return t !== false;
+  isTabEnabled(tabId: string): boolean {
+    const cfg = this.configSignal();
+    const tab = cfg?.tabs?.[tabId];
+    if (tab && typeof tab === 'object' && 'enabled' in tab) return isEnabledValue(tab.enabled);
+    return isEnabledValue(tab);
   }
 
-
-  isSectionEnabled(tab: string, section: string): boolean {
-    const cfg = this.config();
-    if (!cfg) return false;
-    const tabConfig = cfg?.[tab];
-    if (!tabConfig) return false;
-
-    const parts = String(section).split('.').filter(Boolean);
-    let current: any = tabConfig;
-    let found = true;
-    for (const part of parts) {
-      if (current && typeof current === 'object' && part in current) {
-        current = current[part];
-      } else {
-        found = false;
-        break;
-      }
-    }
-    if (!found) {
-      const flatKey = `${section}.enabled`;
-      if (tabConfig && typeof tabConfig === 'object' && flatKey in tabConfig) {
-        return tabConfig[flatKey] !== false && tabConfig[flatKey] !== 'false';
-      }
-      const warnKey = `${tab}.${section}`;
-      if (!this.warnedMissing.has(warnKey)) {
-        this.warnedMissing.add(warnKey);
-        console.warn(`Settings config missing for ${warnKey}, defaulting to false`);
-      }
-      return false;
+  isSectionEnabled(section: string, key?: string): boolean {
+    const cfg = this.configSignal();
+    const root = cfg?.[section];
+    if (key == null || key === '') {
+      if (root && typeof root === 'object' && 'enabled' in root) return isEnabledValue((root as any).enabled);
+      return isEnabledValue(root);
     }
 
-    if (current && typeof current === 'object' && 'enabled' in current) return current.enabled !== false && current.enabled !== 'false';
-    if (typeof current === 'boolean') return current !== false;
-    return current !== false && current !== 'false';
+    const v = getByPath(root, key);
+    if (v && typeof v === 'object' && 'enabled' in v) return isEnabledValue((v as any).enabled);
+    return isEnabledValue(v);
   }
 
-  getSectionConfig(tab: string, section: string): any {
-    const cfg = this.config();
-    if (!cfg) return null;
-    const tabConfig = cfg?.[tab];
-    if (!tabConfig) return null;
-    const parts = String(section).split('.').filter(Boolean);
-    let current: any = tabConfig;
-    for (const part of parts) {
-      if (current && typeof current === 'object' && part in current) {
-        current = current[part];
-      } else {
-        return null;
-      }
-    }
-    return current;
+  getNumber(section: string, key: string, defaultValue: number): number {
+    const cfg = this.configSignal();
+    const root = cfg?.[section];
+    const v = getByPath(root, key);
+    const n = Number(v);
+    if (!Number.isNaN(n)) return n;
+    return defaultValue;
   }
 }

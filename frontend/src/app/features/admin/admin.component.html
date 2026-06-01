@@ -1,33 +1,17 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-        <lucide-icon [img]="Shield" [size]="24" class="text-brand-600"></lucide-icon>
-        {{ i18n.t('admin.title') }}
-      </h1>
-      <p class="text-gray-600 mt-1">{{ i18n.t('admin.desc') }}</p>
-    </div>
-    <button
-      type="button"
-      (click)="refreshActive()"
-      [disabled]="loading"
-      class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60 flex items-center gap-2"
-    >
-      <lucide-icon *ngIf="loading" [img]="Loader2" [size]="18" class="animate-spin"></lucide-icon>
-      <lucide-icon *ngIf="!loading" [img]="RefreshCcw" [size]="18"></lucide-icon>
-      {{ i18n.t('admin.refresh') }}
-    </button>
-  </div>
+  <div class="pt-2"></div>
 
   <div class="mt-6 rounded-xl border border-gray-200 overflow-hidden bg-white">
     <div class="bg-gray-50 p-3 border-b border-gray-200 flex flex-wrap gap-2">
-      <button (click)="setTab('OVERVIEW')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'OVERVIEW' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.overview') }}</button>
-      <button (click)="setTab('USERS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'USERS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.users') }}</button>
-      <button (click)="setTab('LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.listings') }}</button>
-      <button (click)="setTab('TRANSACTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'TRANSACTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.transactions') }}</button>
-      <button (click)="setTab('SUBSCRIPTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SUBSCRIPTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.subscriptions') }}</button>
-      <button (click)="setTab('DISPUTES')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'DISPUTES' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.disputes') }}</button>
-      <button (click)="setTab('REPORTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'REPORTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.reports') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('OVERVIEW')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'OVERVIEW' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.overview') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('USERS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'USERS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.users') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.listings') }}</button>
+      <button (click)="setTab('PARTNER_LISTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'PARTNER_LISTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.partner_listings') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('TRANSACTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'TRANSACTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.transactions') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('SUBSCRIPTIONS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SUBSCRIPTIONS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.subscriptions') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('DISPUTES')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'DISPUTES' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.disputes') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('REPORTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'REPORTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.reports') }}</button>
+      <button *ngIf="!isPartnerScopedAdmin" (click)="setTab('SETTINGS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="activeTab === 'SETTINGS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">{{ i18n.t('admin.tab.settings') }}</button>
     </div>
 
     <div *ngIf="error" class="p-4 bg-red-50 border-b border-red-100 text-red-700 text-sm flex items-start gap-2">
@@ -64,6 +48,65 @@
       </div>
     </div>
 
+    <div *ngIf="activeTab === 'SETTINGS'" class="p-4 space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="text-sm font-semibold text-gray-900">{{ i18n.t('admin.settings.title') }}</div>
+        <div class="flex items-center gap-2">
+          <div *ngIf="settingsSaved" class="text-xs font-semibold text-emerald-700 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-100">{{ i18n.t('admin.settings.saved') }}</div>
+          <button type="button" (click)="saveSettings()" [disabled]="settingsSaving" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60">
+            <lucide-icon *ngIf="settingsSaving" [img]="Loader2" [size]="18" class="animate-spin inline-block mr-2"></lucide-icon>
+            {{ i18n.t('admin.settings.save') }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="settingsSections.length === 0" class="p-6 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600">
+        {{ i18n.t('admin.settings.empty') }}
+      </div>
+
+      <div *ngFor="let s of settingsSections" class="rounded-xl border border-gray-200 overflow-hidden bg-white">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 text-sm font-bold text-gray-900">{{ s.title || s.id }}</div>
+        <div class="p-4 overflow-x-auto">
+          <table class="min-w-full text-xs">
+            <thead class="text-left text-gray-500">
+              <tr>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.key') }}</th>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.value') }}</th>
+                <th class="py-2 pr-4 font-semibold">{{ i18n.t('admin.settings.default') }}</th>
+                <th class="py-2 text-right font-semibold">{{ i18n.t('admin.settings.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let it of s.items">
+                <td class="py-2 pr-4 font-semibold text-gray-900 whitespace-nowrap">{{ it.key }}</td>
+                <td class="py-2 pr-4">
+                  <ng-container [ngSwitch]="it.type">
+                    <label *ngSwitchCase="'boolean'" class="inline-flex items-center gap-2 cursor-pointer select-none">
+                      <input type="checkbox" [(ngModel)]="it.value" class="h-4 w-4" />
+                      <span class="text-gray-700">{{ it.value ? 'true' : 'false' }}</span>
+                    </label>
+                    <input *ngSwitchCase="'number'" type="number" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-40" />
+                    <input *ngSwitchDefault type="text" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-[420px] max-w-full" />
+                  </ng-container>
+                </td>
+                <td class="py-2 pr-4 text-gray-600">
+                  {{ it.defaultValue }}
+                </td>
+                <td class="py-2 text-right">
+                  <button type="button" (click)="resetSetting(it)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50">
+                    {{ i18n.t('admin.settings.reset') }}
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="!s.items || s.items.length === 0">
+                <td colspan="4" class="py-6 text-center text-gray-500">{{ i18n.t('admin.settings.section_empty') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div *ngIf="activeTab === 'USERS'" class="p-4 space-y-4">
       <div class="flex flex-col md:flex-row md:items-center gap-3">
         <div class="flex-1">
@@ -73,41 +116,107 @@
           Search
         </button>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full text-xs">
-          <thead class="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th class="px-3 py-2 font-semibold">Name</th>
-              <th class="px-3 py-2 font-semibold">Email</th>
-              <th class="px-3 py-2 font-semibold">Role</th>
-              <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr *ngFor="let u of users">
-              <td class="px-3 py-2 text-gray-900 font-semibold">{{u.displayName || u.name || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.email || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.role || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{u.status || '-'}}</td>
-              <td class="px-3 py-2 text-right">
-                <div class="inline-flex gap-2">
-                  <button type="button" (click)="confirmUserStatus(u, ('' + (u.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
-                    {{ ('' + (u.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
-                  </button>
-                  <button type="button" (click)="confirmDeleteUser(u)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="users.length === 0">
-              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No users found.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Name</th>
+                <th class="px-3 py-2 font-semibold">Email</th>
+                <th class="px-3 py-2 font-semibold">Role</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let u of users" class="cursor-pointer" [ngClass]="userSelectedId === ('' + u.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectUser(u)">
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{u.displayName || u.name || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.email || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.role || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{u.status || '-'}}</td>
+                <td class="px-3 py-2 text-right" (click)="$event.stopPropagation()">
+                  <div class="inline-flex gap-2">
+                    <button type="button" (click)="confirmUserStatus(u, ('' + (u.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                      {{ ('' + (u.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
+                    </button>
+                    <button type="button" (click)="confirmDeleteUser(u)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="users.length === 0">
+                <td colspan="5" class="px-3 py-8 text-center text-gray-500">No users found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+          </div>
+
+          <div *ngIf="!userSelected" class="text-sm text-gray-500">
+            Select a user to review.
+          </div>
+
+          <div *ngIf="userSelected" class="space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-lg font-extrabold text-gray-900 truncate">{{userSelected.displayName || userSelected.name || '-'}}</div>
+                <div class="text-xs text-gray-500 mt-1 truncate">{{userSelected.email || '-'}}</div>
+              </div>
+              <div class="shrink-0 text-right">
+                <div class="text-xs text-gray-500">Role</div>
+                <div class="text-sm font-bold text-gray-900">{{userSelected.role || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Verification</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.verificationStatus || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Trust score</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.trustScore ?? '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">2FA</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.twoFactorEnabled ? 'Enabled' : 'Disabled'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Phone</div>
+                <div class="mt-1 font-semibold text-gray-900">{{userSelected.phone || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Address</div>
+                <div class="mt-1 font-semibold text-gray-900 whitespace-pre-line">{{userSelected.address || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-100">
+              <button type="button" (click)="confirmUserStatus(userSelected, ('' + (userSelected.status || '')) === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                {{ ('' + (userSelected.status || '')) === 'BLOCKED' ? 'Unblock' : 'Block' }}
+              </button>
+              <button type="button" (click)="confirmDeleteUser(userSelected)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex items-center justify-between">
         <div class="text-xs text-gray-500">Total: {{usersTotal}}</div>
@@ -125,47 +234,287 @@
         </select>
         <button type="button" (click)="loadListings(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full text-xs">
-          <thead class="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th class="px-3 py-2 font-semibold">Title</th>
-              <th class="px-3 py-2 font-semibold">Type</th>
-              <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold">Owner</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr *ngFor="let l of listings">
-              <td class="px-3 py-2 text-gray-900 font-semibold">{{l.title}}</td>
-              <td class="px-3 py-2 text-gray-700">{{l.type || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{l.status || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || '-'}}</td>
-              <td class="px-3 py-2 text-right">
-                <div class="inline-flex gap-2">
-                  <button type="button" (click)="confirmBlockListing(l, l.status !== 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
-                    {{l.status === 'BLOCKED' ? 'Unblock' : 'Block'}}
-                  </button>
-                  <button type="button" (click)="confirmDeleteListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
-                    Delete
-                  </button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Title</th>
+                <th class="px-3 py-2 font-semibold">Type</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th class="px-3 py-2 font-semibold">Owner / Partner</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let l of listings" class="cursor-pointer" [ngClass]="listingSelectedId === ('' + l.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectListing(l)">
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{l.title}}</td>
+                <td class="px-3 py-2 text-gray-700">{{l.type || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{l.status || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || l.partnerName || '-'}}</td>
+                <td class="px-3 py-2 text-right">
+                  <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
+                    <button *ngIf="l.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                      Approve
+                    </button>
+                    <button *ngIf="l.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      Reject
+                    </button>
+                    <button type="button" (click)="confirmBlockListing(l, l.status !== 'BLOCKED')" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Ban" [size]="14"></lucide-icon>
+                      {{l.status === 'BLOCKED' ? 'Unblock' : 'Block'}}
+                    </button>
+                    <button type="button" (click)="confirmDeleteListing(l)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="listings.length === 0">
+                <td colspan="5" class="px-3 py-8 text-center text-gray-500">No listings found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+            <div *ngIf="listingSelectedLoading" class="inline-flex items-center gap-2 text-xs text-gray-500">
+              <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              Loading
+            </div>
+          </div>
+
+          <div *ngIf="!listingSelected && !listingSelectedLoading" class="text-sm text-gray-500">
+            Select a listing to review.
+          </div>
+
+          <div *ngIf="listingSelected" class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden shrink-0">
+                <img *ngIf="listingSelected.imageUrl" [src]="listingSelected.imageUrl" class="w-full h-full object-cover" />
+              </div>
+              <div class="min-w-0">
+                <div class="text-lg font-extrabold text-gray-900">{{listingSelected.title}}</div>
+                <div class="text-xs text-gray-500 mt-1">{{listingSelected.category}}</div>
+                <div class="mt-2 text-xs text-gray-700 whitespace-pre-line">{{listingSelected.description || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Type</div>
+                <div class="mt-1 font-semibold text-gray-900">{{listingSelected.type}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{listingSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Owner</div>
+                <div class="mt-1 font-semibold text-gray-900">{{listingSelected.owner?.email || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Item Ref</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono">{{listingSelected.itemReference || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Hourly rate</div>
+                <div class="mt-1 font-semibold text-gray-900">{{listingSelected.hourlyRate ?? 0}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Availability</div>
+                <div class="mt-1 font-semibold text-gray-900">
+                  <span *ngIf="listingSelected.availableUnlimited">Indefinitely</span>
+                  <span *ngIf="!listingSelected.availableUnlimited">
+                    {{listingSelected.availableFrom ? (listingSelected.availableFrom | date:'short') : '-' }}
+                  </span>
                 </div>
-              </td>
-            </tr>
-            <tr *ngIf="listings.length === 0">
-              <td colspan="5" class="px-3 py-8 text-center text-gray-500">No listings found.</td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl border border-gray-200 text-xs">
+              <div class="text-[11px] font-semibold text-gray-500">Pickup</div>
+              <div class="mt-1 text-gray-900">
+                {{listingSelected.pickupLocationCustom || (listingSelected.pickupLocationStreet ? (listingSelected.pickupLocationStreet + (listingSelected.pickupLocationCity ? ', ' + listingSelected.pickupLocationCity : '')) : '-')}}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex items-center justify-between">
         <div class="text-xs text-gray-500">Total: {{listingsTotal}}</div>
         <div class="flex items-center gap-2">
           <button type="button" [disabled]="listingsPage <= 0" (click)="loadListings(listingsPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
           <button type="button" [disabled]="(listingsPage + 1) * pageSize >= listingsTotal" (click)="loadListings(listingsPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'PARTNER_LISTINGS'" class="p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold text-gray-900">Partner management</div>
+      </div>
+
+      <div *ngIf="isPartnerScopedAdmin" class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-900">
+        You are a Partner Admin. You can approve/reject borrow requests only. Partner item publishing (visibility approval) requires a Full Admin account via /connect/admin.
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" (click)="setPartnerSubTab('BORROW_REQUESTS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'BORROW_REQUESTS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Borrow Approvals</button>
+        <button type="button" (click)="setPartnerSubTab('ITEMS')" class="px-3 py-2 rounded-lg text-sm font-semibold border" [ngClass]="partnerSubTab === 'ITEMS' ? 'bg-white border-gray-200 text-gray-900 shadow-sm' : 'bg-transparent border-transparent text-gray-600 hover:text-gray-900'">Partner Listing Request</button>
+      </div>
+
+      <div *ngIf="partnerSubTab === 'ITEMS'" class="flex items-center justify-end">
+        <button type="button" (click)="loadPartnerItems(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Refresh</button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Title</th>
+                <th class="px-3 py-2 font-semibold">Partner</th>
+                <th class="px-3 py-2 font-semibold">Type</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Item Ref</th>
+                <th *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 font-semibold">Submitted</th>
+                <th *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 font-semibold">Borrower</th>
+                <th *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 font-semibold text-center">Active</th>
+                <th *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let r of partnerRows" class="cursor-pointer" [ngClass]="partnerListingSelectedId === ('' + r.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectPartnerListing(r)">
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{r.title || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{r.partnerName || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{r.type || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{partnerSubTab === 'BORROW_REQUESTS' && r.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (r.status || '-')}}</td>
+                <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700 font-mono">{{r.itemReference || '-'}}</td>
+                <td *ngIf="partnerSubTab === 'SUBMISSIONS' || partnerSubTab === 'ITEMS'" class="px-3 py-2 text-gray-700 whitespace-nowrap">{{r.partnerSubmittedAt ? (r.partnerSubmittedAt | date:'short') : (r.createdAt ? (r.createdAt | date:'short') : '-') }}</td>
+                <td *ngIf="partnerSubTab === 'BORROW_REQUESTS'" class="px-3 py-2 text-gray-700">{{r.borrowerEmail || '-'}}</td>
+                <td *ngIf="partnerSubTab === 'ITEMS' && !isPartnerScopedAdmin" class="px-3 py-2 text-center" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4"
+                    [checked]="r.status === 'PARTNER_ACTIVE'"
+                    [disabled]="(r.status !== 'PARTNER_INACTIVE' && r.status !== 'PARTNER_ACTIVE') || isPartnerScopedAdmin || partnerActivateLoadingId === ('' + r.id)"
+                    (change)="togglePartnerActive(r, $any($event.target).checked)"
+                  />
+                </td>
+                <td *ngIf="partnerSubTab !== 'ITEMS'" class="px-3 py-2 text-right">
+                  <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
+                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                      Activate
+                    </button>
+                    <button *ngIf="partnerSubTab === 'SUBMISSIONS' && r.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListingRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      Reject
+                    </button>
+
+                    <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && r.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmApprovePartnerBorrowRequest(r)" class="px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-2">
+                      Approve
+                    </button>
+                    <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && r.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmRejectPartnerBorrowRequest(r)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      Reject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="partnerRows.length === 0">
+                <td [attr.colspan]="partnerSubTab === 'BORROW_REQUESTS' ? 7 : 6" class="px-3 py-8 text-center text-gray-500">No partner items.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+            <div *ngIf="partnerListingSelectedLoading" class="inline-flex items-center gap-2 text-xs text-gray-500">
+              <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              Loading
+            </div>
+          </div>
+
+          <div *ngIf="!partnerListingSelected && !partnerListingSelectedLoading" class="text-sm text-gray-500">
+            Select a request to review.
+          </div>
+
+          <div *ngIf="partnerListingSelected" class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-28 h-28 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden shrink-0">
+                <img *ngIf="partnerListingSelected.imageUrl" [src]="partnerListingSelected.imageUrl" class="w-full h-full object-cover" />
+              </div>
+              <div class="min-w-0">
+                <div class="text-lg font-extrabold text-gray-900">{{partnerListingSelected.title}}</div>
+                <div class="text-xs text-gray-500 mt-1">{{partnerListingSelected.category}}</div>
+                <div class="mt-2 text-xs text-gray-700 whitespace-pre-line">{{partnerListingSelected.description || '-'}}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Type</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.type}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Hourly rate</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.hourlyRate ?? 0}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Partner</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerListingSelected.partnerName || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'BORROWED' ? 'WAITING_FOR_RETURN' : (partnerListingSelected.status || '-')}}</div>
+              </div>
+              <div *ngIf="partnerListingSelected.itemReference" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Item Ref</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono">{{partnerListingSelected.itemReference}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Availability</div>
+                <div class="mt-1 font-semibold text-gray-900">
+                  <span *ngIf="partnerListingSelected.availableUnlimited">Indefinitely</span>
+                  <span *ngIf="!partnerListingSelected.availableUnlimited">
+                    {{partnerListingSelected.availableFrom ? (partnerListingSelected.availableFrom | date:'short') : '-' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl border border-gray-200 text-xs">
+              <div class="text-[11px] font-semibold text-gray-500">Pickup</div>
+              <div class="mt-1 text-gray-900">
+                {{partnerListingSelected.pickupLocationCustom || (partnerListingSelected.pickupLocationStreet ? (partnerListingSelected.pickupLocationStreet + (partnerListingSelected.pickupLocationCity ? ', ' + partnerListingSelected.pickupLocationCity : '')) : '-')}}
+              </div>
+            </div>
+
+            <div *ngIf="partnerListingSelected.gallery?.length" class="grid grid-cols-4 gap-2">
+              <div *ngFor="let g of partnerListingSelected.gallery" class="w-full aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                <img [src]="g" class="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmRejectPartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
+              <button *ngIf="partnerSubTab === 'SUBMISSIONS' && partnerListingSelected.status === 'PARTNER_INACTIVE'" type="button" (click)="confirmApprovePartnerListingRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Activate</button>
+              <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmRejectPartnerBorrowRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 font-semibold">Reject</button>
+              <button *ngIf="partnerSubTab === 'BORROW_REQUESTS' && partnerListingSelected.status === 'PARTNER_BORROW_REQUESTED'" type="button" (click)="confirmApprovePartnerBorrowRequest(partnerListingSelected)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">Approve</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="text-xs text-gray-500">Total: {{partnerTotal}}</div>
+        <div class="flex items-center gap-2">
+          <button type="button" [disabled]="partnerPage <= 0" (click)="loadPartnerSection(partnerPage - 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Prev</button>
+          <button type="button" [disabled]="(partnerPage + 1) * pageSize >= partnerTotal" (click)="loadPartnerSection(partnerPage + 1)" class="px-3 py-1.5 rounded-lg border border-gray-200 disabled:opacity-50">Next</button>
         </div>
       </div>
     </div>
@@ -177,48 +526,129 @@
         </select>
         <button type="button" (click)="loadTransactions(0)" class="px-4 py-2 rounded-xl bg-gray-900 text-white font-semibold hover:bg-black">Apply</button>
       </div>
-      <div class="overflow-x-auto rounded-xl border border-gray-200">
-        <table class="min-w-full text-xs">
-          <thead class="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th class="px-3 py-2 font-semibold">Date</th>
-              <th class="px-3 py-2 font-semibold">Listing</th>
-              <th class="px-3 py-2 font-semibold">Amount</th>
-              <th class="px-3 py-2 font-semibold">Status</th>
-              <th class="px-3 py-2 font-semibold">Payer</th>
-              <th class="px-3 py-2 font-semibold">Payee</th>
-              <th class="px-3 py-2 font-semibold text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr *ngFor="let t of transactions">
-              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.timestamp ? (t.timestamp | date:'short') : '-'}}</td>
-              <td class="px-3 py-2 text-gray-900 font-semibold">{{t.listingTitle || t.listingId || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.amount}} {{(t.currency || 'USD') | uppercase}}</td>
-              <td class="px-3 py-2 text-gray-700">
-                <div class="font-semibold">{{t.status || '-'}}</div>
-                <div *ngIf="t.releaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="t.releaseError">{{t.releaseError}}</div>
-              </td>
-              <td class="px-3 py-2 text-gray-700">{{t.payerEmail || '-'}}</td>
-              <td class="px-3 py-2 text-gray-700">{{t.payeeEmail || '-'}}</td>
-              <td class="px-3 py-2 text-right">
-                <div class="inline-flex gap-2">
-                  <button *ngIf="t.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(t)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
-                    Retry
-                  </button>
-                  <button type="button" (click)="confirmDeleteTransaction(t)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
-                    <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
-                    Delete
-                  </button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <table class="min-w-full text-xs">
+            <thead class="bg-gray-50 text-gray-500 text-left">
+              <tr>
+                <th class="px-3 py-2 font-semibold">Date</th>
+                <th class="px-3 py-2 font-semibold">Listing</th>
+                <th class="px-3 py-2 font-semibold">Amount</th>
+                <th class="px-3 py-2 font-semibold">Status</th>
+                <th class="px-3 py-2 font-semibold">Payer</th>
+                <th class="px-3 py-2 font-semibold">Payee</th>
+                <th class="px-3 py-2 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let t of transactions" class="cursor-pointer" [ngClass]="transactionSelectedId === ('' + t.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectTransaction(t)">
+                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.timestamp ? (t.timestamp | date:'short') : '-'}}</td>
+                <td class="px-3 py-2 text-gray-900 font-semibold">{{t.listingTitle || t.listingId || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700 whitespace-nowrap">{{t.amount}} {{(t.currency || 'USD') | uppercase}}</td>
+                <td class="px-3 py-2 text-gray-700">
+                  <div class="font-semibold">{{t.status || '-'}}</div>
+                  <div *ngIf="t.releaseError" class="text-[11px] text-gray-500 mt-0.5 max-w-[260px] truncate" [title]="t.releaseError">{{t.releaseError}}</div>
+                </td>
+                <td class="px-3 py-2 text-gray-700">{{t.payerEmail || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">{{t.payeeEmail || '-'}}</td>
+                <td class="px-3 py-2 text-right" (click)="$event.stopPropagation()">
+                  <div class="inline-flex gap-2">
+                    <button *ngIf="t.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(t)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                      Retry
+                    </button>
+                    <button type="button" (click)="confirmDeleteTransaction(t)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                      <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="transactions.length === 0">
+                <td colspan="7" class="px-3 py-8 text-center text-gray-500">No transactions found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm font-semibold text-gray-900">Review</div>
+            <div class="text-xs text-gray-500 font-mono truncate" *ngIf="transactionSelected?.id">{{transactionSelected.id}}</div>
+          </div>
+
+          <div *ngIf="!transactionSelected" class="text-sm text-gray-500">
+            Select a transaction to review.
+          </div>
+
+          <div *ngIf="transactionSelected" class="space-y-4">
+            <div class="min-w-0">
+              <div class="text-lg font-extrabold text-gray-900 truncate">{{transactionSelected.listingTitle || transactionSelected.listingId || '-'}}</div>
+              <div class="text-xs text-gray-500 mt-1">{{transactionSelected.timestamp ? (transactionSelected.timestamp | date:'short') : '-'}}</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Status</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.status || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Method</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.paymentMethod || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Total</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.amount}} {{(transactionSelected.currency || 'USD') | uppercase}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Breakdown</div>
+                <div class="mt-1 text-gray-900">
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Rental</span><span class="font-semibold">{{transactionSelected.rentalAmount ?? 0}}</span></div>
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Fee</span><span class="font-semibold">{{transactionSelected.serviceFeeAmount ?? 0}}</span></div>
+                  <div class="flex justify-between gap-3"><span class="text-gray-500">Deposit</span><span class="font-semibold">{{transactionSelected.depositAmount ?? 0}}</span></div>
                 </div>
-              </td>
-            </tr>
-            <tr *ngIf="transactions.length === 0">
-              <td colspan="7" class="px-3 py-8 text-center text-gray-500">No transactions found.</td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Payer</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.payerEmail || transactionSelected.payerId || '-'}}</div>
+              </div>
+              <div class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Payee</div>
+                <div class="mt-1 font-semibold text-gray-900">{{transactionSelected.payeeEmail || transactionSelected.payeeId || '-'}}</div>
+              </div>
+            </div>
+
+            <div *ngIf="transactionSelected.releaseError" class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-900">
+              <div class="font-semibold">Release error</div>
+              <div class="mt-1 whitespace-pre-line">{{transactionSelected.releaseError}}</div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-xs">
+              <div *ngIf="transactionSelected.stripeTransferId" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Stripe transfer</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono break-all">{{transactionSelected.stripeTransferId}}</div>
+              </div>
+              <div *ngIf="transactionSelected.stripeRefundId" class="p-3 rounded-xl border border-gray-200">
+                <div class="text-[11px] font-semibold text-gray-500">Stripe refund</div>
+                <div class="mt-1 font-semibold text-gray-900 font-mono break-all">{{transactionSelected.stripeRefundId}}</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-100">
+              <button *ngIf="transactionSelected.status === 'RELEASE_FAILED'" type="button" (click)="confirmRetryRelease(transactionSelected)" class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-800 hover:bg-gray-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+                Retry
+              </button>
+              <button type="button" (click)="confirmDeleteTransaction(transactionSelected)" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 inline-flex items-center gap-2">
+                <lucide-icon [img]="Trash2" [size]="14"></lucide-icon>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex items-center justify-between">
         <div class="text-xs text-gray-500">Total: {{transactionsTotal}}</div>
@@ -360,13 +790,3 @@
     </div>
   </div>
 </div>
-
-<app-confirmation-modal
-  [isOpen]="confirmOpen"
-  [title]="confirmTitle"
-  [message]="confirmMessage"
-  [variant]="confirmVariant"
-  [confirmDisabled]="confirmLoading"
-  (cancel)="closeConfirm()"
-  (confirm)="confirmDo()"
-></app-confirmation-modal>

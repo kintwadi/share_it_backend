@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +20,12 @@ import java.util.UUID;
 @Builder
 public class ListingDTO {
     private UUID id;
+    private String itemReference;
     private UUID ownerId;
+    private UUID partnerId;
+    private String partnerName;
+    private String partnerCity;
+    private LocalDateTime partnerCreatedAt;
     private UUID borrowerId;
     private String title;
     private String description;
@@ -41,4 +47,8 @@ public class ListingDTO {
     private String pickupLocationHouseNumber;
     private String pickupLocationCity;
     private String pickupLocationZip;
+
+    private boolean availableUnlimited;
+    private LocalDateTime availableFrom;
+    private LocalDateTime availableTo;
 }

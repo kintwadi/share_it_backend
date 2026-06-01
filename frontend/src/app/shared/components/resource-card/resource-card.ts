@@ -30,16 +30,30 @@ export class ResourceCardComponent {
   }
 
   get isAvailable(): boolean {
-    return this.listing?.status === AvailabilityStatus.AVAILABLE;
+    const l = this.listing;
+    if (!l) return false;
+    if (l.status === AvailabilityStatus.AVAILABLE) return true;
+    if (l.partnerId && l.status === AvailabilityStatus.PARTNER_ACTIVE && !l.borrowerId) return true;
+    return false;
   }
 
   get isFree(): boolean {
     return !this.listing?.hourlyRate || this.listing.hourlyRate === 0;
   }
 
+  get isPartner(): boolean {
+    return !!this.listing?.partnerId;
+  }
+
+  get displayOwnerName(): string {
+    return this.isPartner ? (this.listing.partnerName || 'Partner') : (this.listing.owner?.name || '');
+  }
+
+  get displayAvatarSeed(): string {
+    return String(this.isPartner ? (this.listing.partnerId || 'partner') : (this.listing.owner?.id || 'user'));
+  }
+
   onImageError(event: Event) {
-    if (this.listing?.owner?.id) {
-      (event.target as HTMLImageElement).src = `https://picsum.photos/seed/${this.listing.owner.id}/80/80`;
-    }
+    (event.target as HTMLImageElement).src = `https://picsum.photos/seed/${this.displayAvatarSeed}/80/80`;
   }
 }

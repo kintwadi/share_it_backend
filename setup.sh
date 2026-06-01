@@ -63,6 +63,8 @@ fi
 : "${R2_ENDPOINT:=}"
 : "${R2_PUBLIC_URL:=}"
 
+: "${ADMIN_SIGNUP_SECRET:=}"
+
 : "${LOCAL_HOST:=https://localhost:*}"
 : "${LOCAL_127:=https://127.0.0.1:*}"
 : "${REMOTE_RENDE:=https://share-it-client.onrender.com}"
@@ -91,6 +93,7 @@ echo "- STRIPE_SECRET_KEY: ********"
 echo "- STRIPE_WEBHOOK_SECRET: ********"
 echo "- SUBSCRIPTION_PLUS_STRIPE_PRICE_ID: ${SUBSCRIPTION_PLUS_STRIPE_PRICE_ID}"
 echo "- SUBSCRIPTION_PRO_STRIPE_PRICE_ID: ${SUBSCRIPTION_PRO_STRIPE_PRICE_ID}"
+echo "- ADMIN_SIGNUP_SECRET: ********"
 echo "- LOCAL_HOST: ${LOCAL_HOST}"
 echo "- LOCAL_127: ${LOCAL_127}"
 echo "- REMOTE_RENDE: ${REMOTE_RENDE}"

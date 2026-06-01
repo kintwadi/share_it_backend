@@ -28,7 +28,10 @@ export enum AvailabilityStatus {
   GIFTED = 'GIFTED',
   SOLD = 'SOLD',
   APPROVED = 'APPROVED',
-  DISPUTED = 'DISPUTED'
+  DISPUTED = 'DISPUTED',
+  PARTNER_INACTIVE = 'PARTNER_INACTIVE',
+  PARTNER_ACTIVE = 'PARTNER_ACTIVE',
+  PARTNER_BORROW_REQUESTED = 'PARTNER_BORROW_REQUESTED'
 }
 
 export enum UserRole {
@@ -73,6 +76,7 @@ export interface User {
   name: string;
   displayName?: string;
   email: string;
+  emailVerified?: boolean;
   phone: string;
   address: string;
   avatarUrl: string;
@@ -89,11 +93,17 @@ export interface User {
   twoFactorEnabled?: boolean;
   profileVisible?: boolean;
   showRatings?: boolean;
+  adminScope?: 'FULL' | 'PARTNER' | string;
 }
 
 export interface Listing {
   id: string;
-  ownerId: string;
+  itemReference?: string | null;
+  ownerId?: string | null;
+  partnerId?: string | null;
+  partnerName?: string | null;
+  partnerCity?: string | null;
+  partnerCreatedAt?: string | null;
   borrowerId?: string;
   borrower?: User;
   title: string;
@@ -118,6 +128,10 @@ export interface Listing {
   pickupLocationHouseNumber?: string;
   pickupLocationCity?: string;
   pickupLocationZip?: string;
+
+  availableUnlimited?: boolean;
+  availableFrom?: string | null;
+  availableTo?: string | null;
 }
 
 export interface InsuranceTypeInfo {
@@ -255,4 +269,47 @@ export interface Device {
   ipAddress: string;
   lastActive: string;
   trusted: boolean;
+}
+
+export type PartnerStatus = 'ACTIVE' | 'PENDING' | 'SUSPENDED';
+
+export interface Partner {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  contactPerson?: string;
+  status?: PartnerStatus;
+}
+
+export interface PartnerBorrowRequest {
+  listingId: string;
+  listingTitle?: string;
+  partnerId?: string;
+  partnerName?: string;
+  borrowerId?: string | null;
+  borrowerName?: string | null;
+  borrowerEmail?: string | null;
+  status?: AvailabilityStatus;
+}
+
+export interface PartnerReturnRequest {
+  listingId: string;
+  listingTitle?: string;
+  itemReference?: string | null;
+  partnerId?: string;
+  partnerName?: string;
+  borrowerId?: string | null;
+  borrowerName?: string | null;
+  borrowerEmail?: string | null;
+  borrowerConfirmedAt?: string | null;
+}
+
+export interface PartnerSettings {
+  partnerId: string;
+  maxLendingDays?: number | null;
+  depositCents?: number | null;
+  autoApproval?: boolean | null;
 }

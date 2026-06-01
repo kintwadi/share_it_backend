@@ -8,10 +8,19 @@ if exist "%ENV_FILE%" (
 
 :: Database Configuration
 if "%DB_TYPE%"=="" set "DB_TYPE="
-if "%DB_URL%"=="" set "DB_URL=jdbc:postgresql://localhost:5432/nearshare"
+if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./nearshare.sqlite"
 if "%DB_DRIVER%"=="" set "DB_DRIVER="
-if "%DB_USERNAME%"=="" set "DB_USERNAME=postgres"
-if "%DB_PASSWORD%"=="" set "DB_PASSWORD=postgres"
+
+set "DB_URL_LC=%DB_URL%"
+for %%A in ("%DB_URL_LC%") do set "DB_URL_LC=%%~A"
+set "DB_URL_LC=%DB_URL_LC:~0,15%"
+if /i "%DB_URL_LC%"=="jdbc:postgresql:" (
+  if "%DB_USERNAME%"=="" set "DB_USERNAME=postgres"
+  if "%DB_PASSWORD%"=="" set "DB_PASSWORD=postgres"
+) else (
+  if "%DB_USERNAME%"=="" set "DB_USERNAME="
+  if "%DB_PASSWORD%"=="" set "DB_PASSWORD="
+)
 
 :: JWT Configuration
 if "%JWT_SECRET%"=="" set "JWT_SECRET="
@@ -39,9 +48,12 @@ if not "%JWT_KEYSTORE_LOCATION%"=="" if "%JWT_KEYSTORE_PASSWORD%"=="" (
 if "%ENCRYPTION_KEY%"=="" set "ENCRYPTION_KEY=1234567890123456"
 
 :: Render / Docker runtime toggles
-if "%PORT%"=="" set "PORT=8080"
+if "%PORT%"=="" set "PORT=8081"
 if "%SSL_ENABLED%"=="" set "SSL_ENABLED=false"
 if "%SETTINGS_HTTP_ENABLED%"=="" set "SETTINGS_HTTP_ENABLED=false"
+
+:: Geolocation (FreeIPAPI)
+if "%GEOLOCATION_BASE_URL%"=="" set "GEOLOCATION_BASE_URL=https://free.freeipapi.com/api/json/"
 
 :: AWS Configuration (Placeholder values - update with actual AWS credentials)
 if "%AWS_ACCESS_KEY_ID%"=="" set "AWS_ACCESS_KEY_ID=example"
@@ -67,42 +79,26 @@ if "%STRIPE_WEBHOOK_SECRET%"=="" set "STRIPE_WEBHOOK_SECRET=test_webhook_secret"
 if "%SUBSCRIPTION_PLUS_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus"
 if "%SUBSCRIPTION_PRO_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro"
 if "%FRONTEND_BASE_URL%"=="" set "FRONTEND_BASE_URL=https://localhost:4200"
+if "%ADMIN_SIGNUP_SECRET%"=="" set "ADMIN_SIGNUP_SECRET="
 
 :: CORS Origin Patterns (used by security.cors.allowed-origin-patterns)
-set "LOCAL_HOST=https://localhost:*"
-set "LOCAL_127=https://127.0.0.1:*"
+set "LOCAL_HOST=http://localhost:*"
+set "LOCAL_127=http://127.0.0.1:*"
 set "REMOTE_RENDE=https://share-it-client.onrender.com"
 
 :: Display configuration
+set "DB_URL_SAFE=%DB_URL%"
+for /f "tokens=1* delims=@" %%A in ("%DB_URL_SAFE%") do if not "%%B"=="" set "DB_URL_SAFE=%%B"
+
 echo Environment variables set for NearShare Backend:
-echo - DB_URL: %DB_URL%
+echo - DB_URL: %DB_URL_SAFE%
 echo - DB_USERNAME: %DB_USERNAME%
-echo - DB_PASSWORD: ********
-echo - JWT_SECRET: ********
-echo - JWT_KEYSTORE_LOCATION: %JWT_KEYSTORE_LOCATION%
-echo - JWT_KEYSTORE_PASSWORD: ********
-echo - JWT_KEYSTORE_TYPE: %JWT_KEYSTORE_TYPE%
-echo - KEYSTORE_ACCESS_TOKEN_ALIAS: %KEYSTORE_ACCESS_TOKEN_ALIAS%
-echo - KEYSTORE_ACCESS_TOKEN_PW: ********
-echo - KEYSTORE_REFRESH_TOKEN_ALIAS: %KEYSTORE_REFRESH_TOKEN_ALIAS%
-echo - KEYSTORE_REFRESH_TOKEN_PW: ********
-echo - ENCRYPTION_KEY: ********
 echo - PORT: %PORT%
 echo - SSL_ENABLED: %SSL_ENABLED%
 echo - SETTINGS_HTTP_ENABLED: %SETTINGS_HTTP_ENABLED%
-echo - R2_ACCOUNT_ID: %R2_ACCOUNT_ID%
-echo - R2_ACCESS_KEY_ID: %R2_ACCESS_KEY_ID%
-echo - R2_SECRET_ACCESS_KEY: ********
-echo - R2_BUCKET_NAME: %R2_BUCKET_NAME%
-echo - R2_ENDPOINT: %R2_ENDPOINT%
-echo - R2_PUBLIC_URL: %R2_PUBLIC_URL%
-echo - MAIL_HOST: %MAIL_HOST%
-echo - MAIL_PORT: %MAIL_PORT%
-echo - MAIL_USERNAME: %MAIL_USERNAME%
-echo - MAIL_FROM: %MAIL_FROM%
-echo - STRIPE_PUBLIC_KEY: %STRIPE_PUBLIC_KEY%
-echo - STRIPE_SECRET_KEY: ********
-echo - STRIPE_WEBHOOK_SECRET: ********
+echo - GEOLOCATION_BASE_URL: %GEOLOCATION_BASE_URL%
+echo - JWT_KEYSTORE_LOCATION: %JWT_KEYSTORE_LOCATION%
+echo - FRONTEND_BASE_URL: %FRONTEND_BASE_URL%
 echo - LOCAL_HOST: %LOCAL_HOST%
 echo - LOCAL_127: %LOCAL_127%
 echo - REMOTE_RENDE: %REMOTE_RENDE%

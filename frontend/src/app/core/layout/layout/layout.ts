@@ -17,7 +17,8 @@ import {
   UserCircle, 
   ChevronDown, 
   Bell,
-  Globe
+  Globe,
+  Building2
 } from 'lucide-angular';
 import { SessionService } from '../../services/session.service';
 import { Notification } from '../../models/types';
@@ -26,11 +27,13 @@ import { NotificationType } from '../../models/types';
 import { SettingsConfigService } from '../../services/settings-config.service';
 import { I18nService } from '../../services/i18n.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
+import { AuthStorageService } from '../../services/auth-storage.service';
+import { CookieConsentComponent } from '../../../shared/components/cookie-consent/cookie-consent.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule, CookieConsentComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.css'
 })
@@ -49,12 +52,14 @@ export class Layout {
   readonly ChevronDown = ChevronDown;
   readonly Bell = Bell;
   readonly Globe = Globe;
+  readonly Building2 = Building2;
 
   private router = inject(Router);
   private session = inject(SessionService);
   private notificationsApi = inject(NotificationService);
   private settingsConfig = inject(SettingsConfigService);
   private prefs = inject(UserPreferencesService);
+  private authStorage = inject(AuthStorageService);
   i18n = inject(I18nService);
 
   isMenuOpen = signal(false);
@@ -69,7 +74,12 @@ export class Layout {
     const role = String(this.currentUser()?.role ?? '').toUpperCase();
     return role === 'ADMIN' || role === 'ROLE_ADMIN';
   });
+  isPartnerScopedAdmin = computed(() => {
+    if (!this.isAdmin()) return false;
+    return String((this.currentUser() as any)?.adminScope ?? '').toUpperCase() === 'PARTNER';
+  });
   hasSubscription = computed(() => {
+    if (!this.settingsConfig.isSectionEnabled('enable', 'subscription')) return !!this.currentUser();
     const sub = this.subscription();
     if (!sub) return false;
     const status = String(sub.status || '').toLowerCase();
@@ -99,6 +109,14 @@ export class Layout {
   language = this.i18n.language;
   
   isHomePage = signal(true);
+  currentPath = signal('');
+  isPartnerContext = computed(() => this.authStorage.authContext() === 'partner');
+  isPartnerArea = computed(() => String(this.currentPath() || '').startsWith('/partner'));
+  enterpriseEnabled = computed(() => {
+    const cfg = this.settingsConfig.config();
+    const raw = cfg?.enable?.enterprise;
+    return raw === true || raw === 'true';
+  });
 
   constructor() {
     this.session.refresh();
@@ -120,12 +138,16 @@ export class Layout {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.isHomePage.set(event.urlAfterRedirects === '/' || event.urlAfterRedirects === '/home');
-      this.isMenuOpen.set(false);
-      this.isProfileDropdownOpen.set(false);
-      this.isNotifDropdownOpen.set(false);
-      if (!this.currentUser() && !!this.session.user()) return;
-      this.session.refresh();
+      const url = String(event.urlAfterRedirects || '');
+      setTimeout(() => {
+        this.isHomePage.set(url === '/' || url === '/home');
+        this.currentPath.set(url);
+        this.isMenuOpen.set(false);
+        this.isProfileDropdownOpen.set(false);
+        this.isNotifDropdownOpen.set(false);
+        if (!this.currentUser() && !!this.session.user()) return;
+        this.session.refresh();
+      }, 0);
     });
   }
 
@@ -183,9 +205,18 @@ export class Layout {
   }
 
   handleLogoutClick() {
+    const ctx = this.authStorage.getAuthContext();
     this.session.logout();
     this.notifications.set([]);
-    this.router.navigate(['/']);
+    if (ctx === 'admin') {
+      this.router.navigate(['/connect/admin']);
+      return;
+    }
+    if (ctx === 'partner') {
+      this.router.navigate(['/connect/partner']);
+      return;
+    }
+    this.router.navigate(['/connect']);
   }
 
   changeCurrency() {

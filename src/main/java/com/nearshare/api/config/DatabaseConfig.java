@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
+import java.util.Optional;
 import java.util.Locale;
 
 @Configuration
@@ -39,6 +40,11 @@ public class DatabaseConfig {
                 defaultDriverFor(dbType, url)
         );
 
+        DbConnectionInfo normalized = normalizeDbConnection(url, username, password);
+        url = normalized.url();
+        username = normalized.username();
+        password = normalized.password();
+
         HikariConfig cfg = new HikariConfig();
         cfg.setJdbcUrl(url);
         if (!isBlank(username)) cfg.setUsername(username);
@@ -50,6 +56,11 @@ public class DatabaseConfig {
         if (connectionTimeout != null) cfg.setConnectionTimeout(connectionTimeout);
         if (maximumPoolSize != null) cfg.setMaximumPoolSize(maximumPoolSize);
         if (maximumPoolSize == null && "sqlite".equals(dbType)) cfg.setMaximumPoolSize(1);
+        if ("postgres".equals(dbType) && isSupabasePoolerUrl(url)) {
+            cfg.addDataSourceProperty("preferQueryMode", "simple");
+            cfg.addDataSourceProperty("preparedStatementCacheQueries", "0");
+            cfg.addDataSourceProperty("preparedStatementCacheSizeMiB", "0");
+        }
 
         return new HikariDataSource(cfg);
     }
@@ -120,6 +131,76 @@ public class DatabaseConfig {
         };
     }
 
+    private DbConnectionInfo normalizeDbConnection(String url, String username, String password) {
+        String u = String.valueOf(url == null ? "" : url).trim();
+        if (u.isEmpty()) return new DbConnectionInfo(u, username, password);
+        String lower = u.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("jdbc:")) return new DbConnectionInfo(u, username, password);
+        if (lower.startsWith("postgresql://") || lower.startsWith("postgres://")) {
+            Optional<ParsedUrl> parsed = parsePostgresUrl(u);
+            if (parsed.isEmpty()) return new DbConnectionInfo(u, username, password);
+            ParsedUrl p = parsed.get();
+            String jdbc = "jdbc:postgresql://" + p.host + (p.port != null ? ":" + p.port : "") + "/" + p.database;
+            String user = isBlank(username) ? p.username : username;
+            String pass = password == null || password.isBlank() ? p.password : password;
+            return new DbConnectionInfo(jdbc, user, pass);
+        }
+        return new DbConnectionInfo(u, username, password);
+    }
+
+    private Optional<ParsedUrl> parsePostgresUrl(String raw) {
+        String s = String.valueOf(raw == null ? "" : raw).trim();
+        int schemeIdx = s.indexOf("://");
+        if (schemeIdx < 0) return Optional.empty();
+        String afterScheme = s.substring(schemeIdx + 3);
+        int at = afterScheme.lastIndexOf('@');
+        String authorityAndPath = afterScheme;
+        String user = null;
+        String pass = null;
+        if (at >= 0) {
+            String userInfo = afterScheme.substring(0, at);
+            authorityAndPath = afterScheme.substring(at + 1);
+            int colon = userInfo.indexOf(':');
+            if (colon >= 0) {
+                user = userInfo.substring(0, colon);
+                pass = userInfo.substring(colon + 1);
+            } else {
+                user = userInfo;
+            }
+        }
+
+        int slash = authorityAndPath.indexOf('/');
+        if (slash < 0) return Optional.empty();
+        String hostPort = authorityAndPath.substring(0, slash);
+        String path = authorityAndPath.substring(slash + 1);
+        if (isBlank(hostPort) || isBlank(path)) return Optional.empty();
+
+        int q = path.indexOf('?');
+        String dbName = (q >= 0 ? path.substring(0, q) : path).trim();
+        if (dbName.isEmpty()) return Optional.empty();
+
+        String host = hostPort;
+        Integer port = null;
+        int colon = hostPort.lastIndexOf(':');
+        if (colon > 0 && colon < hostPort.length() - 1 && hostPort.indexOf(']') < 0) {
+            host = hostPort.substring(0, colon);
+            try {
+                port = Integer.parseInt(hostPort.substring(colon + 1));
+            } catch (NumberFormatException ignored) {
+                port = null;
+                host = hostPort;
+            }
+        }
+        host = host.trim();
+        if (host.isEmpty()) return Optional.empty();
+
+        return Optional.of(new ParsedUrl(host, port, dbName, user, pass));
+    }
+
+    private record ParsedUrl(String host, Integer port, String database, String username, String password) { }
+
+    private record DbConnectionInfo(String url, String username, String password) { }
+
     private String firstNonBlank(String... values) {
         if (values == null) return null;
         for (String value : values) {
@@ -131,5 +212,10 @@ public class DatabaseConfig {
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
-}
 
+    private boolean isSupabasePoolerUrl(String url) {
+        if (isBlank(url)) return false;
+        String u = url.trim().toLowerCase(Locale.ROOT);
+        return u.contains("pooler.supabase.com") || u.contains("pgbouncer");
+    }
+}

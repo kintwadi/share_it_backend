@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanMatchFn, Router } from '@angular/router';
 import { AuthStorageService } from '../services/auth-storage.service';
+import { PartnerService } from '../services/partner.service';
 import { SessionService } from '../services/session.service';
 import { SettingsConfigService } from '../services/settings-config.service';
 
@@ -15,6 +16,14 @@ function isAdminRole(role: unknown): boolean {
   return r === 'ADMIN' || r === 'ROLE_ADMIN';
 }
 
+function isPartnerScopedAdmin(user: any): boolean {
+  return String(user?.adminScope ?? '').toUpperCase() === 'PARTNER';
+}
+
+function isPartnerContext(authStorage: AuthStorageService): boolean {
+  return authStorage.getAuthContext() === 'partner';
+}
+
 export const canMatchDashboard: CanMatchFn = async () => {
   const router = inject(Router);
   const settingsConfig = inject(SettingsConfigService);
@@ -24,6 +33,7 @@ export const canMatchDashboard: CanMatchFn = async () => {
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
   if (isAdminRole(session.user()?.role)) return true;
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   if (!settingsConfig.isSectionEnabled('header', 'dashboard')) {
     return router.createUrlTree(['/']);
   }
@@ -70,6 +80,7 @@ export const canMatchAdmin: CanMatchFn = async () => {
   const session = inject(SessionService);
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   const u = session.user();
   return isAdminRole(u?.role) ? true : router.createUrlTree(['/']);
 };
@@ -88,11 +99,15 @@ export const canMatchSubscription: CanMatchFn = async () => {
   const authStorage = inject(AuthStorageService);
   const session = inject(SessionService);
   await settingsConfig.ensureLoaded();
+  if (!settingsConfig.isSectionEnabled('enable', 'subscription')) {
+    return router.createUrlTree(['/dashboard']);
+  }
   if (!settingsConfig.isSectionEnabled('header', 'subscribe')) {
     return router.createUrlTree(['/']);
   }
   const ok = await ensureAuthenticated(authStorage, session);
   if (!ok) return router.createUrlTree(['/connect']);
+  if (isPartnerContext(authStorage)) return router.createUrlTree(['/partner/dashboard']);
   const u = session.user();
   if (!u || u.role === 'ADMIN') return router.createUrlTree(['/']);
   const sub = session.subscription();
@@ -117,4 +132,28 @@ export const canMatchBorrowerSubscription: CanMatchFn = async () => {
   const session = inject(SessionService);
   const ok = await ensureAuthenticated(authStorage, session);
   return ok ? true : router.createUrlTree(['/connect']);
+};
+
+export const canMatchPartner: CanMatchFn = async () => {
+  const router = inject(Router);
+  const authStorage = inject(AuthStorageService);
+  const session = inject(SessionService);
+  const ok = await ensureAuthenticated(authStorage, session);
+  if (!ok) return router.createUrlTree(['/connect/partner']);
+  const u = session.user();
+  if (isAdminRole(u?.role) && !(isPartnerContext(authStorage) && isPartnerScopedAdmin(u))) {
+    return router.createUrlTree(['/admin']);
+  }
+  if (isPartnerContext(authStorage)) return true;
+
+  const partnerApi = inject(PartnerService);
+  try {
+    const partners = await partnerApi.getMyPartners();
+    if (Array.isArray(partners) && partners.length > 0) {
+      authStorage.setAuthContext('partner');
+      return true;
+    }
+  } catch { }
+
+  return router.createUrlTree(['/connect/partner']);
 };

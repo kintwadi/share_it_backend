@@ -149,31 +149,6 @@ public class EscrowService {
 
         UUID listingId = tx.getListing() != null ? tx.getListing().getId() : null;
         try {
-            User payee = tx.getPayee();
-            if (payee == null || payee.getId() == null) {
-                tx.setStatus("RELEASE_FAILED");
-                tx.setReleaseError("missing_payee");
-                transactionRepository.save(tx);
-                return;
-            }
-
-            payee = userService.getById(payee.getId());
-            String destination = payee.getStripeConnectAccountId();
-            if (destination == null || destination.isBlank()) {
-                tx.setStatus("RELEASE_FAILED");
-                tx.setReleaseError("missing_stripe_connect_account");
-                transactionRepository.save(tx);
-                return;
-            }
-
-            Account acct = stripePayment.retrieveAccount(destination);
-            if (acct == null || acct.getDetailsSubmitted() == null || !acct.getDetailsSubmitted()) {
-                tx.setStatus("RELEASE_FAILED");
-                tx.setReleaseError("connect_onboarding_incomplete");
-                transactionRepository.save(tx);
-                return;
-            }
-
             BigDecimal rentalAmount = tx.getRentalAmount() != null ? tx.getRentalAmount() : BigDecimal.ZERO;
             BigDecimal depositAmount = tx.getDepositAmount() != null ? tx.getDepositAmount() : BigDecimal.ZERO;
 
@@ -185,6 +160,31 @@ public class EscrowService {
 
             Transfer transfer = null;
             if (rentalAmount.compareTo(BigDecimal.ZERO) > 0) {
+                User payee = tx.getPayee();
+                if (payee == null || payee.getId() == null) {
+                    tx.setStatus("RELEASE_FAILED");
+                    tx.setReleaseError("missing_payee");
+                    transactionRepository.save(tx);
+                    return;
+                }
+
+                payee = userService.getById(payee.getId());
+                String destination = payee.getStripeConnectAccountId();
+                if (destination == null || destination.isBlank()) {
+                    tx.setStatus("RELEASE_FAILED");
+                    tx.setReleaseError("missing_stripe_connect_account");
+                    transactionRepository.save(tx);
+                    return;
+                }
+
+                Account acct = stripePayment.retrieveAccount(destination);
+                if (acct == null || acct.getDetailsSubmitted() == null || !acct.getDetailsSubmitted()) {
+                    tx.setStatus("RELEASE_FAILED");
+                    tx.setReleaseError("connect_onboarding_incomplete");
+                    transactionRepository.save(tx);
+                    return;
+                }
+
                 String transferGroup = listingId != null ? "listing:" + listingId : null;
                 String token = tx.getPaymentToken();
                 boolean isPaymentIntent = token != null && !token.isBlank() && token.startsWith("pi_");

@@ -5,6 +5,7 @@ import com.nearshare.api.dto.SubscriptionInvoiceDTO;
 import com.nearshare.api.dto.SubscriptionUpgradePreviewDTO;
 import com.nearshare.api.dto.SendSubscriptionCodeRequest;
 import com.nearshare.api.dto.VerifySubscriptionCodeRequest;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.User;
 import com.nearshare.api.payment.StripePayment;
 import com.nearshare.api.service.SubscriptionService;
@@ -32,6 +33,7 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
     private final UserService userService;
     private final StripePayment stripePayment;
+    private final RuntimeSettingsService runtimeSettingsService;
 
     @Value("${subscription.plus.stripe_price_id:}")
     private String plusStripePriceId;
@@ -57,18 +59,33 @@ public class SubscriptionController {
     @Value("${subscription.pro.enabled:true}")
     private boolean proEnabled;
 
-    public SubscriptionController(SubscriptionService subscriptionService, UserService userService, StripePayment stripePayment) {
+    public SubscriptionController(SubscriptionService subscriptionService, UserService userService, StripePayment stripePayment, RuntimeSettingsService runtimeSettingsService) {
         this.subscriptionService = subscriptionService;
         this.userService = userService;
         this.stripePayment = stripePayment;
+        this.runtimeSettingsService = runtimeSettingsService;
+    }
+
+    private boolean isSubscriptionEnabled() {
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true);
+    }
+
+    private void requireSubscriptionEnabled() {
+        if (!isSubscriptionEnabled()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "subscription_disabled");
+        }
     }
 
     @GetMapping("/config")
     public ResponseEntity<Map<String, Boolean>> getSubscriptionConfig() {
+        boolean starter = runtimeSettingsService.getBoolean("subscription.starter.enabled", starterEnabled);
+        boolean plus = runtimeSettingsService.getBoolean("subscription.plus.enabled", plusEnabled);
+        boolean pro = runtimeSettingsService.getBoolean("subscription.pro.enabled", proEnabled);
         return ResponseEntity.ok(Map.of(
-            "starter", starterEnabled,
-            "plus", plusEnabled,
-            "pro", proEnabled
+            "enabled", isSubscriptionEnabled(),
+            "starter", starter,
+            "plus", plus,
+            "pro", pro
         ));
     }
 
@@ -77,6 +94,7 @@ public class SubscriptionController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody(required = false) SendSubscriptionCodeRequest request
     ) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
@@ -92,6 +110,7 @@ public class SubscriptionController {
     @PostMapping("/verify-code")
     public ResponseEntity<Map<String, String>> verifyCode(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
                                                              @RequestBody VerifySubscriptionCodeRequest request) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
@@ -102,7 +121,8 @@ public class SubscriptionController {
 
     @PostMapping("/starter")
     public ResponseEntity<Map<String, String>> subscribeStarter(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        if (!starterEnabled) {
+        requireSubscriptionEnabled();
+        if (!runtimeSettingsService.getBoolean("subscription.starter.enabled", starterEnabled)) {
             return ResponseEntity.badRequest().body(Map.of("error", "Starter plan is currently disabled"));
         }
         if (principal == null) {
@@ -118,6 +138,7 @@ public class SubscriptionController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody(required = false) Map<String, String> payload
     ) {
+        requireSubscriptionEnabled();
         try {
             if (principal == null) {
                 return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
@@ -132,19 +153,25 @@ public class SubscriptionController {
             String planType = (payload != null && payload.get("planType") != null) ? payload.get("planType") : "plus";
             String stripePriceId;
             int trialDays = 0;
+            String effectivePlusPriceId = runtimeSettingsService.getString("subscription.plus.stripe_price_id", plusStripePriceId);
+            String effectiveProPriceId = runtimeSettingsService.getString("subscription.pro.stripe_price_id", proStripePriceId);
+            int effectivePlusTrialDays = runtimeSettingsService.getInt("subscription.plus.trial_days", plusTrialDays);
+            int effectiveProTrialDays = runtimeSettingsService.getInt("subscription.pro.trial_days", proTrialDays);
+            boolean effectivePlusEnabled = runtimeSettingsService.getBoolean("subscription.plus.enabled", plusEnabled);
+            boolean effectiveProEnabled = runtimeSettingsService.getBoolean("subscription.pro.enabled", proEnabled);
             
             if ("pro".equalsIgnoreCase(planType)) {
-                if (!proEnabled) {
+                if (!effectiveProEnabled) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Pro plan is currently disabled"));
                 }
-                stripePriceId = proStripePriceId;
-                trialDays = proTrialDays;
+                stripePriceId = effectiveProPriceId;
+                trialDays = effectiveProTrialDays;
             } else {
-                if (!plusEnabled) {
+                if (!effectivePlusEnabled) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Plus plan is currently disabled"));
                 }
-                stripePriceId = plusStripePriceId;
-                trialDays = plusTrialDays;
+                stripePriceId = effectivePlusPriceId;
+                trialDays = effectivePlusTrialDays;
             }
             
             if (stripePriceId == null || stripePriceId.isBlank()) {
@@ -180,6 +207,7 @@ public class SubscriptionController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> body
     ) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
         }
@@ -198,11 +226,13 @@ public class SubscriptionController {
             String status = stripeSub.getStatus();
             
             String planType = null;
+            String effectivePlusPriceId = runtimeSettingsService.getString("subscription.plus.stripe_price_id", plusStripePriceId);
+            String effectiveProPriceId = runtimeSettingsService.getString("subscription.pro.stripe_price_id", proStripePriceId);
             if (stripeSub.getItems() != null && stripeSub.getItems().getData() != null && !stripeSub.getItems().getData().isEmpty()) {
                  String priceId = stripeSub.getItems().getData().get(0).getPrice().getId();
-                 if (priceId.equals(plusStripePriceId)) {
+                 if (priceId != null && priceId.equals(effectivePlusPriceId)) {
                      planType = "plus";
-                 } else if (priceId.equals(proStripePriceId)) {
+                 } else if (priceId != null && priceId.equals(effectiveProPriceId)) {
                      planType = "pro";
                  }
             }
@@ -216,6 +246,7 @@ public class SubscriptionController {
 
     @PostMapping("/cancel")
     public ResponseEntity<Map<String, String>> cancelSubscription(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
         }
@@ -227,6 +258,7 @@ public class SubscriptionController {
     // Temporary endpoint to fix subscription status mismatch
     @PostMapping("/admin/fix-status")
     public ResponseEntity<Map<String, String>> fixSubscriptionStatus(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
         }
@@ -240,6 +272,9 @@ public class SubscriptionController {
 
     @GetMapping("/me")
     public ResponseEntity<SubscriptionDTO> getCurrentSubscription(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        if (!isSubscriptionEnabled()) {
+            return ResponseEntity.noContent().build();
+        }
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
@@ -252,6 +287,7 @@ public class SubscriptionController {
     @GetMapping("/invoices")
     public ResponseEntity<List<SubscriptionInvoiceDTO>> getSubscriptionInvoices(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
@@ -264,6 +300,7 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionUpgradePreviewDTO> previewUpgrade(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> payload) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
@@ -278,6 +315,7 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionDTO> confirmUpgrade(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> payload) {
+        requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }

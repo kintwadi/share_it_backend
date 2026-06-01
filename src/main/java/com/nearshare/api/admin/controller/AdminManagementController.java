@@ -8,11 +8,13 @@ import com.nearshare.api.admin.dto.AdminSummaryDTO;
 import com.nearshare.api.admin.dto.AdminTransactionDTO;
 import com.nearshare.api.admin.dto.AdminUserDTO;
 import com.nearshare.api.admin.service.AdminManagementService;
+import com.nearshare.api.model.User;
 import com.nearshare.api.model.ReturnSession;
 import com.nearshare.api.model.enums.UserStatus;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,9 +33,11 @@ import java.util.UUID;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminManagementController {
     private final AdminManagementService adminService;
+    private final com.nearshare.api.service.UserService userService;
 
-    public AdminManagementController(AdminManagementService adminService) {
+    public AdminManagementController(AdminManagementService adminService, com.nearshare.api.service.UserService userService) {
         this.adminService = adminService;
+        this.userService = userService;
     }
 
     @GetMapping("/summary")
@@ -108,6 +112,135 @@ public class AdminManagementController {
         return ResponseEntity.ok(adminService.listListings(status, page, size));
     }
 
+    @GetMapping("/partner/listing-requests")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerListingRequests(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        User admin = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(adminService.listPartnerListingRequests(admin, page, size));
+    }
+
+    @GetMapping("/partner/submissions")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerSubmissions(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        User admin = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(adminService.listPartnerListingRequests(admin, page, size));
+    }
+
+    @GetMapping("/partner/listings")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerListings(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        User admin = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(adminService.listPartnerListings(admin, status, page, size));
+    }
+
+    @GetMapping("/partner/items")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerItems(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        User admin = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(adminService.listPartnerListings(admin, status, page, size));
+    }
+
+    @PostMapping("/partner/items/{listingId}/activate")
+    public ResponseEntity<Map<String, String>> activatePartnerItem(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.activatePartnerItem(admin, listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/items/{listingId}/deactivate")
+    public ResponseEntity<Map<String, String>> deactivatePartnerItem(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.deactivatePartnerItem(admin, listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/listings/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerListingScoped(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) ApprovePartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerListing(admin, listingId, body != null ? body.getNote() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/submissions/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerSubmission(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) ApprovePartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerListing(admin, listingId, body != null ? body.getNote() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/listings/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerListingScoped(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerListing(admin, listingId, body != null ? body.getReason() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/submissions/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerSubmission(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerListing(admin, listingId, body != null ? body.getReason() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @GetMapping("/partner/borrow-requests")
+    public ResponseEntity<AdminPageResponse<AdminListingDTO>> partnerBorrowRequests(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size
+    ) {
+        User admin = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(adminService.listPartnerBorrowRequests(admin, page, size));
+    }
+
+    @PostMapping("/partner/borrow-requests/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerBorrowRequest(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerBorrowRequest(admin, listingId);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/partner/borrow-requests/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerBorrowRequest(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerBorrowRequest(admin, listingId, body != null ? body.getReason() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
     @PostMapping("/disputes/{listingId}/cancel-refund")
     public ResponseEntity<Map<String, String>> cancelAndRefund(@PathVariable("listingId") UUID listingId, @RequestBody ResolveDisputeRequest body) {
         adminService.cancelAndRefundDispute(listingId, body.getReason());
@@ -142,6 +275,26 @@ public class AdminManagementController {
         return ResponseEntity.ok(Map.of("status", "deleted"));
     }
 
+    @PostMapping("/listings/{listingId}/approve")
+    public ResponseEntity<Map<String, String>> approvePartnerListing(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) ApprovePartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.approvePartnerListing(admin, listingId, body != null ? body.getNote() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
+    @PostMapping("/listings/{listingId}/reject")
+    public ResponseEntity<Map<String, String>> rejectPartnerListing(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @PathVariable("listingId") UUID listingId,
+            @RequestBody(required = false) RejectPartnerListingRequest body) {
+        User admin = userService.getByEmail(principal.getUsername());
+        adminService.rejectPartnerListing(admin, listingId, body != null ? body.getReason() : null);
+        return ResponseEntity.ok(Map.of("status", "ok"));
+    }
+
     @Data
     public static class UpdateUserStatusRequest {
         private UserStatus status;
@@ -160,5 +313,15 @@ public class AdminManagementController {
     @Data
     public static class ReopenReturnRequest {
         private Integer minutes;
+    }
+
+    @Data
+    public static class ApprovePartnerListingRequest {
+        private String note;
+    }
+
+    @Data
+    public static class RejectPartnerListingRequest {
+        private String reason;
     }
 }

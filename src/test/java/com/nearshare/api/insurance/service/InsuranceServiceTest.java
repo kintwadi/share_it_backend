@@ -1,6 +1,6 @@
 package com.nearshare.api.insurance.service;
 
-import com.nearshare.api.insurance.config.InsurancePricingProperties;
+import com.nearshare.api.config.ConfigProvider;
 import com.nearshare.api.insurance.dto.InsurancePurchaseResponse;
 import com.nearshare.api.insurance.dto.InsuranceQuoteRequest;
 import com.nearshare.api.insurance.exception.InvalidInsuranceTypeException;
@@ -82,43 +82,47 @@ public class InsuranceServiceTest {
     }
 
     private static InsuranceService newService() {
-        InsurancePricingProperties props = new InsurancePricingProperties();
-        props.setCurrency("USD");
-        props.setQuoteValidityMinutes(30);
+        ConfigProvider config = new ConfigProvider() {
+            @Override
+            public String getString(String key, String defaultValue) {
+                if ("insurance.currency".equals(key)) return "USD";
+                if ("insurance.zip-adjustment.prefix".equals(key)) return "9";
+                return defaultValue;
+            }
 
-        InsurancePricingProperties.ZipAdjustment adj = new InsurancePricingProperties.ZipAdjustment();
-        adj.setPrefix("9");
-        adj.setMultiplier(1.15);
-        props.setZipAdjustment(adj);
+            @Override
+            public int getInt(String key, int defaultValue) {
+                if ("insurance.quote-validity-minutes".equals(key)) return 30;
+                return defaultValue;
+            }
 
-        InsurancePricingProperties.Rule basic = new InsurancePricingProperties.Rule();
-        basic.setPercent(0.05);
-        basic.setMin(5);
-        basic.setMax(50);
+            @Override
+            public double getDouble(String key, double defaultValue) {
+                return switch (key) {
+                    case "insurance.zip-adjustment.multiplier" -> 1.15;
+                    case "insurance.rules.basic.percent" -> 0.05;
+                    case "insurance.rules.basic.min" -> 5;
+                    case "insurance.rules.basic.max" -> 50;
+                    case "insurance.rules.premium.percent" -> 0.10;
+                    case "insurance.rules.premium.min" -> 10;
+                    case "insurance.rules.premium.max" -> 100;
+                    case "insurance.rules.theft_protection.percent" -> 0.08;
+                    case "insurance.rules.theft_protection.min" -> 8;
+                    case "insurance.rules.theft_protection.max" -> 80;
+                    case "insurance.rules.extended_warranty.percent" -> 0.03;
+                    case "insurance.rules.extended_warranty.min" -> 3;
+                    case "insurance.rules.extended_warranty.max" -> 30;
+                    default -> defaultValue;
+                };
+            }
 
-        InsurancePricingProperties.Rule premium = new InsurancePricingProperties.Rule();
-        premium.setPercent(0.10);
-        premium.setMin(10);
-        premium.setMax(100);
+            @Override
+            public boolean getBoolean(String key, boolean defaultValue) {
+                return defaultValue;
+            }
+        };
 
-        InsurancePricingProperties.Rule theft = new InsurancePricingProperties.Rule();
-        theft.setPercent(0.08);
-        theft.setMin(8);
-        theft.setMax(80);
-
-        InsurancePricingProperties.Rule warranty = new InsurancePricingProperties.Rule();
-        warranty.setPercent(0.03);
-        warranty.setMin(3);
-        warranty.setMax(30);
-
-        InsurancePricingProperties.Rules rules = new InsurancePricingProperties.Rules();
-        rules.setBasic(basic);
-        rules.setPremium(premium);
-        rules.setTheftProtection(theft);
-        rules.setExtendedWarranty(warranty);
-        props.setRules(rules);
-
-        InsuranceCostCalculator calculator = new InsuranceCostCalculator(props);
+        InsuranceCostCalculator calculator = new InsuranceCostCalculator(config);
         InsuranceDataRepository repo = new InsuranceDataRepository();
         return new InsuranceService(calculator, repo);
     }

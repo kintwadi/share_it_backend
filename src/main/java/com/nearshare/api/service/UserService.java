@@ -20,6 +20,7 @@ import com.nearshare.api.repository.ReviewRepository;
 import com.nearshare.api.repository.SubscriptionRepository;
 import com.nearshare.api.repository.SubscriptionVerificationCodeRepository;
 import com.nearshare.api.repository.TransactionRepository;
+import com.nearshare.api.partner.repository.PartnerAdminRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class UserService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final TransactionRepository transactionRepository;
     private final DeviceRepository deviceRepository;
+    private final PartnerAdminRepository partnerAdminRepository;
 
     public UserService(
             UserRepository userRepository,
@@ -54,7 +56,8 @@ public class UserService {
             SubscriptionVerificationCodeRepository subscriptionVerificationCodeRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
             TransactionRepository transactionRepository,
-            DeviceRepository deviceRepository
+            DeviceRepository deviceRepository,
+            PartnerAdminRepository partnerAdminRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -68,6 +71,7 @@ public class UserService {
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.transactionRepository = transactionRepository;
         this.deviceRepository = deviceRepository;
+        this.partnerAdminRepository = partnerAdminRepository;
     }
 
     public List<com.nearshare.api.dto.ActivityDTO> getActivity(User user) {
@@ -214,6 +218,7 @@ public class UserService {
     public void deleteUser(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user_not_found"));
 
+        partnerAdminRepository.deleteAllByUserId(user.getId());
         deviceRepository.deleteByUser(user);
         passwordResetTokenRepository.invalidateUserTokens(user.getId());
         subscriptionVerificationCodeRepository.deleteAllForUser(user);
@@ -308,6 +313,8 @@ public class UserService {
                 .twoFactorEnabled(Boolean.TRUE.equals(user.getTwoFactorEnabled()))
                 .profileVisible(user.getProfileVisible())
                 .showRatings(user.getShowRatings())
+                .adminScope(user.getAdminScope())
+                .emailVerified(Boolean.TRUE.equals(user.getEmailVerified()))
                 .build();
     }
 }

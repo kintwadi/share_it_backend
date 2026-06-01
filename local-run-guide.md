@@ -1,25 +1,37 @@
-# Local Run Guide (HTTPS)
+# Local Run Guide (Default HTTP)
 
-This guide explains how to run the NearShare backend + Angular frontend locally over HTTPS, and how to fix `net::ERR_CERT_AUTHORITY_INVALID` when using self-signed certificates.
+This guide explains how to run the NearShare backend + Angular frontend locally.
 
 ## URLs (local)
 
-- Frontend (Angular): https://localhost:4200/
-- Backend health: https://localhost/shareit/api/health
-- Backend API base: https://localhost/shareit/api
+- Frontend (Angular): `http://localhost:4200/`
+- Backend health: `http://localhost:8081/shareit/api/health`
+- Backend API base: `http://localhost:8081/shareit/api`
 
-The backend runs on port `443` with context path `/shareit`.
+The backend uses context path `/shareit`. The default local port is `8081` (can be overridden via `PORT`).
 
-## Backend (HTTPS + PostgreSQL)
+## Backend (Local)
 
-### 1) Start PostgreSQL
+### Option A: quick run (SQLite default)
+
+From the repo root:
+
+```bash
+mvn spring-boot:run
+```
+
+If `DB_URL` is not set, the backend defaults to a local SQLite file.
+
+### Option B: PostgreSQL (recommended for parity)
+
+1) Start PostgreSQL
 
 - Ensure PostgreSQL is running on `localhost:5432`
 - Database: `nearshare`
 - User: `postgres`
 - Password: `postgres`
 
-### 2) Run the backend script
+2) Run the backend script
 
 From the repo root:
 
@@ -27,21 +39,11 @@ From the repo root:
 .\run-local-postgres.bat
 ```
 
-This script calls [setup.bat](/shareit_back/setup.bat) to set required environment variables (DB, SSL passwords, JWT keystore aliases/passwords, etc.) and then starts Spring Boot.
+### Confirm the backend is up
 
-### 3) Confirm the backend is up
+- `http://localhost:8081/shareit/api/health`
 
-Open in a browser:
-
-- https://localhost/shareit/api/health
-
-Or from a terminal:
-
-```powershell
-C:\Windows\System32\curl.exe -k https://localhost/shareit/api/health
-```
-
-## Frontend (Angular over HTTPS)
+## Frontend (Angular)
 
 ### 1) Install dependencies
 
@@ -52,20 +54,15 @@ cd .\frontend
 npm install
 ```
 
-### 2) Start the dev server (HTTPS)
+### 2) Start the dev server
 
 ```powershell
-npm run start -- --ssl true --host 0.0.0.0 --port 4200
+npm start
 ```
 
-### 3) Confirm the frontend is using the HTTPS backend
+The dev server proxies `/shareit/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
-The dev environment is configured to call:
-
-- `apiUrl: https://localhost/shareit/api`
-- `wsUrl: wss://localhost/shareit/ws`
-
-See [environment.ts](/shareit_back/frontend/src/environments/environment.ts).
+See [environment.ts](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/src/environments/environment.ts) (it uses relative `/shareit/api` + `/shareit/ws`).
 
 ## Seeded data (mock data)
 
@@ -83,7 +80,7 @@ On startup, the app seeds:
 
 You can also trigger seeding manually:
 
-- https://localhost/shareit/api/seed
+- `http://localhost:8081/shareit/api/seed`
 
 Example seeded login credentials:
 
@@ -93,19 +90,18 @@ Example seeded login credentials:
 - `peter.pro@example.com` / `password123`
 - `admin@nearshare.local` / `password123`
 
-## Fixing `net::ERR_CERT_AUTHORITY_INVALID` (browser trust)
+## Optional: HTTPS local setup
 
-If the frontend shows no data and DevTools Network shows errors like:
+If you choose to enable HTTPS locally, you may need to trust a self-signed certificate to avoid `net::ERR_CERT_AUTHORITY_INVALID`.
 
-- `/shareit/api/config/settings: net::ERR_CERT_AUTHORITY_INVALID`
-
-it means the browser does not trust the backend’s certificate.
+See:
+- [tls_ssl_configuration_guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/tls_ssl_configuration_guide.md)
 
 ### Option A (fastest): accept the certificate warning once
 
-1. Open https://localhost/shareit/api/health in your browser
+1. Open `https://localhost/shareit/api/health` in your browser
 2. Click Advanced → Proceed (wording varies by browser)
-3. Reload https://localhost:4200/
+3. Reload `https://localhost:4200/` (or your current frontend URL)
 
 ### Option B (recommended): install a trusted local CA using mkcert
 
@@ -155,11 +151,11 @@ openssl pkcs12 -export -in localhost+2.pem -inkey localhost+2-key.pem -out keyst
 
 ## Common issues
 
-### Port 443 already in use
+### Port already in use
 
-If the backend fails to start with “Port 443 was already in use”:
+If the backend fails to start with “Port was already in use”:
 
-- Stop the process using port 443, then restart the backend.
+- Stop the process using the configured port (default `8081`), then restart the backend.
 
 ### No listings show in the UI
 
@@ -168,4 +164,4 @@ The frontend returns an empty list if the API call fails.
 Check DevTools → Network:
 
 - If you see `ERR_CERT_AUTHORITY_INVALID`, fix the certificate trust (section above).
-- If you see `CORS` errors, confirm backend is running and `https://localhost:4200` is allowed.
+- If you see `CORS` errors, confirm backend is running and your frontend origin is allowed.

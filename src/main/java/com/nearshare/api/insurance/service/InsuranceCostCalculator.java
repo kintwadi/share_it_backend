@@ -1,7 +1,7 @@
 package com.nearshare.api.insurance.service;
 
 import com.nearshare.api.insurance.InsuranceType;
-import com.nearshare.api.insurance.config.InsurancePricingProperties;
+import com.nearshare.api.config.ConfigProvider;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -12,10 +12,10 @@ import java.math.RoundingMode;
  */
 @Component
 public class InsuranceCostCalculator {
-    private final InsurancePricingProperties props;
+    private final ConfigProvider config;
 
-    public InsuranceCostCalculator(InsurancePricingProperties props) {
-        this.props = props;
+    public InsuranceCostCalculator(ConfigProvider config) {
+        this.config = config;
     }
 
     /**
@@ -31,12 +31,12 @@ public class InsuranceCostCalculator {
             throw new IllegalArgumentException("invalid_product_price");
         }
 
-        InsurancePricingProperties.Rule rule = ruleFor(type);
-        BigDecimal percent = BigDecimal.valueOf(rule.getPercent());
+        Rule rule = ruleFor(type);
+        BigDecimal percent = BigDecimal.valueOf(rule.percent);
         BigDecimal raw = productBasePrice.multiply(percent);
 
-        BigDecimal min = BigDecimal.valueOf(rule.getMin());
-        BigDecimal max = BigDecimal.valueOf(rule.getMax());
+        BigDecimal min = BigDecimal.valueOf(rule.min);
+        BigDecimal max = BigDecimal.valueOf(rule.max);
         BigDecimal clamped = raw.max(min).min(max);
 
         BigDecimal adjusted = applyZipAdjustment(clamped, customerZipCode);
@@ -44,32 +44,47 @@ public class InsuranceCostCalculator {
     }
 
     public String currency() {
-        return props.getCurrency();
+        return config.getString("insurance.currency", "USD");
     }
 
     public int quoteValidityMinutes() {
-        return props.getQuoteValidityMinutes();
+        return config.getInt("insurance.quote-validity-minutes", 30);
     }
 
-    public InsurancePricingProperties.Rule ruleFor(InsuranceType type) {
-        return switch (type) {
-            case BASIC -> props.getRules().getBasic();
-            case PREMIUM -> props.getRules().getPremium();
-            case THEFT_PROTECTION -> props.getRules().getTheftProtection();
-            case EXTENDED_WARRANTY -> props.getRules().getExtendedWarranty();
+    public Rule ruleFor(InsuranceType type) {
+        String base = switch (type) {
+            case BASIC -> "basic";
+            case PREMIUM -> "premium";
+            case THEFT_PROTECTION -> "theft_protection";
+            case EXTENDED_WARRANTY -> "extended_warranty";
         };
+        double percent = config.getDouble("insurance.rules." + base + ".percent", 0.0);
+        double min = config.getDouble("insurance.rules." + base + ".min", 0.0);
+        double max = config.getDouble("insurance.rules." + base + ".max", 0.0);
+        return new Rule(percent, min, max);
     }
 
     private BigDecimal applyZipAdjustment(BigDecimal cost, String zip) {
         if (zip == null) return cost;
         String trimmed = zip.trim();
         if (trimmed.isEmpty()) return cost;
-        String prefix = props.getZipAdjustment().getPrefix();
+        String prefix = config.getString("insurance.zip-adjustment.prefix", "");
         if (prefix != null && !prefix.isEmpty() && trimmed.startsWith(prefix)) {
-            BigDecimal mult = BigDecimal.valueOf(props.getZipAdjustment().getMultiplier());
+            BigDecimal mult = BigDecimal.valueOf(config.getDouble("insurance.zip-adjustment.multiplier", 1.0));
             return cost.multiply(mult);
         }
         return cost;
     }
-}
 
+    public static final class Rule {
+        public final double percent;
+        public final double min;
+        public final double max;
+
+        public Rule(double percent, double min, double max) {
+            this.percent = percent;
+            this.min = min;
+            this.max = max;
+        }
+    }
+}

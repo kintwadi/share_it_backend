@@ -5,6 +5,7 @@ import com.nearshare.api.dto.ListingDTO;
 import com.nearshare.api.dto.LocationDTO;
 import com.nearshare.api.dto.PickupLocationDTO;
 import com.nearshare.api.dto.UserSummaryDTO;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.Listing;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.Report;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 
 @Service
 public class ListingService {
@@ -42,6 +44,8 @@ public class ListingService {
     private final ReviewRepository reviewRepository;
     private final SubscriptionService subscriptionService;
     private final TrustScoreService trustScoreService;
+    private final RuntimeSettingsService runtimeSettingsService;
+    private final SecureRandom itemRefRandom = new SecureRandom();
 
     public ListingService(
             ListingRepository listingRepository,
@@ -54,7 +58,8 @@ public class ListingService {
             ReportRepository reportRepository,
             ReviewRepository reviewRepository,
             SubscriptionService subscriptionService,
-            TrustScoreService trustScoreService) {
+            TrustScoreService trustScoreService,
+            RuntimeSettingsService runtimeSettingsService) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.pickupLocationRepository = pickupLocationRepository;
@@ -66,32 +71,75 @@ public class ListingService {
         this.reviewRepository = reviewRepository;
         this.subscriptionService = subscriptionService;
         this.trustScoreService = trustScoreService;
+        this.runtimeSettingsService = runtimeSettingsService;
+    }
+
+    private boolean isSellEnabled() {
+        return runtimeSettingsService != null && runtimeSettingsService.isEnabled("settings.enable.sell", false);
     }
 
     @Transactional(readOnly = true)
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
+        return findAll(current, search, category, type, minPrice, page, size, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, Double viewerLat, Double viewerLng) {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
+            .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
+            .filter(l -> {
+                if (l.getPartner() == null || l.getBorrower() == null) return true;
+                boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+                boolean isBorrower = current != null && current.getId() != null && l.getBorrower() != null && current.getId().equals(l.getBorrower().getId());
+                return isAdmin || isBorrower;
+            })
             .filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase())))
             .filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category)))
             .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
             .filter(l -> minPrice == null || (l.getHourlyRate() != null && l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0))
             .toList();
+
+        if (viewerLat != null && viewerLng != null) {
+            filtered = filtered.stream()
+                    .sorted((a, b) -> Double.compare(distanceForSort(viewerLat, viewerLng, a), distanceForSort(viewerLat, viewerLng, b)))
+                    .toList();
+        }
         int start = Math.min(page * size, filtered.size());
         int end = Math.min(start + size, filtered.size());
-        List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current)).toList();
+        List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current, viewerLat, viewerLng)).toList();
         return new PageImpl<>(content, PageRequest.of(page, size), filtered.size());
     }
 
     @Transactional(readOnly = true)
     public ListingDTO getById(UUID id, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+            if (l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE && !isAdmin) {
+                throw new RuntimeException("listing_not_found");
+            }
+            if (l.getBorrower() != null && !isAdmin) {
+                boolean isBorrower = current != null && current.getId() != null && l.getBorrower() != null && current.getId().equals(l.getBorrower().getId());
+                if (!isBorrower) {
+                    throw new RuntimeException("listing_not_found");
+                }
+            }
+        }
         return toDTO(l, current);
     }
 
     @Transactional
     public ListingDTO create(User owner, CreateListingRequest req) {
+        return create(owner, req, null, null);
+    }
+
+    @Transactional
+    public ListingDTO create(User owner, CreateListingRequest req, Double viewerLat, Double viewerLng) {
+        if (req.getType() == ListingType.SELL && !isSellEnabled()) {
+            throw new RuntimeException("selling_disabled");
+        }
         // Enforce subscription tiers
         if (req.getType() == ListingType.LEND) {
             if (!subscriptionService.isLenderPlan(owner)) {
@@ -118,6 +166,24 @@ public class ListingService {
         if (req.getType() == ListingType.GIVE) {
             hourlyRate = BigDecimal.ZERO;
         }
+        Double lat = req.getX();
+        Double lng = req.getY();
+        if (lat != null && lng != null && Math.abs(lat) < 1e-9 && Math.abs(lng) < 1e-9) {
+            lat = null;
+            lng = null;
+        }
+        if (lat == null || lng == null) {
+            if (viewerLat != null && viewerLng != null) {
+                lat = viewerLat;
+                lng = viewerLng;
+            } else if (owner != null && owner.getLocation() != null && owner.getLocation().getLat() != null && owner.getLocation().getLng() != null) {
+                lat = owner.getLocation().getLat();
+                lng = owner.getLocation().getLng();
+            }
+        }
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        java.time.LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
+        java.time.LocalDateTime availableTo = null;
         Listing l = Listing.builder()
                 .id(UUID.randomUUID())
                 .title(req.getTitle())
@@ -130,7 +196,7 @@ public class ListingService {
                 .autoApprove(autoApprove)
                 .insuranceRequired(req.isInsuranceRequired())
                 .status(AvailabilityStatus.AVAILABLE)
-                .location(Location.builder().lat(req.getX()).lng(req.getY()).build())
+                .location(Location.builder().lat(lat).lng(lng).build())
                 .owner(owner)
                 .borrower(null)
                 .pickupLocation(pickup)
@@ -139,6 +205,9 @@ public class ListingService {
                 .pickupLocationHouseNumber(pickupHouse)
                 .pickupLocationCity(pickupCity)
                 .pickupLocationZip(pickupZip)
+                .availableUnlimited(availableUnlimited)
+                .availableFrom(availableFrom)
+                .availableTo(availableTo)
                 .createdAt(java.time.LocalDateTime.now())
                 .build();
         listingRepository.save(l);
@@ -148,6 +217,12 @@ public class ListingService {
     @Transactional
     public ListingDTO update(UUID id, CreateListingRequest req, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
+        if (req.getType() == ListingType.SELL && !isSellEnabled()) {
+            throw new RuntimeException("selling_disabled");
+        }
         
         // Enforce subscription tiers
         if (req.getType() == ListingType.LEND) {
@@ -173,7 +248,23 @@ public class ListingService {
             l.setHourlyRate(req.getHourlyRate());
         }
         l.setAutoApprove(subscriptionService.isPremiumLender(current));
-        l.setLocation(Location.builder().lat(req.getX()).lng(req.getY()).build());
+        Double nextLat = req.getX();
+        Double nextLng = req.getY();
+        if (nextLat != null && nextLng != null && Math.abs(nextLat) < 1e-9 && Math.abs(nextLng) < 1e-9) {
+            nextLat = null;
+            nextLng = null;
+        }
+        if (nextLat == null || nextLng == null) {
+            if (l.getLocation() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+                nextLat = l.getLocation().getLat();
+                nextLng = l.getLocation().getLng();
+            }
+        }
+        l.setLocation(Location.builder().lat(nextLat).lng(nextLng).build());
+        boolean availableUnlimited = req.isAvailableUnlimited();
+        l.setAvailableUnlimited(availableUnlimited);
+        l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
+        l.setAvailableTo(null);
         if (req.getPickupLocationId() != null) {
             com.nearshare.api.model.PickupLocation pickup = pickupLocationRepository.findById(req.getPickupLocationId())
                     .orElseThrow(() -> new RuntimeException("pickup_location_not_found"));
@@ -211,7 +302,7 @@ public class ListingService {
 
         if (!isAdmin) {
             AvailabilityStatus st = l.getStatus();
-            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED) {
+            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
                 throw new RuntimeException("cannot_delete_active_listing");
             }
         }
@@ -245,6 +336,25 @@ public class ListingService {
     public ListingDTO borrow(UUID id, User borrower, com.nearshare.api.dto.BorrowRequest request) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
 
+        if (l.getPartner() != null) {
+            AvailabilityStatus st = l.getStatus();
+            if (l.getBorrower() != null) {
+                throw new RuntimeException("not_available");
+            }
+            if (st != AvailabilityStatus.PARTNER_ACTIVE && st != AvailabilityStatus.AVAILABLE) {
+                throw new RuntimeException("not_available");
+            }
+            l.setBorrower(borrower);
+            l.setStatus(AvailabilityStatus.PARTNER_BORROW_REQUESTED);
+            l.setPartnerBorrowRequestedAt(java.time.LocalDateTime.now());
+            l.setPartnerBorrowRequestedBy(borrower != null ? borrower.getId() : null);
+            l.setPartnerBorrowReviewedAt(null);
+            l.setPartnerBorrowReviewedBy(null);
+            l.setPartnerBorrowRejectionReason(null);
+            listingRepository.save(l);
+            return toDTO(l, borrower);
+        }
+
         if (l.getType() == ListingType.GIVE) {
             l.setBorrower(borrower);
             if (l.isAutoApprove()) {
@@ -277,20 +387,24 @@ public class ListingService {
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
-        if (hourlyRate.compareTo(BigDecimal.ZERO) > 0) {
-            boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
-            int duration = isTimeBased ? (request.getDurationHours() > 0 ? request.getDurationHours() : 1) : 1;
-            totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
+        boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
+        int duration = isTimeBased ? (request.getDurationHours() > 0 ? request.getDurationHours() : 1) : 1;
+        totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
 
-            String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
-            if ("FEE".equals(borrowerPath)) {
-                serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
-            } else if ("DEPOSIT".equals(borrowerPath)) {
-                depositAmount = new BigDecimal("50.00");
+        String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
+        boolean subscriptionEnabled = subscriptionService == null || subscriptionService.isSubscriptionEnabled();
+        if (l.getType() == ListingType.LEND && !subscriptionEnabled) {
+            BigDecimal fixed = BigDecimal.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getDouble("settings.service.fee", 2.99) : 2.99);
+            if (fixed.compareTo(BigDecimal.ZERO) > 0) {
+                serviceFee = fixed.setScale(2, java.math.RoundingMode.HALF_UP);
             }
-
-            amount = totalCost.add(serviceFee).add(depositAmount);
+        } else if ("FEE".equals(borrowerPath)) {
+            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+        } else if ("DEPOSIT".equals(borrowerPath)) {
+            depositAmount = new BigDecimal("50.00");
         }
+
+        amount = totalCost.add(serviceFee).add(depositAmount);
 
         // Process payment if amount > 0 and payment method is not CASH
         if (amount.compareTo(BigDecimal.ZERO) > 0 && request.getPaymentMethod() != null && !"CASH".equalsIgnoreCase(request.getPaymentMethod())) {
@@ -349,9 +463,17 @@ public class ListingService {
 
         l.setBorrower(borrower);
         if (l.isAutoApprove()) {
-            if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
-            else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-            else l.setStatus(AvailabilityStatus.APPROVED);
+            if (l.getType() == ListingType.GIVE) {
+                l.setStatus(AvailabilityStatus.GIFTED);
+                l.setItemReference(null);
+            } else if (l.getType() == ListingType.SELL) {
+                l.setStatus(AvailabilityStatus.SOLD);
+                l.setItemReference(null);
+            }
+            else {
+                l.setStatus(AvailabilityStatus.BORROWED);
+                l.setItemReference(generateUniqueItemReference());
+            }
         } else {
             l.setStatus(AvailabilityStatus.PENDING);
         }
@@ -362,20 +484,26 @@ public class ListingService {
     @Transactional
     public ListingDTO approve(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         if (l.getType() == ListingType.GIVE) {
             l.setStatus(AvailabilityStatus.GIFTED);
+            l.setItemReference(null);
             if (l.getBorrower() != null) {
                 trustScoreService.updateTrustScore(l.getBorrower(), l);
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else if (l.getType() == ListingType.SELL) {
             l.setStatus(AvailabilityStatus.SOLD);
+            l.setItemReference(null);
             if (l.getBorrower() != null) {
                 trustScoreService.updateTrustScore(l.getBorrower(), l);
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else {
-            l.setStatus(AvailabilityStatus.APPROVED);
+            l.setStatus(AvailabilityStatus.BORROWED);
+            l.setItemReference(generateUniqueItemReference());
         }
         listingRepository.save(l);
         return toDTO(l, owner);
@@ -384,8 +512,12 @@ public class ListingService {
     @Transactional
     public ListingDTO deny(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         l.setStatus(AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
+        l.setItemReference(null);
         listingRepository.save(l);
         return toDTO(l, owner);
     }
@@ -393,6 +525,9 @@ public class ListingService {
     @Transactional
     public ListingDTO returnItem(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
         
         if (l.getBorrower() != null) {
             trustScoreService.updateTrustScore(l.getBorrower(), l);
@@ -401,6 +536,7 @@ public class ListingService {
         
         l.setStatus(AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
+        l.setItemReference(null);
         listingRepository.save(l);
         return toDTO(l, owner);
     }
@@ -424,7 +560,7 @@ public class ListingService {
         List<Listing> all = listingRepository.findAll();
         List<Listing> candidates = all.stream()
                 .filter(l -> l.getStatus() == AvailabilityStatus.AVAILABLE)
-                .filter(l -> l.getOwner() != null && !l.getOwner().getId().equals(current.getId()))
+                .filter(l -> l.getOwner() == null || !l.getOwner().getId().equals(current.getId()))
                 .filter(l -> !dismissed.contains(l.getId()))
                 .toList();
         record Scored(Listing l, double score) {}
@@ -470,8 +606,14 @@ public class ListingService {
     }
 
     private ListingDTO toDTO(Listing l, User current) {
+        return toDTO(l, current, null, null);
+    }
+
+    private ListingDTO toDTO(Listing l, User current, Double viewerLat, Double viewerLng) {
         double dist = 0;
-        if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+        if (viewerLat != null && viewerLng != null && l.getLocation() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
+            dist = DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
+        } else if (current != null && current.getLocation() != null && l.getLocation() != null && current.getLocation().getLat() != null && current.getLocation().getLng() != null && l.getLocation().getLat() != null && l.getLocation().getLng() != null) {
             dist = DistanceUtil.haversineMiles(current.getLocation().getLat(), current.getLocation().getLng(), l.getLocation().getLat(), l.getLocation().getLng());
         }
 
@@ -481,14 +623,19 @@ public class ListingService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);
 
         return ListingDTO.builder()
             .id(l.getId())
+            .itemReference(l.getItemReference())
             .ownerId(l.getOwner() != null ? l.getOwner().getId() : null)
+            .partnerId(l.getPartner() != null ? l.getPartner().getId() : null)
+            .partnerName(l.getPartner() != null ? l.getPartner().getName() : null)
+            .partnerCity(l.getPartner() != null ? l.getPartner().getCity() : null)
+            .partnerCreatedAt(l.getPartner() != null ? l.getPartner().getCreatedAt() : null)
             .borrowerId(l.getBorrower() != null ? l.getBorrower().getId() : null)
             .title(l.getTitle())
             .description(l.getDescription())
@@ -532,7 +679,27 @@ public class ListingService {
             .pickupLocationHouseNumber(canSeeExactPickup ? l.getPickupLocationHouseNumber() : null)
             .pickupLocationCity(l.getPickupLocationCity())
             .pickupLocationZip(l.getPickupLocationZip())
+            .availableUnlimited(l.isAvailableUnlimited())
+            .availableFrom(l.getAvailableFrom())
+            .availableTo(l.getAvailableTo())
             .build();
+    }
+
+    private double distanceForSort(Double viewerLat, Double viewerLng, Listing l) {
+        if (viewerLat == null || viewerLng == null) return Double.MAX_VALUE;
+        if (l == null || l.getLocation() == null || l.getLocation().getLat() == null || l.getLocation().getLng() == null) return Double.MAX_VALUE;
+        return DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
+    }
+
+    private String generateUniqueItemReference() {
+        for (int attempt = 0; attempt < 25; attempt++) {
+            int v = itemRefRandom.nextInt(100_000_000);
+            String code = String.format("%08d", v);
+            if (!listingRepository.existsByItemReference(code)) {
+                return code;
+            }
+        }
+        throw new RuntimeException("failed_to_generate_item_reference");
     }
 
     private String safePickupCustom(String raw) {
@@ -642,7 +809,7 @@ public class ListingService {
         if (l.isAutoApprove()) {
              if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
              else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-             else l.setStatus(AvailabilityStatus.APPROVED);
+             else l.setStatus(AvailabilityStatus.BORROWED);
         } else {
              l.setStatus(AvailabilityStatus.PENDING);
         }

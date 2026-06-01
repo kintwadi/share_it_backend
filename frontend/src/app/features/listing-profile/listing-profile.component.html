@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-gray-50 pt-24 pb-10">
+  <div class="max-w-3xl mx-auto px-4">
+    <button type="button" class="back" (click)="back()">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      Back
+    </button>
+
+    <div class="panel">
+      <div class="panel__head">
+        <div class="icon">
+          <lucide-icon [img]="isPartnerListing ? Building2 : UserIcon" [size]="18"></lucide-icon>
+        </div>
+        <div>
+          <div class="title">{{ isPartnerListing ? 'Partner Profile' : 'Member Profile' }}</div>
+          <div class="subtitle">{{ displayName }}</div>
+          <div class="meta" *ngIf="displayEmail">{{ displayEmail }}</div>
+        </div>
+      </div>
+
+      <div class="panel__body">
+        <div *ngIf="loading" class="state">
+          <lucide-icon [img]="Loader2" [size]="18" class="spin"></lucide-icon>
+          Loading…
+        </div>
+
+        <ng-container *ngIf="!loading">
+          <div *ngIf="isPartnerListing" class="hint">
+            This listing is provided by a partner organization.
+          </div>
+
+          <ng-container *ngIf="!isPartnerListing">
+            <div class="sectionTitle">Reviews</div>
+            <div *ngIf="loadingReviews" class="state">
+              <lucide-icon [img]="Loader2" [size]="18" class="spin"></lucide-icon>
+              Loading reviews…
+            </div>
+
+            <div *ngIf="!loadingReviews && reviews.length === 0" class="empty">
+              No reviews yet.
+            </div>
+
+            <div *ngIf="!loadingReviews && reviews.length > 0" class="reviews">
+              <div *ngFor="let r of reviews" class="review">
+                <div class="review__top">
+                  <div class="review__name">{{ r.reviewerName || 'Member' }}</div>
+                  <div class="review__stars">
+                    <lucide-icon *ngFor="let i of [1,2,3,4,5]" [img]="Star" [size]="14" [ngClass]="i <= (r.rating || 0) ? 'star star--on' : 'star'"></lucide-icon>
+                  </div>
+                </div>
+                <div class="review__text">"{{ r.comment }}"</div>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+

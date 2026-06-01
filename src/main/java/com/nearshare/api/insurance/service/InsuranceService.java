@@ -81,7 +81,6 @@ public class InsuranceService {
 
     private InsuranceTypeInfoResponse toInfo(InsuranceType type) {
         var r = calculator.ruleFor(type);
-        return new InsuranceTypeInfoResponse(type.name(), r.getPercent(), r.getMin(), r.getMax());
+        return new InsuranceTypeInfoResponse(type.name(), r.percent, r.min, r.max);
     }
 }
-

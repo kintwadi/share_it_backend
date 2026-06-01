@@ -17,12 +17,14 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     
     private final JavaMailSender mailSender;
+    private final RESTMailSender restMailSender;
     
     @Value("${spring.mail.from:noreply@nearshare.com}")
     private String fromEmail;
     
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, RESTMailSender restMailSender) {
         this.mailSender = mailSender;
+        this.restMailSender = restMailSender;
     }
     
     public void sendPasswordResetEmail(String toEmail, String code) {
@@ -62,6 +64,34 @@ public class EmailService {
             
         } catch (MessagingException | MailException e) {
             logger.error("Failed to send subscription verification email to: {}", toEmail, e);
+        }
+    }
+
+    public void sendSignupEmailVerificationEmail(String toEmail, String recipientName, String code, String language) {
+        String subject = buildSignupVerificationSubject(language);
+        String htmlContent = buildSignupVerificationEmail(recipientName, code, language);
+        if (restMailSender != null && restMailSender.isConfigured()) {
+            try {
+                restMailSender.sendTransactionalEmail(toEmail, recipientName, subject, htmlContent);
+                logger.info("Signup email verification email sent via Brevo API to: {}", toEmail);
+                return;
+            } catch (Exception e) {
+                logger.error("Brevo API send failed for signup email verification to: {}", toEmail, e);
+            }
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Signup email verification email sent to: {}", toEmail);
+        } catch (MessagingException | MailException e) {
+            logger.error("Failed to send signup email verification email to: {}", toEmail, e);
         }
     }
 
@@ -246,6 +276,84 @@ public class EmailService {
                     </div>
                     <div class="footer">
                         <p>This is an automated message from NeighborShare. Please do not reply to this email.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(headerTitle, greeting, intro, code, validity, ignore);
+    }
+
+    private String buildSignupVerificationSubject(String language) {
+        String lang = language != null ? language.toLowerCase() : "en";
+        if ("pt".equals(lang)) return "Confirme o seu e-mail - ShareIt";
+        if ("de".equals(lang)) return "Bestätige deine E-Mail - ShareIt";
+        return "Verify your email - ShareIt";
+    }
+
+    private String buildSignupVerificationEmail(String recipientName, String code, String language) {
+        String safeRecipient = recipientName != null && !recipientName.isBlank() ? recipientName.trim() : "there";
+        String lang = language != null ? language.toLowerCase() : "en";
+        String headerTitle;
+        String greeting;
+        String intro;
+        String validity;
+        String ignore;
+
+        if ("pt".equals(lang)) {
+            headerTitle = "Confirme o seu e-mail";
+            greeting = "Olá %s,".formatted(safeRecipient);
+            intro = "Para concluir o registo, introduza o código de verificação abaixo na aplicação:";
+            validity = "Este código é válido por pouco tempo por motivos de segurança.";
+            ignore = "Se não solicitou isto, pode ignorar este e-mail.";
+        } else if ("de".equals(lang)) {
+            headerTitle = "Bestätige deine E-Mail";
+            greeting = "Hallo %s,".formatted(safeRecipient);
+            intro = "Um die Registrierung abzuschließen, gib den Bestätigungscode unten in der App ein:";
+            validity = "Dieser Code ist aus Sicherheitsgründen nur für kurze Zeit gültig.";
+            ignore = "Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren.";
+        } else {
+            headerTitle = "Verify your email";
+            greeting = "Hello %s,".formatted(safeRecipient);
+            intro = "To complete your sign up, enter the verification code below in the app:";
+            validity = "This code is valid for a short time for security reasons.";
+            ignore = "If you did not request this, you can ignore this email.";
+        }
+
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #111827; color: white; padding: 20px; text-align: center; }
+                    .content { background: #f9f9f9; padding: 30px; border-radius: 5px; }
+                    .code {
+                        font-size: 32px;
+                        font-weight: bold;
+                        letter-spacing: 6px;
+                        text-align: center;
+                        margin: 20px 0;
+                        color: #111827;
+                    }
+                    .footer { margin-top: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>%s</h2>
+                    </div>
+                    <div class="content">
+                        <p>%s</p>
+                        <p>%s</p>
+                        <div class="code">%s</div>
+                        <p>%s</p>
+                        <p>%s</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message from ShareIt. Please do not reply to this email.</p>
                     </div>
                 </div>
             </body>

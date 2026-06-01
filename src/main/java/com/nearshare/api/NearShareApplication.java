@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableJpaRepositories(basePackages = {
         "com.nearshare.api.repository",
+        "com.nearshare.api.config",
+        "com.nearshare.api.partner.repository",
         "com.nearshare.api.recommendation.repository"
 })
 public class NearShareApplication {

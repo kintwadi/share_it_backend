@@ -1,121 +1,92 @@
 import { Injectable } from '@angular/core';
-import { Client } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { environment } from '../../../environments/environment';
-import { Message } from '../models/types';
-
-type PendingSub = { dest: string; handler: (payload: any) => void };
 
 @Injectable({
   providedIn: 'root'
 })
 export class WsService {
   private client: Client | null = null;
-  private connected = false;
-  private pendingSubs: PendingSub[] = [];
+  private subscriptions: StompSubscription[] = [];
+  private activating = false;
 
   connect() {
-    if (this.client && this.connected) return;
-    const wsBase = this.getWsBaseUrl();
-
-    this.client = new Client({
-      webSocketFactory: () => new SockJS(`${wsBase}/ws`),
-      reconnectDelay: 5000,
-      debug: () => { }
+    if (this.client?.active || this.activating) return;
+    this.activating = true;
+    const wsUrl = environment.wsUrl || '/ws';
+    const client = new Client({
+      webSocketFactory: () => new SockJS(wsUrl),
+      reconnectDelay: 5000
     });
-
-    this.client.onConnect = () => {
-      this.connected = true;
-      const subs = this.pendingSubs.splice(0);
-      subs.forEach(({ dest, handler }) => this.subscribe(dest, handler));
+    client.onConnect = () => {
+      this.activating = false;
     };
-
-    this.client.onDisconnect = () => {
-      this.connected = false;
+    client.onStompError = () => { };
+    client.onWebSocketClose = () => {
+      this.activating = false;
     };
-
-    this.client.activate();
+    client.activate();
+    this.client = client;
   }
 
   disconnect() {
-    if (!this.client) return;
-    try {
-      this.client.deactivate();
-    } finally {
-      this.client = null;
-      this.connected = false;
-      this.pendingSubs = [];
+    for (const s of this.subscriptions) {
+      try {
+        s.unsubscribe();
+      } catch { }
     }
+    this.subscriptions = [];
+    try {
+      this.client?.deactivate();
+    } catch { }
+    this.client = null;
+    this.activating = false;
   }
 
-  subscribeUser(userId: string, handler: (m: Message) => void) {
-    const dest = `/topic/messages.${userId}`;
-    const wrapped = (body: any) => {
-      const msg: Message = {
-        id: String(body.id),
-        senderId: String(body.senderId),
-        receiverId: String(body.receiverId),
-        senderEmail: body.senderEmail ? String(body.senderEmail) : undefined,
-        receiverEmail: body.receiverEmail ? String(body.receiverEmail) : undefined,
-        content: body.content ?? '',
-        imageUrl: body.imageUrl ? String(body.imageUrl) : undefined,
-        timestamp: body.timestamp,
-        isRead: !!body.isRead,
-      };
-      handler(msg);
-    };
-    this.subscribe(dest, wrapped);
+  subscribeUser(userId: string, cb: (msg: any) => void) {
+    const client = this.client;
+    if (!client || !client.active) return;
+    const id = String(userId || '').trim();
+    if (!id) return;
+    const sub = client.subscribe(`/topic/messages/${id}`, (m: IMessage) => {
+      try {
+        cb(JSON.parse(m.body));
+      } catch {
+        cb(m.body as any);
+      }
+    });
+    this.subscriptions.push(sub);
   }
 
-  subscribePresence(handler: (update: { userId: string; online: boolean }) => void) {
-    const dest = `/topic/presence`;
-    const wrapped = (body: any) => {
-      handler({ userId: String(body.userId), online: !!body.online });
-    };
-    this.subscribe(dest, wrapped);
+  subscribePresence(cb: (upd: { userId: string; online: boolean }) => void) {
+    const client = this.client;
+    if (!client || !client.active) return;
+    const sub = client.subscribe(`/topic/presence`, (m: IMessage) => {
+      try {
+        cb(JSON.parse(m.body));
+      } catch { }
+    });
+    this.subscriptions.push(sub);
   }
 
   announceOnline(userId: string) {
-    if (!this.client || !this.connected) return;
-    this.client.publish({ destination: '/app/presence.online', body: userId });
+    const client = this.client;
+    if (!client || !client.active) return;
+    const id = String(userId || '').trim();
+    if (!id) return;
+    try {
+      client.publish({ destination: '/app/presence/online', body: JSON.stringify({ userId: id }) });
+    } catch { }
   }
 
   sendMessage(senderId: string, receiverId: string, content: string, imageUrl?: string) {
-    if (!this.client || !this.connected) {
+    const client = this.client;
+    if (!client || !client.active) {
       throw new Error('ws_not_connected');
     }
-    this.client.publish({
-      destination: '/app/chat.send',
-      body: JSON.stringify({ senderId, receiverId, content, imageUrl })
-    });
-  }
-
-  private subscribe(dest: string, handler: (payload: any) => void) {
-    if (!this.client || !this.connected) {
-      this.pendingSubs.push({ dest, handler });
-      this.connect();
-      return;
-    }
-    this.client.subscribe(dest, (frame) => {
-      try {
-        const body = JSON.parse(frame.body);
-        handler(body);
-      } catch { }
-    });
-  }
-
-  private getWsBaseUrl(): string {
-    const apiUrl = this.resolveApiUrl();
-    if (apiUrl.endsWith('/api')) return apiUrl.slice(0, -4);
-    return apiUrl.replace(/\/api\/?$/, '');
-  }
-
-  private resolveApiUrl(): string {
-    try {
-      const w = globalThis as any;
-      const runtime = String(w?.__env?.API_URL || '').trim();
-      if (runtime) return runtime.replace(/\/+$/, '');
-    } catch { }
-    return String(environment.apiUrl || '').replace(/\/+$/, '');
+    const body: any = { senderId, receiverId, content };
+    if (imageUrl) body.imageUrl = imageUrl;
+    client.publish({ destination: '/app/messages/send', body: JSON.stringify(body) });
   }
 }
