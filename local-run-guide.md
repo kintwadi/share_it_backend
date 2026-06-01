@@ -5,10 +5,10 @@ This guide explains how to run the NearShare backend + Angular frontend locally.
 ## URLs (local)
 
 - Frontend (Angular): `http://localhost:4200/`
-- Backend health: `http://localhost:8081/shareit/api/health`
-- Backend API base: `http://localhost:8081/shareit/api`
+- Backend health: `http://localhost:8081/api/v1/health`
+- Backend API base: `http://localhost:8081/api/v1`
 
-The backend uses context path `/shareit`. The default local port is `8081` (can be overridden via `PORT`).
+The default local port is `8081` (can be overridden via `PORT`).
 
 ## Backend (Local)
 
@@ -41,7 +41,7 @@ From the repo root:
 
 ### Confirm the backend is up
 
-- `http://localhost:8081/shareit/api/health`
+- `http://localhost:8081/api/v1/health`
 
 ## Frontend (Angular)
 
@@ -60,9 +60,9 @@ npm install
 npm start
 ```
 
-The dev server proxies `/shareit/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
+The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
-See [environment.ts](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/src/environments/environment.ts) (it uses relative `/shareit/api` + `/shareit/ws`).
+See [environment.ts](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/src/environments/environment.ts) (it uses relative `/api/v1` + `/ws`).
 
 ## Seeded data (mock data)
 
@@ -80,7 +80,7 @@ On startup, the app seeds:
 
 You can also trigger seeding manually:
 
-- `http://localhost:8081/shareit/api/seed`
+- `http://localhost:8081/api/v1/seed`
 
 Example seeded login credentials:
 
@@ -99,7 +99,7 @@ See:
 
 ### Option A (fastest): accept the certificate warning once
 
-1. Open `https://localhost/shareit/api/health` in your browser
+1. Open `https://localhost/api/v1/health` in your browser
 2. Click Advanced → Proceed (wording varies by browser)
 3. Reload `https://localhost:4200/` (or your current frontend URL)
 

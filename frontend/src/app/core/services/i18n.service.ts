@@ -266,6 +266,12 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'connect.privacy.bullet1': 'No spam. No selling your data.',
     'connect.privacy.bullet2': 'You control what you share and with whom.',
     'connect.privacy.bullet3': 'Verified neighbors, safer sharing.',
+    'connect.error.email_exists': 'This email is already registered.',
+    'connect.error.invalid_credentials': 'Invalid email or password.',
+    'connect.error.user_not_found': 'Account not found.',
+    'connect.error.invalid_email': 'Please enter a valid email address.',
+    'connect.error.email_required': 'Email is required.',
+    'connect.error.password_required': 'Password is required.',
 
     'lenderSub.loading': 'Loading…',
 
@@ -626,6 +632,12 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'connect.privacy.bullet1': 'Sem spam. Sem vender os seus dados.',
     'connect.privacy.bullet2': 'Você controla o que partilha e com quem.',
     'connect.privacy.bullet3': 'Vizinhos verificados, partilhas mais seguras.',
+    'connect.error.email_exists': 'Este email já está registado.',
+    'connect.error.invalid_credentials': 'Email ou palavra-passe inválidos.',
+    'connect.error.user_not_found': 'Conta não encontrada.',
+    'connect.error.invalid_email': 'Por favor, introduza um email válido.',
+    'connect.error.email_required': 'O email é obrigatório.',
+    'connect.error.password_required': 'A palavra-passe é obrigatória.',
 
 
     'lenderSub.loading': 'A carregar…',
@@ -987,6 +999,12 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'connect.privacy.bullet1': 'Kein Spam. Keine Weitergabe deiner Daten.',
     'connect.privacy.bullet2': 'Du entscheidest, was du teilst und mit wem.',
     'connect.privacy.bullet3': 'Verifizierte Nachbarn, sicherer teilen.',
+    'connect.error.email_exists': 'Diese E-Mail ist bereits registriert.',
+    'connect.error.invalid_credentials': 'Ungültige E-Mail oder Passwort.',
+    'connect.error.user_not_found': 'Konto nicht gefunden.',
+    'connect.error.invalid_email': 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    'connect.error.email_required': 'E-Mail ist erforderlich.',
+    'connect.error.password_required': 'Passwort ist erforderlich.',
 
 
     'lenderSub.loading': 'Lädt…',

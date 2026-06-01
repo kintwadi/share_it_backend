@@ -84,7 +84,7 @@ if "%ADMIN_SIGNUP_SECRET%"=="" set "ADMIN_SIGNUP_SECRET="
 :: CORS Origin Patterns (used by security.cors.allowed-origin-patterns)
 set "LOCAL_HOST=http://localhost:*"
 set "LOCAL_127=http://127.0.0.1:*"
-set "REMOTE_RENDE=https://share-it-client.onrender.com"
+set "REMOTE_RENDE=https://vicinity24.com"
 
 :: Display configuration
 set "DB_URL_SAFE=%DB_URL%"

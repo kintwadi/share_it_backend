@@ -15,7 +15,7 @@ mvn spring-boot:run
 ```
 
 Defaults (override via env vars / properties):
-- API base: `http://localhost:8081/shareit/api`
+- API base: `http://localhost:8081/api/v1`
 - DB: SQLite when `DB_URL` is not set
 - SSL: disabled by default for local runs
 
@@ -28,13 +28,13 @@ npm install
 npm start
 ```
 
-The dev server proxies `/shareit/*` to `http://localhost:8081` using [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
+The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` using [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
 ## Runtime App Settings (Admin)
 
 Admins can edit safe runtime settings at:
 - UI: `/admin` → Settings tab
-- API: `GET /shareit/api/admin/app-settings`, `PUT /shareit/api/admin/app-settings`
+- API: `GET /api/v1/admin/app-settings`, `PUT /api/v1/admin/app-settings`
 
 Edits are stored as overrides in `app_config_overrides` and merged with the base `settings.*` config at runtime.
 
