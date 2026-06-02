@@ -36,7 +36,7 @@ If `DB_URL` is not set, the backend defaults to a local SQLite file.
 From the repo root:
 
 ```bat
-.\run-local-postgres.bat
+.\SCRIPTS\run-local-postgres.bat
 ```
 
 ### Confirm the backend is up
@@ -95,7 +95,7 @@ Example seeded login credentials:
 If you choose to enable HTTPS locally, you may need to trust a self-signed certificate to avoid `net::ERR_CERT_AUTHORITY_INVALID`.
 
 See:
-- [tls_ssl_configuration_guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/tls_ssl_configuration_guide.md)
+- [tls_ssl_configuration_guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/tls_ssl_configuration_guide.md)
 
 ### Option A (fastest): accept the certificate warning once
 

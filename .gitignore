@@ -1,7 +1,7 @@
 /target/
 /logs/
-/.env
-/.env.*
+**/.env
+**/.env.*
 !.env.example
 !.env.template
 /*.log
@@ -10,6 +10,14 @@
 /.idea/
 /.vscode/
 /.trae/
+/local_database
+/setup.zip
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/
+*.iml
+.DS_Store
+Thumbs.db
 /frontend/_backup/
 /frontend/.vscode/
 **/*.code-workspace

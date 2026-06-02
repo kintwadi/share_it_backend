@@ -184,7 +184,7 @@
                 <p class="text-[11px] text-slate-500 mt-1">{{ i18n.t('new_item.location.desc') }}</p>
               </div>
               <div class="flex items-center gap-2">
-                <app-button (onClick)="useMyCurrentLocation()" [disabled]="locationLookupLoading" variant="tertiary" size="sm">
+                <app-button (onClick)="useMyCurrentLocation()" [disabled]="locationLookupLoading" variant="primary" size="sm" className="shadow-glow ring-2 ring-teal-200 ring-offset-2 ring-offset-white">
                   <lucide-icon [img]="Loader2" size="14" class="mr-2 animate-spin" *ngIf="locationLookupLoading"></lucide-icon>
                   {{ i18n.t('new_item.location.use_current') }}
                 </app-button>

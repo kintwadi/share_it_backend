@@ -1,5 +1,0 @@
-DB_TYPE=sqlite
-DB_URL=jdbc:sqlite:./nearshare.sqlite
-DB_USERNAME=sqlite_user
-DB_PASSWORD=
-DB_DRIVER=org.sqlite.JDBC

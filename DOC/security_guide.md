@@ -15,8 +15,8 @@ This document is a practical, production-focused security checklist for the Vici
 The following files include hardcoded secrets or secret defaults and must be cleaned before production:
 
 - [application.properties](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/resources/application.properties)
-- [run-local-postgres.bat](file:///C:/Users/core101/Desktop/desk/shareit_back/run-local-postgres.bat)
-- [setup.bat](file:///C:/Users/core101/Desktop/desk/shareit_back/setup.bat)
+- [run-local-postgres.bat](file:///C:/Users/core101/Desktop/desk/shareit_back/SCRIPTS/run-local-postgres.bat)
+- [setup.bat](file:///C:/Users/core101/Desktop/desk/shareit_back/SCRIPTS/setup.bat)
 
 Required actions:
 

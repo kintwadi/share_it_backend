@@ -1,7 +1,7 @@
 @echo off
 
-:: Load environment variables from .env (if present) so this script always matches .env
-set "ENV_FILE=%~dp0.env"
+:: Load environment variables from repo-root .env (if present) so this script always matches .env
+set "ENV_FILE=%~dp0..\.env"
 if exist "%ENV_FILE%" (
   for /f "usebackq eol=# delims=" %%L in ("%ENV_FILE%") do call :SetEnv "%%L"
 )

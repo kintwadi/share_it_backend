@@ -45,6 +45,6 @@ When `settings.enable.subscription=false`, the backend applies a fixed service f
 
 ## Docs
 
-- Local setup: [local-run-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/local-run-guide.md)
-- API overview: [api-contract.md](file:///c:/Users/core101/Desktop/desk/shareit_back/api-contract.md)
-- Frontend usage: [user-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/user-guide.md)
+- Local setup: [local-run-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/local-run-guide.md)
+- API overview: [api-contract.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/api-contract.md)
+- Frontend usage: [user-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/user-guide.md)

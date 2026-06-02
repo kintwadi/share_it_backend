@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Docker Hub Deployment Script for NearShare Backend
-# Usage: ./deploy-to-dockerhub.sh [version-tag]
+# Usage: ./SCRIPTS/deploy-to-docker.sh [version-tag]
 
 set -e  # Exit on any error
 

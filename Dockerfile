@@ -19,7 +19,7 @@ COPY --from=build /app/target/nearshare-back-end-0.0.1-SNAPSHOT.jar app.jar
 COPY --from=litestream /usr/local/bin/litestream /usr/local/bin/litestream
 
 COPY litestream.yml /app/litestream.yml
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY SCRIPTS/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /data
 

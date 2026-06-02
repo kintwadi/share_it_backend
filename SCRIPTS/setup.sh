@@ -2,7 +2,7 @@
 
 set -a
 
-ENV_FILE="$(cd "$(dirname "$0")" && pwd)/.env"
+ENV_FILE="$(cd "$(dirname "$0")/.." && pwd)/.env"
 if [ -f "$ENV_FILE" ]; then
   . "$ENV_FILE"
 fi

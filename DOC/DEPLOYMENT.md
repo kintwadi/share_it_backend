@@ -16,13 +16,13 @@ Edit the deployment script and set your Docker Hub username:
 
 **For Bash/Linux/Mac:**
 ```bash
-# Edit deploy-to-dockerhub.sh
+# Edit SCRIPTS/deploy-to-docker.sh
 DOCKER_HUB_USERNAME="your_dockerhub_username"
 ```
 
 **For Windows:**
 ```batch
-:: Edit deploy-to-dockerhub.bat
+:: Edit SCRIPTS/deploy-to-docker.bat
 set DOCKER_HUB_USERNAME=your_dockerhub_username
 ```
 
@@ -47,22 +47,22 @@ DEFAULT_TAG=latest
 **Linux/Mac/WSL:**
 ```bash
 # Make the script executable
-chmod +x deploy-to-dockerhub.sh
+chmod +x SCRIPTS/deploy-to-docker.sh
 
 # Deploy with automatic version detection
-./deploy-to-dockerhub.sh
+./SCRIPTS/deploy-to-docker.sh
 
 # Deploy with specific version tag
-./deploy-to-dockerhub.sh v1.2.3
+./SCRIPTS/deploy-to-docker.sh v1.2.3
 ```
 
 **Windows:**
 ```batch
 :: Deploy with automatic version detection
-deploy-to-dockerhub.bat
+SCRIPTS\\deploy-to-docker.bat
 
 :: Deploy with specific version tag
-deploy-to-dockerhub.bat v1.2.3
+SCRIPTS\\deploy-to-docker.bat v1.2.3
 ```
 
 ### Version Tagging
@@ -74,9 +74,9 @@ The script supports multiple tagging strategies:
 3. **Additional tags**: Always creates `latest` tag in addition to version
 
 Examples:
-- `./deploy-to-dockerhub.sh` → tags: `0.0.1-SNAPSHOT` + `latest`
-- `./deploy-to-dockerhub.sh v1.0.0` → tags: `v1.0.0` + `latest`
-- `./deploy-to-dockerhub.sh production` → tags: `production` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh` → tags: `0.0.1-SNAPSHOT` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh v1.0.0` → tags: `v1.0.0` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh production` → tags: `production` + `latest`
 
 ## What the Script Does
 
