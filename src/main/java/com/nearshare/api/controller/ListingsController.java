@@ -3,8 +3,6 @@ package com.nearshare.api.controller;
 import com.nearshare.api.dto.CreateListingRequest;
 import com.nearshare.api.dto.ListingDTO;
 import com.nearshare.api.dto.ReportRequest;
-import com.nearshare.api.geolocation.GeolocationService;
-import com.nearshare.api.geolocation.IpAddressResolver;
 import com.nearshare.api.model.User;
 import com.nearshare.api.service.ListingService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,12 +20,10 @@ import java.util.UUID;
 public class ListingsController {
     private final ListingService listingService;
     private final com.nearshare.api.service.UserService userService;
-    private final GeolocationService geolocationService;
 
-    public ListingsController(ListingService listingService, com.nearshare.api.service.UserService userService, GeolocationService geolocationService) {
+    public ListingsController(ListingService listingService, com.nearshare.api.service.UserService userService) {
         this.listingService = listingService;
         this.userService = userService;
-        this.geolocationService = geolocationService;
     }
 
     @GetMapping("/")
@@ -38,13 +34,22 @@ public class ListingsController {
             @RequestParam(name = "category", required = false) String category,
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "minPrice", required = false) Double minPrice,
+            @RequestParam(name = "viewerLat", required = false) Double viewerLat,
+            @RequestParam(name = "viewerLng", required = false) Double viewerLng,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User current = principal != null ? userService.getByEmail(principal.getUsername()) : null;
-        var geo = geolocationService.resolve(IpAddressResolver.resolveClientIp(request));
-        Double lat = geo != null ? geo.latitude() : null;
-        Double lng = geo != null ? geo.longitude() : null;
-        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, lat, lng));
+        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, viewerLat, viewerLng));
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<java.util.List<ListingDTO>> nearby(
+            @RequestParam(name = "lat") double lat,
+            @RequestParam(name = "lng") double lng,
+            @RequestParam(name = "radiusKm", defaultValue = "25") double radiusKm,
+            @RequestParam(name = "size", defaultValue = "50") int size
+    ) {
+        return ResponseEntity.ok(listingService.findNearby(lat, lng, radiusKm, size));
     }
 
     @GetMapping("/recommended")
@@ -64,10 +69,7 @@ public class ListingsController {
     @PostMapping("/")
     public ResponseEntity<ListingDTO> create(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, HttpServletRequest request, @RequestBody CreateListingRequest req) {
         User owner = userService.getByEmail(principal.getUsername());
-        var geo = geolocationService.resolve(IpAddressResolver.resolveClientIp(request));
-        Double lat = geo != null ? geo.latitude() : null;
-        Double lng = geo != null ? geo.longitude() : null;
-        return ResponseEntity.ok(listingService.create(owner, req, lat, lng));
+        return ResponseEntity.ok(listingService.create(owner, req, null, null));
     }
 
     @PutMapping("/{id}")

@@ -53,6 +53,11 @@ public class Listing {
     private AvailabilityStatus status;
     @Embedded
     private Location location;
+    private String streetAddress;
+    private String city;
+    private String postalCode;
+    private String country;
+    private String geohash;
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "owner_id")
     private User owner;

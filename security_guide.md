@@ -1,6 +1,6 @@
-# NearShare Backend — Production Security Guide
+# Vicinity24 Backend — Production Security Guide
 
-This document is a practical, production-focused security checklist for the NearShare Spring Boot backend.
+This document is a practical, production-focused security checklist for the Vicinity24 Spring Boot backend.
 
 ## Scope
 
@@ -175,4 +175,3 @@ Required actions:
 - [ ] Dependency + secret scanning in CI/CD
 - [ ] Separate database instance/service; encrypted connections; least privilege credentials
 - [ ] Monitoring, logging, rate limiting, and alerting in place
-

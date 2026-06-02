@@ -1,6 +1,6 @@
 # User Guide (Frontend Usage)
 
-This guide describes how to use the NearShare / Share It frontend, including the dedicated admin and partner connect flows.
+This guide describes how to use the Vicinity24 frontend, including the dedicated admin and partner connect flows.
 
 ## Access Paths
 

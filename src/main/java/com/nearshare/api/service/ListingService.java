@@ -20,6 +20,7 @@ import com.nearshare.api.repository.UserRepository;
 import com.nearshare.api.repository.ReportRepository;
 import com.nearshare.api.repository.ReviewRepository;
 import com.nearshare.api.util.DistanceUtil;
+import com.nearshare.api.util.GeohashUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +46,7 @@ public class ListingService {
     private final SubscriptionService subscriptionService;
     private final TrustScoreService trustScoreService;
     private final RuntimeSettingsService runtimeSettingsService;
+    private final LocationService locationService;
     private final SecureRandom itemRefRandom = new SecureRandom();
 
     public ListingService(
@@ -59,7 +61,8 @@ public class ListingService {
             ReviewRepository reviewRepository,
             SubscriptionService subscriptionService,
             TrustScoreService trustScoreService,
-            RuntimeSettingsService runtimeSettingsService) {
+            RuntimeSettingsService runtimeSettingsService,
+            LocationService locationService) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.pickupLocationRepository = pickupLocationRepository;
@@ -72,6 +75,7 @@ public class ListingService {
         this.subscriptionService = subscriptionService;
         this.trustScoreService = trustScoreService;
         this.runtimeSettingsService = runtimeSettingsService;
+        this.locationService = locationService;
     }
 
     private boolean isSellEnabled() {
@@ -166,8 +170,24 @@ public class ListingService {
         if (req.getType() == ListingType.GIVE) {
             hourlyRate = BigDecimal.ZERO;
         }
+        String streetAddress = safeText(req.getStreetAddress());
+        String city = safeText(req.getCity());
+        String postalCode = safeText(req.getPostalCode());
+        String country = safeText(req.getCountry());
+
         Double lat = req.getX();
         Double lng = req.getY();
+        if ((!streetAddress.isEmpty() || !city.isEmpty() || !postalCode.isEmpty() || !country.isEmpty()) && locationService != null) {
+            var geo = locationService.forwardGeocode(streetAddress, city, postalCode, country);
+            if (geo != null) {
+                lat = geo.getLatitude();
+                lng = geo.getLongitude();
+                streetAddress = safeText(geo.getStreetAddress());
+                city = safeText(geo.getCity());
+                postalCode = safeText(geo.getPostalCode());
+                country = safeText(geo.getCountry());
+            }
+        }
         if (lat != null && lng != null && Math.abs(lat) < 1e-9 && Math.abs(lng) < 1e-9) {
             lat = null;
             lng = null;
@@ -181,6 +201,7 @@ public class ListingService {
                 lng = owner.getLocation().getLng();
             }
         }
+        String geohash = GeohashUtil.encode(lat, lng, 9);
         boolean availableUnlimited = req.isAvailableUnlimited();
         java.time.LocalDateTime availableFrom = availableUnlimited ? null : req.getAvailableFrom();
         java.time.LocalDateTime availableTo = null;
@@ -197,6 +218,11 @@ public class ListingService {
                 .insuranceRequired(req.isInsuranceRequired())
                 .status(AvailabilityStatus.AVAILABLE)
                 .location(Location.builder().lat(lat).lng(lng).build())
+                .streetAddress(streetAddress.isEmpty() ? null : streetAddress)
+                .city(city.isEmpty() ? null : city)
+                .postalCode(postalCode.isEmpty() ? null : postalCode)
+                .country(country.isEmpty() ? null : country)
+                .geohash(geohash)
                 .owner(owner)
                 .borrower(null)
                 .pickupLocation(pickup)
@@ -248,8 +274,24 @@ public class ListingService {
             l.setHourlyRate(req.getHourlyRate());
         }
         l.setAutoApprove(subscriptionService.isPremiumLender(current));
+        String nextStreetAddress = safeText(req.getStreetAddress());
+        String nextCity = safeText(req.getCity());
+        String nextPostalCode = safeText(req.getPostalCode());
+        String nextCountry = safeText(req.getCountry());
+
         Double nextLat = req.getX();
         Double nextLng = req.getY();
+        if ((!nextStreetAddress.isEmpty() || !nextCity.isEmpty() || !nextPostalCode.isEmpty() || !nextCountry.isEmpty()) && locationService != null) {
+            var geo = locationService.forwardGeocode(nextStreetAddress, nextCity, nextPostalCode, nextCountry);
+            if (geo != null) {
+                nextLat = geo.getLatitude();
+                nextLng = geo.getLongitude();
+                nextStreetAddress = safeText(geo.getStreetAddress());
+                nextCity = safeText(geo.getCity());
+                nextPostalCode = safeText(geo.getPostalCode());
+                nextCountry = safeText(geo.getCountry());
+            }
+        }
         if (nextLat != null && nextLng != null && Math.abs(nextLat) < 1e-9 && Math.abs(nextLng) < 1e-9) {
             nextLat = null;
             nextLng = null;
@@ -261,6 +303,11 @@ public class ListingService {
             }
         }
         l.setLocation(Location.builder().lat(nextLat).lng(nextLng).build());
+        l.setStreetAddress(nextStreetAddress.isEmpty() ? null : nextStreetAddress);
+        l.setCity(nextCity.isEmpty() ? null : nextCity);
+        l.setPostalCode(nextPostalCode.isEmpty() ? null : nextPostalCode);
+        l.setCountry(nextCountry.isEmpty() ? null : nextCountry);
+        l.setGeohash(GeohashUtil.encode(nextLat, nextLng, 9));
         boolean availableUnlimited = req.isAvailableUnlimited();
         l.setAvailableUnlimited(availableUnlimited);
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
@@ -288,6 +335,26 @@ public class ListingService {
         }
         listingRepository.save(l);
         return toDTO(l, current);
+    }
+
+    public List<ListingDTO> findNearby(double borrowerLat, double borrowerLng, double radiusKm, int size) {
+        var rows = listingRepository.findNearby(borrowerLat, borrowerLng, Math.max(0.1, radiusKm), PageRequest.of(0, Math.max(1, Math.min(200, size))));
+        if (rows == null || rows.isEmpty()) return List.of();
+        var ids = rows.stream().map(ListingRepository.ListingDistanceRow::getId).toList();
+        var listings = listingRepository.findAllById(ids);
+        var byId = listings.stream().collect(java.util.stream.Collectors.toMap(Listing::getId, x -> x));
+        List<ListingDTO> out = new java.util.ArrayList<>();
+        for (var row : rows) {
+            var l = byId.get(row.getId());
+            if (l == null) continue;
+            out.add(toDTO(l, null, borrowerLat, borrowerLng));
+        }
+        return out;
+    }
+
+    private String safeText(String v) {
+        String s = v == null ? "" : v.trim();
+        return s;
     }
 
     @Transactional

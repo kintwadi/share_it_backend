@@ -1,10 +1,10 @@
-# NearShare Frontend Application - Manual Test Plan
+# Vicinity24 Frontend Application - Manual Test Plan
 
 ## 📋 Test Overview
-This document provides a comprehensive manual testing guide for the NearShare frontend application. Testers should follow this plan to verify all functionalities work correctly.
+This document provides a comprehensive manual testing guide for the Vicinity24 frontend application. Testers should follow this plan to verify all functionalities work correctly.
 
 ## 🎯 Application URL
-**Production**: https://share-it-client.onrender.com
+**Production**: https://vicinity-client.onrender.com
 **Local**: http://localhost:3001 (if testing locally)
 
 ## 🧪 Test Environment Setup

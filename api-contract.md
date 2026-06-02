@@ -1,6 +1,6 @@
-# API Contract (NearShare / Share It)
+# API Contract (Vicinity24 / NearShare)
 
-This document describes the REST API exposed by the NearShare backend.
+This document describes the REST API exposed by the Vicinity24 backend.
 
 ## Base URL
 

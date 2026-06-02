@@ -1,14 +1,12 @@
 # Docker Hub Deployment Guide
 
-This guide explains how to deploy the NearShare backend application to Docker Hub.
+This guide explains how to deploy the Vicinity24 backend application to Docker Hub.
 
 ## Prerequisites
 
 1. **Docker Installed**: Make sure Docker Desktop is installed and running on your system
 2. **Docker Hub Account**: Create an account at [hub.docker.com](https://hub.docker.com)
 3. **Login**: Run `docker login` in your terminal and enter your credentials
-
- trae-sandbox 'npm run start -- --ssl true --host 0.0.0.0 --port 4200'
 
 ## Configuration
 

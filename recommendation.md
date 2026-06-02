@@ -1,6 +1,6 @@
 # Recommendation System (Mahout)
 
-This document explains the recommendation feature implemented in the NearShare backend and how the frontend consumes it.
+This document explains the recommendation feature implemented in the Vicinity24 backend and how the frontend consumes it.
 
 ## Goal
 
@@ -39,7 +39,7 @@ The system learns from **transactions** and links them to **listings** and **use
 
 ### Mahout ID Mapping Table
 
-Mahout operates on primitive IDs (`long userId`, `long itemId`). NearShare stores IDs as UUIDs, so the module keeps a mapping table:
+Mahout operates on primitive IDs (`long userId`, `long itemId`). Vicinity24 stores IDs as UUIDs, so the module keeps a mapping table:
 
 ```
 mahout_id_mapping
@@ -203,4 +203,3 @@ There is an integration test that boots Spring with an in-memory H2 database and
 - **Transaction typing**: current decision uses `Listing.type` as the primary SELL/LEND/GIVE signal; a more accurate approach is to persist a transaction outcome type on `Transaction`.
 - **Better candidate search**: replace the title keyword heuristic with a proper search strategy (tokenization, trigram similarity, or full-text search).
 - **Batch model refresh**: use scheduled rebuilds or incremental updates instead of rebuilding on-demand.
-

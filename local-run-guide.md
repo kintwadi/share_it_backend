@@ -1,6 +1,6 @@
 # Local Run Guide (Default HTTP)
 
-This guide explains how to run the NearShare backend + Angular frontend locally.
+This guide explains how to run the Vicinity24 backend + Angular frontend locally.
 
 ## URLs (local)
 
@@ -84,11 +84,11 @@ You can also trigger seeding manually:
 
 Example seeded login credentials:
 
-- `linda.lender@example.com` / `password123`
-- `bob.borrower@example.com` / `password123`
-- `sarah.smith@example.com` / `password123`
-- `peter.pro@example.com` / `password123`
-- `admin@nearshare.local` / `password123`
+- `linda.lender@example.com` / (see seed data in `mockdata.json`)
+- `bob.borrower@example.com` / (see seed data in `mockdata.json`)
+- `sarah.smith@example.com` / (see seed data in `mockdata.json`)
+- `peter.pro@example.com` / (see seed data in `mockdata.json`)
+- `admin@nearshare.local` / (see seed data in `mockdata.json`)
 
 ## Optional: HTTPS local setup
 

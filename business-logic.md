@@ -1,6 +1,6 @@
-# ShareIt Business Logic Documentation
+# Vicinity24 Business Logic Documentation
 
-This document outlines the core business logic and rules implemented in the ShareIt backend application.
+This document outlines the core business logic and rules implemented in the Vicinity24 backend application.
 
 ## 1. User Trust & Reputation System
 
