@@ -42,7 +42,7 @@ export class ApiService {
   }
 
   async seedData(): Promise<string> {
-    return firstValueFrom(this.api.get<string>('/seed'));
+    return firstValueFrom(this.api.getText('/seed'));
   }
 
   async getInsuranceTypes(): Promise<InsuranceTypeInfo[]> {

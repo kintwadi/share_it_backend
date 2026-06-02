@@ -54,9 +54,7 @@ public class MockDataSeederService {
 
     @Transactional
     public String seedMockData() {
-        if (users.count() > 0 || listings.count() > 0 || reviews.count() > 0 || messages.count() > 0) {
-            return "Mock data seeding skipped because records already exist";
-        }
+        boolean hadAnyRecords = users.count() > 0 || listings.count() > 0 || reviews.count() > 0 || messages.count() > 0;
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules(); // Support for Java 8 Time, etc.
@@ -88,10 +86,15 @@ public class MockDataSeederService {
                                     .status(UserStatus.ACTIVE)
                                     .location(Location.builder().lat(u.location.lat).lng(u.location.lng).build())
                                     .twoFactorEnabled(false)
+                                    .emailVerified(true)
                                     .build();
                             users.save(user);
                         } else {
                             user = users.findByEmail(u.email).get();
+                            if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+                                user.setEmailVerified(true);
+                                users.save(user);
+                            }
                         }
 
                         // Seed Subscription for User
@@ -113,7 +116,7 @@ public class MockDataSeederService {
                 }
 
                 // Seed Listings
-                if (mockData.listings != null) {
+                if (mockData.listings != null && listings.count() == 0) {
                     List<com.nearshare.api.model.PickupLocation> pickupList = pickupLocations.findAll();
                     for (MockListing l : mockData.listings) {
                         User owner = users.findByEmail(l.ownerEmail).orElse(null);
@@ -155,7 +158,7 @@ public class MockDataSeederService {
                 }
 
                 // Seed Reviews
-                if (mockData.reviews != null) {
+                if (mockData.reviews != null && reviews.count() == 0) {
                     for (MockReview r : mockData.reviews) {
                         User author = users.findByEmail(r.authorEmail).orElse(null);
                         User target = users.findByEmail(r.targetEmail).orElse(null);
@@ -177,7 +180,7 @@ public class MockDataSeederService {
                 }
 
                 // Seed Messages
-                if (mockData.messages != null) {
+                if (mockData.messages != null && messages.count() == 0) {
                     for (MockMessage m : mockData.messages) {
                         User sender = users.findByEmail(m.senderEmail).orElse(null);
                         User receiver = users.findByEmail(m.receiverEmail).orElse(null);
@@ -196,6 +199,9 @@ public class MockDataSeederService {
                     }
                 }
                 
+                if (hadAnyRecords) {
+                    return "Mock data seeding completed (some records already existed)";
+                }
                 return "Mock data seeded successfully from mockdata.json";
             } else {
                 return "mockdata.json not found";
