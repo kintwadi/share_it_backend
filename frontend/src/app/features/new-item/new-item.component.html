@@ -177,7 +177,7 @@
           </div>
 
           <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div class="flex items-start justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.location.section_label') }}</div>
                 <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.location.title') }}</h2>
@@ -189,6 +189,11 @@
                   {{ i18n.t('new_item.location.use_current') }}
                 </app-button>
               </div>
+            </div>
+
+            <div *ngIf="locationPermissionHintVisible" class="p-3 rounded-xl bg-slate-50 text-slate-700 text-xs border border-slate-200 flex items-start gap-2">
+              <lucide-icon [img]="Info" size="16" class="text-slate-500 mt-0.5"></lucide-icon>
+              <div class="leading-5">{{ i18n.t('new_item.location.permission_hint') }}</div>
             </div>
 
             <div *ngIf="locationLookupError" class="p-3 rounded-lg bg-amber-50 text-amber-800 text-xs border border-amber-200">

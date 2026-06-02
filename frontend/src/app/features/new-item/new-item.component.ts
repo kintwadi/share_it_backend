@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard } from 'lucide-angular';
+import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard, Info } from 'lucide-angular';
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -45,6 +45,7 @@ export class NewItemComponent implements OnInit {
   readonly Plus = Plus;
   readonly CheckCircle2 = CheckCircle2;
   readonly CreditCard = CreditCard;
+  readonly Info = Info;
 
   readonly ListingType = ListingType;
 
@@ -77,6 +78,7 @@ export class NewItemComponent implements OnInit {
   });
   locationLookupLoading = false;
   locationLookupError: string | null = null;
+  locationPermissionHintVisible = false;
   readonly countryOptions = ['PT', 'DE', 'FR', 'BE', 'NL', 'ES', 'IT', 'AT', 'CH', 'LU'];
   autoApprove = false;
   insuranceRequired = false;
@@ -584,9 +586,11 @@ export class NewItemComponent implements OnInit {
       return;
     }
 
+    this.locationPermissionHintVisible = true;
     this.locationLookupLoading = true;
     this.render();
     try {
+      await new Promise<void>(resolve => setTimeout(resolve, 50));
       const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
       });
@@ -605,10 +609,18 @@ export class NewItemComponent implements OnInit {
         postalCode: String(loc.postalCode || ''),
         country: selectedCountry,
       });
-    } catch {
-      this.locationLookupError = this.i18n.t('new_item.error.geo_failed');
+    } catch (err: any) {
+      const code = typeof err?.code === 'number' ? Number(err.code) : null;
+      if (code === 1) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_denied');
+      } else if (code === 3) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_timeout');
+      } else {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_failed');
+      }
     } finally {
       this.locationLookupLoading = false;
+      this.locationPermissionHintVisible = false;
       this.render();
     }
   }
