@@ -1,4 +1,4 @@
-# From React to Angular (Share It)
+# From React to Angular (Vicinity24)
 
 This document explains how to convert the existing React application in:
 

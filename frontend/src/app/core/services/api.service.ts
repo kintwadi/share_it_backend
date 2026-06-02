@@ -42,7 +42,7 @@ export class ApiService {
   }
 
   async seedData(): Promise<string> {
-    return firstValueFrom(this.api.get<string>('/seed'));
+    return firstValueFrom(this.api.getText('/seed'));
   }
 
   async getInsuranceTypes(): Promise<InsuranceTypeInfo[]> {
@@ -85,6 +85,15 @@ export class ApiService {
     try {
       const page = await firstValueFrom(this.api.get<any>('/listings/?page=0&size=100'));
       return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getNearbyListings(lat: number, lng: number, radiusKm: number = 25, size: number = 100): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>(`/listings/nearby?lat=${encodeURIComponent(String(lat))}&lng=${encodeURIComponent(String(lng))}&radiusKm=${encodeURIComponent(String(radiusKm))}&size=${encodeURIComponent(String(size))}`));
+      return Array.isArray(out) ? out : [];
     } catch {
       return [];
     }
@@ -326,6 +335,10 @@ export class ApiService {
     insuranceRequired?: boolean;
     x?: number;
     y?: number;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
     pickupLocationId?: string | null;
     pickupLocationCustom?: string | null;
     pickupLocationStreet?: string | null;
@@ -348,6 +361,10 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      streetAddress: payload.streetAddress ?? null,
+      city: payload.city ?? null,
+      postalCode: payload.postalCode ?? null,
+      country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
       availableFrom: payload.availableFrom ?? null,
       availableTo: payload.availableTo ?? null,
@@ -373,6 +390,10 @@ export class ApiService {
     insuranceRequired?: boolean;
     x?: number;
     y?: number;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
     pickupLocationId?: string | null;
     pickupLocationCustom?: string | null;
     pickupLocationStreet?: string | null;
@@ -395,6 +416,10 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      streetAddress: payload.streetAddress ?? null,
+      city: payload.city ?? null,
+      postalCode: payload.postalCode ?? null,
+      country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
       availableFrom: payload.availableFrom ?? null,
       availableTo: payload.availableTo ?? null,

@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard } from 'lucide-angular';
+import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard, Info } from 'lucide-angular';
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -10,11 +10,12 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ListingType, Category, PickupLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
+import { LocationApiService } from '../../core/services/location-api.service';
 
 @Component({
   selector: 'app-new-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent],
   templateUrl: './new-item.component.html',
   styleUrl: './new-item.component.css'
 })
@@ -23,6 +24,8 @@ export class NewItemComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private fb = inject(FormBuilder);
+  private locationApi = inject(LocationApiService);
   i18n = inject(I18nService);
   settingsConfig = inject(SettingsConfigService);
   subscriptionFeature = inject(SubscriptionFeatureService);
@@ -42,6 +45,7 @@ export class NewItemComponent implements OnInit {
   readonly Plus = Plus;
   readonly CheckCircle2 = CheckCircle2;
   readonly CreditCard = CreditCard;
+  readonly Info = Info;
 
   readonly ListingType = ListingType;
 
@@ -66,6 +70,16 @@ export class NewItemComponent implements OnInit {
   gallery: string[] = [];
   x: number | null = null;
   y: number | null = null;
+  addressForm = this.fb.group({
+    streetAddress: [''],
+    city: [''],
+    postalCode: [''],
+    country: ['PT'],
+  });
+  locationLookupLoading = false;
+  locationLookupError: string | null = null;
+  locationPermissionHintVisible = false;
+  readonly countryOptions = ['PT', 'DE', 'FR', 'BE', 'NL', 'ES', 'IT', 'AT', 'CH', 'LU'];
   autoApprove = false;
   insuranceRequired = false;
   pickupLocationId: string | null = null;
@@ -460,6 +474,7 @@ export class NewItemComponent implements OnInit {
     this.error = null;
     this.timeError = null;
     this.availabilityError = null;
+    this.locationLookupError = null;
 
     if (!this.availableUnlimited && !this.availableFromDate) {
       this.availabilityError = this.i18n.t('new_item.error_available_from_required');
@@ -479,6 +494,17 @@ export class NewItemComponent implements OnInit {
     }
     if (!this.imageUrl.trim()) {
       this.error = this.i18n.t('new_item.error.cover_required');
+      this.render();
+      return;
+    }
+
+    const address = this.addressForm.getRawValue();
+    const streetAddress = String(address.streetAddress || '').trim();
+    const city = String(address.city || '').trim();
+    const postalCode = String(address.postalCode || '').trim();
+    const country = String(address.country || '').trim();
+    if (streetAddress.length < 2 || city.length < 2 || postalCode.length < 3 || country.length < 2) {
+      this.error = this.i18n.t('new_item.error.address_required');
       this.render();
       return;
     }
@@ -523,6 +549,10 @@ export class NewItemComponent implements OnInit {
         insuranceRequired: !!this.insuranceRequired,
         x: this.x ?? undefined,
         y: this.y ?? undefined,
+        streetAddress,
+        city,
+        postalCode,
+        country,
         availableUnlimited,
         availableFrom,
         availableTo: null,
@@ -544,6 +574,53 @@ export class NewItemComponent implements OnInit {
       this.error = e?.message || this.i18n.t('new_item.error.save_failed');
     } finally {
       this.saving = false;
+      this.render();
+    }
+  }
+
+  async useMyCurrentLocation() {
+    this.locationLookupError = null;
+    if (!('geolocation' in navigator)) {
+      this.locationLookupError = this.i18n.t('new_item.error.geo_not_supported');
+      this.render();
+      return;
+    }
+
+    this.locationPermissionHintVisible = true;
+    this.locationLookupLoading = true;
+    this.render();
+    try {
+      await new Promise<void>(resolve => setTimeout(resolve, 50));
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+      });
+
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      this.x = lat;
+      this.y = lng;
+
+      const loc = await this.locationApi.reverseGeocode(lat, lng);
+      const cc = String(loc.countryCode || '').toUpperCase();
+      const selectedCountry = this.countryOptions.includes(cc) ? cc : String(this.addressForm.get('country')?.value || 'PT');
+      this.addressForm.patchValue({
+        streetAddress: String(loc.streetAddress || ''),
+        city: String(loc.city || ''),
+        postalCode: String(loc.postalCode || ''),
+        country: selectedCountry,
+      });
+    } catch (err: any) {
+      const code = typeof err?.code === 'number' ? Number(err.code) : null;
+      if (code === 1) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_denied');
+      } else if (code === 3) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_timeout');
+      } else {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_failed');
+      }
+    } finally {
+      this.locationLookupLoading = false;
+      this.locationPermissionHintVisible = false;
       this.render();
     }
   }

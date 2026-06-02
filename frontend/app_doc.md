@@ -1,9 +1,9 @@
-# ShareIt Angular Client
+# Vicinity24 Angular Client
 
 ## Prerequisites
 
 - Node.js + npm (this repo is set to `npm@11.11.0`)
-- A running backend API (ShareIt Spring Boot) at `http://localhost:8081/api/v1`
+- A running backend API (Vicinity24 Spring Boot) at `http://localhost:8081/api/v1`
 
 ## Install
 

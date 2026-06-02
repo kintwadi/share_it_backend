@@ -21,6 +21,10 @@ public class CreateListingRequest {
     private boolean insuranceRequired;
     private Double x;
     private Double y;
+    private String streetAddress;
+    private String city;
+    private String postalCode;
+    private String country;
     private java.util.UUID pickupLocationId;
     private String pickupLocationCustom;
     private String pickupLocationStreet;
