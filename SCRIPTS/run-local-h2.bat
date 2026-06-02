@@ -1,6 +1,9 @@
 @echo off
 echo Starting NearShare Backend with H2 Database (Local Mode)...
 
+set "ROOT_DIR=%~dp0.."
+pushd "%ROOT_DIR%" >nul
+
 set DB_TYPE=h2
 set DB_URL=jdbc:h2:mem:nearshare;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
 set DB_DRIVER=org.h2.Driver
@@ -32,3 +35,5 @@ if "%MAIL_USERNAME%"=="" set MAIL_USERNAME=test
 if "%MAIL_PASSWORD%"=="" set MAIL_PASSWORD=test
 
 mvn -DfrontendSkip=true spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.driverClassName=org.h2.Driver --spring.jpa.database-platform=org.hibernate.dialect.H2Dialect --spring.datasource.url=%DB_URL% --spring.datasource.username=%DB_USERNAME% --spring.datasource.password=%DB_PASSWORD%"
+
+popd >nul

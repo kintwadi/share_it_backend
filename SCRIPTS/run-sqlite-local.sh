@@ -2,7 +2,8 @@
 
 set -a
 
-ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
 
 if [ -f "$ROOT_DIR/.env" ]; then
   . "$ROOT_DIR/.env"

@@ -2,9 +2,12 @@
 setlocal EnableExtensions EnableDelayedExpansion
 echo Starting NearShare Backend with SQLite Database (Local Mode)...
 
+set "ROOT_DIR=%~dp0.."
+pushd "%ROOT_DIR%" >nul
+
 call "%~dp0setup.bat"
 
-set "SQLITE_ENV_FILE=%~dp0local_database"
+set "SQLITE_ENV_FILE=%ROOT_DIR%\local_database"
 if exist "%SQLITE_ENV_FILE%" (
   for /f "usebackq eol=# delims=" %%L in ("%SQLITE_ENV_FILE%") do call :SetEnv "%%L"
 )
@@ -30,6 +33,7 @@ echo.
 
 mvn -DfrontendSkip=true spring-boot:run
 
+popd >nul
 exit /b 0
 
 :SetEnv

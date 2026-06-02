@@ -12,6 +12,9 @@ setlocal enabledelayedexpansion
 set IMAGE_NAME=shareit-backend
 set DEFAULT_TAG=latest
 
+set "ROOT_DIR=%~dp0.."
+pushd "%ROOT_DIR%" >nul
+
 echo [INFO] Starting local Docker image build...
 
 :: Check if Docker is installed and running
@@ -53,6 +56,7 @@ docker build -t "!full_image_name!" .
 if errorlevel 1 (
     echo [ERROR] Failed to build Docker image
     pause
+    popd >nul
     exit /b 1
 )
 
@@ -109,3 +113,4 @@ echo   docker run -p 8081:8080 --env-file .env -e PORT=8080 -e SSL_ENABLED=false
 
 echo [SUCCESS] Local Docker image build completed successfully!
 pause
+popd >nul

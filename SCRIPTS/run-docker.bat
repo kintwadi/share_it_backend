@@ -4,12 +4,16 @@ echo NearShare Backend Docker Runner
 echo ========================================
 echo.
 
+set "ROOT_DIR=%~dp0.."
+pushd "%ROOT_DIR%" >nul
+
 echo Checking if Docker is running...
 docker info >nul 2>&1
 if %errorlevel% neq 0 (
     echo ERROR: Docker is not running or not installed!
     echo Please start Docker Desktop and try again.
     pause
+    popd >nul
     exit /b 1
 )
 
@@ -48,6 +52,7 @@ if %errorlevel% neq 0 (
     echo Please check if the image exists: shareit-backend:latest
     echo Run deploy-to-docker.bat first to build the image.
     pause
+    popd >nul
     exit /b 1
 )
 
@@ -80,3 +85,4 @@ echo Access: https://localhost/
 echo ========================================
 echo.
 pause
+popd >nul

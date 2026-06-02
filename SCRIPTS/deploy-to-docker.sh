@@ -5,6 +5,9 @@
 
 set -e  # Exit on any error
 
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
+
 # Configuration
 DOCKER_HUB_USERNAME=""  # Set your Docker Hub username here
 IMAGE_NAME="nearshare-backend"
