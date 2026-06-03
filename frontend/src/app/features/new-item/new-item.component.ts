@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard, Info } from 'lucide-angular';
+import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard, Info, Search } from 'lucide-angular';
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -10,7 +10,7 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
-import { LocationApiService } from '../../core/services/location-api.service';
+import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 
 @Component({
   selector: 'app-new-item',
@@ -46,6 +46,7 @@ export class NewItemComponent implements OnInit {
   readonly CheckCircle2 = CheckCircle2;
   readonly CreditCard = CreditCard;
   readonly Info = Info;
+  readonly Search = Search;
 
   readonly ListingType = ListingType;
 
@@ -89,6 +90,10 @@ export class NewItemComponent implements OnInit {
   pickupLocationHouseNumber = '';
   pickupLocationCity = '';
   pickupLocationZip = '';
+  pickupCustomQuery = '';
+  pickupCustomSuggestions: LocationResponse[] = [];
+  pickupCustomLoading = false;
+  pickupCustomError: string | null = null;
   availableFromDate = '';
   availableFromTime = '10:00';
   availableUnlimited = false;
@@ -98,6 +103,7 @@ export class NewItemComponent implements OnInit {
   recommendationLoading = false;
   recommendationError: string | null = null;
   private recommendationSubject = new Subject<void>();
+  private pickupCustomQuerySubject = new Subject<string>();
 
   requiredPlan: 'plus' | 'pro' = 'pro';
   payoutSetupLoading = false;
@@ -158,13 +164,72 @@ export class NewItemComponent implements OnInit {
     this.pickupLocationHouseNumber = '';
     this.pickupLocationCity = '';
     this.pickupLocationZip = '';
+    this.pickupCustomQuery = '';
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
     this.render();
   }
 
   selectCustomPickup() {
     this.pickupOption = 'custom';
     this.pickupLocationId = null;
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
     this.render();
+  }
+
+  onPickupCustomQueryChange(v: string) {
+    this.pickupCustomQuery = v;
+    this.pickupCustomQuerySubject.next(v);
+  }
+
+  private async loadPickupCustomSuggestions(q: string) {
+    const query = String(q || '').trim();
+    if (query.length < 2) {
+      this.pickupCustomSuggestions = [];
+      this.pickupCustomLoading = false;
+      this.render();
+      return;
+    }
+    this.pickupCustomLoading = true;
+    this.pickupCustomError = null;
+    this.render();
+    try {
+      this.pickupCustomSuggestions = await this.locationApi.autocomplete(query, undefined, 6);
+    } catch {
+      this.pickupCustomSuggestions = [];
+      this.pickupCustomError = this.i18n.t('new_item.pickup_custom_error');
+    } finally {
+      this.pickupCustomLoading = false;
+      this.render();
+    }
+  }
+
+  selectPickupCustomSuggestion(s: LocationResponse) {
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
+    this.pickupCustomQuery = String(s.displayName || s.streetAddress || '').trim();
+
+    const streetAddress = String(s.streetAddress || '').trim();
+    const split = this.splitStreetAndHouse(streetAddress);
+    if (split.street) this.pickupLocationStreet = split.street;
+    if (split.house) this.pickupLocationHouseNumber = split.house;
+    this.pickupLocationCity = String(s.city || this.pickupLocationCity || '').trim();
+    this.pickupLocationZip = String(s.postalCode || this.pickupLocationZip || '').trim();
+    this.render();
+  }
+
+  private splitStreetAndHouse(streetAddress: string): { street: string; house: string } {
+    const s = String(streetAddress || '').trim();
+    if (!s) return { street: '', house: '' };
+
+    const startMatch = s.match(/^(\d+[a-zA-Z]?)\s+(.+)$/);
+    if (startMatch) return { house: startMatch[1], street: startMatch[2].trim() };
+
+    const endMatch = s.match(/^(.+?)\s+(\d+[a-zA-Z]?)$/);
+    if (endMatch) return { street: endMatch[1].trim(), house: endMatch[2] };
+
+    return { street: s, house: '' };
   }
 
   setUnlimited(val: boolean) {
@@ -176,6 +241,9 @@ export class NewItemComponent implements OnInit {
   ngOnInit() {
     this.recommendationSubject.pipe(debounceTime(450)).subscribe(() => {
       this.runRecommendation();
+    });
+    this.pickupCustomQuerySubject.pipe(debounceTime(250)).subscribe(q => {
+      this.loadPickupCustomSuggestions(q);
     });
 
     this.route.paramMap.subscribe(params => {
