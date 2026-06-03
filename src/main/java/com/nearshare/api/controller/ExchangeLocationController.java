@@ -1,9 +1,9 @@
 package com.nearshare.api.controller;
 
+import com.nearshare.api.dto.ExchangeLocationDTO;
 import com.nearshare.api.dto.LocationDTO;
-import com.nearshare.api.dto.PickupLocationDTO;
-import com.nearshare.api.model.PickupLocation;
-import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.model.ExchangeLocation;
+import com.nearshare.api.repository.ExchangeLocationRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,22 +13,22 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pickup-locations")
-public class PickupLocationController {
-    private final PickupLocationRepository pickupLocationRepository;
+public class ExchangeLocationController {
+    private final ExchangeLocationRepository exchangeLocationRepository;
 
-    public PickupLocationController(PickupLocationRepository pickupLocationRepository) {
-        this.pickupLocationRepository = pickupLocationRepository;
+    public ExchangeLocationController(ExchangeLocationRepository exchangeLocationRepository) {
+        this.exchangeLocationRepository = exchangeLocationRepository;
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<PickupLocationDTO>> list() {
-        List<PickupLocation> active = pickupLocationRepository.findByActiveTrue();
-        List<PickupLocationDTO> dtoList = active.stream().map(this::toDTO).toList();
+    public ResponseEntity<List<ExchangeLocationDTO>> list() {
+        List<ExchangeLocation> active = exchangeLocationRepository.findByActiveTrue();
+        List<ExchangeLocationDTO> dtoList = active.stream().map(this::toDTO).toList();
         return ResponseEntity.ok(dtoList);
     }
 
-    private PickupLocationDTO toDTO(PickupLocation p) {
-        return PickupLocationDTO.builder()
+    private ExchangeLocationDTO toDTO(ExchangeLocation p) {
+        return ExchangeLocationDTO.builder()
                 .id(p.getId())
                 .referenceId(p.getReferenceId())
                 .name(p.getName())
@@ -40,3 +40,4 @@ public class PickupLocationController {
                 .build();
     }
 }
+

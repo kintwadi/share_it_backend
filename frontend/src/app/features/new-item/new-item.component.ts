@@ -8,7 +8,7 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
-import { ListingType, Category, PickupLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
+import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
 import { LocationApiService } from '../../core/services/location-api.service';
 
@@ -57,7 +57,7 @@ export class NewItemComponent implements OnInit {
 
   editId: string | null = null;
   categories: Category[] = [];
-  pickupLocations: PickupLocation[] = [];
+  pickupLocations: ExchangeLocation[] = [];
   subscription: any | null = null;
   subscriptionConfig = { starter: true, plus: true, pro: true };
 
@@ -147,26 +147,26 @@ export class NewItemComponent implements OnInit {
     return this.settingsConfig.isSectionEnabled('enable', 'sell');
   }
 
-  get pickupConcierge(): PickupLocation | null {
+  get pickupConcierge(): ExchangeLocation | null {
     return this.findPickupByKeyword('concierge') || this.pickupLocations[0] || null;
   }
 
-  get pickupBakery(): PickupLocation | null {
+  get pickupBakery(): ExchangeLocation | null {
     return this.findPickupByKeyword('bakery') || this.pickupLocations[0] || null;
   }
 
-  get pickupPublic(): PickupLocation | null {
+  get pickupPublic(): ExchangeLocation | null {
     return this.findPickupByKeyword('public') || this.pickupLocations[0] || null;
   }
 
-  private findPickupByKeyword(keyword: string): PickupLocation | null {
+  private findPickupByKeyword(keyword: string): ExchangeLocation | null {
     const k = keyword.toLowerCase();
     return this.pickupLocations.find(p => String(p.name || '').toLowerCase().includes(k)) || null;
   }
 
   selectPickupOption(opt: 'concierge' | 'bakery' | 'public' | 'custom') {
     this.pickupOption = opt;
-    let selected: PickupLocation | null = null;
+    let selected: ExchangeLocation | null = null;
     if (opt === 'concierge') selected = this.pickupConcierge;
     if (opt === 'bakery') selected = this.pickupBakery;
     if (opt === 'public') selected = this.pickupPublic;
@@ -233,7 +233,7 @@ export class NewItemComponent implements OnInit {
       const subscriptionEnabled = this.subscriptionFeature.enabled();
       const [cats, locs, subCfg, sub] = await Promise.all([
         this.api.getCategories(),
-        this.api.getPickupLocations(),
+        this.api.getExchangeLocations(),
         subscriptionEnabled ? this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })) : Promise.resolve({ starter: true, plus: true, pro: true }),
         subscriptionEnabled ? this.api.getCurrentSubscription().catch(() => null) : Promise.resolve(null),
       ]);

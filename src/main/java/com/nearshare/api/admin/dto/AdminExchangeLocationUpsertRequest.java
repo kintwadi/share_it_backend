@@ -3,7 +3,7 @@ package com.nearshare.api.admin.dto;
 import lombok.Data;
 
 @Data
-public class AdminPickupLocationUpsertRequest {
+public class AdminExchangeLocationUpsertRequest {
     private String name;
     private String address;
     private String streetAddress;
@@ -14,3 +14,4 @@ public class AdminPickupLocationUpsertRequest {
     private Double longitude;
     private Boolean active;
 }
+

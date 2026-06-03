@@ -1,11 +1,11 @@
 package com.nearshare.api.admin.service;
 
-import com.nearshare.api.admin.dto.AdminPickupLocationDTO;
-import com.nearshare.api.admin.dto.AdminPickupLocationUpsertRequest;
+import com.nearshare.api.admin.dto.AdminExchangeLocationDTO;
+import com.nearshare.api.admin.dto.AdminExchangeLocationUpsertRequest;
 import com.nearshare.api.dto.LocationDTO;
-import com.nearshare.api.model.PickupLocation;
+import com.nearshare.api.model.ExchangeLocation;
 import com.nearshare.api.model.embeddable.Location;
-import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ExchangeLocationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,23 +15,23 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AdminPickupLocationService {
+public class AdminExchangeLocationService {
     private static final String REF_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     private static final int REF_LEN = 8;
 
-    private final PickupLocationRepository pickupLocationRepository;
+    private final ExchangeLocationRepository exchangeLocationRepository;
     private final SecureRandom random = new SecureRandom();
 
-    public AdminPickupLocationService(PickupLocationRepository pickupLocationRepository) {
-        this.pickupLocationRepository = pickupLocationRepository;
+    public AdminExchangeLocationService(ExchangeLocationRepository exchangeLocationRepository) {
+        this.exchangeLocationRepository = exchangeLocationRepository;
     }
 
     @PostConstruct
     @Transactional
     public void ensureReferenceIds() {
-        List<PickupLocation> all = pickupLocationRepository.findAll();
+        List<ExchangeLocation> all = exchangeLocationRepository.findAll();
         boolean changed = false;
-        for (PickupLocation p : all) {
+        for (ExchangeLocation p : all) {
             if (p == null) continue;
             String ref = p.getReferenceId();
             if (ref != null && !ref.trim().isEmpty()) continue;
@@ -39,17 +39,17 @@ public class AdminPickupLocationService {
             changed = true;
         }
         if (changed) {
-            pickupLocationRepository.saveAll(all);
+            exchangeLocationRepository.saveAll(all);
         }
     }
 
     @Transactional(readOnly = true)
-    public List<AdminPickupLocationDTO> listAll() {
-        return pickupLocationRepository.findAll().stream().map(this::toAdminDto).toList();
+    public List<AdminExchangeLocationDTO> listAll() {
+        return exchangeLocationRepository.findAll().stream().map(this::toAdminDto).toList();
     }
 
     @Transactional
-    public AdminPickupLocationDTO create(AdminPickupLocationUpsertRequest body) {
+    public AdminExchangeLocationDTO create(AdminExchangeLocationUpsertRequest body) {
         if (body == null) throw new IllegalArgumentException("invalid_request");
         String name = normalize(body.getName());
         if (name.isEmpty()) throw new IllegalArgumentException("name_required");
@@ -70,7 +70,7 @@ public class AdminPickupLocationService {
 
         boolean active = body.getActive() == null || Boolean.TRUE.equals(body.getActive());
 
-        PickupLocation p = PickupLocation.builder()
+        ExchangeLocation p = ExchangeLocation.builder()
                 .id(UUID.randomUUID())
                 .referenceId(generateUniqueReferenceId())
                 .name(name)
@@ -83,16 +83,16 @@ public class AdminPickupLocationService {
                 .active(active)
                 .build();
 
-        pickupLocationRepository.save(p);
+        exchangeLocationRepository.save(p);
         return toAdminDto(p);
     }
 
     @Transactional
-    public AdminPickupLocationDTO update(UUID id, AdminPickupLocationUpsertRequest body) {
+    public AdminExchangeLocationDTO update(UUID id, AdminExchangeLocationUpsertRequest body) {
         if (id == null) throw new IllegalArgumentException("id_required");
         if (body == null) throw new IllegalArgumentException("invalid_request");
 
-        PickupLocation p = pickupLocationRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("location_not_found"));
+        ExchangeLocation p = exchangeLocationRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("location_not_found"));
 
         String name = normalize(body.getName());
         if (!name.isEmpty()) p.setName(name);
@@ -122,19 +122,19 @@ public class AdminPickupLocationService {
 
         if (body.getActive() != null) p.setActive(Boolean.TRUE.equals(body.getActive()));
 
-        pickupLocationRepository.save(p);
+        exchangeLocationRepository.save(p);
         return toAdminDto(p);
     }
 
     @Transactional
     public void delete(UUID id) {
         if (id == null) throw new IllegalArgumentException("id_required");
-        if (!pickupLocationRepository.existsById(id)) throw new IllegalArgumentException("location_not_found");
-        pickupLocationRepository.deleteById(id);
+        if (!exchangeLocationRepository.existsById(id)) throw new IllegalArgumentException("location_not_found");
+        exchangeLocationRepository.deleteById(id);
     }
 
-    private AdminPickupLocationDTO toAdminDto(PickupLocation p) {
-        return AdminPickupLocationDTO.builder()
+    private AdminExchangeLocationDTO toAdminDto(ExchangeLocation p) {
+        return AdminExchangeLocationDTO.builder()
                 .id(p.getId())
                 .referenceId(p.getReferenceId())
                 .name(p.getName())
@@ -154,7 +154,7 @@ public class AdminPickupLocationService {
     private String generateUniqueReferenceId() {
         for (int i = 0; i < 50; i++) {
             String ref = randomRef();
-            if (!pickupLocationRepository.existsByReferenceId(ref)) return ref;
+            if (!exchangeLocationRepository.existsByReferenceId(ref)) return ref;
         }
         return UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
     }

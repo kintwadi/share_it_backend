@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
-import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse, DeliveryLocation } from '../models/types';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, ExchangeLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
@@ -262,11 +262,12 @@ export class ApiService {
     return firstValueFrom(this.api.get<User[]>('/users/contacts'));
   }
 
-  async getPickupLocations(): Promise<PickupLocation[]> {
+  async getExchangeLocations(): Promise<ExchangeLocation[]> {
     try {
       const list = await firstValueFrom(this.api.get<any[]>('/pickup-locations/'));
       return (Array.isArray(list) ? list : []).map((p: any) => ({
         id: String(p.id),
+        referenceId: p.referenceId ? String(p.referenceId) : undefined,
         name: p.name ?? '',
         address: p.address ?? '',
         location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) }
@@ -819,11 +820,11 @@ export class ApiService {
     return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
   }
 
-  async adminListDeliveryLocations(): Promise<DeliveryLocation[]> {
-    return firstValueFrom(this.api.get<DeliveryLocation[]>('/admin/pickup-locations'));
+  async adminListExchangeLocations(): Promise<ExchangeLocation[]> {
+    return firstValueFrom(this.api.get<ExchangeLocation[]>('/admin/pickup-locations'));
   }
 
-  async adminCreateDeliveryLocation(payload: {
+  async adminCreateExchangeLocation(payload: {
     name: string;
     address?: string | null;
     streetAddress?: string | null;
@@ -833,11 +834,11 @@ export class ApiService {
     latitude?: number | null;
     longitude?: number | null;
     active?: boolean | null;
-  }): Promise<DeliveryLocation> {
-    return firstValueFrom(this.api.post<DeliveryLocation>('/admin/pickup-locations', payload));
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.post<ExchangeLocation>('/admin/pickup-locations', payload));
   }
 
-  async adminUpdateDeliveryLocation(id: string, payload: {
+  async adminUpdateExchangeLocation(id: string, payload: {
     name?: string | null;
     address?: string | null;
     streetAddress?: string | null;
@@ -847,11 +848,11 @@ export class ApiService {
     latitude?: number | null;
     longitude?: number | null;
     active?: boolean | null;
-  }): Promise<DeliveryLocation> {
-    return firstValueFrom(this.api.put<DeliveryLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.put<ExchangeLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));
   }
 
-  async adminDeleteDeliveryLocation(id: string): Promise<void> {
+  async adminDeleteExchangeLocation(id: string): Promise<void> {
     await firstValueFrom(this.api.delete<any>(`/admin/pickup-locations/${encodeURIComponent(id)}`));
   }
 

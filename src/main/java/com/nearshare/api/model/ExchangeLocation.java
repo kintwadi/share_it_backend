@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PickupLocation {
+public class ExchangeLocation {
     @Id
     private UUID id;
     @Column(name = "reference_id", unique = true)
@@ -36,3 +36,4 @@ public class PickupLocation {
     private Location location;
     private boolean active;
 }
+

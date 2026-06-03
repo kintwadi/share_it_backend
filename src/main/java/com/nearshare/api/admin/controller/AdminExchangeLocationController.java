@@ -1,8 +1,8 @@
 package com.nearshare.api.admin.controller;
 
-import com.nearshare.api.admin.dto.AdminPickupLocationDTO;
-import com.nearshare.api.admin.dto.AdminPickupLocationUpsertRequest;
-import com.nearshare.api.admin.service.AdminPickupLocationService;
+import com.nearshare.api.admin.dto.AdminExchangeLocationDTO;
+import com.nearshare.api.admin.dto.AdminExchangeLocationUpsertRequest;
+import com.nearshare.api.admin.service.AdminExchangeLocationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,25 +20,25 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/pickup-locations")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminPickupLocationController {
-    private final AdminPickupLocationService service;
+public class AdminExchangeLocationController {
+    private final AdminExchangeLocationService service;
 
-    public AdminPickupLocationController(AdminPickupLocationService service) {
+    public AdminExchangeLocationController(AdminExchangeLocationService service) {
         this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<AdminPickupLocationDTO>> list() {
+    public ResponseEntity<List<AdminExchangeLocationDTO>> list() {
         return ResponseEntity.ok(service.listAll());
     }
 
     @PostMapping
-    public ResponseEntity<AdminPickupLocationDTO> create(@RequestBody AdminPickupLocationUpsertRequest body) {
+    public ResponseEntity<AdminExchangeLocationDTO> create(@RequestBody AdminExchangeLocationUpsertRequest body) {
         return ResponseEntity.ok(service.create(body));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AdminPickupLocationDTO> update(@PathVariable("id") UUID id, @RequestBody AdminPickupLocationUpsertRequest body) {
+    public ResponseEntity<AdminExchangeLocationDTO> update(@PathVariable("id") UUID id, @RequestBody AdminExchangeLocationUpsertRequest body) {
         return ResponseEntity.ok(service.update(id, body));
     }
 

@@ -7,7 +7,7 @@ import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
-import { DeliveryLocation } from '../../core/models/types';
+import { ExchangeLocation } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
 
 type Tab = 'REGISTER' | 'LIST';
@@ -56,7 +56,7 @@ export class LocationManagerComponent implements OnInit {
   active = true;
 
   listLoading = false;
-  locations: DeliveryLocation[] = [];
+  locations: ExchangeLocation[] = [];
 
   editId: string | null = null;
   editModel: any = null;
@@ -169,7 +169,7 @@ export class LocationManagerComponent implements OnInit {
         longitude: this.longitude,
         active: this.active
       };
-      const created = await this.api.adminCreateDeliveryLocation(payload);
+      const created = await this.api.adminCreateExchangeLocation(payload);
       this.notice = { type: 'success', message: `${this.i18n.t('location_manager.created')}: ${created.referenceId}` };
       this.name = '';
       this.clearSelected();
@@ -195,7 +195,7 @@ export class LocationManagerComponent implements OnInit {
     this.error = null;
     this.render();
     try {
-      const rows = await this.api.adminListDeliveryLocations();
+      const rows = await this.api.adminListExchangeLocations();
       this.locations = Array.isArray(rows) ? rows : [];
       this.render();
     } catch (e: any) {
@@ -207,7 +207,7 @@ export class LocationManagerComponent implements OnInit {
     }
   }
 
-  startEdit(row: DeliveryLocation) {
+  startEdit(row: ExchangeLocation) {
     this.editId = String(row.id);
     this.editModel = {
       id: row.id,
@@ -303,7 +303,7 @@ export class LocationManagerComponent implements OnInit {
         longitude: this.editModel.longitude,
         active: !!this.editModel.active
       };
-      await this.api.adminUpdateDeliveryLocation(this.editId, payload);
+      await this.api.adminUpdateExchangeLocation(this.editId, payload);
       this.notice = { type: 'success', message: this.i18n.t('location_manager.updated') };
       await this.loadList();
       this.cancelEdit();
@@ -316,7 +316,7 @@ export class LocationManagerComponent implements OnInit {
     }
   }
 
-  async delete(row: DeliveryLocation) {
+  async delete(row: ExchangeLocation) {
     const id = String(row?.id || '');
     if (!id) return;
     this.loading = true;
@@ -324,7 +324,7 @@ export class LocationManagerComponent implements OnInit {
     this.notice = null;
     this.render();
     try {
-      await this.api.adminDeleteDeliveryLocation(id);
+      await this.api.adminDeleteExchangeLocation(id);
       this.notice = { type: 'success', message: this.i18n.t('location_manager.deleted') };
       await this.loadList();
       if (this.editId === id) this.cancelEdit();
@@ -337,4 +337,3 @@ export class LocationManagerComponent implements OnInit {
     }
   }
 }
-

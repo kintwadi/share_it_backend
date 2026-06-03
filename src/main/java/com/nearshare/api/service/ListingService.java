@@ -3,7 +3,7 @@ package com.nearshare.api.service;
 import com.nearshare.api.dto.CreateListingRequest;
 import com.nearshare.api.dto.ListingDTO;
 import com.nearshare.api.dto.LocationDTO;
-import com.nearshare.api.dto.PickupLocationDTO;
+import com.nearshare.api.dto.ExchangeLocationDTO;
 import com.nearshare.api.dto.UserSummaryDTO;
 import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.Listing;
@@ -14,7 +14,7 @@ import com.nearshare.api.model.enums.AvailabilityStatus;
 import com.nearshare.api.model.enums.ListingType;
 import com.nearshare.api.model.enums.UserRole;
 import com.nearshare.api.repository.ListingRepository;
-import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ExchangeLocationRepository;
 import com.nearshare.api.repository.ReturnSessionRepository;
 import com.nearshare.api.repository.UserRepository;
 import com.nearshare.api.repository.ReportRepository;
@@ -36,7 +36,7 @@ import java.security.SecureRandom;
 public class ListingService {
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
-    private final PickupLocationRepository pickupLocationRepository;
+    private final ExchangeLocationRepository exchangeLocationRepository;
     private final com.nearshare.api.repository.RecommendationDismissRepository dismissRepository;
     private final com.nearshare.api.payment.PaymentManager paymentManager;
     private final com.nearshare.api.repository.TransactionRepository transactionRepository;
@@ -52,7 +52,7 @@ public class ListingService {
     public ListingService(
             ListingRepository listingRepository,
             UserRepository userRepository,
-            PickupLocationRepository pickupLocationRepository,
+            ExchangeLocationRepository exchangeLocationRepository,
             com.nearshare.api.repository.RecommendationDismissRepository dismissRepository,
             com.nearshare.api.payment.PaymentManager paymentManager,
             com.nearshare.api.repository.TransactionRepository transactionRepository,
@@ -65,7 +65,7 @@ public class ListingService {
             LocationService locationService) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
-        this.pickupLocationRepository = pickupLocationRepository;
+        this.exchangeLocationRepository = exchangeLocationRepository;
         this.dismissRepository = dismissRepository;
         this.paymentManager = paymentManager;
         this.transactionRepository = transactionRepository;
@@ -155,9 +155,9 @@ public class ListingService {
             }
         }
 
-        com.nearshare.api.model.PickupLocation pickup = null;
+        com.nearshare.api.model.ExchangeLocation pickup = null;
         if (req.getPickupLocationId() != null) {
-            pickup = pickupLocationRepository.findById(req.getPickupLocationId())
+            pickup = exchangeLocationRepository.findById(req.getPickupLocationId())
                     .orElseThrow(() -> new RuntimeException("pickup_location_not_found"));
         }
         String pickupStreet = req.getPickupLocationId() == null ? safePickupStreet(req.getPickupLocationStreet()) : null;
@@ -313,7 +313,7 @@ public class ListingService {
         l.setAvailableFrom(availableUnlimited ? null : req.getAvailableFrom());
         l.setAvailableTo(null);
         if (req.getPickupLocationId() != null) {
-            com.nearshare.api.model.PickupLocation pickup = pickupLocationRepository.findById(req.getPickupLocationId())
+            com.nearshare.api.model.ExchangeLocation pickup = exchangeLocationRepository.findById(req.getPickupLocationId())
                     .orElseThrow(() -> new RuntimeException("pickup_location_not_found"));
             l.setPickupLocation(pickup);
             l.setPickupLocationCustom(null);
@@ -732,8 +732,9 @@ public class ListingService {
             .gallery(l.getGallery() != null ? new java.util.ArrayList<>(l.getGallery()) : null)
             .autoApprove(l.isAutoApprove())
             .insuranceRequired(l.isInsuranceRequired())
-            .pickupLocation(l.getPickupLocation() != null ? PickupLocationDTO.builder()
+            .pickupLocation(l.getPickupLocation() != null ? ExchangeLocationDTO.builder()
                 .id(l.getPickupLocation().getId())
+                .referenceId(l.getPickupLocation().getReferenceId())
                 .name(l.getPickupLocation().getName())
                 .address(l.getPickupLocation().getAddress())
                 .location(LocationDTO.builder()

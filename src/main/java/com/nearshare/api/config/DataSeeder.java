@@ -1,10 +1,10 @@
 package com.nearshare.api.config;
 
 import com.nearshare.api.model.Category;
-import com.nearshare.api.model.PickupLocation;
+import com.nearshare.api.model.ExchangeLocation;
 import com.nearshare.api.model.embeddable.Location;
 import com.nearshare.api.repository.CategoryRepository;
-import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ExchangeLocationRepository;
 import com.nearshare.api.service.MockDataSeederService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,26 +28,26 @@ public class DataSeeder {
     @Bean
     @Order(1)
     @ConditionalOnProperty(name = "seeding.enabled", havingValue = "true")
-    CommandLineRunner seedPickupLocations(PickupLocationRepository pickupLocationRepository) {
+    CommandLineRunner seedPickupLocations(ExchangeLocationRepository pickupLocationRepository) {
         return args -> {
             if (pickupLocationRepository.count() > 0) {
                 return;
             }
-            pickupLocationRepository.save(PickupLocation.builder()
+            pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
                     .name("Concierge (building front desk)")
                     .address("Frankfurterstr 2455, Frankfurt")
                     .location(Location.builder().lat(50.1109).lng(8.6821).build())
                     .active(true)
                     .build());
-            pickupLocationRepository.save(PickupLocation.builder()
+            pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
                     .name("Local bakery partner")
                     .address("Leipzigerstr 102, Frankfurt")
                     .location(Location.builder().lat(50.1180).lng(8.6512).build())
                     .active(true)
                     .build());
-            pickupLocationRepository.save(PickupLocation.builder()
+            pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
                     .name("Public meetup spot")
                     .address("Konstablerwache 5, Frankfurt")
