@@ -60,6 +60,16 @@
         </div>
       </div>
 
+      <div class="p-4 rounded-xl border border-gray-200 bg-white flex items-start justify-between gap-4">
+        <div>
+          <div class="text-sm font-bold text-gray-900">{{ i18n.t('admin.locations.card_title') }}</div>
+          <div class="mt-1 text-xs text-gray-600">{{ i18n.t('admin.locations.card_desc') }}</div>
+        </div>
+        <button type="button" (click)="goToLocationManager()" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black">
+          {{ i18n.t('admin.locations.card_cta') }}
+        </button>
+      </div>
+
       <div *ngIf="settingsSections.length === 0" class="p-6 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600">
         {{ i18n.t('admin.settings.empty') }}
       </div>

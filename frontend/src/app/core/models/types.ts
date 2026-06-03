@@ -182,12 +182,29 @@ export interface ListingRecommendationResult {
 
 export interface PickupLocation {
   id: string;
+  referenceId?: string;
   name: string;
   address: string;
   location: {
     x: number;
     y: number;
   };
+}
+
+export interface DeliveryLocation {
+  id: string;
+  referenceId: string;
+  name: string;
+  address: string;
+  streetAddress?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  location: {
+    x: number | null;
+    y: number | null;
+  };
+  active: boolean;
 }
 
 export interface Message {

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
-import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse, DeliveryLocation } from '../models/types';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
@@ -817,6 +817,42 @@ export class ApiService {
 
   async adminUpdateAppSettings(updates: { key: string; value: any }[]): Promise<any> {
     return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
+  }
+
+  async adminListDeliveryLocations(): Promise<DeliveryLocation[]> {
+    return firstValueFrom(this.api.get<DeliveryLocation[]>('/admin/pickup-locations'));
+  }
+
+  async adminCreateDeliveryLocation(payload: {
+    name: string;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    active?: boolean | null;
+  }): Promise<DeliveryLocation> {
+    return firstValueFrom(this.api.post<DeliveryLocation>('/admin/pickup-locations', payload));
+  }
+
+  async adminUpdateDeliveryLocation(id: string, payload: {
+    name?: string | null;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    active?: boolean | null;
+  }): Promise<DeliveryLocation> {
+    return firstValueFrom(this.api.put<DeliveryLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));
+  }
+
+  async adminDeleteDeliveryLocation(id: string): Promise<void> {
+    await firstValueFrom(this.api.delete<any>(`/admin/pickup-locations/${encodeURIComponent(id)}`));
   }
 
   async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {

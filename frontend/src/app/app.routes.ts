@@ -12,6 +12,7 @@ export const routes: Routes = [
   { path: 'user/preview', canMatch: [canMatchDashboard], loadComponent: () => import('./features/user-preview/user-preview.component').then(m => m.UserPreviewComponent) },
   { path: 'admin', canMatch: [canMatchAdmin], loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent) },
   { path: 'admin/confirm', canMatch: [canMatchAdmin], loadComponent: () => import('./features/admin-action-confirm/admin-action-confirm.component').then(m => m.AdminActionConfirmComponent) },
+  { path: 'admin/locations', canMatch: [canMatchAdmin], loadComponent: () => import('./features/location-manager/location-manager.component').then(m => m.LocationManagerComponent) },
   { path: 'partner', canMatch: [canMatchPartner], loadChildren: () => import('./features/partner/partner.routes').then(m => m.PARTNER_ROUTES) },
   { path: 'messages', canMatch: [canMatchMessages], loadComponent: () => import('./features/messages/messages.component').then(m => m.MessagesComponent) },
   { path: 'mailbox/compose', canMatch: [canMatchMailbox], loadComponent: () => import('./features/mailbox-compose/mailbox-compose.component').then(m => m.MailboxComposeComponent) },

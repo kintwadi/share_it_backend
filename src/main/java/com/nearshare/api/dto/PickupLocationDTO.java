@@ -15,6 +15,7 @@ import java.util.UUID;
 @Builder
 public class PickupLocationDTO {
     private UUID id;
+    private String referenceId;
     private String name;
     private String address;
     private LocationDTO location;

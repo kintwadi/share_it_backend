@@ -30,6 +30,7 @@ public class PickupLocationController {
     private PickupLocationDTO toDTO(PickupLocation p) {
         return PickupLocationDTO.builder()
                 .id(p.getId())
+                .referenceId(p.getReferenceId())
                 .name(p.getName())
                 .address(p.getAddress())
                 .location(LocationDTO.builder()
@@ -39,4 +40,3 @@ public class PickupLocationController {
                 .build();
     }
 }
-
