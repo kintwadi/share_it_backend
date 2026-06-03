@@ -93,6 +93,7 @@ public class ListingService {
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
             .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
+            .filter(l -> isAvailableForDiscovery(current, l))
             .filter(l -> {
                 if (l.getPartner() == null || l.getBorrower() == null) return true;
                 boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
@@ -119,6 +120,9 @@ public class ListingService {
     @Transactional(readOnly = true)
     public ListingDTO getById(UUID id, User current) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (!isAvailableForDiscovery(current, l)) {
+            throw new RuntimeException("listing_not_found");
+        }
         if (l.getPartner() != null) {
             boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
             if (l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE && !isAdmin) {
@@ -627,6 +631,7 @@ public class ListingService {
         List<Listing> all = listingRepository.findAll();
         List<Listing> candidates = all.stream()
                 .filter(l -> l.getStatus() == AvailabilityStatus.AVAILABLE)
+                .filter(l -> isAvailableForDiscovery(null, l))
                 .filter(l -> l.getOwner() == null || !l.getOwner().getId().equals(current.getId()))
                 .filter(l -> !dismissed.contains(l.getId()))
                 .toList();
@@ -757,6 +762,26 @@ public class ListingService {
         if (viewerLat == null || viewerLng == null) return Double.MAX_VALUE;
         if (l == null || l.getLocation() == null || l.getLocation().getLat() == null || l.getLocation().getLng() == null) return Double.MAX_VALUE;
         return DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
+    }
+
+    private boolean isAvailableForDiscovery(User current, Listing l) {
+        if (l == null) return false;
+        if (canBypassAvailability(current, l)) return true;
+        if (l.isAvailableUnlimited()) return true;
+        java.time.LocalDateTime now = nowUtc();
+        if (l.getAvailableFrom() != null && l.getAvailableFrom().isAfter(now)) return false;
+        if (l.getAvailableTo() != null && l.getAvailableTo().isBefore(now)) return false;
+        return true;
+    }
+
+    private boolean canBypassAvailability(User current, Listing l) {
+        if (current == null || current.getId() == null || l == null) return false;
+        if (current.getRole() == UserRole.ADMIN) return true;
+        return l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(current.getId());
+    }
+
+    private java.time.LocalDateTime nowUtc() {
+        return java.time.LocalDateTime.now(java.time.Clock.systemUTC());
     }
 
     private String generateUniqueItemReference() {

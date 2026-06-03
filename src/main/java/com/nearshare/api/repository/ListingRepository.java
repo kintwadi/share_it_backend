@@ -48,6 +48,8 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
                        )) as distance_km
                 from listings l
                 where l.status = 'AVAILABLE'
+                  and (l.available_unlimited = true or l.available_from is null or l.available_from <= CURRENT_TIMESTAMP)
+                  and (l.available_to is null or l.available_to >= CURRENT_TIMESTAMP)
                   and l.lat is not null
                   and l.lng is not null
             ) t
