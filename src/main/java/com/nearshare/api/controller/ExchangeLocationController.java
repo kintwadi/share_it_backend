@@ -37,7 +37,8 @@ public class ExchangeLocationController {
                         .x(p.getLocation() != null ? p.getLocation().getLat() : null)
                         .y(p.getLocation() != null ? p.getLocation().getLng() : null)
                         .build())
+                .operatingTimeFrom(p.getOperatingTimeFrom())
+                .operatingTimeTo(p.getOperatingTimeTo())
                 .build();
     }
 }
-

@@ -38,5 +38,9 @@ public class ExchangeLocation {
     private String country;
     @Embedded
     private Location location;
+    @Column(name = "operating_time_from")
+    private String operatingTimeFrom;
+    @Column(name = "operating_time_to")
+    private String operatingTimeTo;
     private boolean active;
 }

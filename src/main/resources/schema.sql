@@ -19,6 +19,8 @@ ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS street_address varchar(255
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS city varchar(255);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS postal_code varchar(40);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS country varchar(80);
+ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS operating_time_from varchar(8);
+ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS operating_time_to varchar(8);
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pickup_locations_reference_id ON pickup_locations (reference_id);
 

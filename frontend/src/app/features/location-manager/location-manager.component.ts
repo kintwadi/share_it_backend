@@ -53,6 +53,8 @@ export class LocationManagerComponent implements OnInit {
   country = '';
   latitude: number | null = null;
   longitude: number | null = null;
+  operatingTimeFrom = '';
+  operatingTimeTo = '';
   active = true;
 
   listLoading = false;
@@ -167,6 +169,8 @@ export class LocationManagerComponent implements OnInit {
         country: this.country || null,
         latitude: this.latitude,
         longitude: this.longitude,
+        operatingTimeFrom: String(this.operatingTimeFrom || '').trim() || null,
+        operatingTimeTo: String(this.operatingTimeTo || '').trim() || null,
         active: this.active
       };
       const created = await this.api.adminCreateExchangeLocation(payload);
@@ -177,6 +181,8 @@ export class LocationManagerComponent implements OnInit {
       this.city = '';
       this.postalCode = '';
       this.country = '';
+      this.operatingTimeFrom = '';
+      this.operatingTimeTo = '';
       this.active = true;
       this.render();
       this.setTab('LIST');
@@ -220,6 +226,8 @@ export class LocationManagerComponent implements OnInit {
       address: row.address,
       latitude: row.location?.x ?? null,
       longitude: row.location?.y ?? null,
+      operatingTimeFrom: row.operatingTimeFrom || '',
+      operatingTimeTo: row.operatingTimeTo || '',
       active: !!row.active,
       query: row.address
     };
@@ -301,6 +309,8 @@ export class LocationManagerComponent implements OnInit {
         country: this.editModel.country || null,
         latitude: this.editModel.latitude,
         longitude: this.editModel.longitude,
+        operatingTimeFrom: String(this.editModel.operatingTimeFrom || '').trim() || null,
+        operatingTimeTo: String(this.editModel.operatingTimeTo || '').trim() || null,
         active: !!this.editModel.active
       };
       await this.api.adminUpdateExchangeLocation(this.editId, payload);

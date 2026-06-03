@@ -48,6 +48,8 @@ public class DataSeeder {
                     .postalCode("")
                     .country("DE")
                     .location(Location.builder().lat(50.1109).lng(8.6821).build())
+                    .operatingTimeFrom("08:00")
+                    .operatingTimeTo("20:00")
                     .active(true)
                     .build());
             pickupLocationRepository.save(ExchangeLocation.builder()
@@ -60,6 +62,8 @@ public class DataSeeder {
                     .postalCode("")
                     .country("DE")
                     .location(Location.builder().lat(50.1180).lng(8.6512).build())
+                    .operatingTimeFrom("07:00")
+                    .operatingTimeTo("18:00")
                     .active(true)
                     .build());
             pickupLocationRepository.save(ExchangeLocation.builder()

@@ -19,5 +19,6 @@ public class ExchangeLocationDTO {
     private String name;
     private String address;
     private LocationDTO location;
+    private String operatingTimeFrom;
+    private String operatingTimeTo;
 }
-

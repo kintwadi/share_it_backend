@@ -12,6 +12,7 @@ public class AdminExchangeLocationUpsertRequest {
     private String country;
     private Double latitude;
     private Double longitude;
+    private String operatingTimeFrom;
+    private String operatingTimeTo;
     private Boolean active;
 }
-

@@ -84,14 +84,11 @@ export class NewItemComponent implements OnInit {
   insuranceRequired = false;
   pickupLocationId: string | null = null;
 
-  pickupOption: 'concierge' | 'bakery' | 'public' | 'custom' = 'concierge';
+  pickupOption: 'exchange' | 'custom' = 'exchange';
   pickupLocationStreet = '';
   pickupLocationHouseNumber = '';
   pickupLocationCity = '';
   pickupLocationZip = '';
-  startTime = '17:00';
-  endTime = '19:00';
-  timeError: string | null = null;
   availableFromDate = '';
   availableFromTime = '10:00';
   availableUnlimited = false;
@@ -147,56 +144,26 @@ export class NewItemComponent implements OnInit {
     return this.settingsConfig.isSectionEnabled('enable', 'sell');
   }
 
-  get pickupConcierge(): ExchangeLocation | null {
-    return this.findPickupByKeyword('concierge') || this.pickupLocations[0] || null;
+  get selectedExchangeLocation(): ExchangeLocation | null {
+    if (this.pickupOption !== 'exchange') return null;
+    const id = String(this.pickupLocationId || '');
+    if (!id) return null;
+    return this.pickupLocations.find(p => String(p.id) === id) ?? null;
   }
 
-  get pickupBakery(): ExchangeLocation | null {
-    return this.findPickupByKeyword('bakery') || this.pickupLocations[0] || null;
-  }
-
-  get pickupPublic(): ExchangeLocation | null {
-    return this.findPickupByKeyword('public') || this.pickupLocations[0] || null;
-  }
-
-  private findPickupByKeyword(keyword: string): ExchangeLocation | null {
-    const k = keyword.toLowerCase();
-    return this.pickupLocations.find(p => String(p.name || '').toLowerCase().includes(k)) || null;
-  }
-
-  selectPickupOption(opt: 'concierge' | 'bakery' | 'public' | 'custom') {
-    this.pickupOption = opt;
-    let selected: ExchangeLocation | null = null;
-    if (opt === 'concierge') selected = this.pickupConcierge;
-    if (opt === 'bakery') selected = this.pickupBakery;
-    if (opt === 'public') selected = this.pickupPublic;
-    this.pickupLocationId = opt === 'custom' ? null : (selected ? String(selected.id) : null);
-    if (opt !== 'custom') {
-      this.pickupLocationStreet = '';
-      this.pickupLocationHouseNumber = '';
-      this.pickupLocationCity = '';
-      this.pickupLocationZip = '';
-    }
+  selectExchangeLocation(loc: ExchangeLocation) {
+    this.pickupOption = 'exchange';
+    this.pickupLocationId = loc?.id ? String(loc.id) : null;
+    this.pickupLocationStreet = '';
+    this.pickupLocationHouseNumber = '';
+    this.pickupLocationCity = '';
+    this.pickupLocationZip = '';
     this.render();
   }
 
-  handleStartChange(value: string) {
-    this.startTime = value;
-    if (this.endTime && value && this.endTime <= value) {
-      this.timeError = this.i18n.t('new_item.error_time_order');
-    } else {
-      this.timeError = null;
-    }
-    this.render();
-  }
-
-  handleEndChange(value: string) {
-    this.endTime = value;
-    if (this.startTime && value && value <= this.startTime) {
-      this.timeError = this.i18n.t('new_item.error_time_order');
-    } else {
-      this.timeError = null;
-    }
+  selectCustomPickup() {
+    this.pickupOption = 'custom';
+    this.pickupLocationId = null;
     this.render();
   }
 
@@ -261,15 +228,14 @@ export class NewItemComponent implements OnInit {
         }
       }
 
-      if (!this.pickupLocationId && this.pickupLocations.length > 0) {
-        this.selectPickupOption(this.pickupOption);
-      } else if (this.pickupLocationId) {
-        const selected = this.pickupLocations.find(p => String(p.id) === String(this.pickupLocationId));
-        const name = String(selected?.name || '').toLowerCase();
-        if (name.includes('bakery')) this.pickupOption = 'bakery';
-        else if (name.includes('public')) this.pickupOption = 'public';
-        else this.pickupOption = 'concierge';
+      if (this.pickupLocationId) {
+        this.pickupOption = 'exchange';
       } else if (this.pickupLocationCity || this.pickupLocationZip) {
+        this.pickupOption = 'custom';
+      } else if (this.pickupLocations.length > 0) {
+        this.pickupOption = 'exchange';
+        this.pickupLocationId = String(this.pickupLocations[0].id);
+      } else {
         this.pickupOption = 'custom';
       }
     } catch (e: any) {
@@ -295,9 +261,8 @@ export class NewItemComponent implements OnInit {
     this.pickupLocationHouseNumber = String((listing as any).pickupLocationHouseNumber || '');
     this.pickupLocationCity = String((listing as any).pickupLocationCity || '');
     this.pickupLocationZip = String((listing as any).pickupLocationZip || '');
-    if (!this.pickupLocationId && (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip)) {
-      this.pickupOption = 'custom';
-    }
+    if (this.pickupLocationId) this.pickupOption = 'exchange';
+    else if (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip) this.pickupOption = 'custom';
     const availableUnlimited = !!(listing as any).availableUnlimited;
     const availableFrom = (listing as any).availableFrom ? String((listing as any).availableFrom) : '';
     this.availableUnlimited = availableUnlimited;
@@ -472,7 +437,6 @@ export class NewItemComponent implements OnInit {
 
   async handleSave() {
     this.error = null;
-    this.timeError = null;
     this.availabilityError = null;
     this.locationLookupError = null;
 
@@ -481,12 +445,6 @@ export class NewItemComponent implements OnInit {
       this.render();
       return;
     }
-    if (!this.startTime || !this.endTime || this.endTime <= this.startTime) {
-      this.error = this.i18n.t('new_item.error_time_window');
-      this.render();
-      return;
-    }
-
     if (!this.title.trim() || !this.category || !this.type) {
       this.error = this.i18n.t('new_item.error.required_fields');
       this.render();

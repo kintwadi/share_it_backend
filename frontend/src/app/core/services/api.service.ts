@@ -270,7 +270,9 @@ export class ApiService {
         referenceId: p.referenceId ? String(p.referenceId) : undefined,
         name: p.name ?? '',
         address: p.address ?? '',
-        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) }
+        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) },
+        operatingTimeFrom: p.operatingTimeFrom ?? null,
+        operatingTimeTo: p.operatingTimeTo ?? null,
       }));
     } catch {
       return [];
@@ -833,6 +835,8 @@ export class ApiService {
     country?: string | null;
     latitude?: number | null;
     longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
     active?: boolean | null;
   }): Promise<ExchangeLocation> {
     return firstValueFrom(this.api.post<ExchangeLocation>('/admin/pickup-locations', payload));
@@ -847,6 +851,8 @@ export class ApiService {
     country?: string | null;
     latitude?: number | null;
     longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
     active?: boolean | null;
   }): Promise<ExchangeLocation> {
     return firstValueFrom(this.api.put<ExchangeLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));

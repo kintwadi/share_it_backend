@@ -193,6 +193,8 @@ export interface ExchangeLocation {
     x: number | null;
     y: number | null;
   };
+  operatingTimeFrom?: string | null;
+  operatingTimeTo?: string | null;
   active?: boolean;
 }
 

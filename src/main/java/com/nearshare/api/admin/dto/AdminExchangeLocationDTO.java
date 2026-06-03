@@ -24,6 +24,7 @@ public class AdminExchangeLocationDTO {
     private String postalCode;
     private String country;
     private LocationDTO location;
+    private String operatingTimeFrom;
+    private String operatingTimeTo;
     private boolean active;
 }
-

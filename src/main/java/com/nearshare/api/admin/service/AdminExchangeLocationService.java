@@ -80,6 +80,8 @@ public class AdminExchangeLocationService {
                 .postalCode(postal.isEmpty() ? null : postal)
                 .country(country.isEmpty() ? null : country)
                 .location(location)
+                .operatingTimeFrom(normalize(body.getOperatingTimeFrom()).isEmpty() ? null : normalize(body.getOperatingTimeFrom()))
+                .operatingTimeTo(normalize(body.getOperatingTimeTo()).isEmpty() ? null : normalize(body.getOperatingTimeTo()))
                 .active(active)
                 .build();
 
@@ -120,6 +122,15 @@ public class AdminExchangeLocationService {
             }
         }
 
+        if (body.getOperatingTimeFrom() != null) {
+            String opFrom = normalize(body.getOperatingTimeFrom());
+            p.setOperatingTimeFrom(opFrom.isEmpty() ? null : opFrom);
+        }
+        if (body.getOperatingTimeTo() != null) {
+            String opTo = normalize(body.getOperatingTimeTo());
+            p.setOperatingTimeTo(opTo.isEmpty() ? null : opTo);
+        }
+
         if (body.getActive() != null) p.setActive(Boolean.TRUE.equals(body.getActive()));
 
         exchangeLocationRepository.save(p);
@@ -147,6 +158,8 @@ public class AdminExchangeLocationService {
                         .x(p.getLocation() != null ? p.getLocation().getLat() : null)
                         .y(p.getLocation() != null ? p.getLocation().getLng() : null)
                         .build())
+                .operatingTimeFrom(p.getOperatingTimeFrom())
+                .operatingTimeTo(p.getOperatingTimeTo())
                 .active(p.isActive())
                 .build();
     }
@@ -194,4 +207,3 @@ public class AdminExchangeLocationService {
         return out.toString().trim();
     }
 }
-
