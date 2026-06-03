@@ -4,7 +4,7 @@
       <div class="flex justify-between h-16 items-center">
             <div class="flex items-center">
                 <a *ngIf="isHeaderSectionEnabled('brand')" routerLink="/" class="flex items-center group">
-                    <span class="text-xl font-bold tracking-tight text-gray-900">Vicinity24</span>
+                    <span class="text-xl font-bold tracking-tight text-gray-900">{{ i18n.t('app.brand') }}</span>
                 </a>
             </div>
         
@@ -199,7 +199,7 @@
         <span class="text-gray-300">|</span>
         <a routerLink="/cookies" class="hover:text-gray-900 underline underline-offset-2">{{ i18n.t('footer.cookies') }}</a>
       </div>
-      <div>Vicinity24 © 2026. All rights reserved.</div>
+      <div>{{ i18n.t('footer.copyright') }}</div>
     </div>
   </footer>
 </div>
