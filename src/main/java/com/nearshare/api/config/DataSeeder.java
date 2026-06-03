@@ -12,8 +12,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
+import java.security.SecureRandom;
+
 @Configuration
 public class DataSeeder {
+    private static final String REF_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final int REF_LEN = 8;
+    private final SecureRandom random = new SecureRandom();
 
     @Bean
     @Order(3)
@@ -35,26 +40,58 @@ public class DataSeeder {
             }
             pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
+                    .referenceId(generateUniqueReferenceId(pickupLocationRepository))
                     .name("Concierge (building front desk)")
                     .address("Frankfurterstr 2455, Frankfurt")
+                    .streetAddress("Frankfurterstr 2455")
+                    .city("Frankfurt")
+                    .postalCode("")
+                    .country("DE")
                     .location(Location.builder().lat(50.1109).lng(8.6821).build())
                     .active(true)
                     .build());
             pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
+                    .referenceId(generateUniqueReferenceId(pickupLocationRepository))
                     .name("Local bakery partner")
                     .address("Leipzigerstr 102, Frankfurt")
+                    .streetAddress("Leipzigerstr 102")
+                    .city("Frankfurt")
+                    .postalCode("")
+                    .country("DE")
                     .location(Location.builder().lat(50.1180).lng(8.6512).build())
                     .active(true)
                     .build());
             pickupLocationRepository.save(ExchangeLocation.builder()
                     .id(java.util.UUID.randomUUID())
+                    .referenceId(generateUniqueReferenceId(pickupLocationRepository))
                     .name("Public meetup spot")
                     .address("Konstablerwache 5, Frankfurt")
+                    .streetAddress("Konstablerwache 5")
+                    .city("Frankfurt")
+                    .postalCode("")
+                    .country("DE")
                     .location(Location.builder().lat(50.1147).lng(8.6873).build())
                     .active(true)
                     .build());
         };
+    }
+
+    private String generateUniqueReferenceId(ExchangeLocationRepository repo) {
+        for (int attempt = 0; attempt < 50; attempt++) {
+            String ref = randomRef();
+            if (!repo.existsByReferenceId(ref)) return ref;
+        }
+        return java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    }
+
+    private String randomRef() {
+        StringBuilder sb = new StringBuilder(REF_LEN);
+        for (int i = 0; i < REF_LEN; i++) {
+            int idx = random.nextInt(REF_CHARS.length());
+            sb.append(REF_CHARS.charAt(idx));
+        }
+        return sb.toString();
     }
 
     @Bean

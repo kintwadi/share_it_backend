@@ -28,12 +28,15 @@ public class ExchangeLocation {
     private String referenceId;
     private String name;
     private String address;
+    @Column(name = "street_address")
     private String streetAddress;
+    @Column(name = "city")
     private String city;
+    @Column(name = "postal_code")
     private String postalCode;
+    @Column(name = "country")
     private String country;
     @Embedded
     private Location location;
     private boolean active;
 }
-
