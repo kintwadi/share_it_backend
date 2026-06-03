@@ -2,12 +2,12 @@
   <div class="max-w-xl mx-auto px-4">
     <button type="button" class="back" (click)="back()">
       <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
-      Back
+      {{ i18n.t('common.back') }}
     </button>
 
     <div *ngIf="loading" class="card center">
       <lucide-icon [img]="Loader2" [size]="26" class="spin"></lucide-icon>
-      <div class="muted">Loading…</div>
+      <div class="muted">{{ i18n.t('common.loading') }}</div>
     </div>
 
     <div *ngIf="!loading" class="card">
@@ -27,7 +27,7 @@
       </div>
 
       <div class="actions">
-        <button type="button" class="btn ghost" (click)="back()" [disabled]="confirming">Cancel</button>
+        <button type="button" class="btn ghost" (click)="back()" [disabled]="confirming">{{ i18n.t('common.cancel') }}</button>
         <button type="button" class="btn" [ngClass]="variant === 'danger' ? 'danger' : (variant === 'warning' ? 'warning' : 'primary')" (click)="confirm()" [disabled]="confirming || !action">
           <lucide-icon *ngIf="confirming" [img]="Loader2" [size]="16" class="spin"></lucide-icon>
           <span>{{ confirmLabel }}</span>

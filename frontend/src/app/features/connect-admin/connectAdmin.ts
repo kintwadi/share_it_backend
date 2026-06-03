@@ -6,6 +6,7 @@ import { LucideAngularModule, Shield, Mail, Lock, User as UserIcon, Key, ArrowRi
 import { ApiService } from '../../core/services/api.service';
 import { AuthStorageService } from '../../core/services/auth-storage.service';
 import { SessionService } from '../../core/services/session.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 @Component({
   selector: 'app-connect-admin',
@@ -20,6 +21,7 @@ export class ConnectAdminComponent implements OnInit {
   session = inject(SessionService);
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
+  i18n = inject(I18nService);
 
   readonly Shield = Shield;
   readonly Mail = Mail;
@@ -87,7 +89,7 @@ export class ConnectAdminComponent implements OnInit {
         this.router.navigate(['/connect/mfa'], { state: { context: 'admin', token: err.token, returnTo: '/admin', cancelTo: '/connect/admin' } as any });
         return;
       }
-      this.error = err?.message || 'Something went wrong';
+      this.error = err?.message || this.i18n.t('connect_admin.error_generic');
       this.isLoading = false;
       this.render();
     }

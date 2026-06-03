@@ -93,7 +93,7 @@
                   <ng-container [ngSwitch]="it.type">
                     <label *ngSwitchCase="'boolean'" class="inline-flex items-center gap-2 cursor-pointer select-none">
                       <input type="checkbox" [(ngModel)]="it.value" class="h-4 w-4" />
-                      <span class="text-gray-700">{{ it.value ? 'true' : 'false' }}</span>
+                      <span class="text-gray-700">{{ it.value ? i18n.t('common.true') : i18n.t('common.false') }}</span>
                     </label>
                     <input *ngSwitchCase="'number'" type="number" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-40" />
                     <input *ngSwitchDefault type="text" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-[420px] max-w-full" />
