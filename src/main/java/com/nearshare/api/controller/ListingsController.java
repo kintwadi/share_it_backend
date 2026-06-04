@@ -112,6 +112,18 @@ public class ListingsController {
         return ResponseEntity.ok(listingService.returnItem(id, owner));
     }
 
+    @PostMapping("/{id}/ready-for-pickup")
+    public ResponseEntity<ListingDTO> readyForPickup(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @PathVariable("id") UUID id) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(listingService.markReadyForPickup(id, current));
+    }
+
+    @PostMapping("/{id}/picked-up")
+    public ResponseEntity<ListingDTO> pickedUp(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @PathVariable("id") UUID id) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(listingService.markPickedUp(id, current));
+    }
+
     @PostMapping("/{id}/block")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ListingDTO> block(@PathVariable("id") UUID id) {

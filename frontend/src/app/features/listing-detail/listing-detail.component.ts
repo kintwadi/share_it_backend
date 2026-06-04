@@ -38,6 +38,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
+  readonly Clock = Clock;
 
   listing: Listing | null = null;
   currentUser: User | null = null;
@@ -60,7 +61,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     return String(this.isPartnerListing ? (this.listing?.partnerId || 'partner') : (this.listing?.owner?.id || 'user'));
   }
 
-  actionLoading: 'APPROVE' | 'DENY' | null = null;
+  actionLoading: 'APPROVE' | 'DENY' | 'READY' | 'PICKED_UP' | null = null;
   wasAutoApproved = false;
   showSuccess = false;
   successMessage = '';
@@ -95,12 +96,56 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     return this.listing?.status === AvailabilityStatus.APPROVED;
   }
 
+  get isReadyForPickup(): boolean {
+    return this.listing?.status === AvailabilityStatus.READY_FOR_PICKUP;
+  }
+
+  async handleMarkReadyForPickup() {
+    const listing = this.listing;
+    if (!listing) return;
+    if (!this.isOwner) return;
+    if (this.actionLoading) return;
+    this.actionLoading = 'READY';
+    this.render();
+    try {
+      await this.api.markReadyForPickup(listing.id);
+      await this.reloadListing();
+    } catch (e: any) {
+      this.notifyError(e?.message || 'Failed to mark ready');
+    } finally {
+      this.actionLoading = null;
+      this.render();
+    }
+  }
+
+  async handleMarkPickedUp() {
+    const listing = this.listing;
+    if (!listing) return;
+    if (!this.currentUser) return;
+    if (this.actionLoading) return;
+    this.actionLoading = 'PICKED_UP';
+    this.render();
+    try {
+      await this.api.markPickedUp(listing.id);
+      await this.reloadListing();
+    } catch (e: any) {
+      this.notifyError(e?.message || 'Failed to confirm pickup');
+    } finally {
+      this.actionLoading = null;
+      this.render();
+    }
+  }
+
+  get isWaitingForReturn(): boolean {
+    return this.listing?.status === AvailabilityStatus.WAITING_FOR_RETURN;
+  }
+
   get isPartnerBorrowRequested(): boolean {
     return this.listing?.status === AvailabilityStatus.PARTNER_BORROW_REQUESTED;
   }
 
   get isBorrowed(): boolean {
-    return this.listing?.status === AvailabilityStatus.BORROWED;
+    return this.listing?.status === AvailabilityStatus.BORROWED || this.isWaitingForReturn;
   }
 
   get isGifted(): boolean {
@@ -120,7 +165,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get canOwnerDelete(): boolean {
-    return this.isOwner && !this.isBorrowed && !this.isPending && !this.isApproved;
+    return this.isOwner && !this.isBorrowed && !this.isPending && !this.isApproved && !this.isReadyForPickup && !this.isWaitingForReturn;
   }
 
   get deleteConfirmMessage(): string {

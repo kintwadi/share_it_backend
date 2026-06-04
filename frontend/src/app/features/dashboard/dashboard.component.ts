@@ -220,6 +220,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.myBorrows.filter(i =>
       (i.status === AvailabilityStatus.PENDING ||
         i.status === AvailabilityStatus.APPROVED ||
+        i.status === AvailabilityStatus.READY_FOR_PICKUP ||
+        i.status === AvailabilityStatus.WAITING_FOR_RETURN ||
         i.status === AvailabilityStatus.PARTNER_ACTIVE ||
         i.status === AvailabilityStatus.BORROWED ||
         i.status === AvailabilityStatus.DISPUTED) &&
@@ -266,7 +268,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   listingIsBorrowed(item: Listing): boolean {
-    return item.status === AvailabilityStatus.BORROWED;
+    return item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.WAITING_FOR_RETURN;
   }
 
   listingIsApproved(item: Listing): boolean {
@@ -276,8 +278,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return item.status === AvailabilityStatus.APPROVED;
   }
 
+  listingIsReadyForPickup(item: Listing): boolean {
+    return item.status === AvailabilityStatus.READY_FOR_PICKUP;
+  }
+
   listingIsActiveLoan(item: Listing): boolean {
-    return this.listingIsBorrowed(item) || this.listingIsApproved(item);
+    return this.listingIsBorrowed(item) || this.listingIsApproved(item) || this.listingIsReadyForPickup(item);
   }
 
   listingIsGifted(item: Listing): boolean {
@@ -326,6 +332,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   listingStatusLabel(item: Listing): string {
     return this.listingIsGifted(item) ? 'GIFTED' : String(item.status || '');
+  }
+
+  pickupLocationText(item: Listing): string {
+    if (!item) return '';
+    const addr = String((item as any).pickupLocation?.address || '').trim();
+    if (addr) return addr;
+    const custom = String((item as any).pickupLocationCustom || '').trim();
+    if (custom) return custom;
+    const street = String((item as any).pickupLocationStreet || '').trim();
+    const house = String((item as any).pickupLocationHouseNumber || '').trim();
+    const city = String((item as any).pickupLocationCity || '').trim();
+    const zip = String((item as any).pickupLocationZip || '').trim();
+    const line1 = `${street} ${house}`.trim();
+    const line2 = `${city} ${zip}`.trim();
+    return (line1 && line2) ? `${line1}, ${line2}` : (line1 || line2);
   }
 
   listingRowClass(item: Listing): string {
@@ -380,7 +401,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   handleDeleteClick(item: Listing) {
-    if (item.status === AvailabilityStatus.PENDING || item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.BORROWED) {
+    if (item.status === AvailabilityStatus.PENDING || item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.READY_FOR_PICKUP || item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED) {
       this.error = "You can’t delete this listing while it’s borrowed or in an active request. Return it first.";
       setTimeout(() => {
         this.error = null;
@@ -397,7 +418,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       ? AvailabilityStatus.AVAILABLE 
       : AvailabilityStatus.HIDDEN;
     
-    if (item.status === AvailabilityStatus.BORROWED) {
+    if (item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.READY_FOR_PICKUP || item.status === AvailabilityStatus.WAITING_FOR_RETURN) {
       this.error = "Cannot disable an item that is currently borrowed.";
       setTimeout(() => {
         this.error = null;
@@ -447,6 +468,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.actionLoading = id;
     this.render();
     this.api.denyRequest(id)
+      .then(() => this.fetchListings())
+      .finally(() => {
+        this.actionLoading = null;
+        this.render();
+      });
+  }
+
+  handleMarkReadyForPickup(id: string) {
+    this.actionLoading = id;
+    this.render();
+    this.api.markReadyForPickup(id)
+      .then(() => this.fetchListings())
+      .finally(() => {
+        this.actionLoading = null;
+        this.render();
+      });
+  }
+
+  handleMarkPickedUp(id: string) {
+    this.actionLoading = id;
+    this.render();
+    this.api.markPickedUp(id)
       .then(() => this.fetchListings())
       .finally(() => {
         this.actionLoading = null;

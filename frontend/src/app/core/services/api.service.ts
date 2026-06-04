@@ -662,6 +662,14 @@ export class ApiService {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/deny`, {}));
   }
 
+  async markReadyForPickup(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/ready-for-pickup`, {}));
+  }
+
+  async markPickedUp(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/picked-up`, {}));
+  }
+
   async returnItem(listingId: string): Promise<Listing> {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/return`, {}));
   }

@@ -47,6 +47,8 @@ public class ListingService {
     private final TrustScoreService trustScoreService;
     private final RuntimeSettingsService runtimeSettingsService;
     private final LocationService locationService;
+    private final MessageService messageService;
+    private final EmailService emailService;
     private final SecureRandom itemRefRandom = new SecureRandom();
 
     public ListingService(
@@ -62,7 +64,9 @@ public class ListingService {
             SubscriptionService subscriptionService,
             TrustScoreService trustScoreService,
             RuntimeSettingsService runtimeSettingsService,
-            LocationService locationService) {
+            LocationService locationService,
+            MessageService messageService,
+            EmailService emailService) {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.exchangeLocationRepository = exchangeLocationRepository;
@@ -76,6 +80,8 @@ public class ListingService {
         this.trustScoreService = trustScoreService;
         this.runtimeSettingsService = runtimeSettingsService;
         this.locationService = locationService;
+        this.messageService = messageService;
+        this.emailService = emailService;
     }
 
     private boolean isSellEnabled() {
@@ -373,7 +379,7 @@ public class ListingService {
 
         if (!isAdmin) {
             AvailabilityStatus st = l.getStatus();
-            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
+            if (st == AvailabilityStatus.PENDING || st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.READY_FOR_PICKUP || st == AvailabilityStatus.WAITING_FOR_RETURN || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED) {
                 throw new RuntimeException("cannot_delete_active_listing");
             }
         }
@@ -542,7 +548,7 @@ public class ListingService {
                 l.setItemReference(null);
             }
             else {
-                l.setStatus(AvailabilityStatus.BORROWED);
+                l.setStatus(AvailabilityStatus.APPROVED);
                 l.setItemReference(generateUniqueItemReference());
             }
         } else {
@@ -557,6 +563,19 @@ public class ListingService {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() != null) {
             throw new RuntimeException("forbidden");
+        }
+        boolean isAdmin = owner != null && owner.getRole() == UserRole.ADMIN;
+        boolean isOwner = owner != null && l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(owner.getId());
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("forbidden");
+        }
+        if (l.getBorrower() == null) {
+            throw new RuntimeException("borrower_not_found");
+        }
+        if (l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL) {
+            if (l.getStatus() != AvailabilityStatus.PENDING) {
+                throw new RuntimeException("invalid_status");
+            }
         }
         if (l.getType() == ListingType.GIVE) {
             l.setStatus(AvailabilityStatus.GIFTED);
@@ -573,8 +592,10 @@ public class ListingService {
                 trustScoreService.updateTrustScore(owner, l);
             }
         } else {
-            l.setStatus(AvailabilityStatus.BORROWED);
-            l.setItemReference(generateUniqueItemReference());
+            l.setStatus(AvailabilityStatus.APPROVED);
+            if (l.getItemReference() == null || l.getItemReference().isBlank()) {
+                l.setItemReference(generateUniqueItemReference());
+            }
         }
         listingRepository.save(l);
         return toDTO(l, owner);
@@ -584,6 +605,11 @@ public class ListingService {
     public ListingDTO deny(UUID id, User owner) {
         Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
         if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
+        boolean isAdmin = owner != null && owner.getRole() == UserRole.ADMIN;
+        boolean isOwner = owner != null && l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(owner.getId());
+        if (!isAdmin && !isOwner) {
             throw new RuntimeException("forbidden");
         }
         l.setStatus(AvailabilityStatus.AVAILABLE);
@@ -599,6 +625,12 @@ public class ListingService {
         if (l.getPartner() != null) {
             throw new RuntimeException("forbidden");
         }
+        boolean isAdmin = owner != null && owner.getRole() == UserRole.ADMIN;
+        boolean isOwner = owner != null && l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(owner.getId());
+        boolean isBorrower = owner != null && l.getBorrower() != null && l.getBorrower().getId() != null && l.getBorrower().getId().equals(owner.getId());
+        if (!isAdmin && !isOwner && !isBorrower) {
+            throw new RuntimeException("forbidden");
+        }
         
         if (l.getBorrower() != null) {
             trustScoreService.updateTrustScore(l.getBorrower(), l);
@@ -610,6 +642,81 @@ public class ListingService {
         l.setItemReference(null);
         listingRepository.save(l);
         return toDTO(l, owner);
+    }
+
+    @Transactional
+    public ListingDTO markReadyForPickup(UUID id, User current) {
+        Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
+        if (l.getBorrower() == null) {
+            throw new RuntimeException("borrower_not_found");
+        }
+        boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+        boolean isOwner = current != null && l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(current.getId());
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("forbidden");
+        }
+        if (l.getStatus() != AvailabilityStatus.APPROVED) {
+            throw new RuntimeException("invalid_status");
+        }
+        l.setStatus(AvailabilityStatus.READY_FOR_PICKUP);
+        listingRepository.save(l);
+
+        String pickupText = pickupLocationText(l);
+        String msg = "Ready for pickup" + (pickupText.isEmpty() ? "." : (" at " + pickupText + "."));
+        try {
+            messageService.send(l.getOwner(), l.getBorrower(), msg, null);
+        } catch (Exception ignored) {
+        }
+        try {
+            emailService.sendPickupReadyEmail(l.getBorrower().getEmail(), l.getBorrower().getName(), l.getTitle(), pickupText);
+        } catch (Exception ignored) {
+        }
+
+        return toDTO(l, current);
+    }
+
+    @Transactional
+    public ListingDTO markPickedUp(UUID id, User current) {
+        Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (l.getPartner() != null) {
+            throw new RuntimeException("forbidden");
+        }
+        boolean isAdmin = current != null && current.getRole() == UserRole.ADMIN;
+        boolean isOwner = current != null && l.getOwner() != null && l.getOwner().getId() != null && l.getOwner().getId().equals(current.getId());
+        boolean isBorrower = current != null && l.getBorrower() != null && l.getBorrower().getId() != null && l.getBorrower().getId().equals(current.getId());
+        if (!isAdmin && !isOwner && !isBorrower) {
+            throw new RuntimeException("forbidden");
+        }
+        if (l.getStatus() != AvailabilityStatus.READY_FOR_PICKUP) {
+            throw new RuntimeException("invalid_status");
+        }
+        l.setStatus(AvailabilityStatus.WAITING_FOR_RETURN);
+        if (l.getItemReference() == null || l.getItemReference().isBlank()) {
+            l.setItemReference(generateUniqueItemReference());
+        }
+        listingRepository.save(l);
+        return toDTO(l, current);
+    }
+
+    private String pickupLocationText(Listing l) {
+        if (l == null) return "";
+        if (l.getPickupLocation() != null) {
+            String addr = l.getPickupLocation().getAddress();
+            return addr == null ? "" : addr.trim();
+        }
+        String custom = l.getPickupLocationCustom();
+        if (custom != null && !custom.trim().isEmpty()) return custom.trim();
+        String street = l.getPickupLocationStreet();
+        String house = l.getPickupLocationHouseNumber();
+        String city = l.getPickupLocationCity();
+        String zip = l.getPickupLocationZip();
+        String combined = String.join(" ", safePickupStreet(street), safePickupHouseNumber(house)).trim();
+        String combined2 = String.join(" ", safePickupCity(city), safePickupZip(zip)).trim();
+        String out = (combined + (combined2.isEmpty() ? "" : (", " + combined2))).trim();
+        return out;
     }
 
     @Transactional

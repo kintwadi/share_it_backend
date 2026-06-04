@@ -46,7 +46,7 @@ public class ReturnService {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
-        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.APPROVED && listing.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
+        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.WAITING_FOR_RETURN && listing.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
             if (listing.getStatus() == AvailabilityStatus.AVAILABLE && listing.getBorrower() == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing already returned");
             }
@@ -56,7 +56,7 @@ public class ReturnService {
         if (listing.getBorrower() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
         }
-        if ((listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED)
+        if ((listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN)
                 && (listing.getItemReference() == null || listing.getItemReference().isBlank())) {
             listing.setItemReference(generateUniqueItemReference());
             listingRepository.save(listing);

@@ -102,6 +102,25 @@ public class EmailService {
             logger.error("Failed to send return rating email to: {}", toEmail, e);
         }
     }
+
+    public void sendPickupReadyEmail(String toEmail, String recipientName, String listingTitle, String pickupLocation) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("Ready for pickup - Vicinity24");
+
+            String htmlContent = buildPickupReadyEmail(recipientName, listingTitle, pickupLocation);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Pickup ready email sent to: {}", toEmail);
+        } catch (MessagingException | MailException e) {
+            logger.error("Failed to send pickup ready email to: {}", toEmail, e);
+        }
+    }
     
     private String buildPasswordResetEmail(String code) {
         return """
@@ -145,6 +164,52 @@ public class EmailService {
             </body>
             </html>
             """.formatted(code, buildStandardFooter());
+    }
+
+    private String buildPickupReadyEmail(String recipientName, String listingTitle, String pickupLocation) {
+        String safeRecipient = recipientName != null && !recipientName.isBlank() ? recipientName.trim() : "there";
+        String safeTitle = listingTitle != null && !listingTitle.isBlank() ? listingTitle.trim() : "your item";
+        String safeLocation = pickupLocation != null ? pickupLocation.trim() : "";
+        String locationLine = safeLocation.isEmpty() ? "" : ("<p><b>Pickup location:</b> " + escapeHtml(safeLocation) + "</p>");
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #4F46E5; color: white; padding: 20px; text-align: center; }
+                    .content { background: #f9f9f9; padding: 30px; border-radius: 5px; }
+                    .title { font-size: 18px; font-weight: bold; margin: 0 0 10px 0; }
+                    .footer { margin-top: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>Vicinity24</h2>
+                    </div>
+                    <div class="content">
+                        <p>Hello %s,</p>
+                        <p class="title">%s is ready for pickup.</p>
+                        %s
+                        <p>You can coordinate the pickup directly in the app chat.</p>
+                    </div>
+                    %s
+                </div>
+            </body>
+            </html>
+            """.formatted(escapeHtml(safeRecipient), escapeHtml(safeTitle), locationLine, buildStandardFooter());
+    }
+
+    private String escapeHtml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
     
     private String buildSubscriptionVerificationSubject(String planType, String language) {
