@@ -272,6 +272,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'settings.profile.visibility_reviews_help': 'Show ratings and reviews on your profile.',
     'settings.profile.cancel': 'Cancel',
     'settings.profile.save': 'Save changes',
+    'settings.profile.avatar_upload_failed': 'Failed to upload profile photo.',
     'settings.profile.gdpr_footer': 'We only use your data to run the service.',
 
     'settings.subscription.plan_starter': 'Starter',
@@ -953,6 +954,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'settings.profile.visibility_reviews_help': 'Mostrar classificações e avaliações no seu perfil.',
     'settings.profile.cancel': 'Cancelar',
     'settings.profile.save': 'Guardar alterações',
+    'settings.profile.avatar_upload_failed': 'Falha ao carregar a foto de perfil.',
     'settings.profile.gdpr_footer': 'Usamos os seus dados apenas para operar o serviço.',
 
     'settings.subscription.plan_starter': 'Starter',
@@ -1634,6 +1636,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'settings.profile.visibility_reviews_help': 'Zeige Sternebewertungen und Rezensionen in deinem Profil.',
     'settings.profile.cancel': 'Abbrechen',
     'settings.profile.save': 'Änderungen speichern',
+    'settings.profile.avatar_upload_failed': 'Profilfoto konnte nicht hochgeladen werden.',
     'settings.profile.gdpr_footer': 'Wir verwenden deine Daten nur zur Bereitstellung des Dienstes.',
 
     'settings.subscription.plan_starter': 'Starter',

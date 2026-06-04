@@ -38,6 +38,7 @@ public class User {
     private String password;
     private String phone;
     private String address;
+    @Column(length = 2048)
     private String avatarUrl;
     private int trustScore;
     private int vouchCount;

@@ -304,6 +304,12 @@ export class ApiService {
     return res?.url || '';
   }
 
+  async uploadUserAvatar(file: File): Promise<User> {
+    const form = new FormData();
+    form.append('file', file);
+    return firstValueFrom(this.api.postFormData<User>('/users/me/avatar', form));
+  }
+
   async evaluateListingRecommendation(req: ListingRecommendationRequest): Promise<ListingRecommendationResult> {
     const payload = {
       title: req.title,
