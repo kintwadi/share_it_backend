@@ -1,10 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Local Docker Deployment Script for NearShare Backend (Windows Batch)
+:: Local Docker Deployment Script for Vicinity24 Backend (Windows Batch)
 :: Usage: deploy-to-docker.bat [version-tag]
 ::
-:: This script builds the NearShare Backend Docker image for local use.
+:: This script builds the Vicinity24 Backend Docker image for local use.
 :: It can be run with an optional version tag. If no tag is provided, the version
 :: from pom.xml will be used. If pom.xml version is not found, DEFAULT_TAG will be used.
 ::
@@ -90,7 +90,7 @@ echo   docker run -p 8081:8080 --env-file .env -e PORT=8080 -e SSL_ENABLED=false
 echo.
 echo Manual environment variables (from setup.bat):
 echo   docker run -p 8081:8080 -e PORT=8080 -e SSL_ENABLED=false -e SETTINGS_HTTP_ENABLED=false ^
-echo     -e DB_URL=jdbc:postgresql://localhost:5432/nearshare ^
+echo     -e DB_URL=jdbc:postgresql://localhost:5432/Vicinity24 ^
 echo     -e DB_USERNAME=postgres ^
 echo     -e DB_PASSWORD=postgres ^
 echo     -e SSL_PASSWORD=******** ^

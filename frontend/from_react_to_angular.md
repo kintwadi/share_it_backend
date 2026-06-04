@@ -85,9 +85,9 @@ React uses:
 
 - `sessionStorage` + `localStorage`
 - keys:
-  - `nearshare_token`
-  - `nearshare_current_user_id`
-  - `nearshare_notifications`
+  - `auth_token`
+  - `auth_user_id`
+  - `auth_notifications`
 
 In Angular:
 

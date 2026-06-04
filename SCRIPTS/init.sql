@@ -1,4 +1,4 @@
--- NearShare Database Initialization Script
+-- Vicinity24 Database Initialization Script
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create additional roles if needed
@@ -6,7 +6,7 @@
 -- CREATE ROLE write_role;
 
 -- Grant necessary permissions
--- GRANT CONNECT ON DATABASE nearshare TO read_only_role;
+-- GRANT CONNECT ON DATABASE Vicinity24 TO read_only_role;
 -- GRANT USAGE ON SCHEMA public TO read_only_role;
 -- GRANT SELECT ON ALL TABLES IN SCHEMA public TO read_only_role;
 
@@ -23,7 +23,7 @@
 
 -- You can add custom initialization data here if needed
 -- INSERT INTO users (email, password, name, created_at) 
--- VALUES ('admin@nearshare.com', crypt('admin123', gen_salt('bf')), 'Admin User', NOW());
+-- VALUES ('admin@Vicinity24.com', crypt('admin123', gen_salt('bf')), 'Admin User', NOW());
 
 -- Create indexes for better performance (optional)
 -- CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -33,5 +33,5 @@
 -- Print success message
 DO $$
 BEGIN
-    RAISE NOTICE 'NearShare database initialization completed successfully';
+    RAISE NOTICE 'Vicinity24 database initialization completed successfully';
 END $$;

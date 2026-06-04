@@ -8,7 +8,7 @@ if exist "%ENV_FILE%" (
 
 :: Database Configuration
 if "%DB_TYPE%"=="" set "DB_TYPE="
-if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./nearshare.sqlite"
+if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./vicinity24.sqlite"
 if "%DB_DRIVER%"=="" set "DB_DRIVER="
 
 set "DB_URL_LC=%DB_URL%"
@@ -90,7 +90,7 @@ set "REMOTE_RENDE=https://vicinity24.com"
 set "DB_URL_SAFE=%DB_URL%"
 for /f "tokens=1* delims=@" %%A in ("%DB_URL_SAFE%") do if not "%%B"=="" set "DB_URL_SAFE=%%B"
 
-echo Environment variables set for NearShare Backend:
+echo Environment variables set for Vicinity24 Backend:
 echo - DB_URL: %DB_URL_SAFE%
 echo - DB_USERNAME: %DB_USERNAME%
 echo - PORT: %PORT%

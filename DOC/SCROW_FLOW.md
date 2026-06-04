@@ -39,17 +39,17 @@ The implementation uses Stripe Connect transfers to pay lenders after return.
 ### Backend (server)
 
 - PaymentIntent creation and Stripe webhooks:
-  - [PaymentController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/controller/PaymentController.java)
+  - [PaymentController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java)
 
 - Stripe integration and Connect helpers:
-  - [StripePayment.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/payment/StripePayment.java)
+  - [StripePayment.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/payment/StripePayment.java)
 
 - Borrow flow and transaction persistence:
-  - [ListingService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ListingService.java)
+  - [ListingService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ListingService.java)
 
 - Return flow and escrow release:
-  - [ReturnService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ReturnService.java)
-  - [EscrowService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/EscrowService.java)
+  - [ReturnService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ReturnService.java)
+  - [EscrowService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/EscrowService.java)
 
 ## Configuration
 
@@ -126,8 +126,8 @@ Implementation:
 
 Code:
 
-- [PaymentController.createPaymentIntent](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/controller/PaymentController.java#L57-L115)
-- [StripePayment.createPaymentIntent](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/payment/StripePayment.java#L93-L116)
+- [PaymentController.createPaymentIntent](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java#L57-L115)
+- [StripePayment.createPaymentIntent](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/payment/StripePayment.java#L93-L116)
 
 Important behavior:
 
@@ -159,8 +159,8 @@ Backend:
 
 Code:
 
-- [ListingService.borrow](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ListingService.java#L205-L312)
-- Model fields: [Transaction.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/model/Transaction.java)
+- [ListingService.borrow](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ListingService.java#L205-L312)
+- Model fields: [Transaction.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/model/Transaction.java)
 
 ### 4) Webhook finalization (safety)
 
@@ -172,8 +172,8 @@ The backend also listens to Stripe webhooks:
 
 Code:
 
-- [PaymentController.webhook](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/controller/PaymentController.java#L117-L145)
-- [ListingService.completeTransaction](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ListingService.java#L467-L506)
+- [PaymentController.webhook](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java#L117-L145)
+- [ListingService.completeTransaction](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ListingService.java#L467-L506)
 
 ## Stripe Connect onboarding (Lender payouts)
 
@@ -189,10 +189,10 @@ Backend endpoints:
 
 Code:
 
-- [PaymentController connect endpoints](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/controller/PaymentController.java)
+- [PaymentController connect endpoints](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java)
 - Account creation/link:
-  - [StripePayment.createExpressConnectAccount](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/payment/StripePayment.java)
-  - [StripePayment.createAccountOnboardingLink](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/payment/StripePayment.java)
+  - [StripePayment.createExpressConnectAccount](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/payment/StripePayment.java)
+  - [StripePayment.createAccountOnboardingLink](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/payment/StripePayment.java)
 
 User storage:
 
@@ -201,7 +201,7 @@ User storage:
 
 Code:
 
-- [User.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/model/User.java)
+- [User.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/model/User.java)
 
 ## Return flow (Release vs Dispute)
 
@@ -211,8 +211,8 @@ If a dispute is started (or return session expires), the system marks the transa
 
 Code:
 
-- [ReturnService.initiateDispute](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ReturnService.java)
-- [EscrowService.markDisputed](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/EscrowService.java)
+- [ReturnService.initiateDispute](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ReturnService.java)
+- [EscrowService.markDisputed](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/EscrowService.java)
 
 Transaction status:
 
@@ -237,8 +237,8 @@ Then escrow release runs:
 
 Code:
 
-- [ReturnService.checkAndCompleteSession](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/ReturnService.java#L168-L191)
-- [EscrowService.releaseOnSuccessfulReturn](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/service/EscrowService.java#L44-L134)
+- [ReturnService.checkAndCompleteSession](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/ReturnService.java#L168-L191)
+- [EscrowService.releaseOnSuccessfulReturn](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/EscrowService.java#L44-L134)
 
 Transaction statuses:
 

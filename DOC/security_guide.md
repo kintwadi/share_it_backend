@@ -26,8 +26,8 @@ Required actions:
 
 ### 2) Debug/seed endpoint is publicly accessible
 
-- Seeding endpoint: [SeedingController.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/controller/SeedingController.java)
-- It is currently permitted without auth in: [SecurityConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/config/SecurityConfig.java)
+- Seeding endpoint: [SeedingController.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/SeedingController.java)
+- It is currently permitted without auth in: [SecurityConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/config/SecurityConfig.java)
 
 Required actions:
 
@@ -50,9 +50,9 @@ Required actions:
 - Terminate TLS at embedded Tomcat for production using an external keystore path (`file:/...`).
 - Prioritize TLS 1.3 (keep TLS 1.2 only if required by clients).
 - Redirect all HTTP (80) to HTTPS (443) using embedded Tomcat connector:
-  - [HttpToHttpsConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/config/HttpToHttpsConfig.java)
+  - [HttpToHttpsConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/config/HttpToHttpsConfig.java)
 - Enforce HSTS:
-  - [HstsFilter.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/filter/HstsFilter.java)
+  - [HstsFilter.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/filter/HstsFilter.java)
 
 ### Recommended hardening
 
@@ -65,7 +65,7 @@ Required actions:
 ### JWT validation
 
 - Review JWT filter behavior, especially error handling and logging:
-  - [JwtAuthenticationFilter.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/security/JwtAuthenticationFilter.java)
+  - [JwtAuthenticationFilter.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/security/JwtAuthenticationFilter.java)
 
 Required actions:
 
@@ -76,7 +76,7 @@ Required actions:
 ### Route access policy
 
 - Review all `permitAll()` endpoints and confirm they are safe:
-  - [SecurityConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/config/SecurityConfig.java)
+  - [SecurityConfig.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/config/SecurityConfig.java)
 
 Required actions:
 
@@ -96,7 +96,7 @@ Required actions:
 ## Error Handling & Logging
 
 - Global exception handling currently prints stack traces and returns exception details:
-  - [GlobalExceptionHandler.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/exception/GlobalExceptionHandler.java)
+  - [GlobalExceptionHandler.java](file:///C:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/exception/GlobalExceptionHandler.java)
 
 Required actions:
 

@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
-echo Starting NearShare (SQLite + Litestream -> R2) using Docker...
+echo Starting Vicinity24 (SQLite + Litestream -> R2) using Docker...
 
 set "ROOT_DIR=%~dp0.."
 pushd "%ROOT_DIR%" >nul

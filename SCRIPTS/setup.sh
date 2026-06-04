@@ -9,7 +9,7 @@ fi
 
 : "${DB_TYPE:=}"
 : "${DB_DRIVER:=}"
-: "${DB_URL:=jdbc:postgresql://localhost:5432/nearshare}"
+: "${DB_URL:=jdbc:postgresql://localhost:5432/Vicinity24}"
 : "${DB_USERNAME:=postgres}"
 : "${DB_PASSWORD:=postgres}"
 
@@ -71,7 +71,7 @@ fi
 
 set +a
 
-echo "Environment variables set for NearShare Backend:"
+echo "Environment variables set for Vicinity24 Backend:"
 echo "- DB_URL: ${DB_URL}"
 echo "- DB_USERNAME: ${DB_USERNAME}"
 echo "- DB_PASSWORD: ********"

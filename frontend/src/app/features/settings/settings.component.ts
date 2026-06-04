@@ -545,7 +545,7 @@ export class SettingsComponent implements OnInit {
 
   openBuildingPartnerPortal() {
     try {
-      window.open('https://nearshare.example/partners', '_blank', 'noopener,noreferrer');
+      window.open('https://vicinity24.com/partners', '_blank', 'noopener,noreferrer');
     } catch { }
   }
 
@@ -953,7 +953,7 @@ export class SettingsComponent implements OnInit {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'nearshare-export.json';
+      a.download = 'vicinity24-export.json';
       a.click();
       URL.revokeObjectURL(url);
     } catch { }

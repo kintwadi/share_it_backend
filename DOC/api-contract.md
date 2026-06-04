@@ -1,4 +1,4 @@
-# API Contract (Vicinity24 / NearShare)
+# API Contract (Vicinity24)
 
 This document describes the REST API exposed by the Vicinity24 backend.
 

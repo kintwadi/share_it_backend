@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nearshare-backend
+    container_name: vicinity24-core-api
     environment:
       PORT: 8080
       SSL_ENABLED: "false"
@@ -37,7 +37,7 @@ services:
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       SQLITE_R2_STREAM_FOR_RENDER: ${SQLITE_R2_STREAM_FOR_RENDER:-false}
-      SQLITE_DB_PATH: ${SQLITE_DB_PATH:-/data/nearshare.sqlite}
+      SQLITE_DB_PATH: ${SQLITE_DB_PATH:-/data/vicinity24.sqlite}
       LITESTREAM_ACCESS_KEY_ID: ${LITESTREAM_ACCESS_KEY_ID:-}
       LITESTREAM_SECRET_ACCESS_KEY: ${LITESTREAM_SECRET_ACCESS_KEY:-}
       LITESTREAM_ENDPOINT: ${LITESTREAM_ENDPOINT:-}
@@ -50,5 +50,5 @@ services:
     restart: unless-stopped
 
 networks:
-  nearshare-network:
+  vicinity24-network:
     driver: bridge

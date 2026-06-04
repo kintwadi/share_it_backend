@@ -1,4 +1,4 @@
-# Vicinity24 (NearShare)
+# Vicinity24
 
 Monorepo containing:
 - Spring Boot backend (API + auth + admin + partner + payments)

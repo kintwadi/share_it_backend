@@ -5,7 +5,7 @@ set -eu
 FLAG="$(printf '%s' "${SQLITE_R2_STREAM_FOR_RENDER:-false}" | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
 
 if [ "$FLAG" = "true" ] || [ "$FLAG" = "1" ]; then
-  : "${SQLITE_DB_PATH:=/data/nearshare.sqlite}"
+  : "${SQLITE_DB_PATH:=/data/vicinity24.sqlite}"
 
   DB_TYPE=sqlite
   DB_URL="jdbc:sqlite:${SQLITE_DB_PATH}"

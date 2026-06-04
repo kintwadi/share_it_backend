@@ -2,11 +2,11 @@
   "users": [
     {
       "name": "Alice Admin",
-      "email": "admin@nearshare.local",
+      "email": "admin@vicinity24.local",
       "password": "password123",
       "role": "ADMIN",
       "phone": "+1 (800) 555-9999",
-      "address": "NearShare HQ",
+      "address": "Vicinity24 HQ",
       "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
       "trustScore": 100,
       "vouchCount": 500,

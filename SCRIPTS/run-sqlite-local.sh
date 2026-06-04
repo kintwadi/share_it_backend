@@ -14,7 +14,7 @@ if [ -f "$ROOT_DIR/local_database" ]; then
 fi
 
 : "${DB_TYPE:=sqlite}"
-: "${DB_URL:=jdbc:sqlite:./nearshare.sqlite}"
+: "${DB_URL:=jdbc:sqlite:./vicinity24.sqlite}"
 : "${DB_USERNAME:=sqlite_user}"
 : "${DB_PASSWORD:=sqlite_password_123}"
 : "${DB_DRIVER:=org.sqlite.JDBC}"

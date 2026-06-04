@@ -1,11 +1,11 @@
 @echo off
-echo Starting NearShare Backend with H2 Database (Local Mode)...
+echo Starting Vicinity24 Backend with H2 Database (Local Mode)...
 
 set "ROOT_DIR=%~dp0.."
 pushd "%ROOT_DIR%" >nul
 
 set DB_TYPE=h2
-set DB_URL=jdbc:h2:mem:nearshare;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+set DB_URL=jdbc:h2:mem:Vicinity24;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
 set DB_DRIVER=org.h2.Driver
 set DB_USERNAME=sa
 set DB_PASSWORD=

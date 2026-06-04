@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo NearShare Backend Docker Runner
+echo Vicinity24 Backend Docker Runner
 echo ========================================
 echo.
 
@@ -21,7 +21,7 @@ echo Docker is running. Checking for existing containers...
 echo.
 
 REM Stop any existing containers with the same name
-echo Stopping any existing NearShare containers...
+echo Stopping any existing Vicinity24 containers...
 docker stop shareit-backend-container 2>nul
 if %errorlevel% equ 0 (
     echo Stopped existing container: shareit-backend-container
@@ -35,7 +35,7 @@ if %errorlevel% equ 0 (
 
 echo.
 echo ========================================
-echo Starting NearShare Backend with Environment Variables
+echo Starting Vicinity24 Backend with Environment Variables
 echo ========================================
 echo.
 
@@ -80,7 +80,7 @@ docker logs --tail 20 shareit-backend-container
 
 echo.
 echo ========================================
-echo NearShare Backend is now running!
+echo Vicinity24 Backend is now running!
 echo Access: https://localhost/
 echo ========================================
 echo.

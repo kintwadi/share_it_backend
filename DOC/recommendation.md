@@ -8,34 +8,34 @@ When a user is about to **give away** an item, the system suggests whether they 
 
 ## High-Level Architecture
 
-The recommendation feature is implemented as a separate module under `com.nearshare.api.recommendation`:
+The recommendation feature is implemented as a separate module under `com.vicinity24.api.recommendation`:
 
-- Backend module root: [recommendation](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation)
+- Backend module root: [recommendation](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation)
 - Frontend integration: [NewItem.tsx](file:///c:/Users/core101/Desktop/desk/shareit_client/share_it_client/pages/NewItem.tsx), [mockApi.ts](file:///c:/Users/core101/Desktop/desk/shareit_client/share_it_client/services/mockApi.ts)
 
 ### Components
 
 - **RecommendationController**
   - Exposes REST endpoints used by the UI.
-  - File: [RecommendationController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/controller/RecommendationController.java)
+  - File: [RecommendationController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/controller/RecommendationController.java)
 - **RecommendationService**
   - Builds a Mahout collaborative filtering model from transactions.
   - Evaluates a new item and returns a recommendation decision.
-  - File: [RecommendationService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/service/RecommendationService.java)
+  - File: [RecommendationService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/service/RecommendationService.java)
 - **MahoutIdService + MahoutIdMapping**
   - Mahout requires `long` IDs; the app uses UUIDs.
   - This layer maps UUIDs to stable sequential `Long` IDs and back.
-  - Files: [MahoutIdService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/service/MahoutIdService.java), [MahoutIdMapping.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/model/MahoutIdMapping.java)
+  - Files: [MahoutIdService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/service/MahoutIdService.java), [MahoutIdMapping.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/model/MahoutIdMapping.java)
 - **RecommendationSeederService**
   - Seeds transactions for development if there is insufficient historical data.
-  - File: [RecommendationSeederService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/service/RecommendationSeederService.java)
+  - File: [RecommendationSeederService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/service/RecommendationSeederService.java)
 
 ## Data Model (What We Learn From)
 
 The system learns from **transactions** and links them to **listings** and **users**:
 
-- Listing entity: [Listing.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/model/Listing.java)
-- Transaction entity: [Transaction.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/model/Transaction.java)
+- Listing entity: [Listing.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/model/Listing.java)
+- Transaction entity: [Transaction.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/model/Transaction.java)
 
 ### Mahout ID Mapping Table
 
@@ -48,7 +48,7 @@ mahout_id_mapping
   - mahoutId    (Long)   stable numeric ID used by Mahout
 ```
 
-Repository: [MahoutIdMappingRepository.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/repository/MahoutIdMappingRepository.java)
+Repository: [MahoutIdMappingRepository.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/repository/MahoutIdMappingRepository.java)
 
 ## Data Flow
 
@@ -110,7 +110,7 @@ For the expanded candidate set:
   - **Confidence score**:
     - `max(countSELL, countLEND, countGIVE) / total`
 
-Implementation: [RecommendationService.evaluate](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/service/RecommendationService.java)
+Implementation: [RecommendationService.evaluate](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/service/RecommendationService.java)
 
 ## API Contract
 
@@ -118,9 +118,9 @@ Implementation: [RecommendationService.evaluate](file:///c:/Users/core101/Deskto
 
 - **Endpoint**: `POST /api/listings/evaluate`
 - **Request**: `EvaluateItemRequest`
-  - File: [EvaluateItemRequest.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/model/EvaluateItemRequest.java)
+  - File: [EvaluateItemRequest.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/model/EvaluateItemRequest.java)
 - **Response**: `RecommendationResult`
-  - File: [RecommendationResult.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/model/RecommendationResult.java)
+  - File: [RecommendationResult.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/model/RecommendationResult.java)
 
 Example request:
 
@@ -153,13 +153,13 @@ Example response:
 - **Authorization**: admin-only (method security)
 - Purpose: forces a rebuild after bulk imports or data changes.
 
-Controller: [RecommendationController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/controller/RecommendationController.java)
+Controller: [RecommendationController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/controller/RecommendationController.java)
 
 ## Security & Access Rules
 
 Evaluation is intended to be usable during listing creation UX. The security config explicitly permits the evaluation endpoint:
 
-- [SecurityConfig.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/config/SecurityConfig.java)
+- [SecurityConfig.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/config/SecurityConfig.java)
 
 ## Frontend Integration
 
@@ -189,13 +189,13 @@ If there are too few transactions, the model will have limited coverage and will
 
 The app includes a development seeder:
 
-- [RecommendationSeederService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/nearshare/api/recommendation/service/RecommendationSeederService.java)
+- [RecommendationSeederService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/recommendation/service/RecommendationSeederService.java)
 
 ### Testing
 
 There is an integration test that boots Spring with an in-memory H2 database and verifies the system returns a stable recommendation:
 
-- [RecommendationServiceTest.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/test/java/com/nearshare/api/recommendation/service/RecommendationServiceTest.java)
+- [RecommendationServiceTest.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/test/java/com/vicinity24/api/recommendation/service/RecommendationServiceTest.java)
 
 ## Known Limitations / Next Improvements
 
