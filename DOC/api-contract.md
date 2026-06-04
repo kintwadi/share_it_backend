@@ -288,7 +288,7 @@ Base path: `/api/listings`
   "hourlyRate": 0,
   "autoApprove": false,
   "insuranceRequired": false,
-  "status": "AVAILABLE|PENDING|APPROVED|BORROWED|...",
+  "status": "AVAILABLE|PENDING|APPROVED|READY_FOR_PICKUP|WAITING_FOR_RETURN|BORROWED|...",
   "pickupLocation": { "id": "uuid", "name": "string", "address": "string", "location": { "x": 0, "y": 0 } },
   "pickupLocationCustom": "string|null",
   "pickupLocationStreet": "string|null",
@@ -343,11 +343,23 @@ Body (`CreateListingRequest`):
 
 - `POST /api/listings/{id}/approve`
   - Owner action: approves a borrow request
+  - For LEND listings, this moves status to `APPROVED` (borrower will be notified once the item is ready).
   - Response: `ListingDTO`
 
 - `POST /api/listings/{id}/deny`
   - Owner action: denies a borrow request
   - Response: `ListingDTO`
+
+- `POST /api/listings/{id}/ready-for-pickup`
+  - Owner action: marks an approved request as ready for pickup
+  - Side effects:
+    - Sends an in-app message to the borrower containing pickup details
+    - Sends an email to the borrower
+  - Response: `ListingDTO` (status becomes `READY_FOR_PICKUP`)
+
+- `POST /api/listings/{id}/picked-up`
+  - Owner or borrower action: confirms the item has been picked up
+  - Response: `ListingDTO` (status becomes `WAITING_FOR_RETURN`)
 
 - `POST /api/listings/{id}/return`
   - Response: `ListingDTO`

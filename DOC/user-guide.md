@@ -106,7 +106,11 @@ Standard listings go through the checkout/escrow-aware flow.
    - Cash
    - Free (only if total is 0)
 5. Confirm request / payment.
-6. The listing moves to a pending/approved state depending on the listing’s auto-approve setting.
+6. The listing moves to a pending/approved state depending on the listing’s auto-approve setting:
+   - `PENDING`: waiting for the lender to approve
+   - `APPROVED`: approved, but not yet ready for pickup (you will be notified once it’s ready)
+7. When the lender marks the item as ready, the listing becomes `READY_FOR_PICKUP` and the borrower is notified (in-app + email).
+8. Once the borrower picks up the item, either party can confirm pickup. The listing becomes `WAITING_FOR_RETURN` and the return flow can start.
 
 If card payments are used, the app creates a Stripe payment intent and completes the transaction when the Stripe webhook confirms success.
 
@@ -131,6 +135,8 @@ When someone requests to borrow your listing:
 1. Open your dashboard.
 2. Open the listing/request details.
 3. Approve or deny the request.
+4. After approval, mark the item as ready for pickup when it’s available.
+5. Once the borrower picks up the item, either you or the borrower can confirm pickup (this enables the return flow).
 
 Auto-approve listings may skip manual approval.
 
@@ -145,7 +151,7 @@ Auto-approve listings may skip manual approval.
 
 The return mechanism applies to both regular and partner listings.
 
-From the listing’s return flow:
+From the listing’s return flow (available once pickup is confirmed and the listing is `WAITING_FOR_RETURN`):
 1. Initiate a return session.
 2. Complete return confirmation via:
    - QR scan (borrower/lender scans codes), or
