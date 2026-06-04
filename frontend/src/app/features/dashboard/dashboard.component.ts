@@ -331,7 +331,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   listingStatusLabel(item: Listing): string {
-    return this.listingIsGifted(item) ? 'GIFTED' : String(item.status || '');
+    if (!item) return '';
+    if (this.listingIsGifted(item)) return 'GIFTED';
+    switch (item.status) {
+      case AvailabilityStatus.PENDING:
+        return this.i18n.t('dash.request_pending');
+      case AvailabilityStatus.APPROVED:
+        return this.i18n.t('dash.approved');
+      case AvailabilityStatus.READY_FOR_PICKUP:
+        return this.i18n.t('dash.ready_for_pickup');
+      case AvailabilityStatus.WAITING_FOR_RETURN:
+        return this.i18n.t('dash.waiting_for_return');
+      case AvailabilityStatus.DISPUTED:
+        return this.i18n.t('dash.disputed');
+      default:
+        return String(item.status || '');
+    }
   }
 
   pickupLocationText(item: Listing): string {

@@ -144,7 +144,7 @@
             </span>
             <span *ngIf="!isAvailable && !isPending && !isApproved && isReadyForPickup" class="flex items-center text-amber-700 text-sm font-bold bg-amber-50 px-3 py-1.5 rounded-full">
               <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
-              Ready for pickup
+              {{ i18n.t('dash.ready_for_pickup') }}
             </span>
             <span *ngIf="!isAvailable && !isPending && !isApproved && isGifted" class="flex items-center text-pink-600 text-sm font-bold bg-pink-50 px-3 py-1.5 rounded-full">
               <span class="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
@@ -303,7 +303,7 @@
                     <div class="mt-4 pt-4 border-t border-emerald-100 flex gap-3">
                       <button type="button" (click)="handleMarkReadyForPickup()" [disabled]="actionLoading" class="flex-1 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                         <lucide-icon *ngIf="actionLoading === 'READY'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                        Mark ready for pickup
+                        {{ i18n.t('dash.mark_ready_for_pickup') }}
                       </button>
                       <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold text-xs transition-colors">
                         Message Borrower
@@ -320,7 +320,7 @@
                           <lucide-icon [img]="MapPin" [size]="20"></lucide-icon>
                         </div>
                         <div>
-                          <h4 class="font-bold text-amber-900">Ready for pickup</h4>
+                          <h4 class="font-bold text-amber-900">{{ i18n.t('dash.ready_for_pickup') }}</h4>
                           <p class="text-xs text-amber-700">Waiting for {{ listing.borrower?.name }} to pick up.</p>
                         </div>
                       </div>
@@ -337,7 +337,7 @@
                       <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
                         <button type="button" (click)="handleMarkPickedUp()" [disabled]="actionLoading" class="flex-1 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                           <lucide-icon *ngIf="actionLoading === 'PICKED_UP'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                          Mark picked up
+                          {{ i18n.t('dash.mark_picked_up') }}
                         </button>
                         <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Borrower
