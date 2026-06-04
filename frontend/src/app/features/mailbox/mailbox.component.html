@@ -83,7 +83,7 @@
           </div>
 
           <div class="flex flex-col">
-            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div class="px-3 sm:px-4 py-3 border-b border-gray-200 flex items-start sm:items-center justify-between gap-3">
               <div class="min-w-0">
                 <div class="text-sm font-bold text-gray-900 truncate">{{ selectedTitle() || i18n.t('mailbox.select_message') }}</div>
                 <div class="text-xs text-gray-500 truncate" *ngIf="selectedPeerLabel()">
@@ -91,12 +91,12 @@
                   <ng-container *ngIf="currentTab() === 'outbox'">{{ i18n.t('mailbox.to_prefix') }} {{ selectedPeerLabel() }}</ng-container>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" *ngIf="currentTab() === 'inbox' && selectedMessage()" (click)="replyToSelected()" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-sm font-semibold flex items-center gap-2">
+              <div class="flex flex-wrap items-center justify-end gap-2 max-w-full">
+                <button type="button" *ngIf="currentTab() === 'inbox' && selectedMessage()" (click)="replyToSelected()" class="px-2.5 sm:px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
                   <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
                   {{ i18n.t('mailbox.reply') }}
                 </button>
-                <button type="button" [disabled]="!selectedMessage()" (click)="selectedMessage() ? confirmDelete(selectedMessage()!.id) : null" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-white text-sm font-semibold flex items-center gap-2">
+                <button type="button" [disabled]="!selectedMessage()" (click)="selectedMessage() ? confirmDelete(selectedMessage()!.id) : null" class="px-2.5 sm:px-3 py-2 rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-white text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
                   <lucide-icon [img]="TrashIcon" [size]="16"></lucide-icon>
                   {{ i18n.t('common.delete') }}
                 </button>
