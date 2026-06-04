@@ -233,6 +233,10 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  goToLocationManager() {
+    this.router.navigate(['/admin/locations']);
+  }
+
   async loadSummary() {
     this.summary = await this.api.getAdminSummary();
   }

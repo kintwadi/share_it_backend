@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
-import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, ExchangeLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
@@ -262,14 +262,17 @@ export class ApiService {
     return firstValueFrom(this.api.get<User[]>('/users/contacts'));
   }
 
-  async getPickupLocations(): Promise<PickupLocation[]> {
+  async getExchangeLocations(): Promise<ExchangeLocation[]> {
     try {
       const list = await firstValueFrom(this.api.get<any[]>('/pickup-locations/'));
       return (Array.isArray(list) ? list : []).map((p: any) => ({
         id: String(p.id),
+        referenceId: p.referenceId ? String(p.referenceId) : undefined,
         name: p.name ?? '',
         address: p.address ?? '',
-        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) }
+        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) },
+        operatingTimeFrom: p.operatingTimeFrom ?? null,
+        operatingTimeTo: p.operatingTimeTo ?? null,
       }));
     } catch {
       return [];
@@ -299,6 +302,12 @@ export class ApiService {
   async uploadListingImage(file: File): Promise<string> {
     const res = await this.uploadFile(file);
     return res?.url || '';
+  }
+
+  async uploadUserAvatar(file: File): Promise<User> {
+    const form = new FormData();
+    form.append('file', file);
+    return firstValueFrom(this.api.postFormData<User>('/users/me/avatar', form));
   }
 
   async evaluateListingRecommendation(req: ListingRecommendationRequest): Promise<ListingRecommendationResult> {
@@ -817,6 +826,46 @@ export class ApiService {
 
   async adminUpdateAppSettings(updates: { key: string; value: any }[]): Promise<any> {
     return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
+  }
+
+  async adminListExchangeLocations(): Promise<ExchangeLocation[]> {
+    return firstValueFrom(this.api.get<ExchangeLocation[]>('/admin/pickup-locations'));
+  }
+
+  async adminCreateExchangeLocation(payload: {
+    name: string;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
+    active?: boolean | null;
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.post<ExchangeLocation>('/admin/pickup-locations', payload));
+  }
+
+  async adminUpdateExchangeLocation(id: string, payload: {
+    name?: string | null;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
+    active?: boolean | null;
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.put<ExchangeLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));
+  }
+
+  async adminDeleteExchangeLocation(id: string): Promise<void> {
+    await firstValueFrom(this.api.delete<any>(`/admin/pickup-locations/${encodeURIComponent(id)}`));
   }
 
   async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {

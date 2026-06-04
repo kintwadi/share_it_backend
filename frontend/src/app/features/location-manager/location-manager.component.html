@@ -1,0 +1,226 @@
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+  <div class="flex items-center justify-between gap-3">
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('location_manager.kicker') }}</div>
+      <h1 class="mt-1 text-2xl font-extrabold text-slate-900">{{ i18n.t('location_manager.title') }}</h1>
+      <p class="mt-1 text-sm text-slate-600">{{ i18n.t('location_manager.subtitle') }}</p>
+    </div>
+    <app-button (onClick)="goBack()" variant="tertiary" size="sm">
+      <lucide-icon [img]="ArrowLeft" size="16" class="mr-2"></lucide-icon>
+      {{ i18n.t('location_manager.back') }}
+    </app-button>
+  </div>
+
+  <div *ngIf="error" class="mt-6 p-3 rounded-xl bg-amber-50 text-amber-800 text-sm border border-amber-200">
+    {{ error }}
+  </div>
+  <div *ngIf="notice" class="mt-6 p-3 rounded-xl text-sm border" [ngClass]="notice.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'">
+    {{ notice.message }}
+  </div>
+
+  <div class="mt-6 rounded-2xl border border-slate-200 bg-white overflow-hidden">
+    <div class="flex flex-wrap gap-2 p-2 bg-slate-50 border-b border-slate-200">
+      <button type="button" (click)="setTab('REGISTER')" class="px-3 py-2 rounded-xl text-sm font-semibold border" [ngClass]="activeTab === 'REGISTER' ? 'bg-white border-slate-200 text-slate-900 shadow-sm' : 'bg-transparent border-transparent text-slate-600 hover:text-slate-900'">
+        {{ i18n.t('location_manager.tab_register') }}
+      </button>
+      <button type="button" (click)="setTab('LIST')" class="px-3 py-2 rounded-xl text-sm font-semibold border" [ngClass]="activeTab === 'LIST' ? 'bg-white border-slate-200 text-slate-900 shadow-sm' : 'bg-transparent border-transparent text-slate-600 hover:text-slate-900'">
+        {{ i18n.t('location_manager.tab_list') }}
+      </button>
+    </div>
+
+    <div *ngIf="activeTab === 'REGISTER'" class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.name') }}</label>
+          <input [(ngModel)]="name" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('location_manager.name_ph')" />
+        </div>
+
+        <div class="md:col-span-2 relative">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.search') }}</label>
+          <div class="relative">
+            <lucide-icon [img]="Search" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+            <input [ngModel]="query" (ngModelChange)="onQueryChange($event)" class="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('location_manager.search_ph')" />
+            <button *ngIf="query" type="button" (click)="clearSelected()" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-slate-50 text-slate-500">
+              <lucide-icon [img]="X" size="16"></lucide-icon>
+            </button>
+          </div>
+          <div *ngIf="suggestions.length > 0" class="absolute z-10 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+            <button type="button" *ngFor="let s of suggestions" (click)="selectSuggestion(s)" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50">
+              <div class="font-semibold text-slate-900">{{ s.displayName || (s.streetAddress + ', ' + s.city) }}</div>
+              <div class="text-xs text-slate-500 mt-0.5">{{ s.streetAddress }} · {{ s.postalCode }} {{ s.city }} · {{ s.country }}</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="md:col-span-2">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-xs font-semibold text-slate-700">{{ i18n.t('location_manager.details') }}</div>
+            <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <input type="checkbox" [(ngModel)]="active" class="h-4 w-4" />
+              {{ i18n.t('location_manager.active') }}
+            </label>
+          </div>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.street') }}</label>
+          <input [(ngModel)]="streetAddress" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.city') }}</label>
+          <input [(ngModel)]="city" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.postal') }}</label>
+          <input [(ngModel)]="postalCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.country') }}</label>
+          <input [(ngModel)]="country" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.operating_from') }}</label>
+          <input type="time" [(ngModel)]="operatingTimeFrom" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.operating_to') }}</label>
+          <input type="time" [(ngModel)]="operatingTimeTo" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+        </div>
+
+        <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-700 flex items-center gap-2">
+            <lucide-icon [img]="MapPin" size="16" class="text-slate-500"></lucide-icon>
+            <div>
+              <div class="font-semibold text-slate-900">{{ i18n.t('location_manager.coords') }}</div>
+              <div class="mt-0.5">{{ latitude ?? '-' }}, {{ longitude ?? '-' }}</div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end">
+            <app-button (onClick)="createLocation()" [disabled]="loading" variant="primary" size="md">
+              <lucide-icon *ngIf="loading" [img]="Loader2" size="16" class="mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="!loading" [img]="Plus" size="16" class="mr-2"></lucide-icon>
+              {{ i18n.t('location_manager.save') }}
+            </app-button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'LIST'" class="p-6 space-y-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="text-sm font-semibold text-slate-900">{{ i18n.t('location_manager.list_title') }}</div>
+        <app-button (onClick)="loadList()" variant="tertiary" size="sm" [disabled]="listLoading">
+          <lucide-icon *ngIf="listLoading" [img]="Loader2" size="16" class="mr-2 animate-spin"></lucide-icon>
+          {{ i18n.t('location_manager.refresh') }}
+        </app-button>
+      </div>
+
+      <div *ngIf="editModel" class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-500">{{ i18n.t('location_manager.editing') }}</div>
+            <div class="mt-1 text-sm font-extrabold text-slate-900">{{ editModel.referenceId }}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <app-button (onClick)="cancelEdit()" variant="tertiary" size="sm">{{ i18n.t('location_manager.cancel') }}</app-button>
+            <app-button (onClick)="saveEdit()" variant="primary" size="sm" [disabled]="loading">
+              <lucide-icon *ngIf="loading" [img]="Loader2" size="16" class="mr-2 animate-spin"></lucide-icon>
+              {{ i18n.t('location_manager.update') }}
+            </app-button>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.name') }}</label>
+            <input [(ngModel)]="editModel.name" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div class="md:col-span-2 relative">
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.search') }}</label>
+            <div class="relative">
+              <lucide-icon [img]="Search" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
+              <input [ngModel]="editModel.query" (ngModelChange)="onEditQueryChange($event)" class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+            </div>
+            <div *ngIf="editSuggestions.length > 0" class="absolute z-10 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
+              <button type="button" *ngFor="let s of editSuggestions" (click)="selectEditSuggestion(s)" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50">
+                <div class="font-semibold text-slate-900">{{ s.displayName || (s.streetAddress + ', ' + s.city) }}</div>
+                <div class="text-xs text-slate-500 mt-0.5">{{ s.streetAddress }} · {{ s.postalCode }} {{ s.city }} · {{ s.country }}</div>
+              </button>
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.street') }}</label>
+            <input [(ngModel)]="editModel.streetAddress" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.city') }}</label>
+            <input [(ngModel)]="editModel.city" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.postal') }}</label>
+            <input [(ngModel)]="editModel.postalCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.country') }}</label>
+            <input [(ngModel)]="editModel.country" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.operating_from') }}</label>
+            <input type="time" [(ngModel)]="editModel.operatingTimeFrom" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('location_manager.operating_to') }}</label>
+            <input type="time" [(ngModel)]="editModel.operatingTimeTo" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
+          </div>
+          <div class="md:col-span-2 flex items-center justify-between gap-3">
+            <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <input type="checkbox" [(ngModel)]="editModel.active" class="h-4 w-4" />
+              {{ i18n.t('location_manager.active') }}
+            </label>
+            <div class="text-xs text-slate-500">{{ i18n.t('location_manager.coords') }}: {{ editModel.latitude ?? '-' }}, {{ editModel.longitude ?? '-' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-slate-500 bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4 font-semibold">{{ i18n.t('location_manager.ref') }}</th>
+              <th class="py-3 px-4 font-semibold">{{ i18n.t('location_manager.name') }}</th>
+              <th class="py-3 px-4 font-semibold">{{ i18n.t('location_manager.address') }}</th>
+              <th class="py-3 px-4 font-semibold">{{ i18n.t('location_manager.status') }}</th>
+              <th class="py-3 px-4 font-semibold text-right">{{ i18n.t('location_manager.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr *ngFor="let row of locations">
+              <td class="py-3 px-4 font-mono text-xs text-slate-700 whitespace-nowrap">{{ row.referenceId }}</td>
+              <td class="py-3 px-4 font-semibold text-slate-900">{{ row.name }}</td>
+              <td class="py-3 px-4 text-slate-700">{{ row.address }}</td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold" [ngClass]="row.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'">
+                  {{ row.active ? i18n.t('location_manager.active_badge') : i18n.t('location_manager.inactive_badge') }}
+                </span>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex items-center justify-end gap-2">
+                  <button type="button" (click)="startEdit(row)" class="px-3 py-2 rounded-xl border border-slate-200 text-slate-800 hover:bg-slate-50">
+                    <lucide-icon [img]="Pencil" size="16"></lucide-icon>
+                  </button>
+                  <button type="button" (click)="delete(row)" class="px-3 py-2 rounded-xl border border-slate-200 text-red-700 hover:bg-red-50">
+                    <lucide-icon [img]="Trash2" size="16"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="locations.length === 0">
+              <td colspan="5" class="py-10 text-center text-slate-500">{{ i18n.t('location_manager.empty') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

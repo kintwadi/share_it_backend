@@ -2,12 +2,12 @@
   <div class="max-w-3xl mx-auto px-4">
     <button type="button" class="back" (click)="back()">
       <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
-      Back to mailbox
+      {{ i18n.t('mailbox_compose.back') }}
     </button>
 
     <div class="panel">
       <div class="panel__head">
-        <div class="title">New message</div>
+        <div class="title">{{ i18n.t('mailbox_compose.title') }}</div>
       </div>
 
       <div class="panel__body">
@@ -17,31 +17,31 @@
         </div>
 
         <div class="field">
-          <label class="label">To (Email)</label>
+          <label class="label">{{ i18n.t('mailbox_compose.to_email') }}</label>
           <input
             [(ngModel)]="receiver"
             class="input"
-            placeholder="Enter recipient email…"
+            [placeholder]="i18n.t('mailbox_compose.to_email_placeholder')"
             autocomplete="email"
           />
         </div>
 
         <div class="field">
-          <label class="label">Message</label>
+          <label class="label">{{ i18n.t('mailbox_compose.message') }}</label>
           <textarea
             [(ngModel)]="content"
             rows="10"
             class="textarea"
-            placeholder="Write your message here…"
+            [placeholder]="i18n.t('mailbox_compose.message_placeholder')"
           ></textarea>
         </div>
       </div>
 
       <div class="panel__foot">
-        <button type="button" class="btn btn--secondary" (click)="back()">Cancel</button>
+        <button type="button" class="btn btn--secondary" (click)="back()">{{ i18n.t('common.cancel') }}</button>
         <button type="button" class="btn btn--primary" [disabled]="sending" (click)="send()">
           <lucide-icon [img]="SendIcon" [size]="16"></lucide-icon>
-          Send message
+          {{ i18n.t('mailbox_compose.send') }}
         </button>
       </div>
     </div>

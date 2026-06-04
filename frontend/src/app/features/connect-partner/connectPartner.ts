@@ -6,6 +6,7 @@ import { LucideAngularModule, Building2, Mail, Lock, User as UserIcon, ArrowRigh
 import { ApiService } from '../../core/services/api.service';
 import { AuthStorageService } from '../../core/services/auth-storage.service';
 import { SessionService } from '../../core/services/session.service';
+import { I18nService } from '../../core/services/i18n.service';
 
 @Component({
   selector: 'app-connect-partner',
@@ -20,6 +21,7 @@ export class ConnectPartnerComponent implements OnInit {
   session = inject(SessionService);
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
+  i18n = inject(I18nService);
 
   readonly Building2 = Building2;
   readonly Mail = Mail;

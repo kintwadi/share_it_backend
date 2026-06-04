@@ -13,10 +13,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PickupLocationDTO {
+public class ExchangeLocationDTO {
     private UUID id;
+    private String referenceId;
     private String name;
     private String address;
     private LocationDTO location;
+    private String operatingTimeFrom;
+    private String operatingTimeTo;
 }
-

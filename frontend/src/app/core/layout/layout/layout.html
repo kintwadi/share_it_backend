@@ -4,7 +4,7 @@
       <div class="flex justify-between h-16 items-center">
             <div class="flex items-center">
                 <a *ngIf="isHeaderSectionEnabled('brand')" routerLink="/" class="flex items-center group">
-                    <span class="text-xl font-bold tracking-tight text-gray-900">Vicinity24</span>
+                    <span class="text-xl font-bold tracking-tight text-gray-900">{{ i18n.t('app.brand') }}</span>
                 </a>
             </div>
         
@@ -32,7 +32,7 @@
 
           <a *ngIf="currentUser() && (isPartnerContext() || isPartnerArea())" routerLink="/partner/dashboard" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
             <lucide-icon [img]="Building2" [size]="18"></lucide-icon>
-            <span>Partner</span>
+            <span>{{ i18n.t('nav.partner') }}</span>
           </a>
 
           <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages') && !isPartnerScopedAdmin()" routerLink="/mailbox" routerLinkActive="bg-brand-50 text-brand-700 ring-1 ring-brand-100" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center space-x-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900">
@@ -199,7 +199,7 @@
         <span class="text-gray-300">|</span>
         <a routerLink="/cookies" class="hover:text-gray-900 underline underline-offset-2">{{ i18n.t('footer.cookies') }}</a>
       </div>
-      <div>Vicinity24 © 2026. All rights reserved.</div>
+      <div>{{ i18n.t('footer.copyright') }}</div>
     </div>
   </footer>
 </div>

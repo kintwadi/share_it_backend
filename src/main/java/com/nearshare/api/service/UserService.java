@@ -142,7 +142,17 @@ public class UserService {
     public UserDTO updateProfile(User user, UpdateProfileRequest request) {
         if (request.getName() != null) user.setName(request.getName());
         if (request.getDisplayName() != null) user.setDisplayName(request.getDisplayName());
-        if (request.getAvatarUrl() != null) user.setAvatarUrl(request.getAvatarUrl());
+        if (request.getAvatarUrl() != null) {
+            String v = request.getAvatarUrl();
+            String trimmed = v == null ? "" : v.trim();
+            if (trimmed.toLowerCase().startsWith("data:")) {
+                throw new IllegalArgumentException("avatar_url_invalid");
+            }
+            if (trimmed.length() > 2048) {
+                throw new IllegalArgumentException("avatar_url_too_long");
+            }
+            user.setAvatarUrl(v);
+        }
         if (request.getPhone() != null) user.setPhone(request.getPhone());
         if (request.getAddress() != null) user.setAddress(request.getAddress());
         if (request.getProfileVisible() != null) user.setProfileVisible(request.getProfileVisible());

@@ -4,6 +4,7 @@ import com.nearshare.api.dto.ChangePasswordRequest;
 import com.nearshare.api.dto.UpdateProfileRequest;
 import com.nearshare.api.dto.UserDTO;
 import com.nearshare.api.dto.UserSummaryDTO;
+import com.nearshare.api.config.RuntimeSettingsService;
 import com.nearshare.api.model.User;
 import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.service.UserService;
@@ -26,11 +27,28 @@ public class UsersController {
     private final UserService userService;
     private final StorageManager storageManager;
     private final PresenceService presenceService;
+    private final RuntimeSettingsService runtimeSettingsService;
 
-    public UsersController(UserService userService, StorageManager storageManager, PresenceService presenceService) {
+    public UsersController(UserService userService, StorageManager storageManager, PresenceService presenceService, RuntimeSettingsService runtimeSettingsService) {
         this.userService = userService;
         this.storageManager = storageManager;
         this.presenceService = presenceService;
+        this.runtimeSettingsService = runtimeSettingsService;
+    }
+
+    private void validateAvatarUpload(MultipartFile file) {
+        int maxMb = runtimeSettingsService.getInt("image.max.size.mb", 5);
+        long maxBytes = Math.max(1L, (long) maxMb) * 1024L * 1024L;
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("file_missing");
+        }
+        if (file.getSize() > maxBytes) {
+            throw new IllegalArgumentException("file_too_large");
+        }
+        String ct = String.valueOf(file.getContentType() == null ? "" : file.getContentType()).toLowerCase().trim();
+        if (!ct.startsWith("image/")) {
+            throw new IllegalArgumentException("file_type_not_allowed");
+        }
     }
 
     @GetMapping("/me")
@@ -63,8 +81,10 @@ public class UsersController {
     @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> uploadAvatar(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @RequestParam("file") MultipartFile file) throws Exception {
         User u = userService.getByEmail(principal.getUsername());
+        validateAvatarUpload(file);
         String key = u.getId().toString() + "/avatar/" + java.util.UUID.randomUUID() + "/" + file.getOriginalFilename();
-        String url = storageManager.uploadBytes(key, file.getBytes(), file.getContentType());
+        String contentType = file.getContentType() == null || file.getContentType().isBlank() ? "application/octet-stream" : file.getContentType();
+        String url = storageManager.uploadBytes(key, file.getBytes(), contentType);
         return ResponseEntity.ok(userService.updateAvatar(u, url));
     }
 

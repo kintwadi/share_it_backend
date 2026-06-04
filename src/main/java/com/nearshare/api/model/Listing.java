@@ -69,7 +69,7 @@ public class Listing {
     private User borrower;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pickup_location_id")
-    private PickupLocation pickupLocation;
+    private ExchangeLocation pickupLocation;
     private String pickupLocationCustom;
     private String pickupLocationStreet;
     private String pickupLocationHouseNumber;

@@ -3,7 +3,7 @@
   <!-- Sidebar List -->
   <div class="w-full md:w-80 border-r border-gray-100 flex-col bg-gray-50" [ngClass]="{'hidden md:flex': activeUser, 'flex': !activeUser}">
     <div class="p-4 border-b border-gray-200 bg-white">
-      <h2 class="font-bold text-gray-800">Messages</h2>
+      <h2 class="font-bold text-gray-800">{{ i18n.t('messages.title') }}</h2>
     </div>
     
     <div class="flex-1 overflow-y-auto">
@@ -28,7 +28,7 @@
               <lucide-icon [img]="BadgeCheck" class="text-blue-500 ml-1" size="14"></lucide-icon>
             </p>
             <p class="text-xs text-brand-600 font-medium">
-              {{user.trustScore}}% Trust Score{{borrowedOwnerIds.has(user.id) ? ' • Borrowed' : ''}}
+              {{user.trustScore}}% {{ i18n.t('messages.trust_score') }}<span *ngIf="borrowedOwnerIds.has(user.id)"> • {{ i18n.t('messages.borrowed') }}</span>
             </p>
           </div>
         </button>
@@ -41,7 +41,7 @@
     
     <div *ngIf="!activeUser" class="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
       <lucide-icon [img]="MessageSquare" size="48" class="mb-4 opacity-20"></lucide-icon>
-      <p>Select a neighbor to start chatting</p>
+      <p>{{ i18n.t('messages.select_neighbor') }}</p>
     </div>
 
     <ng-container *ngIf="activeUser">
@@ -57,7 +57,7 @@
             <lucide-icon [img]="BadgeCheck" class="text-blue-500 ml-1" size="16"></lucide-icon>
           </h3>
           <span class="text-xs text-green-600 flex items-center">
-            Verified Neighbor
+            {{ i18n.t('messages.verified_neighbor') }}
           </span>
         </div>
       </div>
@@ -72,7 +72,7 @@
           <div *ngFor="let msg of visibleMessages" [ngClass]="isMe(msg) ? 'justify-end' : 'justify-start'" class="flex items-end gap-2">
             
             <div *ngIf="msg.imageUrl" [ngClass]="isMe(msg) ? 'bg-brand-600 border-brand-500' : 'bg-white border-gray-100'" class="rounded-2xl p-1 shadow-sm border">
-              <img [src]="msg.imageUrl" alt="attachment" class="max-w-[60vw] max-h-[50vh] rounded-xl" />
+              <img [src]="msg.imageUrl" [alt]="i18n.t('messages.attachment_alt')" class="max-w-[60vw] max-h-[50vh] rounded-xl" />
               <p *ngIf="msg.content" [ngClass]="isMe(msg) ? 'text-white' : 'text-gray-800'" class="mt-2 text-sm">{{msg.content}}</p>
               <p [ngClass]="isMe(msg) ? 'text-white/70' : 'text-gray-400'" class="text-[10px] mt-1 text-right">{{formatTime(msg.timestamp)}}</p>
             </div>

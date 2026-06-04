@@ -656,20 +656,23 @@ export class SettingsComponent implements OnInit {
     if (!file) return;
 
     this.isUploadingAvatar = true;
+    this.profileError = null;
     this.render();
 
     try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsDataURL(file);
-      });
+      const prev = this.avatarUrl;
+      try {
+        this.avatarUrl = URL.createObjectURL(file);
+      } catch {
+        this.avatarUrl = prev;
+      }
+      this.render();
 
-      this.avatarUrl = dataUrl;
-      const updated = await this.api.updateProfile({ avatarUrl: this.avatarUrl });
+      const updated = await this.api.uploadUserAvatar(file);
       this.user = updated;
-    } catch {
+      this.avatarUrl = updated?.avatarUrl || this.avatarUrl;
+    } catch (e: any) {
+      this.profileError = e?.message || this.i18n.t('settings.profile.avatar_upload_failed');
     } finally {
       this.isUploadingAvatar = false;
       if (input) input.value = '';

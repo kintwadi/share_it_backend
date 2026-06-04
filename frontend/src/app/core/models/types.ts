@@ -122,7 +122,7 @@ export interface Listing {
     y: number;
   };
   owner?: User;
-  pickupLocation?: PickupLocation;
+  pickupLocation?: ExchangeLocation;
   pickupLocationCustom?: string;
   pickupLocationStreet?: string;
   pickupLocationHouseNumber?: string;
@@ -180,14 +180,22 @@ export interface ListingRecommendationResult {
   similarItems: SimilarItem[];
 }
 
-export interface PickupLocation {
+export interface ExchangeLocation {
   id: string;
+  referenceId?: string;
   name: string;
   address: string;
+  streetAddress?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
   location: {
-    x: number;
-    y: number;
+    x: number | null;
+    y: number | null;
   };
+  operatingTimeFrom?: string | null;
+  operatingTimeTo?: string | null;
+  active?: boolean;
 }
 
 export interface Message {

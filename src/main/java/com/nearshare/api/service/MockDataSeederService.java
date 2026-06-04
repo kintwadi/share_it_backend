@@ -13,7 +13,7 @@ import com.nearshare.api.model.enums.UserStatus;
 import com.nearshare.api.model.enums.VerificationStatus;
 import com.nearshare.api.repository.ListingRepository;
 import com.nearshare.api.repository.MessageRepository;
-import com.nearshare.api.repository.PickupLocationRepository;
+import com.nearshare.api.repository.ExchangeLocationRepository;
 import com.nearshare.api.repository.ReviewRepository;
 import com.nearshare.api.repository.UserRepository;
 import org.springframework.core.io.ClassPathResource;
@@ -39,10 +39,10 @@ public class MockDataSeederService {
     private final ReviewRepository reviews;
     private final MessageRepository messages;
     private final SubscriptionRepository subscriptions;
-    private final PickupLocationRepository pickupLocations;
+    private final ExchangeLocationRepository pickupLocations;
     private final PasswordEncoder encoder;
 
-    public MockDataSeederService(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, SubscriptionRepository subscriptions, PickupLocationRepository pickupLocations, PasswordEncoder encoder) {
+    public MockDataSeederService(UserRepository users, ListingRepository listings, ReviewRepository reviews, MessageRepository messages, SubscriptionRepository subscriptions, ExchangeLocationRepository pickupLocations, PasswordEncoder encoder) {
         this.users = users;
         this.listings = listings;
         this.reviews = reviews;
@@ -117,12 +117,12 @@ public class MockDataSeederService {
 
                 // Seed Listings
                 if (mockData.listings != null && listings.count() == 0) {
-                    List<com.nearshare.api.model.PickupLocation> pickupList = pickupLocations.findAll();
+                    List<com.nearshare.api.model.ExchangeLocation> pickupList = pickupLocations.findAll();
                     for (MockListing l : mockData.listings) {
                         User owner = users.findByEmail(l.ownerEmail).orElse(null);
                         if (owner != null && listings.findByTitle(l.title).isEmpty()) {
                             User borrower = l.borrowerEmail != null ? users.findByEmail(l.borrowerEmail).orElse(null) : null;
-                            com.nearshare.api.model.PickupLocation pickup = null;
+                            com.nearshare.api.model.ExchangeLocation pickup = null;
                             if (l.pickupLocationId != null) {
                                 pickup = pickupLocations.findById(UUID.fromString(l.pickupLocationId)).orElse(null);
                             } else if (l.pickupLocationName != null) {

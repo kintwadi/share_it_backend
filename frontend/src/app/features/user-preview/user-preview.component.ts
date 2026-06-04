@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, MessageSquare, User as UserIcon } from 'lucide-angular';
 import { User } from '../../core/models/types';
+import { I18nService } from '../../core/services/i18n.service';
 
 @Component({
   selector: 'app-user-preview',
@@ -13,6 +14,7 @@ import { User } from '../../core/models/types';
 })
 export class UserPreviewComponent {
   private router = inject(Router);
+  i18n = inject(I18nService);
 
   readonly ArrowLeft = ArrowLeft;
   readonly MessageSquare = MessageSquare;
