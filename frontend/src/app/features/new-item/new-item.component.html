@@ -429,7 +429,7 @@
           <app-button variant="secondary" (onClick)="goBack()" class="flex-1 sm:flex-none">
             {{ i18n.t('common.cancel') }}
           </app-button>
-          <app-button (onClick)="handleSave()" variant="dark" [isLoading]="saving" class="flex-1 sm:flex-none">
+          <app-button (onClick)="handleSave()" variant="dark" [isLoading]="saving" [disabled]="saving || uploadingCover || uploadingGallery" class="flex-1 sm:flex-none">
             <lucide-icon [img]="ShieldCheck" size="16" class="mr-2"></lucide-icon>
             {{ i18n.t('new_item.save') }}
           </app-button>

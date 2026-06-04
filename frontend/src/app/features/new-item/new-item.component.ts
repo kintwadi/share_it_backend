@@ -445,6 +445,7 @@ export class NewItemComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    if (this.uploadingCover) return;
     this.uploadingCover = true;
     this.render();
     const localUrl = URL.createObjectURL(file);
@@ -462,6 +463,7 @@ export class NewItemComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const files = input.files ? Array.from(input.files) : [];
     if (files.length === 0) return;
+    if (this.uploadingGallery) return;
     this.uploadingGallery = true;
     this.render();
 
@@ -507,6 +509,11 @@ export class NewItemComponent implements OnInit {
     this.error = null;
     this.availabilityError = null;
     this.locationLookupError = null;
+    if (this.uploadingCover || this.uploadingGallery) {
+      this.error = this.i18n.t('new_item.error.wait_upload');
+      this.render();
+      return;
+    }
 
     if (!this.availableUnlimited && !this.availableFromDate) {
       this.availabilityError = this.i18n.t('new_item.error_available_from_required');
@@ -520,6 +527,11 @@ export class NewItemComponent implements OnInit {
     }
     if (!this.imageUrl.trim()) {
       this.error = this.i18n.t('new_item.error.cover_required');
+      this.render();
+      return;
+    }
+    if (String(this.imageUrl || '').startsWith('blob:') || (this.gallery || []).some(g => String(g || '').startsWith('blob:'))) {
+      this.error = this.i18n.t('new_item.error.wait_upload');
       this.render();
       return;
     }
