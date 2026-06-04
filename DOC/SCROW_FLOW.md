@@ -67,6 +67,69 @@ This flow depends on Stripe Connect, webhooks, and correct key configuration.
 - The code creates Express connected accounts for lenders.
 - In live mode, your platform Stripe account may need to complete verification before transfers/payouts work reliably.
 
+#### Step-by-step: how Express connected accounts are created
+
+1. In the Stripe Dashboard, enable **Stripe Connect** for your platform account.
+2. In the app, the lender signs in and opens the payments/settings area.
+3. The frontend calls `POST /api/payments/connect/onboard`.
+   - Implemented in [PaymentController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java#L146-L163)
+4. The backend checks whether the user already has a stored Stripe Connect account ID in `User.stripeConnectAccountId`.
+5. If the user has no connected account yet, the backend creates a new Stripe **Express** account using:
+   - `stripePayment.createExpressConnectAccount(user.getEmail(), user.getName())`
+   - Implemented in [StripePayment.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/payment/StripePayment.java#L273-L297)
+6. The new Stripe account ID is saved on the user record as `stripeConnectAccountId`.
+7. The backend builds a Stripe onboarding link with:
+   - `refreshUrl = <app.frontend.baseUrl>/settings?tab=payments&connect=refresh`
+   - `returnUrl = <app.frontend.baseUrl>/settings?tab=payments&connect=return`
+8. The backend returns the onboarding URL to the frontend.
+9. The lender is redirected to Stripe and completes the Express onboarding flow.
+10. The frontend or backend can then call `GET /api/payments/connect/status` to verify:
+   - whether account details were submitted
+   - whether charges/payouts are enabled
+   - whether additional requirements are still due
+11. When escrow release happens, the backend checks the saved `stripeConnectAccountId` and verifies `detailsSubmitted` before creating transfers to the lender.
+   - If no account exists, release fails with `missing_stripe_connect_account`
+   - If onboarding is incomplete, release fails with `connect_onboarding_incomplete`
+   - Release logic is in [EscrowService.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/service/EscrowService.java#L161-L195)
+
+#### Application configuration required for Connect onboarding
+
+These values must be configured in the application for Stripe Connect onboarding to work:
+
+- `STRIPE_SECRET_KEY`
+  - Required by the backend to call Stripe APIs, create Express accounts, create onboarding links, and later create transfers/refunds.
+  - Defined in [application.properties](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/resources/application.properties#L158)
+- `STRIPE_WEBHOOK_SECRET`
+  - Required for Stripe webhook verification.
+  - Not strictly required just to create onboarding links, but required for the full payment/escrow flow.
+  - Defined in [application.properties](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/resources/application.properties#L160)
+- `STRIPE_PUBLIC_KEY`
+  - Required by the frontend for Stripe client-side payment flows.
+  - Defined in [application.properties](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/resources/application.properties#L159)
+- `app.frontend.baseUrl`
+  - Required so the backend can build valid Stripe Connect `refreshUrl` and `returnUrl`.
+  - Used in [PaymentController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java#L60-L61) and [PaymentController.java](file:///c:/Users/core101/Desktop/desk/shareit_back/src/main/java/com/vicinity24/api/controller/PaymentController.java#L156-L158)
+  - Example local value: `https://localhost:4200`
+
+Optional but commonly needed for the overall Stripe integration:
+
+- `subscription.plus.stripe_price_id`
+- `subscription.pro.stripe_price_id`
+  - These are used for subscription checkout, not for Connect account onboarding itself.
+
+#### Stripe-side requirements to verify
+
+- Your Stripe platform account must have Connect enabled.
+- The platform must use keys from the same environment as the dashboard you are testing in:
+  - `sk_test_...` with Stripe test mode
+  - `sk_live_...` with Stripe live mode
+- The lender must complete the Stripe Express onboarding screens fully enough for `detailsSubmitted` to become `true`.
+- For actual payouts/transfers in live mode, Stripe may also require:
+  - business verification
+  - identity details
+  - bank account / payout destination setup
+  - additional information listed under account requirements
+
 ### 2) Configure webhooks
 
 You must create a webhook endpoint in the Stripe Dashboard pointing to:
