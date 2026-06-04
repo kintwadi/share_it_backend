@@ -46,6 +46,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   loading = true;
   borrowing = false;
   activeImage = '';
+  activeImageFailed = false;
   error: string | null = null;
 
   get isPartnerListing(): boolean {
@@ -230,14 +231,30 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     const images = this.galleryImages;
     if (images.length <= 1) return;
     const nextIdx = (this.activeImageIndex - 1 + images.length) % images.length;
-    this.activeImage = images[nextIdx];
+    this.setActiveImage(images[nextIdx]);
   }
 
   nextImage() {
     const images = this.galleryImages;
     if (images.length <= 1) return;
     const nextIdx = (this.activeImageIndex + 1) % images.length;
-    this.activeImage = images[nextIdx];
+    this.setActiveImage(images[nextIdx]);
+  }
+
+  setActiveImage(img: string) {
+    this.activeImage = String(img || '');
+    this.activeImageFailed = !this.activeImage;
+    this.render();
+  }
+
+  onActiveImageError() {
+    this.activeImageFailed = true;
+    this.render();
+  }
+
+  onActiveImageLoad() {
+    this.activeImageFailed = false;
+    this.render();
   }
 
   private render() {
@@ -313,7 +330,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         this.listing = allListings.find(l => String((l as any).id) === String(id)) || null;
       }
       if (this.listing) {
-        this.activeImage = this.listing.imageUrl || (this.listing.gallery && this.listing.gallery[0]) || '';
+        this.setActiveImage(this.listing.imageUrl || (this.listing.gallery && this.listing.gallery[0]) || '');
       }
       this.currentUser = await this.api.getCurrentUser();
       this.startStatusPolling();
@@ -349,7 +366,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         const updated = await this.api.getListingById(current.id);
         if (updated && updated.status !== current.status) {
           this.listing = updated;
-          if (updated.imageUrl) this.activeImage = updated.imageUrl;
+          if (updated.imageUrl) this.setActiveImage(updated.imageUrl);
           this.render();
         }
       } catch { }
@@ -388,7 +405,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       const updated = await this.api.getListingById(listing.id);
       if (updated) {
         this.listing = updated;
-        if (updated.imageUrl) this.activeImage = updated.imageUrl;
+        if (updated.imageUrl) this.setActiveImage(updated.imageUrl);
       }
     } catch { }
     this.startStatusPolling();

@@ -33,7 +33,12 @@
     <!-- Left Column: Images -->
     <div class="space-y-4 lg:col-span-7">
       <div class="aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-soft bg-white relative group select-none">
-        <img [src]="activeImage" [alt]="listing.title" class="w-full h-full object-cover transition-opacity duration-300" />
+        <img [src]="activeImage" [alt]="listing.title" (error)="onActiveImageError()" (load)="onActiveImageLoad()" [class.hidden]="activeImageFailed" class="w-full h-full object-cover transition-opacity duration-300" />
+        <div *ngIf="activeImageFailed" class="absolute inset-0 flex items-center justify-center p-6">
+          <div class="text-center max-w-full">
+            <div class="text-sm font-bold text-gray-900 break-words">{{ listing.title }}</div>
+          </div>
+        </div>
 
         <ng-container *ngIf="galleryImages.length > 1">
           <button
@@ -82,7 +87,7 @@
         <button
           *ngFor="let img of galleryImages; let idx = index"
           type="button"
-          (click)="activeImage = img"
+          (click)="setActiveImage(img)"
           class="relative flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden transition-all duration-300"
           [ngClass]="activeImage === img ? 'ring-2 ring-brand-500 ring-offset-2 scale-95 opacity-100' : 'opacity-70 hover:opacity-100 hover:scale-105'"
         >
