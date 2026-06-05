@@ -9,15 +9,19 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentMethod;
+import com.stripe.model.Price;
+import com.stripe.model.Product;
 import com.stripe.model.Refund;
 import com.stripe.model.Transfer;
 import com.stripe.net.Webhook;
 import com.stripe.param.AccountCreateParams;
 import com.stripe.param.AccountLinkCreateParams;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PriceCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodListParams;
+import com.stripe.param.ProductCreateParams;
 import com.stripe.param.RefundCreateParams;
 import com.stripe.param.TransferCreateParams;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,12 +33,11 @@ import jakarta.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service("stripePayment")
 public class StripePayment implements PaymentStrategy {
@@ -44,20 +47,118 @@ public class StripePayment implements PaymentStrategy {
     @Value("${STRIPE_SECRET_KEY}")
     private String secretKey;
 
+    @Value("${STRIPE_PUBLIC_KEY:}")
+    private String publicKey;
+
     @Value("${STRIPE_WEBHOOK_SECRET}")
     private String webhookSecret;
+
+    private volatile StripeDiagnostics lastDiagnostics = StripeDiagnostics.unavailable("Stripe has not been initialized yet");
 
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
-        try {
-            Account acct = Account.retrieve();
-            String acctId = acct != null ? acct.getId() : "unknown";
-            boolean testMode = secretKey != null && secretKey.startsWith("sk_test_");
-            String keyPrefix = secretKey != null && secretKey.length() >= 12 ? secretKey.substring(0, 12) + "..." : "n/a";
-            log.info("Stripe initialized: account={}, test={}, keyPrefix={}", acctId, testMode, keyPrefix);
-        } catch (Exception e) {
-            log.warn("Stripe init check failed: {}", e.getMessage());
+        StripeDiagnostics diagnostics = buildDiagnostics();
+        lastDiagnostics = diagnostics;
+        if (diagnostics.initializationError() == null) {
+            log.info(
+                    "Stripe initialized: account={}, mode={}, secretKeyPrefix={}, publicKeyPrefix={}, webhookConfigured={}",
+                    diagnostics.accountId(),
+                    diagnostics.mode(),
+                    diagnostics.secretKeyPrefix(),
+                    diagnostics.publicKeyPrefix(),
+                    diagnostics.webhookConfigured()
+            );
+        } else {
+            log.warn(
+                    "Stripe init check failed: mode={}, secretKeyConfigured={}, publicKeyConfigured={}, webhookConfigured={}, error={}",
+                    diagnostics.mode(),
+                    diagnostics.secretKeyConfigured(),
+                    diagnostics.publicKeyConfigured(),
+                    diagnostics.webhookConfigured(),
+                    diagnostics.initializationError()
+            );
+        }
+    }
+
+    public StripeDiagnostics getDiagnostics() {
+        Stripe.apiKey = secretKey;
+        StripeDiagnostics diagnostics = buildDiagnostics();
+        lastDiagnostics = diagnostics;
+        return diagnostics;
+    }
+
+    private StripeDiagnostics buildDiagnostics() {
+        boolean secretKeyConfigured = isConfigured(secretKey);
+        boolean publicKeyConfigured = isConfigured(publicKey);
+        boolean webhookConfigured = isConfigured(webhookSecret);
+        String mode = detectMode(secretKey, publicKey);
+        String accountId = null;
+        String initializationError = null;
+
+        if (secretKeyConfigured) {
+            try {
+                Account acct = Account.retrieve();
+                accountId = acct != null ? acct.getId() : null;
+            } catch (Exception e) {
+                initializationError = sanitizeErrorMessage(e);
+            }
+        } else {
+            initializationError = "Stripe secret key is not configured";
+        }
+
+        return new StripeDiagnostics(
+                secretKeyConfigured,
+                publicKeyConfigured,
+                webhookConfigured,
+                mode,
+                accountId,
+                safePrefix(secretKey, 12),
+                safePrefix(publicKey, 12),
+                safePrefix(webhookSecret, 12),
+                initializationError
+        );
+    }
+
+    private boolean isConfigured(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private String detectMode(String secret, String publishable) {
+        String secretValue = secret != null ? secret.toLowerCase(Locale.ROOT) : "";
+        String publicValue = publishable != null ? publishable.toLowerCase(Locale.ROOT) : "";
+        if (secretValue.startsWith("sk_test_") || publicValue.startsWith("pk_test_")) return "test";
+        if (secretValue.startsWith("sk_live_") || publicValue.startsWith("pk_live_")) return "live";
+        return "unknown";
+    }
+
+    private String safePrefix(String value, int prefixLength) {
+        if (value == null || value.isBlank()) return "n/a";
+        int end = Math.min(prefixLength, value.length());
+        return value.substring(0, end) + "...";
+    }
+
+    private String sanitizeErrorMessage(Exception e) {
+        String message = e.getMessage();
+        if (message == null || message.isBlank()) {
+            return e.getClass().getSimpleName();
+        }
+        return e.getClass().getSimpleName() + ": " + message;
+    }
+
+    public record StripeDiagnostics(
+            boolean secretKeyConfigured,
+            boolean publicKeyConfigured,
+            boolean webhookConfigured,
+            String mode,
+            String accountId,
+            String secretKeyPrefix,
+            String publicKeyPrefix,
+            String webhookSecretPrefix,
+            String initializationError
+    ) {
+        public static StripeDiagnostics unavailable(String reason) {
+            return new StripeDiagnostics(false, false, false, "unknown", null, "n/a", "n/a", "n/a", reason);
         }
     }
 
@@ -186,6 +287,140 @@ public class StripePayment implements PaymentStrategy {
     }
 
     public record PaymentMethodDTO(String id, String brand, String last4, Long expMonth, Long expYear) {}
+
+    public SubscriptionCatalogEntry ensureSubscriptionCatalogEntry(
+            String planType,
+            String displayName,
+            String currency,
+            long unitAmountCents,
+            String interval,
+            String existingPriceId
+    ) {
+        if (!isConfigured(secretKey)) {
+            throw new IllegalStateException("Stripe secret key is not configured");
+        }
+        String normalizedPlan = String.valueOf(planType == null ? "" : planType).trim().toLowerCase(Locale.ROOT);
+        String normalizedName = String.valueOf(displayName == null ? "" : displayName).trim();
+        String normalizedCurrency = String.valueOf(currency == null ? "" : currency).trim().toLowerCase(Locale.ROOT);
+        String normalizedInterval = String.valueOf(interval == null ? "" : interval).trim().toLowerCase(Locale.ROOT);
+
+        if (normalizedPlan.isEmpty()) throw new IllegalArgumentException("planType is required");
+        if (normalizedName.isEmpty()) throw new IllegalArgumentException("displayName is required");
+        if (normalizedCurrency.isEmpty()) throw new IllegalArgumentException("currency is required");
+        if (unitAmountCents <= 0) throw new IllegalArgumentException("unitAmountCents must be greater than 0");
+        if (normalizedInterval.isEmpty()) throw new IllegalArgumentException("interval is required");
+
+        Stripe.apiKey = secretKey;
+        try {
+            SubscriptionCatalogEntry existingEntry = findMatchingCatalogEntry(
+                    normalizedPlan,
+                    normalizedCurrency,
+                    unitAmountCents,
+                    normalizedInterval,
+                    existingPriceId
+            );
+            if (existingEntry != null) {
+                return existingEntry;
+            }
+
+            Product product = Product.create(ProductCreateParams.builder()
+                    .setName(normalizedName)
+                    .putMetadata("app", "vicinity24")
+                    .putMetadata("plan_type", normalizedPlan)
+                    .build());
+
+            Price price = Price.create(PriceCreateParams.builder()
+                    .setProduct(product.getId())
+                    .setCurrency(normalizedCurrency)
+                    .setUnitAmount(unitAmountCents)
+                    .setRecurring(PriceCreateParams.Recurring.builder()
+                            .setInterval(PriceCreateParams.Recurring.Interval.valueOf(normalizedInterval.toUpperCase(Locale.ROOT)))
+                            .build())
+                    .putMetadata("app", "vicinity24")
+                    .putMetadata("plan_type", normalizedPlan)
+                    .build());
+
+            return new SubscriptionCatalogEntry(
+                    normalizedPlan,
+                    product.getId(),
+                    product.getName(),
+                    price.getId(),
+                    price.getCurrency(),
+                    price.getUnitAmount() != null ? price.getUnitAmount() : unitAmountCents,
+                    normalizedInterval,
+                    false
+            );
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid recurring interval: " + normalizedInterval, e);
+        } catch (StripeException e) {
+            String msg = e.getUserMessage() != null && !e.getUserMessage().isBlank() ? e.getUserMessage() : e.getMessage();
+            throw new RuntimeException("Failed to create Stripe subscription catalog entry: " + msg, e);
+        }
+    }
+
+    private SubscriptionCatalogEntry findMatchingCatalogEntry(
+            String planType,
+            String currency,
+            long unitAmountCents,
+            String interval,
+            String existingPriceId
+    ) throws StripeException {
+        if (!isConfigured(existingPriceId)) {
+            return null;
+        }
+
+        Price price = Price.retrieve(existingPriceId);
+        if (price == null || !Boolean.TRUE.equals(price.getActive())) {
+            return null;
+        }
+        if (price.getRecurring() == null || price.getRecurring().getInterval() == null) {
+            return null;
+        }
+
+        String priceCurrency = String.valueOf(price.getCurrency() == null ? "" : price.getCurrency()).toLowerCase(Locale.ROOT);
+        String priceInterval = String.valueOf(price.getRecurring().getInterval()).toLowerCase(Locale.ROOT);
+        Long priceAmount = price.getUnitAmount();
+        if (!currency.equals(priceCurrency)) return null;
+        if (!interval.equals(priceInterval)) return null;
+        if (priceAmount == null || priceAmount.longValue() != unitAmountCents) return null;
+
+        Map<String, String> metadata = price.getMetadata();
+        if (metadata != null) {
+            String metadataPlan = metadata.get("plan_type");
+            if (metadataPlan != null && !metadataPlan.equalsIgnoreCase(planType)) {
+                return null;
+            }
+        }
+
+        String productId = price.getProduct();
+        String productName = null;
+        if (isConfigured(productId)) {
+            Product product = Product.retrieve(productId);
+            productName = product != null ? product.getName() : null;
+        }
+
+        return new SubscriptionCatalogEntry(
+                planType,
+                productId,
+                productName,
+                price.getId(),
+                price.getCurrency(),
+                priceAmount,
+                priceInterval,
+                true
+        );
+    }
+
+    public record SubscriptionCatalogEntry(
+            String planType,
+            String productId,
+            String productName,
+            String priceId,
+            String currency,
+            long unitAmountCents,
+            String interval,
+            boolean reusedExistingPrice
+    ) {}
 
     public Session createSubscriptionCheckoutSession(
             String priceId,

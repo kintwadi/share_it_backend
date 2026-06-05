@@ -116,6 +116,12 @@ Optional but commonly needed for the overall Stripe integration:
 - `subscription.plus.stripe_price_id`
 - `subscription.pro.stripe_price_id`
   - These are used for subscription checkout, not for Connect account onboarding itself.
+  - They no longer need to be supplied manually through environment variables in the default setup.
+  - They can be created and stored at runtime through the admin endpoint:
+    - `POST /api/admin/stripe/provision-subscriptions`
+  - They can also be auto-created during the first paid subscription checkout when no stored price ID exists yet.
+  - You can inspect the currently active Stripe account, mode, and stored subscription price IDs through:
+    - `GET /api/admin/stripe/diagnostics`
 
 #### Stripe-side requirements to verify
 

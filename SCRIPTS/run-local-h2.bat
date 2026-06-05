@@ -26,9 +26,6 @@ set KEYSTORE_ACCESS_TOKEN_ALIAS=accesstoken
 set KEYSTORE_ACCESS_TOKEN_PW=Nshare@132
 set KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken
 set KEYSTORE_REFRESH_TOKEN_PW=Nshare@132
-
-set SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus
-set SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro
 set FRONTEND_BASE_URL=https://localhost:4200
 rem Use provided Gmail app credentials for local email sending (override only if not already set)
 if "%MAIL_USERNAME%"=="" set MAIL_USERNAME=test

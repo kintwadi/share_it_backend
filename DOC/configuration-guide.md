@@ -154,8 +154,8 @@ For a real usable environment, these are the main values the team should define.
 - `STRIPE_PUBLIC_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `SUBSCRIPTION_PLUS_STRIPE_PRICE_ID`
-- `SUBSCRIPTION_PRO_STRIPE_PRICE_ID`
+- Subscription Stripe price IDs are no longer required as environment variables by default.
+- They can now be provisioned automatically and stored in the application runtime settings database.
 
 ### Geolocation / address lookup
 
@@ -447,12 +447,46 @@ If no connected account exists, release may fail with:
 
 If subscription features are used, configure:
 
-- `SUBSCRIPTION_PLUS_STRIPE_PRICE_ID`
-- `SUBSCRIPTION_PRO_STRIPE_PRICE_ID`
+- `STRIPE_PUBLIC_KEY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
 
-These correspond to Stripe Price IDs created in the Stripe Dashboard.
+Then provision the recurring subscription catalog from the admin API:
 
-They are separate from Connect onboarding.
+- `POST /api/admin/stripe/provision-subscriptions`
+
+The application can also auto-provision the missing Stripe subscription price during the first paid subscription checkout if no price ID is stored yet.
+
+Optional request body:
+
+```json
+{
+  "currency": "EUR",
+  "plusAmountCents": 499,
+  "proAmountCents": 799,
+  "plusTrialDays": 14,
+  "proTrialDays": 14
+}
+```
+
+What this does:
+
+- creates the Stripe `Product` and recurring monthly `Price` for `plus`
+- creates the Stripe `Product` and recurring monthly `Price` for `pro`
+- stores the generated price IDs in the runtime settings database
+- allows the checkout flow to use those stored values immediately
+
+Diagnostics endpoint:
+
+- `GET /api/admin/stripe/diagnostics`
+
+Important notes:
+
+- the provisioning endpoint is admin-only
+- it reuses the currently stored Stripe price ID when it already matches the requested amount, currency, and interval
+- it creates a new Stripe price only when the stored one is missing or no longer matches
+- the subscription checkout flow can trigger the same provisioning logic automatically when a paid user starts checkout and no price ID exists yet
+- Stripe Connect onboarding is separate from subscription catalog provisioning
 
 ## 15. Storage Configuration
 
