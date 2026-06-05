@@ -95,6 +95,9 @@ export class AdminComponent implements OnInit {
   settingsOriginal: Record<string, any> = {};
   settingsSaving = false;
   settingsSaved = false;
+  stripeProvisioning = false;
+  stripeProvisioned = false;
+  stripeProvisionMessage: string | null = null;
 
   pageSize = 20;
 
@@ -182,6 +185,7 @@ export class AdminComponent implements OnInit {
     this.settingsOriginal = original;
     this.settingsSaved = false;
     this.settingsSaving = false;
+    this.stripeProvisioned = false;
     this.render();
   }
 
@@ -229,6 +233,37 @@ export class AdminComponent implements OnInit {
           this.settingsSaved = false;
           this.render();
         }, 2000);
+      }
+    }
+  }
+
+  async provisionStripeSubscriptions() {
+    if (this.stripeProvisioning) return;
+    this.stripeProvisioning = true;
+    this.stripeProvisioned = false;
+    this.stripeProvisionMessage = null;
+    this.error = null;
+    this.render();
+    try {
+      const res = await this.api.adminProvisionStripeSubscriptions();
+      await this.loadAppSettings();
+      const plusPriceId = String(res?.subscriptionConfig?.plus?.priceId || '');
+      const proPriceId = String(res?.subscriptionConfig?.pro?.priceId || '');
+      this.stripeProvisionMessage =
+        plusPriceId || proPriceId
+          ? `${this.i18n.t('admin.stripe.provisioned')} (${plusPriceId || '-'} / ${proPriceId || '-'})`
+          : this.i18n.t('admin.stripe.provisioned');
+      this.stripeProvisioned = true;
+    } catch (e: any) {
+      this.error = e?.message || this.i18n.t('admin.stripe.provision_failed');
+    } finally {
+      this.stripeProvisioning = false;
+      this.render();
+      if (this.stripeProvisioned) {
+        setTimeout(() => {
+          this.stripeProvisioned = false;
+          this.render();
+        }, 3000);
       }
     }
   }

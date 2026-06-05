@@ -70,6 +70,20 @@
         </button>
       </div>
 
+      <div class="p-4 rounded-xl border border-gray-200 bg-white flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <div class="text-sm font-bold text-gray-900">{{ i18n.t('admin.stripe.card_title') }}</div>
+          <div class="mt-1 text-xs text-gray-600">{{ i18n.t('admin.stripe.card_desc') }}</div>
+          <div *ngIf="stripeProvisionMessage" class="mt-3 text-xs font-semibold" [ngClass]="stripeProvisioned ? 'text-emerald-700' : 'text-gray-600'">
+            {{ stripeProvisionMessage }}
+          </div>
+        </div>
+        <button type="button" (click)="provisionStripeSubscriptions()" [disabled]="stripeProvisioning" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60 whitespace-nowrap">
+          <lucide-icon *ngIf="stripeProvisioning" [img]="Loader2" [size]="18" class="animate-spin inline-block mr-2"></lucide-icon>
+          {{ stripeProvisioning ? i18n.t('admin.stripe.provisioning') : i18n.t('admin.stripe.card_cta') }}
+        </button>
+      </div>
+
       <div *ngIf="settingsSections.length === 0" class="p-6 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-600">
         {{ i18n.t('admin.settings.empty') }}
       </div>

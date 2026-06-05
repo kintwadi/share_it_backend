@@ -836,6 +836,16 @@ export class ApiService {
     return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
   }
 
+  async adminProvisionStripeSubscriptions(payload?: {
+    currency?: string;
+    plusAmountCents?: number;
+    proAmountCents?: number;
+    plusTrialDays?: number;
+    proTrialDays?: number;
+  }): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/admin/stripe/provision-subscriptions', payload || {}));
+  }
+
   async adminListExchangeLocations(): Promise<ExchangeLocation[]> {
     return firstValueFrom(this.api.get<ExchangeLocation[]>('/admin/pickup-locations'));
   }
