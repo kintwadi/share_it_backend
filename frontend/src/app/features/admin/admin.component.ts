@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, Shield } from 'lucide-angular';
+import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, Shield, MapPin, CreditCard } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { Listing, User } from '../../core/models/types';
@@ -29,6 +29,8 @@ export class AdminComponent implements OnInit {
   readonly RefreshCcw = RefreshCcw;
   readonly Trash2 = Trash2;
   readonly Shield = Shield;
+  readonly MapPin = MapPin;
+  readonly CreditCard = CreditCard;
 
   activeTab: AdminTab = 'OVERVIEW';
   loading = false;
@@ -200,6 +202,17 @@ export class AdminComponent implements OnInit {
     item.value = item.defaultValue;
     this.settingsSaved = false;
     this.render();
+  }
+
+  get dirtySettingsCount(): number {
+    let count = 0;
+    for (const section of this.settingsSections) {
+      const items = Array.isArray(section?.items) ? section.items : [];
+      for (const item of items) {
+        if (this.isDirtySetting(item)) count++;
+      }
+    }
+    return count;
   }
 
   async saveSettings() {

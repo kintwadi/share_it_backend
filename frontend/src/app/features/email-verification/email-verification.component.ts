@@ -62,6 +62,20 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     } catch { }
   }
 
+  private mapSubscriptionVerificationError(error: any): string {
+    const raw = String(error?.error?.error || error?.error?.message || error?.message || '').trim();
+    switch (raw) {
+      case 'invalid_verification_code':
+      case 'verification_code_expired':
+      case 'verification_code_already_used':
+        return this.i18n.t('verification.email.invalid_code');
+      case 'subscription_disabled':
+        return this.i18n.t('subscription.disabled');
+      default:
+        return raw || this.i18n.t('verification.email.invalid_code');
+    }
+  }
+
   async ngOnInit() {
     await this.settingsConfig.ensureLoaded();
     const initParams = this.route.snapshot.queryParams || {};
@@ -247,7 +261,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         this.error = this.i18n.t('verification.email.session_url_missing');
       }
     } catch (e: any) {
-      this.error = e?.message || this.i18n.t('verification.email.invalid_code');
+      this.error = this.flow === 'signup'
+        ? (e?.message || this.i18n.t('verification.email.invalid_code'))
+        : this.mapSubscriptionVerificationError(e);
     } finally {
       this.submitting = false;
       this.render();

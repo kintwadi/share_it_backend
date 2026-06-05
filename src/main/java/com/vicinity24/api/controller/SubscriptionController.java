@@ -114,9 +114,16 @@ public class SubscriptionController {
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
         }
-        User user = userService.getByEmail(principal.getUsername());
-        subscriptionService.verifyEmailCode(user, request.getCode());
-        return ResponseEntity.ok(Map.of("status", "verified"));
+        if (request == null || request.getCode() == null || request.getCode().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "invalid_verification_code"));
+        }
+        try {
+            User user = userService.getByEmail(principal.getUsername());
+            subscriptionService.verifyEmailCode(user, request.getCode());
+            return ResponseEntity.ok(Map.of("status", "verified"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/starter")
