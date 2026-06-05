@@ -69,6 +69,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoadingHistory = false;
   isLoadingRecs = false;
   actionLoading: string | null = null;
+  ownerReturnSessionReady: Record<string, boolean> = {};
   paymentSuccess = false;
   upgradeSuccess = false;
   error: string | null = null;
@@ -199,7 +200,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isLoadingBorrows = false;
       this.isLoadingRecs = false;
       this.render();
+      void this.refreshOwnerReturnSessionState();
     });
+  }
+
+  private async refreshOwnerReturnSessionState() {
+    const candidates = this.myListings.filter(item =>
+      item.status === AvailabilityStatus.BORROWED ||
+      item.status === AvailabilityStatus.WAITING_FOR_RETURN ||
+      item.status === AvailabilityStatus.DISPUTED
+    );
+    if (!candidates.length) {
+      this.ownerReturnSessionReady = {};
+      this.render();
+      return;
+    }
+
+    const next: Record<string, boolean> = {};
+    await Promise.all(candidates.map(async item => {
+      try {
+        const session = await this.api.getReturnSession(item.id);
+        next[item.id] = !!session && String((session as any).status || '').toUpperCase() === 'PENDING';
+      } catch {
+        next[item.id] = false;
+      }
+    }));
+    this.ownerReturnSessionReady = next;
+    this.render();
   }
 
   fetchHistory() {
@@ -380,6 +407,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.listingIsHidden(item) ? 'opacity-60 hover:opacity-100 transition-opacity' : '';
   }
 
+  ownerPickupLabel(item: Listing): string {
+    return item.status === AvailabilityStatus.READY_FOR_PICKUP ? 'Waiting to be picked up' : this.i18n.t('dash.mark_picked_up');
+  }
+
+  ownerCanStartReturn(item: Listing): boolean {
+    return !!this.ownerReturnSessionReady[item.id];
+  }
+
+  ownerReturnLabel(item: Listing): string {
+    return this.ownerCanStartReturn(item) ? this.i18n.t('dash.return') : 'Waiting to be returned';
+  }
+
+  ownerCanRequestAdminReturn(item: Listing): boolean {
+    const st = item.status;
+    return st === AvailabilityStatus.BORROWED || st === AvailabilityStatus.WAITING_FOR_RETURN || st === AvailabilityStatus.DISPUTED;
+  }
+
+  ownerAdminReturnLabel(item: Listing): string {
+    return item.adminReturnRequestedAt ? 'Admin review requested' : 'Request admin unlock';
+  }
+
+  borrowerPickupLabel(): string {
+    return 'Confirm pickup';
+  }
+
+  borrowerReturnLabel(): string {
+    return 'Start return process';
+  }
+
   async handleAddNew() {
     if (this.actionLoading === 'add_new') return;
     this.actionLoading = 'add_new';
@@ -534,6 +590,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
   handleReturnClick(item: Listing) {
     if (!this.returnsEnabled) return;
     this.router.navigate(['/listing', item.id, 'return'], { queryParams: { from: '/dashboard' } });
+  }
+
+  handleRequestAdminReturn(item: Listing) {
+    if (!this.ownerCanRequestAdminReturn(item)) return;
+    if (item.adminReturnRequestedAt) return;
+    this.actionLoading = `admin-return-${item.id}`;
+    this.render();
+    this.api.requestAdminReturn(item.id)
+      .then(() => this.fetchListings())
+      .catch((e: any) => {
+        this.error = e?.message || 'Failed to request admin return unlock.';
+        setTimeout(() => {
+          this.error = null;
+          this.render();
+        }, 5000);
+      })
+      .finally(() => {
+        this.actionLoading = null;
+        this.render();
+      });
   }
 
   setOverviewItem(item: any) {

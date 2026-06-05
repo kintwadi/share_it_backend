@@ -246,6 +246,7 @@
                     </p>
                   </ng-template>
                 </div>
+                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
 
                 <div class="flex items-center gap-2 mt-2" [ngClass]="listingActionsClass(item)">
                   <p *ngIf="listingIsBlocked(item)" class="text-xs text-red-500 font-bold flex items-center">
@@ -292,10 +293,24 @@
                       *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
                       type="button"
                       (click)="handleReturnClick(item)"
-                      class="text-xs bg-gray-900 text-white font-semibold px-2 py-1 rounded hover:bg-black transition-colors"
-                      title="Start Return"
+                      [disabled]="!ownerCanStartReturn(item)"
+                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      [ngClass]="ownerCanStartReturn(item) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-100 text-gray-500'"
+                      [title]="ownerCanStartReturn(item) ? 'Start Return' : 'Waiting for borrower to initiate return'"
                     >
-                      Return
+                      {{ ownerReturnLabel(item) }}
+                    </button>
+
+                    <button
+                      *ngIf="ownerCanRequestAdminReturn(item)"
+                      type="button"
+                      (click)="handleRequestAdminReturn(item)"
+                      [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
+                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'"
+                    >
+                      <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
+                      {{ ownerAdminReturnLabel(item) }}
                     </button>
 
                     <button
@@ -313,11 +328,10 @@
                       *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP && item.borrowerId"
                       type="button"
                       (click)="handleMarkPickedUp(item.id)"
-                      [disabled]="actionLoading === item.id"
-                      class="text-xs bg-amber-600 text-white font-semibold px-2 py-1 rounded hover:bg-amber-700 transition-colors"
+                      [disabled]="true"
+                      class="text-xs bg-amber-100 text-amber-800 font-semibold px-2 py-1 rounded cursor-not-allowed"
                     >
-                      <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
-                      {{ i18n.t('dash.mark_picked_up') }}
+                      {{ ownerPickupLabel(item) }}
                     </button>
 
                     <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
@@ -408,7 +422,7 @@
                 </div>
                 <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="flex items-center text-xs text-amber-700 bg-amber-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="MapPin" size="12" class="mr-1"></lucide-icon>
-                  {{ i18n.t('dash.ready_for_pickup') }}
+                  Ready for you to pick up
                 </div>
                 <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="text-xs text-gray-600 mt-1">
                   {{ i18n.t('dash.pickup_location_prefix') }} {{ pickupLocationText(item) }}
@@ -426,7 +440,7 @@
                   (click)="$event.stopPropagation(); handleReturnClick(item)"
                   class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full"
                 >
-                  {{ i18n.t('dash.return') }}
+                  {{ borrowerReturnLabel() }}
                 </button>
                 <button
                   *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP"
@@ -436,7 +450,7 @@
                   class="text-xs px-3 py-1.5 bg-amber-600 text-white font-medium rounded hover:bg-amber-700 transition-colors w-full disabled:opacity-60"
                 >
                   <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin mr-1"></lucide-icon>
-                  {{ i18n.t('dash.mark_picked_up') }}
+                  {{ borrowerPickupLabel() }}
                 </button>
                 <button
                   type="button"

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/listings")
 public class ListingsController {
+    private static final Logger logger = LoggerFactory.getLogger(ListingsController.class);
     private final ListingService listingService;
     private final com.vicinity24.api.service.UserService userService;
 
@@ -68,6 +71,17 @@ public class ListingsController {
 
     @PostMapping("/")
     public ResponseEntity<ListingDTO> create(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, HttpServletRequest request, @RequestBody CreateListingRequest req) {
+        logger.info(
+                "POST /api/listings/ principal={} type={} category={} pickupLocationId={} availableUnlimited={} availableFrom={} hasImage={} galleryCount={}",
+                principal != null ? principal.getUsername() : "anonymous",
+                req != null ? req.getType() : null,
+                req != null ? req.getCategory() : null,
+                req != null ? req.getPickupLocationId() : null,
+                req != null && req.isAvailableUnlimited(),
+                req != null ? req.getAvailableFrom() : null,
+                req != null && req.getImageUrl() != null && !req.getImageUrl().isBlank(),
+                req != null && req.getGallery() != null ? req.getGallery().size() : 0
+        );
         User owner = userService.getByEmail(principal.getUsername());
         return ResponseEntity.ok(listingService.create(owner, req, null, null));
     }
@@ -122,6 +136,12 @@ public class ListingsController {
     public ResponseEntity<ListingDTO> pickedUp(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @PathVariable("id") UUID id) {
         User current = userService.getByEmail(principal.getUsername());
         return ResponseEntity.ok(listingService.markPickedUp(id, current));
+    }
+
+    @PostMapping("/{id}/request-admin-return")
+    public ResponseEntity<ListingDTO> requestAdminReturn(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @PathVariable("id") UUID id) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(listingService.requestAdminReturn(id, current));
     }
 
     @PostMapping("/{id}/block")

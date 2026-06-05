@@ -305,6 +305,10 @@
                         <p class="text-xs text-emerald-700">Mark the item as ready when it can be picked up.</p>
                       </div>
                     </div>
+                    <div *ngIf="listing.itemReference" class="mb-4 bg-white p-3 rounded-xl border border-emerald-100">
+                      <h5 class="font-bold text-gray-900 mb-1 flex items-center text-sm">{{ i18n.t('return.item_reference') }}</h5>
+                      <p class="text-xs text-gray-600 font-mono">{{ listing.itemReference }}</p>
+                    </div>
                     <div class="mt-4 pt-4 border-t border-emerald-100 flex gap-3">
                       <button type="button" (click)="handleMarkReadyForPickup()" [disabled]="actionLoading" class="flex-1 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                         <lucide-icon *ngIf="actionLoading === 'READY'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
@@ -339,10 +343,13 @@
                         </p>
                         <p *ngIf="listing.pickupLocation" class="text-xs text-gray-400 mt-0.5">{{ listing.pickupLocation.address }}</p>
                       </div>
+                      <div *ngIf="listing.itemReference" class="mb-4 bg-white p-3 rounded-xl border border-amber-100">
+                        <h5 class="font-bold text-gray-900 mb-1 flex items-center text-sm">{{ i18n.t('return.item_reference') }}</h5>
+                        <p class="text-xs text-gray-600 font-mono">{{ listing.itemReference }}</p>
+                      </div>
                       <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
-                        <button type="button" (click)="handleMarkPickedUp()" [disabled]="actionLoading" class="flex-1 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
-                          <lucide-icon *ngIf="actionLoading === 'PICKED_UP'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                          {{ i18n.t('dash.mark_picked_up') }}
+                        <button type="button" [disabled]="true" class="flex-1 py-2 bg-amber-100 text-amber-800 rounded-lg font-bold text-xs cursor-not-allowed">
+                          Waiting to be picked up
                         </button>
                         <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Borrower
@@ -353,6 +360,37 @@
                 </ng-template>
 
                 <ng-template #ownerNonApproved>
+                  <ng-container *ngIf="isBorrowed; else ownerGiftedOrDefault">
+                    <div class="w-full bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm animate-fade-in">
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-amber-100 p-2 rounded-full text-amber-700">
+                          <lucide-icon [img]="Clock" [size]="20"></lucide-icon>
+                        </div>
+                        <div>
+                          <h4 class="font-bold text-amber-900">Waiting for return</h4>
+                          <p class="text-xs text-amber-700">If the return is stuck, you can ask admin to complete the return and unlock the funds.</p>
+                        </div>
+                      </div>
+                      <div *ngIf="listing.itemReference" class="mb-4 bg-white p-3 rounded-xl border border-amber-100">
+                        <h5 class="font-bold text-gray-900 mb-1 flex items-center text-sm">{{ i18n.t('return.item_reference') }}</h5>
+                        <p class="text-xs text-gray-600 font-mono">{{ listing.itemReference }}</p>
+                      </div>
+                      <div *ngIf="adminReturnRequested" class="mb-4 bg-white p-3 rounded-xl border border-amber-100 text-xs text-amber-800">
+                        Admin return unlock requested {{ listing.adminReturnRequestedAt | date:'short' }}.
+                      </div>
+                      <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
+                        <button type="button" (click)="handleRequestAdminReturn()" [disabled]="!!actionLoading || adminReturnRequested" class="flex-1 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
+                          <lucide-icon *ngIf="actionLoading === 'ADMIN_RETURN'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
+                          {{ adminReturnRequested ? 'Admin review requested' : 'Request admin unlock' }}
+                        </button>
+                        <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
+                          Message Borrower
+                        </button>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <ng-template #ownerGiftedOrDefault>
                   <ng-container *ngIf="isGifted; else ownerDefault">
                     <div class="w-full bg-pink-50 border border-pink-200 rounded-2xl p-5 shadow-sm animate-fade-in">
                       <div class="flex items-center gap-3 mb-2">
@@ -371,6 +409,7 @@
                       </div>
                     </div>
                   </ng-container>
+                  </ng-template>
 
                   <ng-template #ownerDefault>
                     <div class="space-y-3">
@@ -426,7 +465,7 @@
                           <lucide-icon [img]="MapPin" [size]="20"></lucide-icon>
                         </div>
                         <div>
-                          <h4 class="font-bold text-amber-900">{{ i18n.t('dash.ready_for_pickup') }}</h4>
+                          <h4 class="font-bold text-amber-900">Ready for you to pick up</h4>
                           <p class="text-xs text-amber-700">{{ i18n.t('dash.pickup_location_prefix') }} {{ listing.pickupLocation?.address || listing.pickupLocationCustom || '' }}</p>
                         </div>
                       </div>
@@ -434,7 +473,7 @@
                       <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
                         <button type="button" (click)="handleMarkPickedUp()" [disabled]="actionLoading" class="flex-1 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                           <lucide-icon *ngIf="actionLoading === 'PICKED_UP'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                          {{ i18n.t('dash.mark_picked_up') }}
+                          Confirm pickup
                         </button>
                         <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Owner
@@ -447,7 +486,7 @@
                     <ng-container *ngIf="isWaitingForReturn; else borrowerRequest">
                       <div class="w-full py-4 bg-amber-50 text-amber-700 rounded-xl font-bold text-center border border-amber-200 flex items-center justify-center">
                         <lucide-icon [img]="Clock" [size]="20" class="mr-2"></lucide-icon>
-                        {{ i18n.t('dash.waiting_for_return') }}
+                        Return in progress
                       </div>
                     </ng-container>
                   </ng-template>

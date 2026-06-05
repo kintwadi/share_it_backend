@@ -62,7 +62,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     return String(this.isPartnerListing ? (this.listing?.partnerId || 'partner') : (this.listing?.owner?.id || 'user'));
   }
 
-  actionLoading: 'APPROVE' | 'DENY' | 'READY' | 'PICKED_UP' | null = null;
+  actionLoading: string | null = null;
   wasAutoApproved = false;
   showSuccess = false;
   successMessage = '';
@@ -377,6 +377,17 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     return !!(this.currentUser && this.listing && this.currentUser.id === this.listing.ownerId);
   }
 
+  get canRequestAdminReturn(): boolean {
+    if (!this.isOwner || !this.listing) return false;
+    return this.listing.status === AvailabilityStatus.BORROWED
+      || this.listing.status === AvailabilityStatus.WAITING_FOR_RETURN
+      || this.listing.status === AvailabilityStatus.DISPUTED;
+  }
+
+  get adminReturnRequested(): boolean {
+    return !!this.listing?.adminReturnRequestedAt;
+  }
+
   get isFree() {
     const l = this.listing;
     if (!l) return false;
@@ -442,6 +453,24 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       await this.reloadListing();
     } catch (e: any) {
       this.notifyError(e?.message || 'Failed to deny');
+    } finally {
+      this.actionLoading = null;
+      this.render();
+    }
+  }
+
+  async handleRequestAdminReturn() {
+    const listing = this.listing;
+    if (!listing || !this.canRequestAdminReturn || this.adminReturnRequested) return;
+    if (this.actionLoading) return;
+    this.actionLoading = 'ADMIN_RETURN';
+    this.render();
+    try {
+      await this.api.requestAdminReturn(listing.id);
+      await this.reloadListing();
+      this.notifySuccess('Admin return unlock requested.');
+    } catch (e: any) {
+      this.notifyError(e?.message || 'Failed to request admin return unlock');
     } finally {
       this.actionLoading = null;
       this.render();

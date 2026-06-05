@@ -11,6 +11,26 @@ export class ApiService {
   private api = inject(ApiClientService);
   private authStorage = inject(AuthStorageService);
 
+  private extractApiErrorCode(error: any): string {
+    return String(
+      error?.error?.error ??
+      error?.error?.message ??
+      error?.message ??
+      'request_failed'
+    );
+  }
+
+  private normalizeUuid(value: string | null | undefined): string | null {
+    const trimmed = String(value ?? '').trim();
+    return trimmed ? trimmed : null;
+  }
+
+  private normalizeLocalDateTime(value: string | null | undefined): string | null {
+    const trimmed = String(value ?? '').trim();
+    if (!trimmed) return null;
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(trimmed) ? trimmed : null;
+  }
+
   async getPublicConfig(): Promise<any> {
     try {
       return await firstValueFrom(this.api.get<any>('/config/public'));
@@ -375,16 +395,20 @@ export class ApiService {
       postalCode: payload.postalCode ?? null,
       country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
-      availableFrom: payload.availableFrom ?? null,
-      availableTo: payload.availableTo ?? null,
-      pickupLocationId: payload.pickupLocationId ?? null,
+      availableFrom: this.normalizeLocalDateTime(payload.availableFrom),
+      availableTo: this.normalizeLocalDateTime(payload.availableTo),
+      pickupLocationId: this.normalizeUuid(payload.pickupLocationId),
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
       pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
       pickupLocationCity: payload.pickupLocationCity ?? null,
       pickupLocationZip: payload.pickupLocationZip ?? null,
     };
-    return firstValueFrom(this.api.post<Listing>('/listings/', body));
+    try {
+      return await firstValueFrom(this.api.post<Listing>('/listings/', body));
+    } catch (error: any) {
+      throw new Error(this.extractApiErrorCode(error));
+    }
   }
 
   async updateListing(id: string, payload: {
@@ -430,16 +454,20 @@ export class ApiService {
       postalCode: payload.postalCode ?? null,
       country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
-      availableFrom: payload.availableFrom ?? null,
-      availableTo: payload.availableTo ?? null,
-      pickupLocationId: payload.pickupLocationId ?? null,
+      availableFrom: this.normalizeLocalDateTime(payload.availableFrom),
+      availableTo: this.normalizeLocalDateTime(payload.availableTo),
+      pickupLocationId: this.normalizeUuid(payload.pickupLocationId),
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
       pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
       pickupLocationCity: payload.pickupLocationCity ?? null,
       pickupLocationZip: payload.pickupLocationZip ?? null,
     };
-    return firstValueFrom(this.api.put<Listing>(`/listings/${encodeURIComponent(id)}`, body));
+    try {
+      return await firstValueFrom(this.api.put<Listing>(`/listings/${encodeURIComponent(id)}`, body));
+    } catch (error: any) {
+      throw new Error(this.extractApiErrorCode(error));
+    }
   }
 
   async getConversations(): Promise<User[]> {
@@ -668,6 +696,10 @@ export class ApiService {
 
   async markPickedUp(listingId: string): Promise<Listing> {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/picked-up`, {}));
+  }
+
+  async requestAdminReturn(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/request-admin-return`, {}));
   }
 
   async returnItem(listingId: string): Promise<Listing> {

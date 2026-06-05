@@ -134,6 +134,9 @@ export interface Listing {
   availableUnlimited?: boolean;
   availableFrom?: string | null;
   availableTo?: string | null;
+  adminReturnRequestedAt?: string | null;
+  adminReturnRequestedBy?: string | null;
+  adminReturnRequestReason?: string | null;
 }
 
 export interface InsuranceTypeInfo {

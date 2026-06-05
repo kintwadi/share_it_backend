@@ -54,6 +54,7 @@ export class AdminComponent implements OnInit {
   listingSelectedId: string | null = null;
   listingSelected: Listing | null = null;
   listingSelectedLoading = false;
+  listingAdminActionLoading = false;
 
   partnerSubTab: PartnerSubTab = 'SUBMISSIONS';
   partnerSubmissions: any[] = [];
@@ -347,6 +348,35 @@ export class AdminComponent implements OnInit {
       this.listingSelected = listing;
     } finally {
       this.listingSelectedLoading = false;
+      this.render();
+    }
+  }
+
+  async selectListingAndScroll(row: any) {
+    await this.selectListing(row);
+    if (typeof window === 'undefined') return;
+    window.setTimeout(() => {
+      const el = document.getElementById('admin-listing-review-panel');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
+  async acceptRequestedReturnForSelectedListing() {
+    const listing = this.listingSelected;
+    if (!listing?.id || !listing.adminReturnRequestedAt || this.listingAdminActionLoading) return;
+    const ok = typeof window === 'undefined' ? true : window.confirm('Mark this item as returned and unlock the funds?');
+    if (!ok) return;
+    this.listingAdminActionLoading = true;
+    this.render();
+    try {
+      await this.api.adminAcceptReturnDispute(listing.id, 'admin_accept_return_request');
+      await this.loadListings(this.listingsPage);
+      const updated = await this.api.getListingById(listing.id);
+      this.listingSelected = updated;
+    } catch (e: any) {
+      this.error = e?.message || 'Failed to complete admin return.';
+    } finally {
+      this.listingAdminActionLoading = false;
       this.render();
     }
   }

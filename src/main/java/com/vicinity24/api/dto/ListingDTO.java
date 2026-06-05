@@ -51,4 +51,8 @@ public class ListingDTO {
     private boolean availableUnlimited;
     private LocalDateTime availableFrom;
     private LocalDateTime availableTo;
+
+    private LocalDateTime adminReturnRequestedAt;
+    private UUID adminReturnRequestedBy;
+    private String adminReturnRequestReason;
 }

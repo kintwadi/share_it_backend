@@ -234,6 +234,9 @@ public class ReturnService {
             listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
             listing.setBorrower(null);
             listing.setItemReference(null);
+            listing.setAdminReturnRequestedAt(null);
+            listing.setAdminReturnRequestedBy(null);
+            listing.setAdminReturnRequestReason(null);
             
             // Increase trust score (simple mock implementation for now)
             User lender = session.getLender();
@@ -315,7 +318,12 @@ public class ReturnService {
                 .orElse(null);
 
         if (session == null) {
-            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.APPROVED || listing.getStatus() == AvailabilityStatus.PARTNER_ACTIVE || listing.getStatus() == AvailabilityStatus.DISPUTED;
+            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED
+                    || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN
+                    || listing.getStatus() == AvailabilityStatus.READY_FOR_PICKUP
+                    || listing.getStatus() == AvailabilityStatus.APPROVED
+                    || listing.getStatus() == AvailabilityStatus.PARTNER_ACTIVE
+                    || listing.getStatus() == AvailabilityStatus.DISPUTED;
             if (listingActive) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active return session");
             }

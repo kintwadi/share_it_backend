@@ -26,7 +26,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.math.BigDecimal;
@@ -34,6 +37,8 @@ import java.security.SecureRandom;
 
 @Service
 public class ListingService {
+    private static final Logger logger = LoggerFactory.getLogger(ListingService.class);
+    private static final double DEFAULT_SERVICE_FEE_PERCENT = 0.08d;
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
     private final ExchangeLocationRepository exchangeLocationRepository;
@@ -86,6 +91,16 @@ public class ListingService {
 
     private boolean isSellEnabled() {
         return runtimeSettingsService != null && runtimeSettingsService.isEnabled("settings.enable.sell", false);
+    }
+
+    private BigDecimal resolveServiceFeeRate() {
+        double rate = runtimeSettingsService != null
+                ? runtimeSettingsService.getDouble("settings.service.fee_percent", DEFAULT_SERVICE_FEE_PERCENT)
+                : DEFAULT_SERVICE_FEE_PERCENT;
+        if (!Double.isFinite(rate) || rate < 0) {
+            rate = DEFAULT_SERVICE_FEE_PERCENT;
+        }
+        return BigDecimal.valueOf(rate);
     }
 
     @Transactional(readOnly = true)
@@ -188,14 +203,21 @@ public class ListingService {
         Double lat = req.getX();
         Double lng = req.getY();
         if ((!streetAddress.isEmpty() || !city.isEmpty() || !postalCode.isEmpty() || !country.isEmpty()) && locationService != null) {
-            var geo = locationService.forwardGeocode(streetAddress, city, postalCode, country);
-            if (geo != null) {
-                lat = geo.getLatitude();
-                lng = geo.getLongitude();
-                streetAddress = safeText(geo.getStreetAddress());
-                city = safeText(geo.getCity());
-                postalCode = safeText(geo.getPostalCode());
-                country = safeText(geo.getCountry());
+            try {
+                var geo = locationService.forwardGeocode(streetAddress, city, postalCode, country);
+                if (geo != null) {
+                    lat = geo.getLatitude();
+                    lng = geo.getLongitude();
+                    streetAddress = safeText(geo.getStreetAddress());
+                    city = safeText(geo.getCity());
+                    postalCode = safeText(geo.getPostalCode());
+                    country = safeText(geo.getCountry());
+                }
+            } catch (RuntimeException ex) {
+                logger.warn("Listing create geocoding skipped for owner={} title={} reason={}",
+                        owner != null ? owner.getId() : null,
+                        req != null ? req.getTitle() : null,
+                        ex.getMessage());
             }
         }
         if (lat != null && lng != null && Math.abs(lat) < 1e-9 && Math.abs(lng) < 1e-9) {
@@ -292,14 +314,18 @@ public class ListingService {
         Double nextLat = req.getX();
         Double nextLng = req.getY();
         if ((!nextStreetAddress.isEmpty() || !nextCity.isEmpty() || !nextPostalCode.isEmpty() || !nextCountry.isEmpty()) && locationService != null) {
-            var geo = locationService.forwardGeocode(nextStreetAddress, nextCity, nextPostalCode, nextCountry);
-            if (geo != null) {
-                nextLat = geo.getLatitude();
-                nextLng = geo.getLongitude();
-                nextStreetAddress = safeText(geo.getStreetAddress());
-                nextCity = safeText(geo.getCity());
-                nextPostalCode = safeText(geo.getPostalCode());
-                nextCountry = safeText(geo.getCountry());
+            try {
+                var geo = locationService.forwardGeocode(nextStreetAddress, nextCity, nextPostalCode, nextCountry);
+                if (geo != null) {
+                    nextLat = geo.getLatitude();
+                    nextLng = geo.getLongitude();
+                    nextStreetAddress = safeText(geo.getStreetAddress());
+                    nextCity = safeText(geo.getCity());
+                    nextPostalCode = safeText(geo.getPostalCode());
+                    nextCountry = safeText(geo.getCountry());
+                }
+            } catch (RuntimeException ex) {
+                logger.warn("Listing update geocoding skipped for listing={} reason={}", id, ex.getMessage());
             }
         }
         if (nextLat != null && nextLng != null && Math.abs(nextLat) < 1e-9 && Math.abs(nextLng) < 1e-9) {
@@ -476,7 +502,7 @@ public class ListingService {
                 serviceFee = fixed.setScale(2, java.math.RoundingMode.HALF_UP);
             }
         } else if ("FEE".equals(borrowerPath)) {
-            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+            serviceFee = totalCost.multiply(resolveServiceFeeRate()).setScale(2, java.math.RoundingMode.HALF_UP);
         } else if ("DEPOSIT".equals(borrowerPath)) {
             depositAmount = new BigDecimal("50.00");
         }
@@ -671,7 +697,13 @@ public class ListingService {
         } catch (Exception ignored) {
         }
         try {
-            emailService.sendPickupReadyEmail(l.getBorrower().getEmail(), l.getBorrower().getName(), l.getTitle(), pickupText);
+            emailService.sendPickupReadyEmail(
+                l.getBorrower().getEmail(),
+                l.getBorrower().getName(),
+                l.getTitle(),
+                pickupText,
+                l.getItemReference()
+            );
         } catch (Exception ignored) {
         }
 
@@ -697,6 +729,29 @@ public class ListingService {
         if (l.getItemReference() == null || l.getItemReference().isBlank()) {
             l.setItemReference(generateUniqueItemReference());
         }
+        l.setAdminReturnRequestedAt(null);
+        l.setAdminReturnRequestedBy(null);
+        l.setAdminReturnRequestReason(null);
+        listingRepository.save(l);
+        return toDTO(l, current);
+    }
+
+    @Transactional
+    public ListingDTO requestAdminReturn(UUID id, User current) {
+        Listing l = listingRepository.findById(id).orElseThrow(() -> new RuntimeException("listing_not_found"));
+        if (current == null || l.getOwner() == null || l.getOwner().getId() == null || !l.getOwner().getId().equals(current.getId())) {
+            throw new RuntimeException("forbidden");
+        }
+        if (l.getBorrower() == null) {
+            throw new RuntimeException("borrower_not_found");
+        }
+        AvailabilityStatus st = l.getStatus();
+        if (st != AvailabilityStatus.BORROWED && st != AvailabilityStatus.WAITING_FOR_RETURN && st != AvailabilityStatus.DISPUTED) {
+            throw new RuntimeException("invalid_status");
+        }
+        l.setAdminReturnRequestedAt(LocalDateTime.now());
+        l.setAdminReturnRequestedBy(current.getId());
+        l.setAdminReturnRequestReason("lender_requested_admin_return");
         listingRepository.save(l);
         return toDTO(l, current);
     }
@@ -862,6 +917,9 @@ public class ListingService {
             .availableUnlimited(l.isAvailableUnlimited())
             .availableFrom(l.getAvailableFrom())
             .availableTo(l.getAvailableTo())
+            .adminReturnRequestedAt(l.getAdminReturnRequestedAt())
+            .adminReturnRequestedBy(l.getAdminReturnRequestedBy())
+            .adminReturnRequestReason(l.getAdminReturnRequestReason())
             .build();
     }
 
@@ -982,7 +1040,7 @@ public class ListingService {
         BigDecimal depositAmount = BigDecimal.ZERO;
         String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";
         if ("FEE".equals(bp)) {
-            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+            serviceFee = totalCost.multiply(resolveServiceFeeRate()).setScale(2, java.math.RoundingMode.HALF_UP);
         } else if ("DEPOSIT".equals(bp)) {
             depositAmount = new BigDecimal("50.00");
         }

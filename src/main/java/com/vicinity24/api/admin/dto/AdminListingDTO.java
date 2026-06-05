@@ -42,4 +42,8 @@ public class AdminListingDTO {
     private LocalDateTime partnerBorrowReviewedAt;
     private UUID partnerBorrowReviewedBy;
     private String partnerBorrowRejectionReason;
+
+    private LocalDateTime adminReturnRequestedAt;
+    private UUID adminReturnRequestedBy;
+    private String adminReturnRequestReason;
 }

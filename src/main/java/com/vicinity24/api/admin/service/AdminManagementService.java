@@ -491,6 +491,9 @@ public class AdminManagementService {
 
         l.setBorrower(null);
         l.setItemReference(null);
+        l.setAdminReturnRequestedAt(null);
+        l.setAdminReturnRequestedBy(null);
+        l.setAdminReturnRequestReason(null);
         l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         listingRepository.save(l);
 
@@ -502,19 +505,23 @@ public class AdminManagementService {
     @Transactional
     public void acceptReturnDispute(UUID listingId, String reason) {
         Listing l = listingRepository.findById(listingId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
-        ReturnSession session = returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No return session"));
+        ReturnSession session = returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId).orElse(null);
 
-        session.setStatus(ReturnStatus.COMPLETED);
-        if (reason != null && !reason.isBlank()) {
-            session.setDisputeReason(reason);
+        if (session != null) {
+            session.setStatus(ReturnStatus.COMPLETED);
+            if (reason != null && !reason.isBlank()) {
+                session.setDisputeReason(reason);
+            }
+            session.setExpiresAt(LocalDateTime.now());
+            returnSessionRepository.save(session);
         }
-        session.setExpiresAt(LocalDateTime.now());
-        returnSessionRepository.save(session);
 
         l.setStatus(l.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
         l.setBorrower(null);
         l.setItemReference(null);
+        l.setAdminReturnRequestedAt(null);
+        l.setAdminReturnRequestedBy(null);
+        l.setAdminReturnRequestReason(null);
         listingRepository.save(l);
 
         escrowService.adminAttemptReleaseForListing(listingId);
@@ -661,6 +668,9 @@ public class AdminManagementService {
                 .partnerBorrowReviewedAt(l.getPartnerBorrowReviewedAt())
                 .partnerBorrowReviewedBy(l.getPartnerBorrowReviewedBy())
                 .partnerBorrowRejectionReason(l.getPartnerBorrowRejectionReason())
+                .adminReturnRequestedAt(l.getAdminReturnRequestedAt())
+                .adminReturnRequestedBy(l.getAdminReturnRequestedBy())
+                .adminReturnRequestReason(l.getAdminReturnRequestReason())
                 .build();
     }
 

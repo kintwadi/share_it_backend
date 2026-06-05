@@ -97,6 +97,10 @@ public class Listing {
     @Column(name = "item_reference")
     private String itemReference;
 
+    private LocalDateTime adminReturnRequestedAt;
+    private UUID adminReturnRequestedBy;
+    private String adminReturnRequestReason;
+
     @PrePersist
     @PreUpdate
     private void validateOwnerOrPartner() {
