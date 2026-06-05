@@ -98,6 +98,53 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
     return this.isOwner ? this.session.borrowerScanned : this.session.lenderScanned;
   }
 
+  get myStatusBadgeClass(): string {
+    return this.myScanStatus ? 'badge--on' : 'badge--waiting-self';
+  }
+
+  get theirStatusBadgeClass(): string {
+    return this.theirScanStatus ? 'badge--on' : 'badge--waiting-other';
+  }
+
+  get canInitiateReturn(): boolean {
+    return !this.isOwner;
+  }
+
+  get canSubmitManual(): boolean {
+    if (this.loading || !this.itemNumber) return false;
+    if (!this.session) return false;
+    if (!this.isOwner) return !this.session.manualBorrowerConfirmed;
+    return this.session.manualBorrowerConfirmed && !this.session.manualLenderConfirmed;
+  }
+
+  get manualActionLabel(): string {
+    return this.i18n.t(this.isOwner ? 'return.manual_action_accept' : 'return.manual_action_start');
+  }
+
+  get lenderDisplayName(): string {
+    const item = this.item as any;
+    return String(item?.owner?.name || item?.partnerName || this.i18n.t('return.fallback_lender')).trim();
+  }
+
+  get borrowerDisplayName(): string {
+    const item = this.item as any;
+    return String(item?.borrower?.name || this.i18n.t('return.fallback_borrower')).trim();
+  }
+
+  get borrowerWaitingForLenderMessage(): string | null {
+    if (this.isOwner || !this.session) return null;
+    if (!this.session.manualBorrowerConfirmed || this.session.manualLenderConfirmed) return null;
+    return this.i18n.t('return.waiting_for_lender_accept').replace('{name}', this.lenderDisplayName);
+  }
+
+  get lenderWaitingForBorrowerMessage(): string | null {
+    if (!this.isOwner) return null;
+    if (this.session) return null;
+    if (this.error) return null;
+    if (!this.item) return null;
+    return this.i18n.t('return.waiting_for_borrower_start').replace('{name}', this.borrowerDisplayName);
+  }
+
   ngOnInit() {
     this.settings.ensureLoaded();
     const from = String(this.route.snapshot.queryParamMap.get('from') || '').trim();
@@ -112,6 +159,11 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
 
   back() {
     this.router.navigateByUrl(this.backTo);
+  }
+
+  private goToReview(listingId: string) {
+    this.stopPolling();
+    this.router.navigate(['/listing', listingId, 'review'], { queryParams: { from: this.backTo } });
   }
 
   private async init() {
@@ -190,11 +242,6 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
         this.error = this.i18n.t('return.error.all_disabled');
         return;
       }
-      if (item.status === AvailabilityStatus.AVAILABLE) {
-        this.session = null;
-        this.error = this.i18n.t('return.error.already_available');
-        return;
-      }
       if (item.status === AvailabilityStatus.DISPUTED) {
         this.session = null;
         this.error = this.i18n.t('return.error.disputed');
@@ -207,17 +254,45 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
         this.error = null;
         this.notice = null;
         if (data?.status === ReturnStatus.COMPLETED) {
-          this.router.navigate(['/listing', item.id, 'review'], { queryParams: { from: this.backTo } });
+          this.goToReview(item.id);
         }
         return;
-      } catch { }
+      } catch {
+        try {
+          const refreshed = await this.api.getListingById(item.id);
+          this.item = refreshed;
+          if (this.session && refreshed?.status === AvailabilityStatus.AVAILABLE) {
+            this.error = null;
+            this.notice = null;
+            this.goToReview(item.id);
+            return;
+          }
+          if (refreshed?.status === AvailabilityStatus.AVAILABLE) {
+            this.session = null;
+            this.error = this.i18n.t('return.error.already_available');
+            return;
+          }
+          if (refreshed?.status === AvailabilityStatus.DISPUTED) {
+            this.session = null;
+            this.error = this.i18n.t('return.error.disputed');
+            return;
+          }
+        } catch { }
+      }
+
+      if (!this.canInitiateReturn) {
+        this.session = null;
+        this.notice = null;
+        this.error = null;
+        return;
+      }
 
       const created = await this.api.initiateReturnSession(item.id);
       this.session = created;
       this.error = null;
       this.notice = null;
       if (created?.status === ReturnStatus.COMPLETED) {
-        this.router.navigate(['/listing', item.id, 'review'], { queryParams: { from: this.backTo } });
+        this.goToReview(item.id);
       }
     } catch (err: any) {
       const msg = err?.message || this.i18n.t('return.error.load_failed');
@@ -246,7 +321,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       this.error = null;
       this.notice = null;
       if (updated?.status === ReturnStatus.COMPLETED) {
-        this.router.navigate(['/listing', item.id, 'review'], { queryParams: { from: this.backTo } });
+        this.goToReview(item.id);
       }
     } catch (err: any) {
       this.error = err?.message || this.i18n.t('return.error.verify_failed');
@@ -260,7 +335,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
   async handleManualFallback() {
     const item = this.item;
     if (!item) return;
-    if (!this.itemNumber) return;
+    if (!this.canSubmitManual) return;
     try {
       this.loading = true;
       this.render();
@@ -268,7 +343,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       this.session = updated;
       this.error = null;
       if (updated?.status === ReturnStatus.COMPLETED) {
-        this.router.navigate(['/listing', item.id, 'review'], { queryParams: { from: this.backTo } });
+        this.goToReview(item.id);
       } else {
         this.notice = this.i18n.t('return.notice.manual_submitted');
       }

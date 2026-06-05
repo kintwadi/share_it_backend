@@ -2,7 +2,7 @@
   <div class="max-w-xl mx-auto px-4">
     <button type="button" class="back" (click)="back()">
       <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
-      Back
+      {{ i18n.t('common.back') }}
     </button>
 
     <div class="panel">
@@ -34,9 +34,25 @@
             </div>
           </div>
 
+          <div *ngIf="borrowerWaitingForLenderMessage" class="notice">
+            <lucide-icon [img]="CheckCircle2" [size]="18"></lucide-icon>
+            <div>
+              <div class="notice__t">{{ i18n.t('return.update') }}</div>
+              <div>{{ borrowerWaitingForLenderMessage }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="lenderWaitingForBorrowerMessage" class="notice">
+            <lucide-icon [img]="CheckCircle2" [size]="18"></lucide-icon>
+            <div>
+              <div class="notice__t">{{ i18n.t('return.update') }}</div>
+              <div>{{ lenderWaitingForBorrowerMessage }}</div>
+            </div>
+          </div>
+
           <div class="statusRow">
-            <div class="badge" [class.badge--on]="myScanStatus">{{ myScanStatus ? i18n.t('return.you_scanned') : i18n.t('return.waiting_for_you') }}</div>
-            <div class="badge" [class.badge--on]="theirScanStatus">{{ theirScanStatus ? i18n.t('return.they_scanned') : i18n.t('return.waiting_for_them') }}</div>
+            <div class="badge" [ngClass]="myStatusBadgeClass">{{ myScanStatus ? i18n.t('return.you_scanned') : i18n.t('return.waiting_for_you') }}</div>
+            <div class="badge" [ngClass]="theirStatusBadgeClass">{{ theirScanStatus ? i18n.t('return.they_scanned') : i18n.t('return.waiting_for_them') }}</div>
           </div>
 
           <div class="tabs">
@@ -65,17 +81,17 @@
 
             <div *ngIf="activeTab === 'manual' && manualEnabled" class="manual">
               <label class="label">{{ i18n.t('return.item_number') }}</label>
-              <input [(ngModel)]="itemNumber" class="input" placeholder="Item reference" />
+              <input [(ngModel)]="itemNumber" class="input" [placeholder]="i18n.t('return.item_number_placeholder')" />
               <label class="label">{{ i18n.t('return.concierge_optional') }}</label>
-              <input [(ngModel)]="conciergeId" class="input" placeholder="Concierge witness ID (optional)" />
-              <button type="button" class="btn btn--primary" [disabled]="loading || !itemNumber" (click)="handleManualFallback()">
-                {{ i18n.t('return.submit_manual') }}
+              <input [(ngModel)]="conciergeId" class="input" [placeholder]="i18n.t('return.concierge_optional_placeholder')" />
+              <button type="button" class="btn btn--primary" [disabled]="!canSubmitManual" (click)="handleManualFallback()">
+                {{ manualActionLabel }}
               </button>
             </div>
 
             <div *ngIf="activeTab === 'dispute' && disputeEnabled" class="manual">
               <div class="hint">{{ i18n.t('return.dispute_hint') }}</div>
-              <textarea [(ngModel)]="disputeReason" class="textarea" rows="5" placeholder="Describe the issue…"></textarea>
+              <textarea [(ngModel)]="disputeReason" class="textarea" rows="5" [placeholder]="i18n.t('return.dispute_issue_placeholder')"></textarea>
               <div class="hint">{{ i18n.t('return.dispute_contact') }}</div>
             </div>
           </div>
