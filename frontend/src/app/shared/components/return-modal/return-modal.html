@@ -66,10 +66,13 @@
             <div class="pt-4">
               <div *ngIf="activeTab === 'qr' && qrEnabled" class="text-center space-y-4">
                 <p class="text-sm text-gray-600">{{ i18n.t('return.scan_hint') }}</p>
-                <div class="bg-gray-100 p-6 rounded-xl inline-block border-2 border-dashed border-gray-300">
-                  <lucide-icon [img]="QrCode" [size]="120" class="text-gray-800 mx-auto"></lucide-icon>
+                <div class="bg-gray-100 p-5 sm:p-8 rounded-xl inline-grid justify-items-center w-full max-w-[320px] border-2 border-dashed border-gray-300">
+                  <img *ngIf="qrCodeImageUrl; else qrModalIconFallback" [src]="qrCodeImageUrl" [alt]="i18n.t('return.scan_hint')" class="w-full max-w-[220px] h-auto block" />
+                  <ng-template #qrModalIconFallback>
+                    <lucide-icon [img]="QrCode" [size]="180" class="text-gray-800 mx-auto"></lucide-icon>
+                  </ng-template>
                   <div class="mt-4">
-                    <div class="text-3xl font-black tracking-[0.3em] text-gray-900 font-mono">
+                    <div class="text-[30px] sm:text-4xl font-black tracking-[0.22em] text-gray-900 font-mono leading-none text-center">
                       {{ myQrCode }}
                     </div>
                     <div class="text-xs text-gray-500 mt-2">{{ i18n.t('return.enter_code_hint') }}</div>

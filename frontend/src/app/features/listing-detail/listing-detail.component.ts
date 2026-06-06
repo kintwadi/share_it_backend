@@ -131,7 +131,9 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.render();
     try {
       await this.api.markPickedUp(listing.id);
-      await this.reloadListing();
+      await this.router.navigate(['/listing', listing.id, 'return'], {
+        queryParams: { from: `/listing/${listing.id}` }
+      });
     } catch (e: any) {
       this.notifyError(e?.message || 'Failed to confirm pickup');
     } finally {
@@ -566,16 +568,10 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       || listing.status === AvailabilityStatus.WAITING_FOR_RETURN
       || listing.status === AvailabilityStatus.DISPUTED;
     if (!active) return;
-    try {
-      const session = await this.api.getReturnSession(listing.id);
-      const pending = String((session as any)?.status || '').toUpperCase() === 'PENDING';
-      this.returnSession = session;
-      this.returnRequestReady = this.isOwner && pending;
-      this.borrowerReturnSubmitted = !this.isOwner && pending;
-    } catch {
-      this.returnSession = null;
-      this.returnRequestReady = false;
-      this.borrowerReturnSubmitted = false;
-    }
+
+    // Listing status already encodes whether the borrower has submitted the return.
+    const submitted = listing.status === AvailabilityStatus.WAITING_FOR_RETURN;
+    this.returnRequestReady = this.isOwner && submitted;
+    this.borrowerReturnSubmitted = !this.isOwner && submitted;
   }
 }

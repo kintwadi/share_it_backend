@@ -248,7 +248,7 @@
                 </div>
                 <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
 
-                <div class="flex items-center gap-2 mt-2" [ngClass]="listingActionsClass(item)">
+                <div class="flex flex-col items-stretch gap-2 mt-2 sm:flex-row sm:flex-wrap sm:items-center" [ngClass]="listingActionsClass(item)">
                   <p *ngIf="listingIsBlocked(item)" class="text-xs text-red-500 font-bold flex items-center">
                     <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
                     Flagged by Admin
@@ -259,7 +259,7 @@
                       *ngIf="listingShowOverview(item)"
                       type="button"
                       (click)="setOverviewItem(item)"
-                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center px-2 py-1 hover:bg-brand-50 rounded transition-colors"
+                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-brand-50 rounded transition-colors"
                       title="View Overview"
                     >
                       <lucide-icon [img]="FileCheck" size="12" class="mr-1"></lucide-icon>
@@ -270,7 +270,7 @@
                       *ngIf="!listingShowOverview(item)"
                       type="button"
                       (click)="handleEdit(item)"
-                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center px-2 py-1 hover:bg-brand-50 rounded transition-colors"
+                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-brand-50 rounded transition-colors"
                       title="Edit Listing"
                     >
                       <lucide-icon [img]="Edit2" size="12" class="mr-1"></lucide-icon>
@@ -281,7 +281,7 @@
                       type="button"
                       (click)="handleToggleStatus(item)"
                       [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
-                      class="text-xs font-medium flex items-center px-2 py-1 rounded transition-colors"
+                      class="text-xs font-medium flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 rounded transition-colors"
                       [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'text-gray-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
                       [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
                     >
@@ -294,7 +294,7 @@
                       type="button"
                       (click)="handleReturnClick(item)"
                       [disabled]="!ownerCanStartReturn(item)"
-                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      class="text-xs font-semibold w-full sm:w-auto px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       [ngClass]="ownerCanStartReturn(item) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-100 text-gray-500'"
                       [title]="ownerCanStartReturn(item) ? 'View return request' : 'Waiting for borrower to submit return'"
                     >
@@ -306,7 +306,7 @@
                       type="button"
                       (click)="handleRequestAdminReturn(item)"
                       [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
-                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      class="text-xs font-semibold w-full sm:w-auto px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'"
                     >
                       <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
@@ -318,7 +318,7 @@
                       type="button"
                       (click)="handleMarkReadyForPickup(item.id)"
                       [disabled]="actionLoading === item.id"
-                      class="text-xs bg-emerald-600 text-white font-semibold px-2 py-1 rounded hover:bg-emerald-700 transition-colors"
+                      class="text-xs bg-emerald-600 text-white font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-emerald-700 transition-colors"
                     >
                       <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
                       {{ i18n.t('dash.mark_ready_for_pickup') }}
@@ -329,7 +329,7 @@
                         type="button"
                         (click)="handleApprove(item.id)"
                         [disabled]="actionLoading === item.id"
-                        class="text-xs bg-indigo-600 text-white font-semibold px-2 py-1 rounded hover:bg-indigo-700 transition-colors"
+                        class="text-xs bg-indigo-600 text-white font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-indigo-700 transition-colors"
                         title="Approve Request"
                       >
                         <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
@@ -339,7 +339,7 @@
                         type="button"
                         (click)="handleDeny(item.id)"
                         [disabled]="actionLoading === item.id"
-                        class="text-xs bg-white text-red-600 border border-red-200 font-semibold px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                        class="text-xs bg-white text-red-600 border border-red-200 font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-red-50 transition-colors"
                         title="Deny Request"
                       >
                         Deny
@@ -349,7 +349,7 @@
                     <button
                       type="button"
                       (click)="handleDeleteClick(item)"
-                      class="text-xs text-red-500 font-medium hover:text-red-700 flex items-center ml-auto px-2 py-1 hover:bg-red-50 rounded transition-colors"
+                      class="text-xs text-red-500 font-medium hover:text-red-700 inline-flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-red-50 rounded transition-colors sm:ml-auto"
                       title="Delete Listing"
                     >
                       <lucide-icon [img]="Trash2" size="12" class="mr-1"></lucide-icon>

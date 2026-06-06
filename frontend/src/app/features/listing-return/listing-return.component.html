@@ -66,7 +66,10 @@
             <div *ngIf="activeTab === 'qr' && qrEnabled" class="qr">
               <div class="qr__hint">{{ i18n.t('return.scan_hint') }}</div>
               <div class="qr__box">
-                <lucide-icon [img]="QrCode" [size]="120" class="qr__icon"></lucide-icon>
+                <img *ngIf="qrCodeImageUrl; else qrIconFallback" [src]="qrCodeImageUrl" [alt]="i18n.t('return.scan_hint')" class="qr__image" />
+                <ng-template #qrIconFallback>
+                  <lucide-icon [img]="QrCode" [size]="180" class="qr__icon"></lucide-icon>
+                </ng-template>
                 <div class="qr__code">{{ myQrCode }}</div>
               </div>
             </div>

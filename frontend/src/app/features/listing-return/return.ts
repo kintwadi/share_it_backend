@@ -106,10 +106,10 @@ type ReturnTab = 'qr' | 'manual';
 
               <ng-container *ngIf="isBorrower">
                 <div class="inline-flex rounded-xl bg-gray-100 p-1">
-                  <button type="button" (click)="activeTab = 'qr'; render()" class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors" [ngClass]="activeTab === 'qr' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'">
+                  <button type="button" (click)="setActiveTab('qr')" class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors" [ngClass]="activeTab === 'qr' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'">
                     {{ i18n.t('return.via_qr_code') }}
                   </button>
-                  <button type="button" (click)="activeTab = 'manual'; render()" class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors" [ngClass]="activeTab === 'manual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'">
+                  <button type="button" (click)="setActiveTab('manual')" class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors" [ngClass]="activeTab === 'manual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'">
                     {{ i18n.t('return.via_manual') }}
                   </button>
                 </div>
@@ -217,6 +217,11 @@ export class ReturnComponent implements OnInit {
     } catch { }
   }
 
+  setActiveTab(tab: ReturnTab) {
+    this.activeTab = tab;
+    this.render();
+  }
+
   async load() {
     const id = String(this.route.snapshot.paramMap.get('id') || '').trim();
     if (!id) {
@@ -234,9 +239,21 @@ export class ReturnComponent implements OnInit {
       this.item = item;
       this.currentUser = me;
       this.itemNumber = String(item?.itemReference || item?.id || '').trim();
-      try {
-        this.session = await this.api.getReturnSession(id);
-      } catch {
+      const borrowerId = String(item?.borrowerId || '').trim();
+      const currentUserId = String(me?.id || '').trim();
+      const shouldLoadSession = !(
+        borrowerId &&
+        currentUserId &&
+        borrowerId === currentUserId &&
+        item?.status === AvailabilityStatus.BORROWED
+      );
+      if (shouldLoadSession) {
+        try {
+          this.session = await this.api.getReturnSession(id);
+        } catch {
+          this.session = null;
+        }
+      } else {
         this.session = null;
       }
     } catch (e: any) {

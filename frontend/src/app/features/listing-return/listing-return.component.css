@@ -175,23 +175,33 @@
 .qr__box {
   display: inline-grid;
   gap: 10px;
-  padding: 16px;
+  padding: 20px;
   border-radius: 14px;
   border: 2px dashed #d1d5db;
   background: #f9fafb;
   justify-items: center;
+  width: min(100%, 320px);
+  margin: 0 auto;
 }
 
 .qr__icon {
   color: #111827;
 }
 
+.qr__image {
+  width: min(100%, 220px);
+  height: auto;
+  display: block;
+}
+
 .qr__code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-weight: 900;
-  font-size: 24px;
-  letter-spacing: .25em;
+  font-size: clamp(28px, 5vw, 36px);
+  letter-spacing: .22em;
   color: #111827;
+  line-height: 1;
+  text-align: center;
 }
 
 .label {

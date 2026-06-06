@@ -495,10 +495,6 @@ export class NewItemComponent implements OnInit {
         this.render();
         return;
       }
-    } else if (!this.selectedExchangeLocation) {
-      this.error = this.i18n.t('new_item.error.pickup_location_not_found');
-      this.render();
-      return;
     }
     this.error = null;
     this.uploadingGallery = true;
