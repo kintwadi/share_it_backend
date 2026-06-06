@@ -315,7 +315,7 @@ public class SubscriptionController {
             return ResponseEntity.noContent().build();
         }
         if (principal == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userService.getByEmail(principal.getUsername());
         return subscriptionService.getCurrentSubscription(user)
