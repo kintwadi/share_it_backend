@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -109,7 +109,7 @@ import { Listing, ReturnMethod, ReturnSessionResponse, User } from '../../core/m
   </div>
   `
 })
-export class AcceptReturnComponent implements OnInit {
+export class AcceptReturnComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -133,6 +133,7 @@ export class AcceptReturnComponent implements OnInit {
   success: string | null = null;
   disputeReason = '';
   private backTo = '/dashboard';
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
   get busy(): boolean {
     return !!this.busyAction;
@@ -142,6 +143,13 @@ export class AcceptReturnComponent implements OnInit {
     const from = String(this.route.snapshot.queryParamMap.get('from') || '').trim();
     this.backTo = from.startsWith('/') ? from : '/dashboard';
     void this.load();
+  }
+
+  ngOnDestroy(): void {
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
   }
 
   private render() {
@@ -166,7 +174,7 @@ export class AcceptReturnComponent implements OnInit {
       ]);
       this.item = item;
       this.currentUser = me;
-      if (!me || item.ownerId !== me.id) {
+      if (!item || !me || item.ownerId !== me.id) {
         this.error = this.i18n.t('return.lender_only_accept');
         return;
       }
@@ -192,7 +200,12 @@ export class AcceptReturnComponent implements OnInit {
     this.render();
     try {
       await this.api.acceptReturnRequest(this.item.id);
-      this.router.navigate(['/listing', this.item.id, 'review'], { queryParams: { from: this.backTo } });
+      this.success = this.i18n.t('return.accept_success');
+      this.session = null;
+      this.redirectTimer = setTimeout(() => {
+        this.router.navigateByUrl(this.backTo);
+      }, 900);
+      this.render();
       return;
     } catch (e: any) {
       this.error = e?.message || this.i18n.t('return.accept_failed');

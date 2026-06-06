@@ -417,6 +417,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ownerCanStartReturn(item: Listing): boolean {
+    if (item.status === AvailabilityStatus.WAITING_FOR_RETURN) {
+      return true;
+    }
     return !!this.ownerReturnSessionReady[item.id];
   }
 
