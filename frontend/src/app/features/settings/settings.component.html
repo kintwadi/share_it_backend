@@ -75,13 +75,13 @@
                     <div class="text-xs font-semibold text-indigo-700 uppercase tracking-wide">
                       {{ i18n.t('settings.overview.status_premium_label') }}
                     </div>
-                    <span *ngIf="subscription && subscription?.planType !== 'starter'" class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">
+                    <span *ngIf="showSubscriptionBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold" [ngClass]="subscriptionStatusBadgeClass">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="mr-1"></lucide-icon>
-                      {{ i18n.t('settings.overview.status_premium_badge') }}
+                      {{ subscriptionStatusLabel }}
                     </span>
                   </div>
                   <p class="text-sm text-indigo-900 font-semibold">
-                    {{ subscriptionPlanLabel }}
+                    {{ subscriptionPlanLabel }}<span *ngIf="subscription"> • {{ subscriptionStatusLabel }}</span>
                   </p>
                 </div>
 
@@ -529,7 +529,7 @@
                   <p class="text-sm font-semibold text-gray-900 mb-2">
                     {{ i18n.t('settings.subscription.benefits_title') }}
                   </p>
-                  <ul *ngIf="!subscription || subscription?.planType === 'starter'" class="text-xs text-gray-600 space-y-1.5">
+                  <ul *ngIf="!subscription || normalizedSubscriptionPlanType === 'starter'" class="text-xs text-gray-600 space-y-1.5">
                     <li class="flex items-start gap-2">
                       <lucide-icon [img]="CheckCircle2" [size]="14" class="text-gray-400 mt-0.5 shrink-0"></lucide-icon>
                       <span>{{ i18n.t('lenderSub.basic_no_insurance') }}</span>
@@ -543,10 +543,10 @@
                       <span>{{ i18n.t('lenderSub.basic_community_protection') }}</span>
                     </li>
                   </ul>
-                  <ul *ngIf="subscription && subscription?.planType !== 'starter'" class="text-xs text-gray-600 space-y-1.5">
+                  <ul *ngIf="subscription && normalizedSubscriptionPlanType !== 'starter'" class="text-xs text-gray-600 space-y-1.5">
                     <li class="flex items-start gap-2">
                       <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
-                      <span>{{ subscription?.planType === 'plus' ? i18n.t('settings.subscription.benefit_insurance_plus') : i18n.t('settings.subscription.benefit_insurance') }}</span>
+                      <span>{{ normalizedSubscriptionPlanType === 'plus' ? i18n.t('settings.subscription.benefit_insurance_plus') : i18n.t('settings.subscription.benefit_insurance') }}</span>
                     </li>
                     <li class="flex items-start gap-2">
                       <lucide-icon [img]="CheckCircle2" [size]="14" class="text-emerald-500 mt-0.5 shrink-0"></lucide-icon>
@@ -584,7 +584,7 @@
                         </tr>
                         <tr *ngIf="!isLoadingInvoices && invoiceRows.length === 0">
                           <td class="px-3 py-4 text-xs text-gray-500" colspan="3">
-                            {{ !subscription || subscription?.planType === 'starter' ? i18n.t('settings.subscription.invoices_empty_starter') : i18n.t('settings.subscription.invoices_empty') }}
+                            {{ !subscription || normalizedSubscriptionPlanType === 'starter' ? i18n.t('settings.subscription.invoices_empty_starter') : i18n.t('settings.subscription.invoices_empty') }}
                           </td>
                         </tr>
                         <tr *ngFor="let row of invoiceRows">
@@ -614,7 +614,7 @@
                   </div>
                 </div>
 
-                <div *ngIf="subscription && subscription?.planType !== 'starter'" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div *ngIf="subscription && normalizedSubscriptionPlanType !== 'starter'" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <p class="text-sm font-semibold text-gray-900 mb-2">
                     {{ i18n.t('settings.subscription.cancel_title') }}
                   </p>

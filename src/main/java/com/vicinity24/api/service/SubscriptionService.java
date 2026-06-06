@@ -40,6 +40,12 @@ public class SubscriptionService {
     @Value("${subscription.pro.plan_type:pro}")
     private String proPlanType;
 
+    @Value("${subscription.plus.stripe_price_id:}")
+    private String plusStripePriceId;
+
+    @Value("${subscription.pro.stripe_price_id:}")
+    private String configuredProStripePriceId;
+
     public static final String PLAN_STARTER = "starter";
     public static final String PLAN_PLUS = "plus";
     public static final String PLAN_PRO = "pro";
@@ -230,7 +236,10 @@ public class SubscriptionService {
         if (!isSubscriptionEnforced()) {
             return Optional.empty();
         }
-        return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user).map(this::toDTO);
+        return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user).map(sub -> {
+            reconcileSubscriptionPlanType(sub);
+            return toDTO(sub);
+        });
     }
 
     public boolean isLenderPlan(User user) {
@@ -368,7 +377,10 @@ public class SubscriptionService {
         logger.info("Syncing Stripe subscription for user {}, id: {}, status: {}, plan: {}", 
                    user.getId(), stripeSubscriptionId, stripeStatus, planType);
         LocalDateTime now = LocalDateTime.now();
-        String targetPlan = (planType != null && !planType.isBlank()) ? planType : proPlanType;
+        String targetPlan = (planType != null && !planType.isBlank()) ? planType : null;
+        if ((targetPlan == null || targetPlan.isBlank()) && stripeSubscriptionId != null && !stripeSubscriptionId.isBlank()) {
+            targetPlan = resolvePlanTypeFromStripeSubscription(stripeSubscriptionId);
+        }
 
         Optional<Subscription> existing = subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user);
         Subscription sub;
@@ -376,14 +388,25 @@ public class SubscriptionService {
         if (existing.isPresent()) {
             sub = existing.get();
             sub.setStripeSubscriptionId(stripeSubscriptionId);
-            sub.setPlanType(targetPlan);
+            if (targetPlan == null || targetPlan.isBlank()) {
+                targetPlan = sub.getPlanType();
+            } else {
+                sub.setPlanType(targetPlan);
+            }
         } else {
+            if (targetPlan == null || targetPlan.isBlank()) {
+                targetPlan = proPlanType;
+            }
             sub = Subscription.builder()
                 .user(user)
                 .planType(targetPlan)
                 .createdAt(now)
                 .stripeSubscriptionId(stripeSubscriptionId)
                 .build();
+        }
+
+        if (sub.getPlanType() == null || sub.getPlanType().isBlank()) {
+            sub.setPlanType(targetPlan);
         }
 
         if (stripeStatus != null && !stripeStatus.isBlank()) {
@@ -476,6 +499,7 @@ public class SubscriptionService {
                    user.getId(), stripeId, sub.getStatus());
         
         if (stripeId != null && !stripeId.isBlank()) {
+            reconcileSubscriptionPlanType(sub);
             logger.info("Calling Stripe API to cancel subscription: {}", stripeId);
             // If this call throws, we deliberately do NOT touch the local database
             stripePayment.cancelSubscription(stripeId);
@@ -634,6 +658,40 @@ public class SubscriptionService {
                 .autoChargeAmountCents(subscription.getAutoChargeAmountCents())
                 .autoChargeDate(subscription.getAutoChargeDate())
                 .build();
+    }
+
+    private void reconcileSubscriptionPlanType(Subscription sub) {
+        if (sub == null) return;
+        String stripeSubscriptionId = sub.getStripeSubscriptionId();
+        if (stripeSubscriptionId == null || stripeSubscriptionId.isBlank()) return;
+        String resolvedPlan = resolvePlanTypeFromStripeSubscription(stripeSubscriptionId);
+        if (resolvedPlan != null && !resolvedPlan.equalsIgnoreCase(sub.getPlanType())) {
+            sub.setPlanType(resolvedPlan);
+            subscriptionRepository.save(sub);
+        }
+    }
+
+    private String resolvePlanTypeFromStripeSubscription(String stripeSubscriptionId) {
+        try {
+            com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(stripeSubscriptionId);
+            if (stripeSub == null || stripeSub.getItems() == null || stripeSub.getItems().getData() == null || stripeSub.getItems().getData().isEmpty()) {
+                return null;
+            }
+            String priceId = stripeSub.getItems().getData().get(0).getPrice().getId();
+            return resolvePlanTypeFromPriceId(priceId);
+        } catch (Exception e) {
+            logger.warn("Failed to resolve plan type from Stripe subscription {}", stripeSubscriptionId, e);
+            return null;
+        }
+    }
+
+    private String resolvePlanTypeFromPriceId(String priceId) {
+        if (priceId == null || priceId.isBlank()) return null;
+        String effectivePlusPriceId = runtimeSettingsService.getString("subscription.plus.stripe_price_id", plusStripePriceId);
+        String effectiveProPriceId = runtimeSettingsService.getString("subscription.pro.stripe_price_id", configuredProStripePriceId);
+        if (priceId.equals(effectivePlusPriceId)) return PLAN_PLUS;
+        if (priceId.equals(effectiveProPriceId)) return PLAN_PRO;
+        return null;
     }
 
     private String generateRandomCode() {

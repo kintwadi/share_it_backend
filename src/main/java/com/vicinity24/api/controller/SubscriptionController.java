@@ -214,18 +214,10 @@ public class SubscriptionController {
         if (!normalizedPlan.equals("plus") && !normalizedPlan.equals("pro")) {
             throw new IllegalArgumentException("Unsupported subscription plan: " + planType);
         }
-        if (currentPriceId != null && !currentPriceId.isBlank()) {
-            return currentPriceId;
-        }
-
         String priceSettingKey = normalizedPlan.equals("pro")
                 ? "subscription.pro.stripe_price_id"
                 : "subscription.plus.stripe_price_id";
         String configuredPriceId = runtimeSettingsService.getString(priceSettingKey, currentPriceId);
-        if (configuredPriceId != null && !configuredPriceId.isBlank()) {
-            return configuredPriceId;
-        }
-
         String currency = runtimeSettingsService.getString("subscription.currency", "EUR");
         int amountCents = normalizedPlan.equals("pro")
                 ? runtimeSettingsService.getInt("subscription.pro.monthly_amount_cents", 799)

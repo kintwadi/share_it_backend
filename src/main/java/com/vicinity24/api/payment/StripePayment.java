@@ -396,7 +396,10 @@ public class StripePayment implements PaymentStrategy {
         String productName = null;
         if (isConfigured(productId)) {
             Product product = Product.retrieve(productId);
-            productName = product != null ? product.getName() : null;
+            if (product == null || !Boolean.TRUE.equals(product.getActive())) {
+                return null;
+            }
+            productName = product.getName();
         }
 
         return new SubscriptionCatalogEntry(

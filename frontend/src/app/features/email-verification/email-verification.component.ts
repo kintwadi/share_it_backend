@@ -44,6 +44,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   userEmail = '';
   flow: 'subscription' | 'signup' = 'subscription';
   verificationToken = '';
+  subscriptionCodeAlreadySent = false;
   loading = true;
   submitting = false;
   sending = false;
@@ -83,6 +84,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     const initFlow = String(initParams['flow'] || '').toLowerCase();
     this.flow = initFlow === 'signup' ? 'signup' : 'subscription';
     this.verificationToken = String(initParams['token'] || '');
+    this.subscriptionCodeAlreadySent = String(initParams['sent'] || '').toLowerCase() === '1' || String(initParams['sent'] || '').toLowerCase() === 'true';
     const initEmail = String(initParams['email'] || '');
     if (initEmail) this.userEmail = initEmail;
     if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
@@ -95,6 +97,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       const flow = String(params['flow'] || '').toLowerCase();
       this.flow = flow === 'signup' ? 'signup' : 'subscription';
       this.verificationToken = String(params['token'] || this.verificationToken);
+      this.subscriptionCodeAlreadySent = String(params['sent'] || '').toLowerCase() === '1' || String(params['sent'] || '').toLowerCase() === 'true';
       const email = String(params['email'] || '');
       if (email) this.userEmail = email;
       if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
@@ -147,6 +150,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.render();
     try {
       if (this.flow === 'signup') {
+        this.sent = true;
+        this.startResendCooldown(30);
+      } else if (this.subscriptionCodeAlreadySent) {
         this.sent = true;
         this.startResendCooldown(30);
       } else {

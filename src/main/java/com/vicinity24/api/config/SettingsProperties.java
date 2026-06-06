@@ -20,6 +20,7 @@ public class SettingsProperties {
     @Data
     public static class ServiceConfig {
         private double fee = 2.99;
+        private double feePercent = 0.08;
     }
 
     @Data

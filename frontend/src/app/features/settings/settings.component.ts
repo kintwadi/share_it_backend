@@ -197,7 +197,7 @@ export class SettingsComponent implements OnInit {
   }
 
   get subscriptionPlanLabel(): string {
-    const planType = String(this.subscription?.planType || 'starter');
+    const planType = this.normalizedSubscriptionPlanType;
     if (planType === 'starter') return this.i18n.t('settings.subscription.plan_starter');
     if (planType === 'plus') return this.i18n.t('settings.subscription.plan_plus');
     if (planType === 'pro') return this.i18n.t('settings.subscription.plan_pro');
@@ -222,6 +222,20 @@ export class SettingsComponent implements OnInit {
 
   get isCanceledSubscription(): boolean {
     return String(this.subscription?.status || '').toLowerCase() === 'canceled';
+  }
+
+  get showSubscriptionBadge(): boolean {
+    return !!this.subscription && this.normalizedSubscriptionPlanType !== 'starter';
+  }
+
+  get subscriptionStatusBadgeClass(): string {
+    if (this.isCanceledSubscription) {
+      return 'bg-gray-100 text-gray-700';
+    }
+    if (this.isTrialSubscription) {
+      return 'bg-amber-100 text-amber-700';
+    }
+    return 'bg-emerald-100 text-emerald-700';
   }
 
   get trialCountdownText(): string | null {
@@ -251,9 +265,17 @@ export class SettingsComponent implements OnInit {
 
   get subscriptionUpgradeCta(): string {
     const sub = this.subscription;
-    const planType = String(sub?.planType || 'starter').toLowerCase();
+    const planType = this.normalizedSubscriptionPlanType;
     if (!sub || planType === 'starter') return this.i18n.t('settings.subscription.upgrade_plan');
     return this.i18n.t('settings.subscription.change_plan');
+  }
+
+  get normalizedSubscriptionPlanType(): string {
+    const raw = String(this.subscription?.planType || 'starter').trim().toLowerCase();
+    if (!raw) return 'starter';
+    if (raw === 'verified') return 'plus';
+    if (raw === 'premium') return 'pro';
+    return raw;
   }
 
   goToSubscriptionPlans() {
@@ -499,7 +521,7 @@ export class SettingsComponent implements OnInit {
   }
 
   get isVerifiedSubscriber(): boolean {
-    const plan = String(this.subscription?.planType || 'starter').toLowerCase();
+    const plan = this.normalizedSubscriptionPlanType;
     return plan === 'plus' || plan === 'pro' || plan === 'premium_lender';
   }
 

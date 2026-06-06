@@ -103,7 +103,7 @@ public class EmailService {
         }
     }
 
-    public void sendPickupReadyEmail(String toEmail, String recipientName, String listingTitle, String pickupLocation) {
+    public void sendPickupReadyEmail(String toEmail, String recipientName, String listingTitle, String pickupLocation, String itemReference) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -112,7 +112,7 @@ public class EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Ready for pickup - Vicinity24");
 
-            String htmlContent = buildPickupReadyEmail(recipientName, listingTitle, pickupLocation);
+            String htmlContent = buildPickupReadyEmail(recipientName, listingTitle, pickupLocation, itemReference);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
@@ -166,11 +166,13 @@ public class EmailService {
             """.formatted(code, buildStandardFooter());
     }
 
-    private String buildPickupReadyEmail(String recipientName, String listingTitle, String pickupLocation) {
+    private String buildPickupReadyEmail(String recipientName, String listingTitle, String pickupLocation, String itemReference) {
         String safeRecipient = recipientName != null && !recipientName.isBlank() ? recipientName.trim() : "there";
         String safeTitle = listingTitle != null && !listingTitle.isBlank() ? listingTitle.trim() : "your item";
         String safeLocation = pickupLocation != null ? pickupLocation.trim() : "";
+        String safeItemReference = itemReference != null ? itemReference.trim() : "";
         String locationLine = safeLocation.isEmpty() ? "" : ("<p><b>Pickup location:</b> " + escapeHtml(safeLocation) + "</p>");
+        String itemReferenceLine = safeItemReference.isEmpty() ? "" : ("<p><b>Return item reference:</b> <span style=\"font-family: monospace;\">" + escapeHtml(safeItemReference) + "</span></p>");
         return """
             <!DOCTYPE html>
             <html>
@@ -194,13 +196,14 @@ public class EmailService {
                         <p>Hello %s,</p>
                         <p class="title">%s is ready for pickup.</p>
                         %s
+                        %s
                         <p>You can coordinate the pickup directly in the app chat.</p>
                     </div>
                     %s
                 </div>
             </body>
             </html>
-            """.formatted(escapeHtml(safeRecipient), escapeHtml(safeTitle), locationLine, buildStandardFooter());
+            """.formatted(escapeHtml(safeRecipient), escapeHtml(safeTitle), locationLine, itemReferenceLine, buildStandardFooter());
     }
 
     private String escapeHtml(String s) {
