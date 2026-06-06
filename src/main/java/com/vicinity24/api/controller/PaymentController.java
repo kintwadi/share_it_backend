@@ -1,6 +1,7 @@
 package com.vicinity24.api.controller;
 
 import com.vicinity24.api.payment.StripePayment;
+import com.vicinity24.api.config.RuntimeSettingsService;
 import com.vicinity24.api.repository.ListingRepository;
 import com.vicinity24.api.model.Listing;
 import com.vicinity24.api.dto.PaymentTransactionDTO;
@@ -47,6 +48,7 @@ public class PaymentController {
     private final ListingRepository listingRepository;
     private final UserService userService;
     private final SubscriptionService subscriptionService;
+    private final RuntimeSettingsService runtimeSettingsService;
     private final EscrowService escrowService;
     private final TransactionRepository transactionRepository;
     private final ObjectMapper objectMapper;
@@ -60,15 +62,42 @@ public class PaymentController {
     @org.springframework.beans.factory.annotation.Value("${app.frontend.baseUrl:http://localhost:3001}")
     private String frontendBaseUrl;
 
-    public PaymentController(StripePayment stripePayment, ListingService listingService, ListingRepository listingRepository, UserService userService, SubscriptionService subscriptionService, EscrowService escrowService, TransactionRepository transactionRepository, ObjectMapper objectMapper) {
+    @org.springframework.beans.factory.annotation.Value("${settings.service.fee_percent:0.08}")
+    private double configuredServiceFeePercent;
+
+    public PaymentController(StripePayment stripePayment, ListingService listingService, ListingRepository listingRepository, UserService userService, SubscriptionService subscriptionService, RuntimeSettingsService runtimeSettingsService, EscrowService escrowService, TransactionRepository transactionRepository, ObjectMapper objectMapper) {
         this.stripePayment = stripePayment;
         this.listingService = listingService;
         this.listingRepository = listingRepository;
         this.userService = userService;
         this.subscriptionService = subscriptionService;
+        this.runtimeSettingsService = runtimeSettingsService;
         this.escrowService = escrowService;
         this.transactionRepository = transactionRepository;
         this.objectMapper = objectMapper;
+    }
+
+    private String resolveSubscriptionPlanType(String priceId) {
+        if (priceId == null || priceId.isBlank()) return null;
+        String effectivePlusPriceId = runtimeSettingsService != null
+                ? runtimeSettingsService.getString("subscription.plus.stripe_price_id", plusStripePriceId)
+                : plusStripePriceId;
+        String effectiveProPriceId = runtimeSettingsService != null
+                ? runtimeSettingsService.getString("subscription.pro.stripe_price_id", proStripePriceId)
+                : proStripePriceId;
+        if (priceId.equals(effectivePlusPriceId)) return "plus";
+        if (priceId.equals(effectiveProPriceId)) return "pro";
+        return null;
+    }
+
+    private BigDecimal resolveServiceFeeRate() {
+        double rate = runtimeSettingsService != null
+                ? runtimeSettingsService.getDouble("settings.service.fee_percent", configuredServiceFeePercent)
+                : configuredServiceFeePercent;
+        if (!Double.isFinite(rate) || rate < 0) {
+            rate = configuredServiceFeePercent;
+        }
+        return BigDecimal.valueOf(rate);
     }
 
     @GetMapping("/methods")
@@ -334,7 +363,7 @@ public class PaymentController {
         BigDecimal depositAmount = BigDecimal.ZERO;
         String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";
         if ("FEE".equals(bp)) {
-            serviceFee = totalCost.multiply(new BigDecimal("0.08")).setScale(2, java.math.RoundingMode.HALF_UP);
+            serviceFee = totalCost.multiply(resolveServiceFeeRate()).setScale(2, java.math.RoundingMode.HALF_UP);
         } else if ("DEPOSIT".equals(bp)) {
             depositAmount = new BigDecimal("50.00");
         }
@@ -441,11 +470,7 @@ public class PaymentController {
                             String planType = null;
                             if (stripeSub.getItems() != null && stripeSub.getItems().getData() != null && !stripeSub.getItems().getData().isEmpty()) {
                                  String priceId = stripeSub.getItems().getData().get(0).getPrice().getId();
-                                 if (priceId.equals(plusStripePriceId)) {
-                                     planType = "plus";
-                                 } else if (priceId.equals(proStripePriceId)) {
-                                     planType = "pro";
-                                 }
+                                 planType = resolveSubscriptionPlanType(priceId);
                             }
                             
                             log.info("Syncing subscription from checkout.session.completed: subId={}, status={}, userId={}, plan={}",
@@ -505,11 +530,7 @@ public class PaymentController {
                             String effectiveStatus = "customer.subscription.deleted".equals(event.getType()) ? "canceled" : stripeStatus;
                             
                             String priceId = subNode.path("items").path("data").get(0).path("price").path("id").asText(null);
-                            String planType = null;
-                            if (priceId != null) {
-                                if (priceId.equals(plusStripePriceId)) planType = "plus";
-                                else if (priceId.equals(proStripePriceId)) planType = "pro";
-                            }
+                            String planType = resolveSubscriptionPlanType(priceId);
                             
                             subscriptionService.syncProSubscriptionFromStripe(user, stripeId, effectiveStatus, planType);
                         } catch (IllegalArgumentException e) {

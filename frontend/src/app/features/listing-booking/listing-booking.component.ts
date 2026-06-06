@@ -226,7 +226,19 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     if (this.isPartnerListing) return 0;
     if (this.subscriptionDisabledLendFee > 0) return this.subscriptionDisabledLendFee;
     if (this.selectedPath !== 'FEE') return 0;
-    return Math.round(this.baseTotal * 0.08 * 100) / 100;
+    return Math.round(this.baseTotal * this.serviceFeeRate * 100) / 100;
+  }
+
+  get serviceFeeRate() {
+    const rate = this.settingsConfig.getNumber('service', 'fee_percent', 0.08);
+    if (!Number.isFinite(rate) || rate < 0) return 0.08;
+    return rate;
+  }
+
+  get serviceFeePercentLabel() {
+    const percent = this.serviceFeeRate * 100;
+    const rounded = Math.round(percent * 100) / 100;
+    return `${Number.isInteger(rounded) ? rounded.toFixed(0) : rounded}%`;
   }
 
   get subscriptionDisabledLendFee() {
