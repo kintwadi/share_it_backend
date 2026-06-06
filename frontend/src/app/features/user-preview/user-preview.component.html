@@ -2,7 +2,7 @@
   <div class="max-w-xl mx-auto px-4">
     <button type="button" class="back" (click)="back()">
       <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
-      Back
+      {{ i18n.t('common.back') }}
     </button>
 
     <div class="panel" *ngIf="user; else missingTpl">
@@ -11,27 +11,27 @@
           <lucide-icon [img]="UserIcon" [size]="18"></lucide-icon>
         </div>
         <div>
-          <div class="title">User</div>
+          <div class="title">{{ i18n.t('user_preview.title') }}</div>
           <div class="subtitle">{{ user.name }}</div>
         </div>
       </div>
 
       <div class="panel__body">
         <div class="row">
-          <div class="k">Email</div>
+          <div class="k">{{ i18n.t('user_preview.email') }}</div>
           <div class="v">{{ user.email }}</div>
         </div>
         <div class="row">
-          <div class="k">Trust</div>
-          <div class="v">{{ user.trustScore }}% • {{ user.vouchCount }} Vouches</div>
+          <div class="k">{{ i18n.t('user_preview.trust') }}</div>
+          <div class="v">{{ user.trustScore }}% • {{ user.vouchCount }} {{ i18n.t('user_preview.vouches') }}</div>
         </div>
       </div>
 
       <div class="panel__foot">
-        <button type="button" class="btn btn--secondary" (click)="back()">Close</button>
+        <button type="button" class="btn btn--secondary" (click)="back()">{{ i18n.t('common.close') }}</button>
         <button type="button" class="btn btn--primary" (click)="message()">
           <lucide-icon [img]="MessageSquare" [size]="16"></lucide-icon>
-          Message
+          {{ i18n.t('user_preview.message') }}
         </button>
       </div>
     </div>
@@ -39,11 +39,11 @@
     <ng-template #missingTpl>
       <div class="panel">
         <div class="panel__head">
-          <div class="title">User</div>
-          <div class="subtitle">Not available</div>
+          <div class="title">{{ i18n.t('user_preview.title') }}</div>
+          <div class="subtitle">{{ i18n.t('user_preview.not_available') }}</div>
         </div>
         <div class="panel__foot">
-          <button type="button" class="btn btn--secondary" (click)="back()">Back</button>
+          <button type="button" class="btn btn--secondary" (click)="back()">{{ i18n.t('common.back') }}</button>
         </div>
       </div>
     </ng-template>

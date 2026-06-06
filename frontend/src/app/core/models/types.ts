@@ -22,6 +22,8 @@ export enum AvailabilityStatus {
   AVAILABLE = 'AVAILABLE',
   BORROWED = 'BORROWED',
   PENDING = 'PENDING',
+  READY_FOR_PICKUP = 'READY_FOR_PICKUP',
+  WAITING_FOR_RETURN = 'WAITING_FOR_RETURN',
   SCHEDULED = 'SCHEDULED',
   BLOCKED = 'BLOCKED',
   HIDDEN = 'HIDDEN',
@@ -58,17 +60,31 @@ export enum ReturnStatus {
   DISPUTED = 'DISPUTED'
 }
 
+export enum ReturnMethod {
+  QR_CODE = 'QR_CODE',
+  MANUAL = 'MANUAL'
+}
+
 export interface ReturnSessionResponse {
   id: string;
   listingId: string;
-  borrowerCode: string;
-  lenderCode: string;
+  borrowerName?: string | null;
+  lenderName?: string | null;
+  itemReference?: string | null;
+  returnMethod?: ReturnMethod | null;
+  returnPlace?: string | null;
+  returnAddress?: string | null;
+  submittedAt?: string | null;
+  acceptedAt?: string | null;
+  disputeReason?: string | null;
+  borrowerCode?: string | null;
+  lenderCode?: string | null;
   borrowerScanned: boolean;
   lenderScanned: boolean;
   manualBorrowerConfirmed: boolean;
   manualLenderConfirmed: boolean;
   status: ReturnStatus;
-  expiresAt: string;
+  expiresAt?: string | null;
 }
 
 export interface User {
@@ -122,7 +138,7 @@ export interface Listing {
     y: number;
   };
   owner?: User;
-  pickupLocation?: PickupLocation;
+  pickupLocation?: ExchangeLocation;
   pickupLocationCustom?: string;
   pickupLocationStreet?: string;
   pickupLocationHouseNumber?: string;
@@ -132,6 +148,9 @@ export interface Listing {
   availableUnlimited?: boolean;
   availableFrom?: string | null;
   availableTo?: string | null;
+  adminReturnRequestedAt?: string | null;
+  adminReturnRequestedBy?: string | null;
+  adminReturnRequestReason?: string | null;
 }
 
 export interface InsuranceTypeInfo {
@@ -180,14 +199,22 @@ export interface ListingRecommendationResult {
   similarItems: SimilarItem[];
 }
 
-export interface PickupLocation {
+export interface ExchangeLocation {
   id: string;
+  referenceId?: string;
   name: string;
   address: string;
+  streetAddress?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
   location: {
-    x: number;
-    y: number;
+    x: number | null;
+    y: number | null;
   };
+  operatingTimeFrom?: string | null;
+  operatingTimeTo?: string | null;
+  active?: boolean;
 }
 
 export interface Message {

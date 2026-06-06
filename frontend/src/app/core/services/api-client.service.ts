@@ -42,6 +42,15 @@ export class ApiClientService {
     });
   }
 
+  getText(path: string, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<string> {
+    const url = joinUrl(this.baseUrl, path);
+    return this.http.get(url, {
+      responseType: 'text',
+      params: options?.params ? new HttpParams({ fromObject: options.params as any }) : undefined,
+      headers: options?.headers ? new HttpHeaders(options.headers) : undefined
+    });
+  }
+
   post<T>(path: string, body: any, options?: { params?: Record<string, any>; headers?: Record<string, string> }): Observable<T> {
     const url = joinUrl(this.baseUrl, path);
     return this.http.post<T>(url, body, {

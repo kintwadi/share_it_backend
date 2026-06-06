@@ -1,20 +1,21 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard } from 'lucide-angular';
+import { LucideAngularModule, Package, Upload, Image as ImageIcon, Loader2, Sparkles, ChevronDown, X, Zap, ShieldCheck, Camera, CalendarDays, Infinity, Plus, CheckCircle2, CreditCard, Info, Search } from 'lucide-angular';
 import { Subject, debounceTime } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
-import { ListingType, Category, PickupLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
+import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
 import { ButtonComponent } from '../../shared/components/button/button';
+import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 
 @Component({
   selector: 'app-new-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent],
   templateUrl: './new-item.component.html',
   styleUrl: './new-item.component.css'
 })
@@ -23,6 +24,8 @@ export class NewItemComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private fb = inject(FormBuilder);
+  private locationApi = inject(LocationApiService);
   i18n = inject(I18nService);
   settingsConfig = inject(SettingsConfigService);
   subscriptionFeature = inject(SubscriptionFeatureService);
@@ -42,6 +45,8 @@ export class NewItemComponent implements OnInit {
   readonly Plus = Plus;
   readonly CheckCircle2 = CheckCircle2;
   readonly CreditCard = CreditCard;
+  readonly Info = Info;
+  readonly Search = Search;
 
   readonly ListingType = ListingType;
 
@@ -53,7 +58,7 @@ export class NewItemComponent implements OnInit {
 
   editId: string | null = null;
   categories: Category[] = [];
-  pickupLocations: PickupLocation[] = [];
+  pickupLocations: ExchangeLocation[] = [];
   subscription: any | null = null;
   subscriptionConfig = { starter: true, plus: true, pro: true };
 
@@ -66,18 +71,40 @@ export class NewItemComponent implements OnInit {
   gallery: string[] = [];
   x: number | null = null;
   y: number | null = null;
+  addressForm = this.fb.group({
+    streetAddress: [''],
+    city: [''],
+    postalCode: [''],
+    country: ['PT'],
+  });
+  locationLookupLoading = false;
+  locationLookupError: string | null = null;
+  locationPermissionHintVisible = false;
+  readonly countryOptions = [
+    { code: 'PT', label: 'Portugal' },
+    { code: 'DE', label: 'Germany' },
+    { code: 'FR', label: 'France' },
+    { code: 'BE', label: 'Belgium' },
+    { code: 'NL', label: 'Netherlands' },
+    { code: 'ES', label: 'Spain' },
+    { code: 'IT', label: 'Italy' },
+    { code: 'AT', label: 'Austria' },
+    { code: 'CH', label: 'Switzerland' },
+    { code: 'LU', label: 'Luxembourg' },
+  ];
   autoApprove = false;
   insuranceRequired = false;
   pickupLocationId: string | null = null;
 
-  pickupOption: 'concierge' | 'bakery' | 'public' | 'custom' = 'concierge';
+  pickupOption: 'exchange' | 'custom' = 'exchange';
   pickupLocationStreet = '';
   pickupLocationHouseNumber = '';
   pickupLocationCity = '';
   pickupLocationZip = '';
-  startTime = '17:00';
-  endTime = '19:00';
-  timeError: string | null = null;
+  pickupCustomQuery = '';
+  pickupCustomSuggestions: LocationResponse[] = [];
+  pickupCustomLoading = false;
+  pickupCustomError: string | null = null;
   availableFromDate = '';
   availableFromTime = '10:00';
   availableUnlimited = false;
@@ -87,6 +114,7 @@ export class NewItemComponent implements OnInit {
   recommendationLoading = false;
   recommendationError: string | null = null;
   private recommendationSubject = new Subject<void>();
+  private pickupCustomQuerySubject = new Subject<string>();
 
   requiredPlan: 'plus' | 'pro' = 'pro';
   payoutSetupLoading = false;
@@ -99,6 +127,7 @@ export class NewItemComponent implements OnInit {
     '14:00','14:30','15:00','15:30','16:00','16:30',
     '17:00','17:30','18:00','18:30','19:00','19:30','20:00'
   ];
+  private readonly allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
   private render() {
     try {
@@ -133,57 +162,86 @@ export class NewItemComponent implements OnInit {
     return this.settingsConfig.isSectionEnabled('enable', 'sell');
   }
 
-  get pickupConcierge(): PickupLocation | null {
-    return this.findPickupByKeyword('concierge') || this.pickupLocations[0] || null;
+  get selectedExchangeLocation(): ExchangeLocation | null {
+    if (this.pickupOption !== 'exchange') return null;
+    const id = String(this.pickupLocationId || '');
+    if (!id) return null;
+    return this.pickupLocations.find(p => String(p.id) === id) ?? null;
   }
 
-  get pickupBakery(): PickupLocation | null {
-    return this.findPickupByKeyword('bakery') || this.pickupLocations[0] || null;
-  }
-
-  get pickupPublic(): PickupLocation | null {
-    return this.findPickupByKeyword('public') || this.pickupLocations[0] || null;
-  }
-
-  private findPickupByKeyword(keyword: string): PickupLocation | null {
-    const k = keyword.toLowerCase();
-    return this.pickupLocations.find(p => String(p.name || '').toLowerCase().includes(k)) || null;
-  }
-
-  selectPickupOption(opt: 'concierge' | 'bakery' | 'public' | 'custom') {
-    this.pickupOption = opt;
-    let selected: PickupLocation | null = null;
-    if (opt === 'concierge') selected = this.pickupConcierge;
-    if (opt === 'bakery') selected = this.pickupBakery;
-    if (opt === 'public') selected = this.pickupPublic;
-    this.pickupLocationId = opt === 'custom' ? null : (selected ? String(selected.id) : null);
-    if (opt !== 'custom') {
-      this.pickupLocationStreet = '';
-      this.pickupLocationHouseNumber = '';
-      this.pickupLocationCity = '';
-      this.pickupLocationZip = '';
-    }
+  selectExchangeLocation(loc: ExchangeLocation) {
+    this.pickupOption = 'exchange';
+    this.pickupLocationId = loc?.id ? String(loc.id) : null;
+    this.pickupLocationStreet = '';
+    this.pickupLocationHouseNumber = '';
+    this.pickupLocationCity = '';
+    this.pickupLocationZip = '';
+    this.pickupCustomQuery = '';
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
     this.render();
   }
 
-  handleStartChange(value: string) {
-    this.startTime = value;
-    if (this.endTime && value && this.endTime <= value) {
-      this.timeError = this.i18n.t('new_item.error_time_order');
-    } else {
-      this.timeError = null;
-    }
+  selectCustomPickup() {
+    this.pickupOption = 'custom';
+    this.pickupLocationId = null;
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
     this.render();
   }
 
-  handleEndChange(value: string) {
-    this.endTime = value;
-    if (this.startTime && value && value <= this.startTime) {
-      this.timeError = this.i18n.t('new_item.error_time_order');
-    } else {
-      this.timeError = null;
+  onPickupCustomQueryChange(v: string) {
+    this.pickupCustomQuery = v;
+    this.pickupCustomQuerySubject.next(v);
+  }
+
+  private async loadPickupCustomSuggestions(q: string) {
+    const query = String(q || '').trim();
+    if (query.length < 2) {
+      this.pickupCustomSuggestions = [];
+      this.pickupCustomLoading = false;
+      this.render();
+      return;
     }
+    this.pickupCustomLoading = true;
+    this.pickupCustomError = null;
     this.render();
+    try {
+      this.pickupCustomSuggestions = await this.locationApi.autocomplete(query, undefined, 6);
+    } catch {
+      this.pickupCustomSuggestions = [];
+      this.pickupCustomError = this.i18n.t('new_item.pickup_custom_error');
+    } finally {
+      this.pickupCustomLoading = false;
+      this.render();
+    }
+  }
+
+  selectPickupCustomSuggestion(s: LocationResponse) {
+    this.pickupCustomSuggestions = [];
+    this.pickupCustomError = null;
+    this.pickupCustomQuery = String(s.displayName || s.streetAddress || '').trim();
+
+    const streetAddress = String(s.streetAddress || '').trim();
+    const split = this.splitStreetAndHouse(streetAddress);
+    if (split.street) this.pickupLocationStreet = split.street;
+    if (split.house) this.pickupLocationHouseNumber = split.house;
+    this.pickupLocationCity = String(s.city || this.pickupLocationCity || '').trim();
+    this.pickupLocationZip = String(s.postalCode || this.pickupLocationZip || '').trim();
+    this.render();
+  }
+
+  private splitStreetAndHouse(streetAddress: string): { street: string; house: string } {
+    const s = String(streetAddress || '').trim();
+    if (!s) return { street: '', house: '' };
+
+    const startMatch = s.match(/^(\d+[a-zA-Z]?)\s+(.+)$/);
+    if (startMatch) return { house: startMatch[1], street: startMatch[2].trim() };
+
+    const endMatch = s.match(/^(.+?)\s+(\d+[a-zA-Z]?)$/);
+    if (endMatch) return { street: endMatch[1].trim(), house: endMatch[2] };
+
+    return { street: s, house: '' };
   }
 
   setUnlimited(val: boolean) {
@@ -195,6 +253,9 @@ export class NewItemComponent implements OnInit {
   ngOnInit() {
     this.recommendationSubject.pipe(debounceTime(450)).subscribe(() => {
       this.runRecommendation();
+    });
+    this.pickupCustomQuerySubject.pipe(debounceTime(250)).subscribe(q => {
+      this.loadPickupCustomSuggestions(q);
     });
 
     this.route.paramMap.subscribe(params => {
@@ -219,7 +280,7 @@ export class NewItemComponent implements OnInit {
       const subscriptionEnabled = this.subscriptionFeature.enabled();
       const [cats, locs, subCfg, sub] = await Promise.all([
         this.api.getCategories(),
-        this.api.getPickupLocations(),
+        this.api.getExchangeLocations(),
         subscriptionEnabled ? this.api.getSubscriptionConfig().catch(() => ({ starter: true, plus: true, pro: true })) : Promise.resolve({ starter: true, plus: true, pro: true }),
         subscriptionEnabled ? this.api.getCurrentSubscription().catch(() => null) : Promise.resolve(null),
       ]);
@@ -247,15 +308,14 @@ export class NewItemComponent implements OnInit {
         }
       }
 
-      if (!this.pickupLocationId && this.pickupLocations.length > 0) {
-        this.selectPickupOption(this.pickupOption);
-      } else if (this.pickupLocationId) {
-        const selected = this.pickupLocations.find(p => String(p.id) === String(this.pickupLocationId));
-        const name = String(selected?.name || '').toLowerCase();
-        if (name.includes('bakery')) this.pickupOption = 'bakery';
-        else if (name.includes('public')) this.pickupOption = 'public';
-        else this.pickupOption = 'concierge';
+      if (this.pickupLocationId) {
+        this.pickupOption = 'exchange';
       } else if (this.pickupLocationCity || this.pickupLocationZip) {
+        this.pickupOption = 'custom';
+      } else if (this.pickupLocations.length > 0) {
+        this.pickupOption = 'exchange';
+        this.pickupLocationId = String(this.pickupLocations[0].id);
+      } else {
         this.pickupOption = 'custom';
       }
     } catch (e: any) {
@@ -281,9 +341,8 @@ export class NewItemComponent implements OnInit {
     this.pickupLocationHouseNumber = String((listing as any).pickupLocationHouseNumber || '');
     this.pickupLocationCity = String((listing as any).pickupLocationCity || '');
     this.pickupLocationZip = String((listing as any).pickupLocationZip || '');
-    if (!this.pickupLocationId && (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip)) {
-      this.pickupOption = 'custom';
-    }
+    if (this.pickupLocationId) this.pickupOption = 'exchange';
+    else if (this.pickupLocationStreet || this.pickupLocationHouseNumber || this.pickupLocationCity || this.pickupLocationZip) this.pickupOption = 'custom';
     const availableUnlimited = !!(listing as any).availableUnlimited;
     const availableFrom = (listing as any).availableFrom ? String((listing as any).availableFrom) : '';
     this.availableUnlimited = availableUnlimited;
@@ -398,6 +457,15 @@ export class NewItemComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    if (this.uploadingCover) return;
+    const fileError = this.validateSelectedImageFile(file);
+    if (fileError) {
+      this.error = fileError;
+      input.value = '';
+      this.render();
+      return;
+    }
+    this.error = null;
     this.uploadingCover = true;
     this.render();
     const localUrl = URL.createObjectURL(file);
@@ -405,7 +473,10 @@ export class NewItemComponent implements OnInit {
     try {
       const url = await this.api.uploadListingImage(file);
       if (url) this.imageUrl = url;
-    } catch { }
+    } catch (e: any) {
+      this.imageUrl = '';
+      this.error = this.mapImageUploadError(e, file);
+    }
     this.uploadingCover = false;
     input.value = '';
     this.render();
@@ -415,6 +486,21 @@ export class NewItemComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const files = input.files ? Array.from(input.files) : [];
     if (files.length === 0) return;
+    if (this.uploadingGallery) return;
+    for (const file of files) {
+      const fileError = this.validateSelectedImageFile(file);
+      if (fileError) {
+        this.error = fileError;
+        input.value = '';
+        this.render();
+        return;
+      }
+    } else if (!this.selectedExchangeLocation) {
+      this.error = this.i18n.t('new_item.error.pickup_location_not_found');
+      this.render();
+      return;
+    }
+    this.error = null;
     this.uploadingGallery = true;
     this.render();
 
@@ -432,7 +518,10 @@ export class NewItemComponent implements OnInit {
             this.gallery = next;
           }
         }
-      } catch { }
+      } catch (e: any) {
+        this.gallery = this.gallery.filter(g => g !== localUrl);
+        this.error = this.mapImageUploadError(e, file);
+      }
     }
 
     this.uploadingGallery = false;
@@ -443,6 +532,80 @@ export class NewItemComponent implements OnInit {
   removeGalleryImage(i: number) {
     this.gallery = this.gallery.filter((_, idx) => idx !== i);
     this.render();
+  }
+
+  private validateSelectedImageFile(file: File): string | null {
+    const ext = this.extractFileExtension(file?.name || '');
+    if (!ext || !this.allowedImageExtensions.includes(ext)) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    const type = String(file?.type || '').toLowerCase();
+    if (type && !type.startsWith('image/')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    return null;
+  }
+
+  private mapImageUploadError(error: any, file: File): string {
+    const localValidation = this.validateSelectedImageFile(file);
+    if (localValidation) return localValidation;
+    const raw = String(
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    return this.i18n.t('new_item.error.upload_failed');
+  }
+
+  private extractFileExtension(filename: string): string {
+    const value = String(filename || '').trim().toLowerCase();
+    const dot = value.lastIndexOf('.');
+    if (dot < 0 || dot >= value.length - 1) return '';
+    return value.slice(dot + 1);
+  }
+
+  private mapListingSaveError(error: any): string {
+    const raw = String(
+      error?.error?.error ||
+      error?.error?.message ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('subscription_required_for_lending')) {
+      return this.i18n.t('new_item.error.subscription_required_for_lending');
+    }
+    if (raw.includes('subscription_required_for_selling')) {
+      return this.i18n.t('new_item.error.subscription_required_for_selling');
+    }
+    if (raw.includes('selling_disabled')) {
+      return this.i18n.t('new_item.error.selling_disabled');
+    }
+    if (raw.includes('pickup_location_not_found')) {
+      return this.i18n.t('new_item.error.pickup_location_not_found');
+    }
+    if (raw.includes('validation_error')) {
+      return this.i18n.t('new_item.error.required_fields');
+    }
+    if (raw.includes('invalid_request_body')) {
+      return this.i18n.t('new_item.error.invalid_request_body');
+    }
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    if (raw.includes('forbidden')) {
+      return this.i18n.t('new_item.error.forbidden');
+    }
+    return this.i18n.t('new_item.error.save_failed');
   }
 
   goBack() {
@@ -458,20 +621,19 @@ export class NewItemComponent implements OnInit {
 
   async handleSave() {
     this.error = null;
-    this.timeError = null;
     this.availabilityError = null;
+    this.locationLookupError = null;
+    if (this.uploadingCover || this.uploadingGallery) {
+      this.error = this.i18n.t('new_item.error.wait_upload');
+      this.render();
+      return;
+    }
 
     if (!this.availableUnlimited && !this.availableFromDate) {
       this.availabilityError = this.i18n.t('new_item.error_available_from_required');
       this.render();
       return;
     }
-    if (!this.startTime || !this.endTime || this.endTime <= this.startTime) {
-      this.error = this.i18n.t('new_item.error_time_window');
-      this.render();
-      return;
-    }
-
     if (!this.title.trim() || !this.category || !this.type) {
       this.error = this.i18n.t('new_item.error.required_fields');
       this.render();
@@ -479,6 +641,22 @@ export class NewItemComponent implements OnInit {
     }
     if (!this.imageUrl.trim()) {
       this.error = this.i18n.t('new_item.error.cover_required');
+      this.render();
+      return;
+    }
+    if (String(this.imageUrl || '').startsWith('blob:') || (this.gallery || []).some(g => String(g || '').startsWith('blob:'))) {
+      this.error = this.i18n.t('new_item.error.wait_upload');
+      this.render();
+      return;
+    }
+
+    const address = this.addressForm.getRawValue();
+    const streetAddress = String(address.streetAddress || '').trim();
+    const city = String(address.city || '').trim();
+    const postalCode = String(address.postalCode || '').trim();
+    const country = String(address.country || '').trim();
+    if (streetAddress.length < 2 || city.length < 2 || postalCode.length < 3 || country.length < 2) {
+      this.error = this.i18n.t('new_item.error.address_required');
       this.render();
       return;
     }
@@ -523,6 +701,10 @@ export class NewItemComponent implements OnInit {
         insuranceRequired: !!this.insuranceRequired,
         x: this.x ?? undefined,
         y: this.y ?? undefined,
+        streetAddress,
+        city,
+        postalCode,
+        country,
         availableUnlimited,
         availableFrom,
         availableTo: null,
@@ -541,9 +723,56 @@ export class NewItemComponent implements OnInit {
       }
       this.router.navigate(['/dashboard']);
     } catch (e: any) {
-      this.error = e?.message || this.i18n.t('new_item.error.save_failed');
+      this.error = this.mapListingSaveError(e);
     } finally {
       this.saving = false;
+      this.render();
+    }
+  }
+
+  async useMyCurrentLocation() {
+    this.locationLookupError = null;
+    if (!('geolocation' in navigator)) {
+      this.locationLookupError = this.i18n.t('new_item.error.geo_not_supported');
+      this.render();
+      return;
+    }
+
+    this.locationPermissionHintVisible = true;
+    this.locationLookupLoading = true;
+    this.render();
+    try {
+      await new Promise<void>(resolve => setTimeout(resolve, 50));
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+      });
+
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      this.x = lat;
+      this.y = lng;
+
+      const loc = await this.locationApi.reverseGeocode(lat, lng);
+      const cc = String(loc.countryCode || '').toUpperCase();
+      const selectedCountry = this.countryOptions.some(c => c.code === cc) ? cc : String(this.addressForm.get('country')?.value || 'PT');
+      this.addressForm.patchValue({
+        streetAddress: String(loc.streetAddress || ''),
+        city: String(loc.city || ''),
+        postalCode: String(loc.postalCode || ''),
+        country: selectedCountry,
+      });
+    } catch (err: any) {
+      const code = typeof err?.code === 'number' ? Number(err.code) : null;
+      if (code === 1) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_denied');
+      } else if (code === 3) {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_timeout');
+      } else {
+        this.locationLookupError = this.i18n.t('new_item.error.geo_failed');
+      }
+    } finally {
+      this.locationLookupLoading = false;
+      this.locationPermissionHintVisible = false;
       this.render();
     }
   }

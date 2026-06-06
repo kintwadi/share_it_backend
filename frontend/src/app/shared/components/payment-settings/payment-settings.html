@@ -14,7 +14,7 @@
       <div class="font-bold">{{notice.title}}</div>
       <div class="text-xs mt-1">{{notice.message}}</div>
     </div>
-    <button type="button" class="text-xs font-bold px-2 py-1 rounded-lg border border-gray-200 bg-white" (click)="notice = null">Close</button>
+    <button type="button" class="text-xs font-bold px-2 py-1 rounded-lg border border-gray-200 bg-white" (click)="notice = null">{{ i18n.t('common.close') }}</button>
   </div>
 
   <div class="rounded-xl border border-gray-200 overflow-hidden">
@@ -69,7 +69,7 @@
                 <td class="px-3 py-2 text-gray-700">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-semibold"
                     [ngClass]="tx.direction === 'RECEIVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'">
-                    {{ tx.direction === 'RECEIVED' ? 'Received' : 'Paid' }}
+                    {{ tx.direction === 'RECEIVED' ? i18n.t('payments.direction_received') : i18n.t('payments.direction_paid') }}
                   </span>
                 </td>
                 <td class="px-3 py-2 text-gray-700">{{tx.amount}} {{tx.currency}}</td>

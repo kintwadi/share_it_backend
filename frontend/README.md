@@ -1,4 +1,4 @@
-# ShareItClient
+# Vicinity24 Client
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
@@ -7,8 +7,8 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 Run `npm start` for a dev server. Navigate to `http://localhost:4200/`.
 
 Notes:
-- The app uses relative API paths (`/shareit/api`, `/shareit/ws`) in dev.
-- The dev server proxies `/shareit/*` to `http://localhost:8081` via `proxy.conf.json`.
+- The app uses relative API paths (`/api/v1`, `/ws`) in dev.
+- The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via `proxy.conf.json`.
 
 ## Code scaffolding
 

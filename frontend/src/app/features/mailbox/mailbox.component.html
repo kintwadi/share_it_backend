@@ -3,16 +3,16 @@
     <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="text-lg font-bold text-gray-900">Mailbox</div>
+          <div class="text-lg font-bold text-gray-900">{{ i18n.t('mailbox.title') }}</div>
           <div class="hidden md:flex items-center gap-2 text-xs text-gray-500">
-            <span class="font-semibold text-gray-700">{{ currentTab() === 'inbox' ? 'Inbox' : 'Outbox' }}</span>
+            <span class="font-semibold text-gray-700">{{ currentTab() === 'inbox' ? i18n.t('mailbox.inbox') : i18n.t('mailbox.outbox') }}</span>
             <span class="text-gray-300">•</span>
             <span>{{ messages().length }}</span>
           </div>
         </div>
         <button (click)="composeTo()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2">
           <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
-          Compose
+          {{ i18n.t('mailbox.compose') }}
         </button>
       </div>
 
@@ -27,7 +27,7 @@
               type="text"
               [ngModel]="filterText()"
               (ngModelChange)="filterText.set($event)"
-              placeholder="Search mail…"
+              [placeholder]="i18n.t('mailbox.search_placeholder')"
               class="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
             />
           </div>
@@ -35,14 +35,14 @@
             <button (click)="setTab('inbox')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold" [ngClass]="currentTab() === 'inbox' ? 'bg-white border border-gray-200 text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-white'">
               <span class="flex items-center gap-2">
                 <lucide-icon [img]="InboxIcon" [size]="16" class="text-gray-400"></lucide-icon>
-                Inbox
+                {{ i18n.t('mailbox.inbox') }}
               </span>
               <span *ngIf="inboxMessages().length" class="text-[11px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">{{ inboxMessages().length }}</span>
             </button>
             <button (click)="setTab('outbox')" class="mt-1 w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold" [ngClass]="currentTab() === 'outbox' ? 'bg-white border border-gray-200 text-gray-900 shadow-sm' : 'text-gray-600 hover:bg-white'">
               <span class="flex items-center gap-2">
                 <lucide-icon [img]="SendIcon" [size]="16" class="text-gray-400"></lucide-icon>
-                Sent
+                {{ i18n.t('mailbox.sent') }}
               </span>
             </button>
           </div>
@@ -52,12 +52,12 @@
           <div class="border-b lg:border-b-0 lg:border-r border-gray-200">
             <div *ngIf="isLoading()" class="p-8 text-center text-gray-400">
               <div class="w-7 h-7 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin mx-auto mb-3"></div>
-              <div class="text-sm">Loading…</div>
+              <div class="text-sm">{{ i18n.t('common.loading') }}</div>
             </div>
 
             <div *ngIf="!isLoading() && messages().length === 0" class="p-10 text-center text-gray-500">
-              <div class="text-sm font-semibold">No messages</div>
-              <div class="text-xs text-gray-400 mt-1">This folder is empty.</div>
+              <div class="text-sm font-semibold">{{ i18n.t('mailbox.empty_title') }}</div>
+              <div class="text-xs text-gray-400 mt-1">{{ i18n.t('mailbox.empty_subtitle') }}</div>
             </div>
 
             <div *ngIf="!isLoading() && messages().length" class="divide-y divide-gray-100">
@@ -74,7 +74,7 @@
                       <ng-container *ngIf="currentTab() === 'inbox'">{{ msg.senderEmail || msg.senderId }}</ng-container>
                       <ng-container *ngIf="currentTab() === 'outbox'">{{ msg.receiverEmail || msg.receiverId }}</ng-container>
                     </div>
-                    <div class="text-xs text-gray-500 truncate mt-0.5">{{ (msg.content || '').split('\n')[0] || '(no subject)' }}</div>
+                    <div class="text-xs text-gray-500 truncate mt-0.5">{{ (msg.content || '').split('\n')[0] || i18n.t('mailbox.no_subject') }}</div>
                   </div>
                   <div class="text-[11px] text-gray-400 whitespace-nowrap">{{ msg.timestamp | date:'shortDate' }}</div>
                 </div>
@@ -83,30 +83,30 @@
           </div>
 
           <div class="flex flex-col">
-            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div class="px-3 sm:px-4 py-3 border-b border-gray-200 flex items-start sm:items-center justify-between gap-3">
               <div class="min-w-0">
-                <div class="text-sm font-bold text-gray-900 truncate">{{ selectedTitle() || 'Select a message' }}</div>
+                <div class="text-sm font-bold text-gray-900 truncate">{{ selectedTitle() || i18n.t('mailbox.select_message') }}</div>
                 <div class="text-xs text-gray-500 truncate" *ngIf="selectedPeerLabel()">
-                  <ng-container *ngIf="currentTab() === 'inbox'">From: {{ selectedPeerLabel() }}</ng-container>
-                  <ng-container *ngIf="currentTab() === 'outbox'">To: {{ selectedPeerLabel() }}</ng-container>
+                  <ng-container *ngIf="currentTab() === 'inbox'">{{ i18n.t('mailbox.from_prefix') }} {{ selectedPeerLabel() }}</ng-container>
+                  <ng-container *ngIf="currentTab() === 'outbox'">{{ i18n.t('mailbox.to_prefix') }} {{ selectedPeerLabel() }}</ng-container>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" *ngIf="currentTab() === 'inbox' && selectedMessage()" (click)="replyToSelected()" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-sm font-semibold flex items-center gap-2">
+              <div class="flex flex-wrap items-center justify-end gap-2 max-w-full">
+                <button type="button" *ngIf="currentTab() === 'inbox' && selectedMessage()" (click)="replyToSelected()" class="px-2.5 sm:px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
                   <lucide-icon [img]="EditIcon" [size]="16"></lucide-icon>
-                  Reply
+                  {{ i18n.t('mailbox.reply') }}
                 </button>
-                <button type="button" [disabled]="!selectedMessage()" (click)="selectedMessage() ? confirmDelete(selectedMessage()!.id) : null" class="px-3 py-2 rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-white text-sm font-semibold flex items-center gap-2">
+                <button type="button" [disabled]="!selectedMessage()" (click)="selectedMessage() ? confirmDelete(selectedMessage()!.id) : null" class="px-2.5 sm:px-3 py-2 rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-white text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
                   <lucide-icon [img]="TrashIcon" [size]="16"></lucide-icon>
-                  Delete
+                  {{ i18n.t('common.delete') }}
                 </button>
               </div>
             </div>
 
             <div class="flex-1 p-6 overflow-auto">
               <div *ngIf="!selectedMessage()" class="text-center text-gray-400 py-16">
-                <div class="text-sm font-semibold">Select a message to read</div>
-                <div class="text-xs mt-1">Choose a message from the list.</div>
+                <div class="text-sm font-semibold">{{ i18n.t('mailbox.select_to_read_title') }}</div>
+                <div class="text-xs mt-1">{{ i18n.t('mailbox.select_to_read_subtitle') }}</div>
               </div>
 
               <div *ngIf="selectedMessage()" class="max-w-2xl">

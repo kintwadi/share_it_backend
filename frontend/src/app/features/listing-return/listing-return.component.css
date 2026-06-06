@@ -119,6 +119,18 @@
   color: #166534;
 }
 
+.badge--waiting-self {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.badge--waiting-other {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .tabs {
   display: flex;
   border-bottom: 1px solid #e5e7eb;

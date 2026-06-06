@@ -15,11 +15,11 @@ WORKDIR /app
 RUN apk add --no-cache curl ca-certificates
 
 # Copy the built JAR file from the build stage
-COPY --from=build /app/target/nearshare-back-end-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/vicinity24-core-api-1.0.0.jar app.jar
 COPY --from=litestream /usr/local/bin/litestream /usr/local/bin/litestream
 
 COPY litestream.yml /app/litestream.yml
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+COPY SCRIPTS/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /data
 
@@ -40,7 +40,7 @@ ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addr
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f "http://localhost:${PORT}/shareit/api/health" || exit 1
+  CMD curl -f "http://localhost:${PORT}/api/v1/health" || exit 1
 
 # Run the application
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -92,12 +92,12 @@ export class ConnectComponent implements OnInit {
     this.isLoading = true;
     this.render();
     try {
-      // Map user_admin -> admin@nearshare.local
+      // Map user_admin -> admin@vicinity24.local
       // user_unverified_demo -> new.neighbor@example.com
       // user_lender -> linda.lender@example.com
       // user_borrower -> bob.borrower@example.com
       let demoEmail = `${userId}@example.com`;
-      if (userId === 'user_admin') demoEmail = 'admin@nearshare.local';
+      if (userId === 'user_admin') demoEmail = 'admin@vicinity24.local';
       if (userId === 'user_unverified_demo') demoEmail = 'new.neighbor@example.com';
       if (userId === 'user_lender') demoEmail = 'linda.lender@example.com';
       if (userId === 'user_borrower') demoEmail = 'bob.borrower@example.com';
@@ -152,7 +152,8 @@ export class ConnectComponent implements OnInit {
       }
     } catch (err: any) {
       console.error('Auth error', err);
-      const apiError = String(err?.error?.error || err?.error || err?.message || '').toLowerCase();
+      const rawApiError = err?.error?.error ?? err?.error;
+      const apiError = String(rawApiError || '').trim().toLowerCase();
       const subscriptionEnabled = this.subscriptionFeature.enabled();
       if (this.isLogin && apiError.includes('email_not_verified') && !subscriptionEnabled) {
         try {
@@ -172,7 +173,19 @@ export class ConnectComponent implements OnInit {
         this.router.navigate(['/connect/mfa'], { state: { context: 'user', token: err.token, returnTo: '/dashboard', cancelTo: '/connect' } as any });
         return;
       }
-      this.error = err?.message || this.i18n.t('connect.mfa.error') || 'Something went wrong';
+      if (apiError) {
+        const tKey =
+          apiError === 'email_exists' ? 'connect.error.email_exists' :
+          apiError === 'invalid_credentials' ? 'connect.error.invalid_credentials' :
+          apiError === 'user_not_found' ? 'connect.error.user_not_found' :
+          apiError === 'invalid_email' ? 'connect.error.invalid_email' :
+          apiError === 'password_required' ? 'connect.error.password_required' :
+          apiError === 'email_required' ? 'connect.error.email_required' :
+          '';
+        this.error = (tKey ? this.i18n.t(tKey) : '') || String(rawApiError);
+      } else {
+        this.error = err?.message || this.i18n.t('connect.mfa.error') || 'Something went wrong';
+      }
       this.isLoading = false;
       this.render();
     }

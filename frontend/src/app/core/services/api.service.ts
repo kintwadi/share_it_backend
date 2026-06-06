@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
-import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, PickupLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
+import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, ExchangeLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
@@ -10,6 +10,26 @@ import { AuthStorageService } from './auth-storage.service';
 export class ApiService {
   private api = inject(ApiClientService);
   private authStorage = inject(AuthStorageService);
+
+  private extractApiErrorCode(error: any): string {
+    return String(
+      error?.error?.error ??
+      error?.error?.message ??
+      error?.message ??
+      'request_failed'
+    );
+  }
+
+  private normalizeUuid(value: string | null | undefined): string | null {
+    const trimmed = String(value ?? '').trim();
+    return trimmed ? trimmed : null;
+  }
+
+  private normalizeLocalDateTime(value: string | null | undefined): string | null {
+    const trimmed = String(value ?? '').trim();
+    if (!trimmed) return null;
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(trimmed) ? trimmed : null;
+  }
 
   async getPublicConfig(): Promise<any> {
     try {
@@ -42,7 +62,7 @@ export class ApiService {
   }
 
   async seedData(): Promise<string> {
-    return firstValueFrom(this.api.get<string>('/seed'));
+    return firstValueFrom(this.api.getText('/seed'));
   }
 
   async getInsuranceTypes(): Promise<InsuranceTypeInfo[]> {
@@ -85,6 +105,15 @@ export class ApiService {
     try {
       const page = await firstValueFrom(this.api.get<any>('/listings/?page=0&size=100'));
       return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getNearbyListings(lat: number, lng: number, radiusKm: number = 25, size: number = 100): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>(`/listings/nearby?lat=${encodeURIComponent(String(lat))}&lng=${encodeURIComponent(String(lng))}&radiusKm=${encodeURIComponent(String(radiusKm))}&size=${encodeURIComponent(String(size))}`));
+      return Array.isArray(out) ? out : [];
     } catch {
       return [];
     }
@@ -253,14 +282,17 @@ export class ApiService {
     return firstValueFrom(this.api.get<User[]>('/users/contacts'));
   }
 
-  async getPickupLocations(): Promise<PickupLocation[]> {
+  async getExchangeLocations(): Promise<ExchangeLocation[]> {
     try {
       const list = await firstValueFrom(this.api.get<any[]>('/pickup-locations/'));
       return (Array.isArray(list) ? list : []).map((p: any) => ({
         id: String(p.id),
+        referenceId: p.referenceId ? String(p.referenceId) : undefined,
         name: p.name ?? '',
         address: p.address ?? '',
-        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) }
+        location: { x: Number(p.location?.x ?? 0), y: Number(p.location?.y ?? 0) },
+        operatingTimeFrom: p.operatingTimeFrom ?? null,
+        operatingTimeTo: p.operatingTimeTo ?? null,
       }));
     } catch {
       return [];
@@ -290,6 +322,12 @@ export class ApiService {
   async uploadListingImage(file: File): Promise<string> {
     const res = await this.uploadFile(file);
     return res?.url || '';
+  }
+
+  async uploadUserAvatar(file: File): Promise<User> {
+    const form = new FormData();
+    form.append('file', file);
+    return firstValueFrom(this.api.postFormData<User>('/users/me/avatar', form));
   }
 
   async evaluateListingRecommendation(req: ListingRecommendationRequest): Promise<ListingRecommendationResult> {
@@ -326,6 +364,10 @@ export class ApiService {
     insuranceRequired?: boolean;
     x?: number;
     y?: number;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
     pickupLocationId?: string | null;
     pickupLocationCustom?: string | null;
     pickupLocationStreet?: string | null;
@@ -348,17 +390,25 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      streetAddress: payload.streetAddress ?? null,
+      city: payload.city ?? null,
+      postalCode: payload.postalCode ?? null,
+      country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
-      availableFrom: payload.availableFrom ?? null,
-      availableTo: payload.availableTo ?? null,
-      pickupLocationId: payload.pickupLocationId ?? null,
+      availableFrom: this.normalizeLocalDateTime(payload.availableFrom),
+      availableTo: this.normalizeLocalDateTime(payload.availableTo),
+      pickupLocationId: this.normalizeUuid(payload.pickupLocationId),
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
       pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
       pickupLocationCity: payload.pickupLocationCity ?? null,
       pickupLocationZip: payload.pickupLocationZip ?? null,
     };
-    return firstValueFrom(this.api.post<Listing>('/listings/', body));
+    try {
+      return await firstValueFrom(this.api.post<Listing>('/listings/', body));
+    } catch (error: any) {
+      throw new Error(this.extractApiErrorCode(error));
+    }
   }
 
   async updateListing(id: string, payload: {
@@ -373,6 +423,10 @@ export class ApiService {
     insuranceRequired?: boolean;
     x?: number;
     y?: number;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
     pickupLocationId?: string | null;
     pickupLocationCustom?: string | null;
     pickupLocationStreet?: string | null;
@@ -395,17 +449,25 @@ export class ApiService {
       insuranceRequired: !!payload.insuranceRequired,
       x: payload.x ?? 0,
       y: payload.y ?? 0,
+      streetAddress: payload.streetAddress ?? null,
+      city: payload.city ?? null,
+      postalCode: payload.postalCode ?? null,
+      country: payload.country ?? null,
       availableUnlimited: !!payload.availableUnlimited,
-      availableFrom: payload.availableFrom ?? null,
-      availableTo: payload.availableTo ?? null,
-      pickupLocationId: payload.pickupLocationId ?? null,
+      availableFrom: this.normalizeLocalDateTime(payload.availableFrom),
+      availableTo: this.normalizeLocalDateTime(payload.availableTo),
+      pickupLocationId: this.normalizeUuid(payload.pickupLocationId),
       pickupLocationCustom: payload.pickupLocationCustom ?? null,
       pickupLocationStreet: payload.pickupLocationStreet ?? null,
       pickupLocationHouseNumber: payload.pickupLocationHouseNumber ?? null,
       pickupLocationCity: payload.pickupLocationCity ?? null,
       pickupLocationZip: payload.pickupLocationZip ?? null,
     };
-    return firstValueFrom(this.api.put<Listing>(`/listings/${encodeURIComponent(id)}`, body));
+    try {
+      return await firstValueFrom(this.api.put<Listing>(`/listings/${encodeURIComponent(id)}`, body));
+    } catch (error: any) {
+      throw new Error(this.extractApiErrorCode(error));
+    }
   }
 
   async getConversations(): Promise<User[]> {
@@ -628,6 +690,18 @@ export class ApiService {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/deny`, {}));
   }
 
+  async markReadyForPickup(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/ready-for-pickup`, {}));
+  }
+
+  async markPickedUp(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/picked-up`, {}));
+  }
+
+  async requestAdminReturn(listingId: string): Promise<Listing> {
+    return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/request-admin-return`, {}));
+  }
+
   async returnItem(listingId: string): Promise<Listing> {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(listingId)}/return`, {}));
   }
@@ -644,6 +718,10 @@ export class ApiService {
     return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/initiate`, {}));
   }
 
+  async submitReturnRequest(listingId: string, payload: { returnMethod: 'QR_CODE' | 'MANUAL'; qrCode?: string | null; itemNumber?: string | null; returnPlace?: string | null; returnAddress?: string | null }): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/submit`, payload));
+  }
+
   async getReturnSession(listingId: string): Promise<any> {
     return firstValueFrom(this.api.get<any>(`/listings/${encodeURIComponent(listingId)}/return`));
   }
@@ -654,6 +732,10 @@ export class ApiService {
 
   async manualReturnFallback(listingId: string, itemNumber: string, conciergeWitnessId?: string): Promise<any> {
     return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/manual`, { itemNumber, conciergeWitnessId: conciergeWitnessId ?? null }));
+  }
+
+  async acceptReturnRequest(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/accept`, {}));
   }
 
   async initiateReturnDispute(listingId: string, reason: string, photoUrl?: string, conciergeWitnessId?: string): Promise<any> {
@@ -792,6 +874,56 @@ export class ApiService {
 
   async adminUpdateAppSettings(updates: { key: string; value: any }[]): Promise<any> {
     return firstValueFrom(this.api.put<any>('/admin/app-settings', { updates: updates || [] }));
+  }
+
+  async adminProvisionStripeSubscriptions(payload?: {
+    currency?: string;
+    plusAmountCents?: number;
+    proAmountCents?: number;
+    plusTrialDays?: number;
+    proTrialDays?: number;
+  }): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/admin/stripe/provision-subscriptions', payload || {}));
+  }
+
+  async adminListExchangeLocations(): Promise<ExchangeLocation[]> {
+    return firstValueFrom(this.api.get<ExchangeLocation[]>('/admin/pickup-locations'));
+  }
+
+  async adminCreateExchangeLocation(payload: {
+    name: string;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
+    active?: boolean | null;
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.post<ExchangeLocation>('/admin/pickup-locations', payload));
+  }
+
+  async adminUpdateExchangeLocation(id: string, payload: {
+    name?: string | null;
+    address?: string | null;
+    streetAddress?: string | null;
+    city?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    operatingTimeFrom?: string | null;
+    operatingTimeTo?: string | null;
+    active?: boolean | null;
+  }): Promise<ExchangeLocation> {
+    return firstValueFrom(this.api.put<ExchangeLocation>(`/admin/pickup-locations/${encodeURIComponent(id)}`, payload));
+  }
+
+  async adminDeleteExchangeLocation(id: string): Promise<void> {
+    await firstValueFrom(this.api.delete<any>(`/admin/pickup-locations/${encodeURIComponent(id)}`));
   }
 
   async adminCancelAndRefundDispute(listingId: string, reason: string): Promise<any> {

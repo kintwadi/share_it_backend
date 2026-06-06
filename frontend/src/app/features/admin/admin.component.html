@@ -48,15 +48,66 @@
       </div>
     </div>
 
-    <div *ngIf="activeTab === 'SETTINGS'" class="p-4 space-y-4">
-      <div class="flex items-center justify-between gap-3">
-        <div class="text-sm font-semibold text-gray-900">{{ i18n.t('admin.settings.title') }}</div>
-        <div class="flex items-center gap-2">
-          <div *ngIf="settingsSaved" class="text-xs font-semibold text-emerald-700 px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-100">{{ i18n.t('admin.settings.saved') }}</div>
-          <button type="button" (click)="saveSettings()" [disabled]="settingsSaving" class="px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold hover:bg-black disabled:opacity-60">
-            <lucide-icon *ngIf="settingsSaving" [img]="Loader2" [size]="18" class="animate-spin inline-block mr-2"></lucide-icon>
-            {{ i18n.t('admin.settings.save') }}
-          </button>
+    <div *ngIf="activeTab === 'SETTINGS'" class="p-4 space-y-5">
+      <div class="rounded-2xl border border-gray-200 bg-gradient-to-r from-slate-50 to-white px-4 py-4 md:px-5">
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div class="min-w-0">
+            <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{{ i18n.t('admin.settings.kicker') }}</div>
+            <div class="mt-1 text-lg font-bold text-gray-900">{{ i18n.t('admin.settings.title') }}</div>
+            <div class="mt-1 text-sm text-gray-600">{{ i18n.t('admin.settings.subtitle') }}</div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div *ngIf="dirtySettingsCount > 0" class="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800">
+              {{ dirtySettingsCount }} {{ i18n.t('admin.settings.unsaved') }}
+            </div>
+            <div *ngIf="settingsSaved" class="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              {{ i18n.t('admin.settings.saved') }}
+            </div>
+            <button type="button" (click)="saveSettings()" [disabled]="settingsSaving" class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black disabled:opacity-60">
+              <lucide-icon *ngIf="settingsSaving" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              {{ i18n.t('admin.settings.save') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+              <lucide-icon [img]="MapPin" [size]="18"></lucide-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-gray-900">{{ i18n.t('admin.locations.card_title') }}</div>
+              <div class="mt-1 text-xs leading-5 text-gray-600">{{ i18n.t('admin.locations.card_desc') }}</div>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button type="button" (click)="goToLocationManager()" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+              {{ i18n.t('admin.locations.card_cta') }}
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+              <lucide-icon [img]="CreditCard" [size]="18"></lucide-icon>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-bold text-gray-900">{{ i18n.t('admin.stripe.card_title') }}</div>
+              <div class="mt-1 text-xs leading-5 text-gray-600">{{ i18n.t('admin.stripe.card_desc') }}</div>
+              <div *ngIf="stripeProvisionMessage" class="mt-3 rounded-lg px-3 py-2 text-xs font-semibold" [ngClass]="stripeProvisioned ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-50 text-slate-600 border border-slate-200'">
+                {{ stripeProvisionMessage }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button type="button" (click)="provisionStripeSubscriptions()" [disabled]="stripeProvisioning" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-60">
+              <lucide-icon *ngIf="stripeProvisioning" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              {{ stripeProvisioning ? i18n.t('admin.stripe.provisioning') : i18n.t('admin.stripe.card_cta') }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -83,7 +134,7 @@
                   <ng-container [ngSwitch]="it.type">
                     <label *ngSwitchCase="'boolean'" class="inline-flex items-center gap-2 cursor-pointer select-none">
                       <input type="checkbox" [(ngModel)]="it.value" class="h-4 w-4" />
-                      <span class="text-gray-700">{{ it.value ? 'true' : 'false' }}</span>
+                      <span class="text-gray-700">{{ it.value ? i18n.t('common.true') : i18n.t('common.false') }}</span>
                     </label>
                     <input *ngSwitchCase="'number'" type="number" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-40" />
                     <input *ngSwitchDefault type="text" [(ngModel)]="it.value" class="px-3 py-2 rounded-lg border border-gray-200 w-[420px] max-w-full" />
@@ -250,7 +301,12 @@
               <tr *ngFor="let l of listings" class="cursor-pointer" [ngClass]="listingSelectedId === ('' + l.id) ? 'bg-brand-50' : 'hover:bg-gray-50'" (click)="selectListing(l)">
                 <td class="px-3 py-2 text-gray-900 font-semibold">{{l.title}}</td>
                 <td class="px-3 py-2 text-gray-700">{{l.type || '-'}}</td>
-                <td class="px-3 py-2 text-gray-700">{{l.status || '-'}}</td>
+                <td class="px-3 py-2 text-gray-700">
+                  <div>{{l.status || '-'}}</div>
+                  <button *ngIf="l.adminReturnRequestedAt" type="button" (click)="$event.stopPropagation(); selectListingAndScroll(l)" class="mt-1 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 hover:bg-amber-200 transition-colors">
+                    Return Assistance Requested
+                  </button>
+                </td>
                 <td class="px-3 py-2 text-gray-700">{{l.ownerEmail || l.partnerName || '-'}}</td>
                 <td class="px-3 py-2 text-right">
                   <div class="inline-flex gap-2" (click)="$event.stopPropagation()">
@@ -278,7 +334,7 @@
           </table>
         </div>
 
-        <div class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+        <div id="admin-listing-review-panel" class="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
           <div class="flex items-center justify-between gap-3">
             <div class="text-sm font-semibold text-gray-900">Review</div>
             <div *ngIf="listingSelectedLoading" class="inline-flex items-center gap-2 text-xs text-gray-500">
@@ -339,6 +395,18 @@
               <div class="text-[11px] font-semibold text-gray-500">Pickup</div>
               <div class="mt-1 text-gray-900">
                 {{listingSelected.pickupLocationCustom || (listingSelected.pickupLocationStreet ? (listingSelected.pickupLocationStreet + (listingSelected.pickupLocationCity ? ', ' + listingSelected.pickupLocationCity : '')) : '-')}}
+              </div>
+            </div>
+
+            <div *ngIf="listingSelected.adminReturnRequestedAt" class="p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs">
+              <div class="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">Return Assistance Requested</div>
+              <div class="mt-2 text-amber-900">The lender asked admin to mark this item as returned and unlock the funds.</div>
+              <div class="mt-2 text-amber-800">Requested: {{ listingSelected.adminReturnRequestedAt | date:'short' }}</div>
+              <div class="mt-3 flex items-center justify-end gap-2">
+                <button type="button" (click)="acceptRequestedReturnForSelectedListing()" [disabled]="listingAdminActionLoading" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold disabled:opacity-60">
+                  <lucide-icon *ngIf="listingAdminActionLoading" [img]="Loader2" [size]="16" class="animate-spin inline mr-2"></lucide-icon>
+                  Mark Returned & Unlock Funds
+                </button>
               </div>
             </div>
           </div>

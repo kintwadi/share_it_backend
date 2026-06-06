@@ -69,20 +69,20 @@
           </span>
 
           <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-bold text-blue-700">
-            <span class="uppercase">Score</span>
+            <span class="uppercase">{{ i18n.t('dash.score') }}</span>
             <span class="text-blue-900">{{user.trustScore}}</span>
           </span>
 
           <span *ngIf="subscriptionEnabled && currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
-            <span class="uppercase">Plan</span>
+            <span class="uppercase">{{ i18n.t('dash.plan') }}</span>
             <span class="text-emerald-900 normal-case">
-              {{ currentSub.status === 'canceled' ? 'Standard (Lender)' : (currentSub.planType + ' • ' + currentSub.status) }}
+              {{ currentSub.status === 'canceled' ? i18n.t('dash.plan_standard_lender') : (currentSub.planType + ' • ' + currentSub.status) }}
             </span>
           </span>
 
           <span *ngIf="subscriptionEnabled && currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
             <lucide-icon [img]="Shield" size="12" class="text-amber-700"></lucide-icon>
-            <span class="uppercase">Premium</span>
+            <span class="uppercase">{{ i18n.t('dash.premium') }}</span>
           </span>
         </div>
 
@@ -205,7 +205,7 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div *ngIf="isLoadingListings" class="p-8 text-center text-gray-400">
             <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
-            <p class="text-sm">Loading your listings…</p>
+            <p class="text-sm">{{ i18n.t('dash.loading_listings') }}</p>
           </div>
           
           <div *ngIf="!isLoadingListings && myListings.length > 0" class="divide-y divide-gray-100">
@@ -223,7 +223,7 @@
                 <div *ngIf="listingIsBlocked(item)" class="absolute inset-0 bg-red-900/20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
                   <lucide-icon [img]="Ban" size="24" class="text-white drop-shadow-md"></lucide-icon>
                 </div>
-                <div *ngIf="item.autoApprove" class="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white" title="Instant Book Enabled">
+                <div *ngIf="item.autoApprove" class="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white" [title]="i18n.t('dash.instant_book_enabled')">
                   <lucide-icon [img]="Zap" size="10"></lucide-icon>
                 </div>
               </div>
@@ -246,6 +246,7 @@
                     </p>
                   </ng-template>
                 </div>
+                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
 
                 <div class="flex items-center gap-2 mt-2" [ngClass]="listingActionsClass(item)">
                   <p *ngIf="listingIsBlocked(item)" class="text-xs text-red-500 font-bold flex items-center">
@@ -289,13 +290,38 @@
                     </button>
 
                     <button
-                      *ngIf="listingIsActiveLoan(item)"
+                      *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
                       type="button"
                       (click)="handleReturnClick(item)"
-                      class="text-xs bg-gray-900 text-white font-semibold px-2 py-1 rounded hover:bg-black transition-colors"
-                      title="Start Return"
+                      [disabled]="!ownerCanStartReturn(item)"
+                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      [ngClass]="ownerCanStartReturn(item) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-100 text-gray-500'"
+                      [title]="ownerCanStartReturn(item) ? 'View return request' : 'Waiting for borrower to submit return'"
                     >
-                      Return
+                      {{ ownerReturnLabel(item) }}
+                    </button>
+
+                    <button
+                      *ngIf="ownerCanRequestAdminReturn(item)"
+                      type="button"
+                      (click)="handleRequestAdminReturn(item)"
+                      [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
+                      class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'"
+                    >
+                      <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
+                      {{ ownerAdminReturnLabel(item) }}
+                    </button>
+
+                    <button
+                      *ngIf="item.status === AvailabilityStatus.APPROVED && item.borrowerId"
+                      type="button"
+                      (click)="handleMarkReadyForPickup(item.id)"
+                      [disabled]="actionLoading === item.id"
+                      class="text-xs bg-emerald-600 text-white font-semibold px-2 py-1 rounded hover:bg-emerald-700 transition-colors"
+                    >
+                      <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
+                      {{ i18n.t('dash.mark_ready_for_pickup') }}
                     </button>
 
                     <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
@@ -327,7 +353,7 @@
                       title="Delete Listing"
                     >
                       <lucide-icon [img]="Trash2" size="12" class="mr-1"></lucide-icon>
-                      Delete
+                    {{ i18n.t('common.delete') }}
                     </button>
                   </ng-container>
                 </div>
@@ -354,7 +380,7 @@
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div *ngIf="isLoadingBorrows" class="p-8 text-center text-gray-400">
             <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
-            <p class="text-sm">Loading active borrows…</p>
+            <p class="text-sm">{{ i18n.t('dash.loading_active_borrows') }}</p>
           </div>
 
           <div *ngIf="!isLoadingBorrows" class="divide-y divide-gray-100">
@@ -366,42 +392,63 @@
               <img [src]="item.imageUrl" [alt]="item.title" class="w-16 h-16 rounded-lg object-cover bg-gray-100 group-hover:scale-105 transition-transform" />
               <div class="flex-1 min-w-0">
                 <h4 class="font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors">{{item.title}}</h4>
-                <p class="text-xs text-gray-500 mb-1">Owner: {{item.owner?.name}}</p>
-                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">Item Ref: {{item.itemReference}}</p>
+                <p class="text-xs text-gray-500 mb-1">{{ i18n.t('dash.owner_prefix') }} {{item.owner?.name}}</p>
+                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{item.itemReference}}</p>
 
                 <div *ngIf="item.status === AvailabilityStatus.PENDING" class="flex items-center text-xs text-indigo-600 bg-indigo-50 w-fit px-2 py-1 rounded animate-pulse">
                   <lucide-icon [img]="BellRing" size="12" class="mr-1"></lucide-icon>
-                  Request Pending
+                  {{ i18n.t('dash.request_pending') }}
                 </div>
                 <div *ngIf="item.status === AvailabilityStatus.DISPUTED" class="flex items-center text-xs text-red-600 bg-red-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
-                  Disputed
+                  {{ i18n.t('dash.disputed') }}
                 </div>
                 <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="CheckCircle2" size="12" class="mr-1"></lucide-icon>
-                  Approved
+                  {{ i18n.t('dash.approved') }}
                 </div>
-                <div *ngIf="item.status === AvailabilityStatus.BORROWED" class="flex items-center text-xs text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded">
+                <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-gray-500 mt-1">
+                  {{ i18n.t('dash.borrower_wait_pickup_notice') }}
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="flex items-center text-xs text-amber-700 bg-amber-50 w-fit px-2 py-1 rounded">
+                  <lucide-icon [img]="MapPin" size="12" class="mr-1"></lucide-icon>
+                  Ready for you to pick up
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="text-xs text-gray-600 mt-1">
+                  {{ i18n.t('dash.pickup_location_prefix') }} {{ pickupLocationText(item) }}
+                </div>
+                <div *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED" class="flex items-center text-xs text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded">
                   <lucide-icon [img]="Clock" size="12" class="mr-1"></lucide-icon>
-                  Due in 2 days
+                  {{ i18n.t('dash.waiting_for_return') }}
                 </div>
               </div>
 
               <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="flex flex-col justify-center gap-2">
                 <button
-                  *ngIf="item.status !== AvailabilityStatus.DISPUTED"
+                  *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED"
                   type="button"
                   (click)="$event.stopPropagation(); handleReturnClick(item)"
-                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full"
+                  [disabled]="borrowerHasSubmittedReturn(item)"
+                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Return
+                  {{ borrowerReturnLabel(item) }}
+                </button>
+                <button
+                  *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP"
+                  type="button"
+                  (click)="$event.stopPropagation(); handleMarkPickedUp(item.id)"
+                  [disabled]="actionLoading === item.id"
+                  class="text-xs px-3 py-1.5 bg-amber-600 text-white font-medium rounded hover:bg-amber-700 transition-colors w-full disabled:opacity-60"
+                >
+                  <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin mr-1"></lucide-icon>
+                  {{ i18n.t('dash.mark_as_picked_up') }}
                 </button>
                 <button
                   type="button"
                   (click)="$event.stopPropagation(); setOverviewItem(item)"
                   class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors w-full"
                 >
-                  Overview
+                  {{ i18n.t('dash.overview') }}
                 </button>
                 <button
                   type="button"
@@ -427,7 +474,7 @@
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div *ngIf="isLoadingHistory" class="p-6 text-center text-gray-400">
               <lucide-icon [img]="Loader2" size="28" class="mx-auto mb-2 animate-spin"></lucide-icon>
-              <p class="text-sm">Loading history…</p>
+              <p class="text-sm">{{ i18n.t('dash.loading_history') }}</p>
             </div>
             <div *ngIf="!isLoadingHistory" class="divide-y divide-gray-100">
               <div *ngFor="let item of borrowedHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
@@ -435,9 +482,9 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between">
                     <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Returned</span>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.returned') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">Owner: {{item.listing!.owner?.name}}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.owner_prefix') }} {{item.listing!.owner?.name}}</p>
                   <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                     <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
                     <span>{{item.borrowedDate | date}} — {{item.returnedDate | date}}</span>
@@ -445,7 +492,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    Overview
+                    {{ i18n.t('dash.overview') }}
                   </button>
                   <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
                     <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
@@ -460,7 +507,7 @@
         <div *ngIf="giftActive.length > 0 || giftHistory.length > 0" class="space-y-4">
           <h3 class="text-lg font-bold text-gray-900 flex items-center">
             <lucide-icon [img]="Gift" class="mr-2 text-pink-500" size="20"></lucide-icon>
-            My Gifts
+            {{ i18n.t('dash.my_gifts') }}
           </h3>
 
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -470,19 +517,20 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between">
                     <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
-                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">Claim Pending</span>
-                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Claim Approved</span>
-                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-pink-600 font-medium bg-pink-50 px-2 py-0.5 rounded-full">Gifted</span>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">{{ i18n.t('dash.claim_pending') }}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.claim_approved') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-pink-600 font-medium bg-pink-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.gifted') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">From: {{item.owner?.name}}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.from_prefix') }} {{item.owner?.name}}</p>
                   <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                     <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
-                    <span>{{item.status === AvailabilityStatus.PENDING ? 'Requested today' : ('Received on ' + (today | date:'shortDate'))}}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING">{{ i18n.t('dash.requested_today') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING">{{ i18n.t('dash.received_on') }} {{ today | date:'shortDate' }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
                   <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    Overview
+                    {{ i18n.t('dash.overview') }}
                   </button>
                   <button type="button" (click)="openReportModal(item)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
                     <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
@@ -495,9 +543,9 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between">
                     <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Received</span>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.received') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">From: {{item.listing!.owner?.name}}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.from_prefix') }} {{item.listing!.owner?.name}}</p>
                   <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                     <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
                     <span>{{item.borrowedDate | date}}</span>
@@ -505,7 +553,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    Overview
+                    {{ i18n.t('dash.overview') }}
                   </button>
                   <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
                     <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
@@ -520,7 +568,7 @@
         <div *ngIf="purchaseActive.length > 0 || purchaseHistory.length > 0" class="space-y-4">
           <h3 class="text-lg font-bold text-gray-900 flex items-center">
             <lucide-icon [img]="DollarSign" class="mr-2 text-emerald-600" size="20"></lucide-icon>
-            Purchase History
+            {{ i18n.t('dash.purchase_history') }}
           </h3>
 
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -530,14 +578,15 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between">
                     <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
-                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">Request Pending</span>
-                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Approved</span>
-                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">Purchased</span>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">{{ i18n.t('dash.request_pending') }}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.approved') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.purchased') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">Seller: {{item.owner?.name}}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.seller_prefix') }} {{item.owner?.name}}</p>
                   <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                     <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
-                    <span>{{item.status === AvailabilityStatus.PENDING ? 'Requested today' : ('Bought on ' + (today | date:'shortDate'))}}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING">{{ i18n.t('dash.requested_today') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING">{{ i18n.t('dash.bought_on') }} {{ today | date:'shortDate' }}</span>
                   </div>
                 </div>
                 <div class="flex items-center">
@@ -552,9 +601,9 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex justify-between">
                     <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">Purchased</span>
+                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.purchased') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">Seller: {{item.listing!.owner?.name}}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.seller_prefix') }} {{item.listing!.owner?.name}}</p>
                   <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                     <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
                     <span>{{item.borrowedDate | date}}</span>
@@ -580,7 +629,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div *ngIf="isLoadingRecs" class="col-span-full text-center text-gray-400 py-6">
         <lucide-icon [img]="Loader2" [size]="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
-        <p class="text-sm">Loading recommendations…</p>
+        <p class="text-sm">{{ i18n.t('dash.loading_recommendations') }}</p>
       </div>
       <ng-container *ngIf="!isLoadingRecs && recommendations.length > 0">
         <div
@@ -595,7 +644,7 @@
             <h4 class="font-bold text-gray-900 truncate text-sm">{{rec.title}}</h4>
             <div class="flex items-center text-xs text-gray-500 mt-0.5">
               <lucide-icon [img]="MapPin" [size]="10" class="mr-1"></lucide-icon>
-              {{ (rec.distanceMiles || 0) | number:'1.0-0' }} mi
+              {{ (rec.distanceMiles || 0) | number:'1.0-0' }} {{ i18n.t('common.mi') }}
             </div>
           </div>
           <div class="text-gray-300 group-hover:text-brand-600 flex-none">
@@ -604,7 +653,7 @@
         </div>
       </ng-container>
       <div *ngIf="!isLoadingRecs && recommendations.length === 0" class="col-span-full text-center text-gray-400 py-4 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
-        No recommendations available nearby at the moment.
+        {{ i18n.t('dash.no_recommendations') }}
       </div>
     </div>
   </div>

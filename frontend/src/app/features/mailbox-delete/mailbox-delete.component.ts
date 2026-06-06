@@ -57,7 +57,7 @@ export class MailboxDeleteComponent implements OnInit {
       await this.api.deleteMessage(this.messageId);
       this.router.navigate([this.returnTo], { state: { deletedMessageId: this.messageId } as any });
     } catch (e: any) {
-      this.error = e?.message || 'Failed to delete message';
+      this.error = e?.message || this.i18n.t('mailbox_delete.error_failed');
     } finally {
       this.deleting = false;
       this.render();
