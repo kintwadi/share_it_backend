@@ -718,6 +718,10 @@ export class ApiService {
     return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/initiate`, {}));
   }
 
+  async submitReturnRequest(listingId: string, payload: { returnMethod: 'QR_CODE' | 'MANUAL'; qrCode?: string | null; itemNumber?: string | null; returnPlace?: string | null; returnAddress?: string | null }): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/submit`, payload));
+  }
+
   async getReturnSession(listingId: string): Promise<any> {
     return firstValueFrom(this.api.get<any>(`/listings/${encodeURIComponent(listingId)}/return`));
   }
@@ -728,6 +732,10 @@ export class ApiService {
 
   async manualReturnFallback(listingId: string, itemNumber: string, conciergeWitnessId?: string): Promise<any> {
     return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/manual`, { itemNumber, conciergeWitnessId: conciergeWitnessId ?? null }));
+  }
+
+  async acceptReturnRequest(listingId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>(`/listings/${encodeURIComponent(listingId)}/return/accept`, {}));
   }
 
   async initiateReturnDispute(listingId: string, reason: string, photoUrl?: string, conciergeWitnessId?: string): Promise<any> {

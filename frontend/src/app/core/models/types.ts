@@ -60,17 +60,31 @@ export enum ReturnStatus {
   DISPUTED = 'DISPUTED'
 }
 
+export enum ReturnMethod {
+  QR_CODE = 'QR_CODE',
+  MANUAL = 'MANUAL'
+}
+
 export interface ReturnSessionResponse {
   id: string;
   listingId: string;
-  borrowerCode: string;
-  lenderCode: string;
+  borrowerName?: string | null;
+  lenderName?: string | null;
+  itemReference?: string | null;
+  returnMethod?: ReturnMethod | null;
+  returnPlace?: string | null;
+  returnAddress?: string | null;
+  submittedAt?: string | null;
+  acceptedAt?: string | null;
+  disputeReason?: string | null;
+  borrowerCode?: string | null;
+  lenderCode?: string | null;
   borrowerScanned: boolean;
   lenderScanned: boolean;
   manualBorrowerConfirmed: boolean;
   manualLenderConfirmed: boolean;
   status: ReturnStatus;
-  expiresAt: string;
+  expiresAt?: string | null;
 }
 
 export interface User {

@@ -33,6 +33,11 @@ ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS lender_scanned_at timestamp
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS manual_borrower_confirmed_at timestamp;
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS manual_lender_confirmed_at timestamp;
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS concierge_witness_id varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_method varchar(40);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_place varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_address varchar(500);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS submitted_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS accepted_at timestamp;
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS dispute_reason varchar(1000);
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS dispute_photo_url varchar(1000);
 ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS expires_at timestamp;

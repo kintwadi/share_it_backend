@@ -39,27 +39,27 @@ public class ReturnService {
     private final Random codeRandom = new java.security.SecureRandom();
 
     @Transactional
-    public ReturnDTOs.ReturnSessionResponse initiateReturn(UUID listingId, User currentUser) {
-        if (!anyReturnMethodEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Return methods are disabled");
-        }
-        Listing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+     public ReturnDTOs.ReturnSessionResponse initiateReturn(UUID listingId, User currentUser) {
+        Listing listing = getBorrowedListing(listingId);
+        ReturnDTOs.SubmitReturnRequest request = new ReturnDTOs.SubmitReturnRequest();
+        request.setReturnMethod(manualEnabled() ? ReturnMode.MANUAL : ReturnMode.QR_CODE);
+        request.setItemNumber(listing.getItemReference());
+        return submitReturn(listingId, currentUser, request);
+    }
 
-        if (listing.getStatus() != AvailabilityStatus.BORROWED && listing.getStatus() != AvailabilityStatus.WAITING_FOR_RETURN && listing.getStatus() != AvailabilityStatus.PARTNER_ACTIVE) {
-            if (listing.getStatus() == AvailabilityStatus.AVAILABLE && listing.getBorrower() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing already returned");
-            }
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is not currently borrowed");
+    @Transactional
+    public ReturnDTOs.ReturnSessionResponse submitReturn(UUID listingId, User currentUser, ReturnDTOs.SubmitReturnRequest request) {
+        Listing listing = getBorrowedListing(listingId);
+        if (!isBorrower(listing, currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the borrower can submit a return request");
         }
 
-        if (listing.getBorrower() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
+        ReturnMode method = resolveRequestedMethod(request);
+        if (method == ReturnMode.QR_CODE && !qrEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "QR return method is disabled");
         }
-        if ((listing.getStatus() == AvailabilityStatus.BORROWED || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN)
-                && (listing.getItemReference() == null || listing.getItemReference().isBlank())) {
-            listing.setItemReference(generateUniqueItemReference());
-            listingRepository.save(listing);
+        if (method == ReturnMode.MANUAL && !manualEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Manual return method is disabled");
         }
 
         User lender = resolveLender(listing);
@@ -67,120 +67,124 @@ public class ReturnService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing lender");
         }
 
-        boolean isBorrower = currentUser != null && currentUser.getId() != null && currentUser.getId().equals(listing.getBorrower().getId());
-        boolean isLender = currentUser != null && currentUser.getId() != null && currentUser.getId().equals(lender.getId());
-        if (!isBorrower && !isLender) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        ReturnSession session = getOrCreatePendingSession(listing, lender);
+        LocalDateTime now = LocalDateTime.now();
+        String qrCode = sanitize(request != null ? request.getQrCode() : null);
+        String itemNumber = sanitize(request != null ? request.getItemNumber() : null);
+
+        if (method == ReturnMode.QR_CODE) {
+            if (qrCode == null || !qrCode.matches("\\d{6}")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid QR code");
+            }
+            session.setBorrowerCode(qrCode);
+            session.setBorrowerScannedAt(now);
+            session.setManualBorrowerConfirmedAt(null);
+            session.setManualLenderConfirmedAt(null);
+        } else {
+            validateItemReference(listing, itemNumber);
+            session.setBorrowerCode(null);
+            session.setBorrowerScannedAt(null);
+            session.setLenderScannedAt(null);
+            session.setManualBorrowerConfirmedAt(now);
+            session.setManualLenderConfirmedAt(null);
         }
 
-        ReturnSession session = getOrCreateActiveSession(listing, lender);
-        ensureCodes(session);
+        session.setReturnMethod(method);
+        session.setBorrower(listing.getBorrower());
+        session.setLender(lender);
+        session.setReturnPlace(sanitize(request != null ? request.getReturnPlace() : null));
+        session.setReturnAddress(sanitize(request != null ? request.getReturnAddress() : null));
+        session.setSubmittedAt(now);
+        session.setAcceptedAt(null);
+        session.setConciergeWitnessId(null);
+        session.setDisputeReason(null);
+        session.setDisputePhotoUrl(null);
+        session.setStatus(ReturnStatus.PENDING);
+        session.setExpiresAt(null);
+
+        listing.setStatus(AvailabilityStatus.WAITING_FOR_RETURN);
+        listingRepository.save(listing);
+
         return mapToResponse(returnSessionRepository.save(session));
     }
 
     @Transactional
     public ReturnDTOs.ReturnSessionResponse scanQrCode(UUID listingId, User currentUser, String qrCode) {
-        if (!qrEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "QR return method is disabled");
-        }
-        ReturnSession session = getActiveSession(listingId);
-
-        boolean borrowerScanningLender = currentUser.getId().equals(session.getBorrower().getId())
-                && (qrCode.equals(session.getLenderCode()) || qrCode.equals(session.getLenderQrCode()));
-        boolean lenderScanningBorrower = currentUser.getId().equals(session.getLender().getId())
-                && (qrCode.equals(session.getBorrowerCode()) || qrCode.equals(session.getBorrowerQrCode()));
-
-        if (borrowerScanningLender) {
-            session.setBorrowerScannedAt(LocalDateTime.now());
-        } else if (lenderScanningBorrower) {
-            session.setLenderScannedAt(LocalDateTime.now());
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid QR code or user");
-        }
-
-        return checkAndCompleteSession(session);
+        ReturnDTOs.SubmitReturnRequest request = new ReturnDTOs.SubmitReturnRequest();
+        request.setReturnMethod(ReturnMode.QR_CODE);
+        request.setQrCode(qrCode);
+        return submitReturn(listingId, currentUser, request);
     }
 
     @Transactional
     public ReturnDTOs.ReturnSessionResponse manualFallback(UUID listingId, User currentUser, ReturnDTOs.ManualFallbackRequest request) {
-        if (!manualEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Manual return method is disabled");
-        }
-        ReturnSession session = getActiveSession(listingId);
-
-        String provided = request != null ? request.getItemNumber() : null;
-        provided = provided != null ? provided.trim() : null;
-        String expected = session.getListing() != null ? session.getListing().getItemReference() : null;
-        expected = expected != null ? expected.trim() : null;
-        if (expected != null && !expected.isEmpty()) {
-            if (provided == null || !provided.equals(expected)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid item number");
+        ReturnSession pending = findPendingSession(listingId);
+        if (pending != null && canActAsLender(pending.getListing(), currentUser)) {
+            validateItemReference(pending.getListing(), request != null ? request.getItemNumber() : null);
+            if (request != null && request.getConciergeWitnessId() != null && !request.getConciergeWitnessId().isBlank()) {
+                pending.setConciergeWitnessId(request.getConciergeWitnessId().trim());
+                returnSessionRepository.save(pending);
             }
-        } else {
-            if (provided == null || provided.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing item number");
-            }
+            return acceptReturn(listingId, currentUser);
         }
 
-        boolean isBorrower = currentUser.getId().equals(session.getBorrower().getId());
-        boolean isLender = currentUser.getId().equals(session.getLender().getId());
-        boolean isPartnerAdmin = false;
-        if (!isBorrower && !isLender) {
-            Listing listing = session.getListing();
-            if (listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
-                isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
-            }
+        ReturnDTOs.SubmitReturnRequest submitRequest = new ReturnDTOs.SubmitReturnRequest();
+        submitRequest.setReturnMethod(ReturnMode.MANUAL);
+        submitRequest.setItemNumber(request != null ? request.getItemNumber() : null);
+        submitRequest.setReturnPlace(request != null ? request.getReturnPlace() : null);
+        submitRequest.setReturnAddress(request != null ? request.getReturnAddress() : null);
+        return submitReturn(listingId, currentUser, submitRequest);
+    }
+
+    @Transactional
+    public ReturnDTOs.ReturnSessionResponse acceptReturn(UUID listingId, User currentUser) {
+        ReturnSession session = getPendingSessionForLender(listingId, currentUser);
+        Listing listing = session.getListing();
+        LocalDateTime now = LocalDateTime.now();
+
+        session.setStatus(ReturnStatus.COMPLETED);
+        session.setAcceptedAt(now);
+        session.setExpiresAt(now);
+        if (session.getReturnMethod() == ReturnMode.MANUAL) {
+            session.setManualLenderConfirmedAt(now);
+        }
+        if (session.getReturnMethod() == ReturnMode.QR_CODE) {
+            session.setLenderScannedAt(now);
         }
 
-        if (isBorrower) {
-            session.setManualBorrowerConfirmedAt(LocalDateTime.now());
-        } else if (isLender || isPartnerAdmin) {
-            session.setManualLenderConfirmedAt(LocalDateTime.now());
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
+        listing.setBorrower(null);
+        listing.setItemReference(null);
+        listing.setAdminReturnRequestedAt(null);
+        listing.setAdminReturnRequestedBy(null);
+        listing.setAdminReturnRequestReason(null);
+
+        User lender = session.getLender();
+        User borrower = session.getBorrower();
+        if (lender != null) {
+            lender.setTrustScore(Math.min(100, lender.getTrustScore() + 1));
+            userRepository.save(lender);
+        }
+        if (borrower != null) {
+            borrower.setTrustScore(Math.min(100, borrower.getTrustScore() + 1));
+            userRepository.save(borrower);
         }
 
-        if (request.getConciergeWitnessId() != null && !request.getConciergeWitnessId().isEmpty()) {
-            session.setConciergeWitnessId(request.getConciergeWitnessId());
+        listingRepository.save(listing);
+        ReturnSession saved = returnSessionRepository.save(session);
+        escrowService.releaseOnSuccessfulReturn(saved);
+        try {
+            reviewInviteService.createAndSendForReturnSession(saved);
+        } catch (Exception ignored) {
         }
-
-        return checkAndCompleteSession(session);
+        return mapToResponse(saved);
     }
 
     @Transactional
     public ReturnDTOs.ReturnSessionResponse denyManualReturn(UUID listingId, User currentUser, String reason) {
-        ReturnSession session = getActiveSession(listingId);
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
-        }
-
-        Listing listing = session.getListing();
-        boolean isBorrower = session.getBorrower() != null && currentUser.getId().equals(session.getBorrower().getId());
-        boolean isLender = session.getLender() != null && currentUser.getId().equals(session.getLender().getId());
-        boolean isPartnerAdmin = false;
-        if (!isBorrower && !isLender && listing != null && listing.getPartner() != null && listing.getPartner().getId() != null) {
-            isPartnerAdmin = partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
-        }
-        if (!isBorrower && !isLender && !isPartnerAdmin) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
-        }
-
-        if (session.getManualBorrowerConfirmedAt() == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Borrower has not confirmed manual return");
-        }
-
-        session.setStatus(ReturnStatus.DISPUTED);
-        session.setDisputeReason((reason != null && !reason.isBlank()) ? reason.trim() : "manual_return_denied");
-        session.setExpiresAt(LocalDateTime.now());
-        returnSessionRepository.save(session);
-
-        if (listing != null) {
-            listing.setStatus(AvailabilityStatus.DISPUTED);
-            listingRepository.save(listing);
-            escrowService.markDisputed(listingId, session.getDisputeReason());
-        }
-
-        return mapToResponse(session);
+        ReturnDTOs.DisputeRequest request = new ReturnDTOs.DisputeRequest();
+        request.setReason((reason != null && !reason.isBlank()) ? reason.trim() : "manual_return_denied");
+        return initiateDispute(listingId, currentUser, request);
     }
 
     @Transactional
@@ -188,98 +192,47 @@ public class ReturnService {
         if (!disputeEnabled()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Dispute return method is disabled");
         }
-        ReturnSession session = getActiveSession(listingId);
-        if (currentUser == null || currentUser.getId() == null ||
-                (!currentUser.getId().equals(session.getBorrower().getId()) && !currentUser.getId().equals(session.getLender().getId()))) {
+        ReturnSession session = getPendingSessionForLender(listingId, currentUser);
+        if (currentUser == null || currentUser.getId() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
         }
 
         session.setStatus(ReturnStatus.DISPUTED);
-        session.setDisputeReason(request.getReason());
-        session.setDisputePhotoUrl(request.getPhotoUrl());
-        if (request.getConciergeWitnessId() != null) {
+        session.setDisputeReason(sanitize(request != null ? request.getReason() : null));
+        session.setDisputePhotoUrl(sanitize(request != null ? request.getPhotoUrl() : null));
+        if (request != null && request.getConciergeWitnessId() != null) {
             session.setConciergeWitnessId(request.getConciergeWitnessId());
         }
+        session.setExpiresAt(LocalDateTime.now());
 
         Listing listing = session.getListing();
         listing.setStatus(AvailabilityStatus.DISPUTED);
         listingRepository.save(listing);
-        escrowService.markDisputed(listingId, request != null ? request.getReason() : "dispute");
+        escrowService.markDisputed(listingId, session.getDisputeReason() != null ? session.getDisputeReason() : "dispute");
 
         return mapToResponse(returnSessionRepository.save(session));
     }
 
-    private ReturnSession getActiveSession(UUID listingId) {
-        ReturnSession session = resolveSingleActiveSession(listingId);
-
-        if (session.getExpiresAt().isBefore(LocalDateTime.now())) {
-            // Auto dispute or expire
-            session.setStatus(ReturnStatus.DISPUTED);
-            session.getListing().setStatus(AvailabilityStatus.DISPUTED);
-            listingRepository.save(session.getListing());
-            returnSessionRepository.save(session);
-            escrowService.markDisputed(listingId, "return_session_expired");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Return session expired and moved to dispute");
-        }
-        return session;
-    }
-
-    private ReturnDTOs.ReturnSessionResponse checkAndCompleteSession(ReturnSession session) {
-        boolean bothScanned = session.getBorrowerScannedAt() != null && session.getLenderScannedAt() != null;
-        boolean bothManual = session.getManualBorrowerConfirmedAt() != null && session.getManualLenderConfirmedAt() != null;
-
-        if (bothScanned || (bothManual && session.getConciergeWitnessId() != null)) {
-            session.setStatus(ReturnStatus.COMPLETED);
-            Listing listing = session.getListing();
-            listing.setStatus(listing.getPartner() != null ? AvailabilityStatus.PARTNER_ACTIVE : AvailabilityStatus.AVAILABLE);
-            listing.setBorrower(null);
-            listing.setItemReference(null);
-            listing.setAdminReturnRequestedAt(null);
-            listing.setAdminReturnRequestedBy(null);
-            listing.setAdminReturnRequestReason(null);
-            
-            // Increase trust score (simple mock implementation for now)
-            User lender = session.getLender();
-            User borrower = session.getBorrower();
-            lender.setTrustScore(Math.min(100, lender.getTrustScore() + 1));
-            borrower.setTrustScore(Math.min(100, borrower.getTrustScore() + 1));
-            
-            userRepository.save(lender);
-            userRepository.save(borrower);
-            listingRepository.save(listing);
-        }
-
-        ReturnSession saved = returnSessionRepository.save(session);
-        if (saved.getStatus() == ReturnStatus.COMPLETED) {
-            escrowService.releaseOnSuccessfulReturn(saved);
-            try {
-                reviewInviteService.createAndSendForReturnSession(saved);
-            } catch (Exception ignored) {
-            }
-        }
-        return mapToResponse(saved);
-    }
-
-    @Scheduled(fixedRate = 60000) // Run every minute
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void checkExpiredSessions() {
-        List<ReturnSession> expiredSessions = returnSessionRepository.findByStatusAndExpiresAtBefore(ReturnStatus.PENDING, LocalDateTime.now());
-        for (ReturnSession session : expiredSessions) {
-            session.setStatus(ReturnStatus.DISPUTED);
-            session.setDisputeReason("Auto-dispute: 5-minute window expired without mutual scan.");
-            Listing listing = session.getListing();
-            listing.setStatus(AvailabilityStatus.DISPUTED);
-            listingRepository.save(listing);
-            returnSessionRepository.save(session);
-            escrowService.markDisputed(listing.getId(), "auto_dispute_expired");
-            // In a real system, notify support team here
-        }
+        // Timed mutual-return expiry is intentionally disabled in the simplified flow.
     }
 
     private ReturnDTOs.ReturnSessionResponse mapToResponse(ReturnSession session) {
+        Listing listing = session.getListing();
         return ReturnDTOs.ReturnSessionResponse.builder()
                 .id(session.getId())
-                .listingId(session.getListing().getId())
+                .listingId(listing != null ? listing.getId() : null)
+                .borrowerName(displayName(session.getBorrower()))
+                .lenderName(displayName(session.getLender()))
+                .itemReference(listing != null ? listing.getItemReference() : null)
+                .returnMethod(session.getReturnMethod())
+                .returnPlace(session.getReturnPlace())
+                .returnAddress(session.getReturnAddress())
+                .submittedAt(session.getSubmittedAt())
+                .acceptedAt(session.getAcceptedAt())
+                .disputeReason(session.getDisputeReason())
                 .borrowerCode(session.getBorrowerCode())
                 .lenderCode(session.getLenderCode())
                 .borrowerScanned(session.getBorrowerScannedAt() != null)
@@ -289,11 +242,6 @@ public class ReturnService {
                 .status(session.getStatus())
                 .expiresAt(session.getExpiresAt())
                 .build();
-    }
-
-    private String generateSixDigitCode() {
-        int value = codeRandom.nextInt(900000) + 100000;
-        return String.valueOf(value);
     }
 
     private String generateUniqueItemReference() {
@@ -306,43 +254,35 @@ public class ReturnService {
         }
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed_to_generate_item_reference");
     }
-    
+
     public ReturnDTOs.ReturnSessionResponse getSession(UUID listingId, User currentUser) {
-        if (!anyReturnMethodEnabled()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Return methods are disabled");
-        }
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
         ReturnSession session = returnSessionRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING)
-                .orElse(null);
-
+                .orElseGet(() -> returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId).orElse(null));
+        if (currentUser == null || currentUser.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
         if (session == null) {
             boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED
                     || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN
-                    || listing.getStatus() == AvailabilityStatus.READY_FOR_PICKUP
-                    || listing.getStatus() == AvailabilityStatus.APPROVED
-                    || listing.getStatus() == AvailabilityStatus.PARTNER_ACTIVE
                     || listing.getStatus() == AvailabilityStatus.DISPUTED;
-            if (listingActive) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active return session");
+            if (listingActive && (isBorrower(listing, currentUser) || canActAsLender(listing, currentUser))) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No return session");
             }
-            session = returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No return session"));
-        }
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No return session");
         }
         UUID currentId = currentUser.getId();
         UUID borrowerId = session.getBorrower() != null ? session.getBorrower().getId() : null;
         UUID lenderId = session.getLender() != null ? session.getLender().getId() : null;
-        if (!currentId.equals(borrowerId) && !currentId.equals(lenderId)) {
+        if (!currentId.equals(borrowerId) && !currentId.equals(lenderId) && !canActAsLender(listing, currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
         }
         return mapToResponse(session);
     }
 
-    private ReturnSession getOrCreateActiveSession(Listing listing, User lender) {
+    private ReturnSession getOrCreatePendingSession(Listing listing, User lender) {
         UUID listingId = listing.getId();
         List<ReturnSession> pending = returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING);
         if (!pending.isEmpty()) {
@@ -350,38 +290,23 @@ public class ReturnService {
             for (int i = 1; i < pending.size(); i++) {
                 ReturnSession extra = pending.get(i);
                 extra.setStatus(ReturnStatus.DISPUTED);
-                extra.setDisputeReason("Auto-dispute: duplicate active session cleanup.");
+                extra.setDisputeReason("duplicate_pending_return_cleanup");
                 returnSessionRepository.save(extra);
             }
-            if (active.getExpiresAt() != null && active.getExpiresAt().isBefore(LocalDateTime.now())) {
-                active.setStatus(ReturnStatus.DISPUTED);
-                active.setDisputeReason("Auto-dispute: 5-minute window expired without mutual scan.");
-                listing.setStatus(AvailabilityStatus.DISPUTED);
-                listingRepository.save(listing);
-                returnSessionRepository.save(active);
-                escrowService.markDisputed(listingId, "return_session_expired");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Return session expired and moved to dispute");
-            }
             return active;
-        }
-
-        String borrowerCode = generateSixDigitCode();
-        String lenderCode = generateSixDigitCode();
-        while (lenderCode.equals(borrowerCode)) {
-            lenderCode = generateSixDigitCode();
         }
         return ReturnSession.builder()
                 .id(UUID.randomUUID())
                 .listing(listing)
                 .borrower(listing.getBorrower())
                 .lender(lender)
-                .borrowerQrCode("BQR-" + UUID.randomUUID().toString())
-                .lenderQrCode("LQR-" + UUID.randomUUID().toString())
-                .borrowerCode(borrowerCode)
-                .lenderCode(lenderCode)
+                .borrowerQrCode(null)
+                .lenderQrCode(null)
+                .borrowerCode(null)
+                .lenderCode(null)
                 .status(ReturnStatus.PENDING)
                 .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .expiresAt(null)
                 .build();
     }
 
@@ -399,36 +324,51 @@ public class ReturnService {
         return null;
     }
 
-    private ReturnSession resolveSingleActiveSession(UUID listingId) {
-        List<ReturnSession> pending = returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING);
-        if (pending.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active return session");
+    private ReturnSession getPendingSessionForLender(UUID listingId, User currentUser) {
+        ReturnSession session = findPendingSession(listingId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No pending return request");
         }
-        ReturnSession active = pending.get(0);
+        if (!canActAsLender(session.getListing(), currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
+        }
+        List<ReturnSession> pending = returnSessionRepository.findByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING);
         for (int i = 1; i < pending.size(); i++) {
             ReturnSession extra = pending.get(i);
             extra.setStatus(ReturnStatus.DISPUTED);
-            extra.setDisputeReason("Auto-dispute: duplicate active session cleanup.");
+            extra.setDisputeReason("duplicate_pending_return_cleanup");
             returnSessionRepository.save(extra);
         }
-        return active;
+        return session;
     }
 
-    private void ensureCodes(ReturnSession session) {
-        if (session.getBorrowerCode() != null && session.getLenderCode() != null) {
-            return;
+    private ReturnSession findPendingSession(UUID listingId) {
+        return returnSessionRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING)
+                .orElse(null);
+    }
+
+    private Listing getBorrowedListing(UUID listingId) {
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
+        AvailabilityStatus status = listing.getStatus();
+        if (status == AvailabilityStatus.AVAILABLE && listing.getBorrower() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing already returned");
         }
-        String borrowerCode = session.getBorrowerCode() != null ? session.getBorrowerCode() : generateSixDigitCode();
-        String lenderCode = session.getLenderCode() != null ? session.getLenderCode() : generateSixDigitCode();
-        while (lenderCode.equals(borrowerCode)) {
-            lenderCode = generateSixDigitCode();
+        if (status != AvailabilityStatus.BORROWED && status != AvailabilityStatus.WAITING_FOR_RETURN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is not currently borrowed");
         }
-        session.setBorrowerCode(borrowerCode);
-        session.setLenderCode(lenderCode);
+        if (listing.getBorrower() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Listing is missing borrower");
+        }
+        if (listing.getItemReference() == null || listing.getItemReference().isBlank()) {
+            listing.setItemReference(generateUniqueItemReference());
+            listingRepository.save(listing);
+        }
+        return listing;
     }
 
     private boolean anyReturnMethodEnabled() {
-        return qrEnabled() || manualEnabled() || disputeEnabled();
+        return qrEnabled() || manualEnabled();
     }
 
     private boolean qrEnabled() {
@@ -450,5 +390,71 @@ public class ReturnService {
         ReturnMode mode = ReturnMode.from(rawMode);
         if (mode != ReturnMode.ANY) return mode == ReturnMode.DISPUTE;
         return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.returns.dispute.enabled", true);
+    }
+
+    private ReturnMode resolveRequestedMethod(ReturnDTOs.SubmitReturnRequest request) {
+        ReturnMode method = request != null ? request.getReturnMethod() : null;
+        if (method == null || method == ReturnMode.ANY || method == ReturnMode.DISPUTE) {
+            String qrCode = sanitize(request != null ? request.getQrCode() : null);
+            method = qrCode != null ? ReturnMode.QR_CODE : ReturnMode.MANUAL;
+        }
+        return method;
+    }
+
+    private boolean isBorrower(Listing listing, User currentUser) {
+        return listing != null
+                && listing.getBorrower() != null
+                && listing.getBorrower().getId() != null
+                && currentUser != null
+                && currentUser.getId() != null
+                && listing.getBorrower().getId().equals(currentUser.getId());
+    }
+
+    private boolean canActAsLender(Listing listing, User currentUser) {
+        if (listing == null || currentUser == null || currentUser.getId() == null) {
+            return false;
+        }
+        if (currentUser.getRole() != null && currentUser.getRole().name().equals("ADMIN")) {
+            return true;
+        }
+        User lender = resolveLender(listing);
+        if (lender != null && lender.getId() != null && lender.getId().equals(currentUser.getId())) {
+            return true;
+        }
+        return listing.getPartner() != null
+                && listing.getPartner().getId() != null
+                && partnerAdminRepository.existsByUserAndPartnerAndRole(currentUser.getId(), listing.getPartner().getId(), PartnerAdminRole.ADMIN);
+    }
+
+    private void validateItemReference(Listing listing, String provided) {
+        String itemNumber = sanitize(provided);
+        String expected = sanitize(listing != null ? listing.getItemReference() : null);
+        if (expected != null) {
+            if (itemNumber == null || !expected.equals(itemNumber)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid item number");
+            }
+            return;
+        }
+        if (itemNumber == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing item number");
+        }
+    }
+
+    private String sanitize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String displayName(User user) {
+        if (user == null) {
+            return null;
+        }
+        if (user.getDisplayName() != null && !user.getDisplayName().isBlank()) {
+            return user.getDisplayName();
+        }
+        return user.getName();
     }
 }

@@ -1,6 +1,7 @@
 package com.vicinity24.api.model;
 
 import com.vicinity24.api.model.enums.ReturnStatus;
+import com.vicinity24.api.model.enums.ReturnMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -46,6 +47,9 @@ public class ReturnSession {
     private String borrowerCode;
     private String lenderCode;
 
+    @Enumerated(EnumType.STRING)
+    private ReturnMode returnMethod;
+
     private LocalDateTime borrowerScannedAt;
     private LocalDateTime lenderScannedAt;
 
@@ -53,6 +57,10 @@ public class ReturnSession {
     private LocalDateTime manualLenderConfirmedAt;
 
     private String conciergeWitnessId;
+    private String returnPlace;
+    private String returnAddress;
+    private LocalDateTime submittedAt;
+    private LocalDateTime acceptedAt;
 
     private String disputeReason;
     private String disputePhotoUrl;

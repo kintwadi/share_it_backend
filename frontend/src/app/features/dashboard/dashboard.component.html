@@ -296,7 +296,7 @@
                       [disabled]="!ownerCanStartReturn(item)"
                       class="text-xs font-semibold px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       [ngClass]="ownerCanStartReturn(item) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-100 text-gray-500'"
-                      [title]="ownerCanStartReturn(item) ? 'Start Return' : 'Waiting for borrower to initiate return'"
+                      [title]="ownerCanStartReturn(item) ? 'View return request' : 'Waiting for borrower to submit return'"
                     >
                       {{ ownerReturnLabel(item) }}
                     </button>
@@ -428,9 +428,10 @@
                   *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED"
                   type="button"
                   (click)="$event.stopPropagation(); handleReturnClick(item)"
-                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full"
+                  [disabled]="borrowerHasSubmittedReturn(item)"
+                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {{ borrowerReturnLabel() }}
+                  {{ borrowerReturnLabel(item) }}
                 </button>
                 <button
                   *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP"

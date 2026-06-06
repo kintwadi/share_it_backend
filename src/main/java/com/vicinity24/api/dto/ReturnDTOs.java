@@ -1,5 +1,6 @@
 package com.vicinity24.api.dto;
 
+import com.vicinity24.api.model.enums.ReturnMode;
 import com.vicinity24.api.model.enums.ReturnStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,15 @@ public class ReturnDTOs {
     public static class ReturnSessionResponse {
         private UUID id;
         private UUID listingId;
+        private String borrowerName;
+        private String lenderName;
+        private String itemReference;
+        private ReturnMode returnMethod;
+        private String returnPlace;
+        private String returnAddress;
+        private LocalDateTime submittedAt;
+        private LocalDateTime acceptedAt;
+        private String disputeReason;
         private String borrowerCode;
         private String lenderCode;
         private boolean borrowerScanned;
@@ -33,6 +43,17 @@ public class ReturnDTOs {
     public static class ManualFallbackRequest {
         private String itemNumber;
         private String conciergeWitnessId;
+        private String returnPlace;
+        private String returnAddress;
+    }
+
+    @Data
+    public static class SubmitReturnRequest {
+        private ReturnMode returnMethod;
+        private String qrCode;
+        private String itemNumber;
+        private String returnPlace;
+        private String returnAddress;
     }
 
     @Data

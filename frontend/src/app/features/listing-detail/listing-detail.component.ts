@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, MapPin, ShieldCheck, ArrowLeft, Calendar, CheckCircle2, AlertCircle, Loader2, Share2, BadgeCheck, Flag, DollarSign, Gift, ChevronLeft, ChevronRight, Star, X, Minus, Plus, Clock, CreditCard, Wallet, AlertTriangle, BellRing, Check, X as XIcon, Zap, ThumbsUp, Trash2, Lock as LockIcon } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { User, Listing, AvailabilityStatus, ListingType } from '../../core/models/types';
+import { User, Listing, AvailabilityStatus, ListingType, ReturnSessionResponse } from '../../core/models/types';
 
 @Component({
   selector: 'app-listing-detail',
@@ -74,6 +74,9 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   private actionErrorTimer: any = null;
   private shareTimer: any = null;
   private statusPollTimer: any = null;
+  returnSession: ReturnSessionResponse | null = null;
+  returnRequestReady = false;
+  borrowerReturnSubmitted = false;
 
   backToUrl = '/';
 
@@ -333,6 +336,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         this.setActiveImage(this.listing.imageUrl || (this.listing.gallery && this.listing.gallery[0]) || '');
       }
       this.currentUser = await this.api.getCurrentUser();
+      await this.loadReturnState();
       this.startStatusPolling();
       if (this.pendingNoticeSuccess) {
         this.notifySuccess(this.pendingNoticeSuccess);
@@ -419,6 +423,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         if (updated.imageUrl) this.setActiveImage(updated.imageUrl);
       }
     } catch { }
+    await this.loadReturnState();
     this.startStatusPolling();
     this.render();
   }
@@ -481,6 +486,33 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(this.backToUrl || '/');
   }
 
+  get canViewReturnRequest(): boolean {
+    return this.isOwner && this.returnRequestReady;
+  }
+
+  get returnActionDisabled(): boolean {
+    return this.isOwner ? !this.canViewReturnRequest : this.borrowerReturnSubmitted;
+  }
+
+  returnActionLabel(): string {
+    if (this.isOwner) {
+      return this.canViewReturnRequest ? this.i18n.t('dash.view_return_request') : this.i18n.t('dash.waiting_for_return');
+    }
+    return this.borrowerReturnSubmitted ? this.i18n.t('dash.return_submitted') : this.i18n.t('dash.start_return_process');
+  }
+
+  goToReturnPage() {
+    const listing = this.listing;
+    if (!listing) return;
+    if (this.isOwner) {
+      if (!this.canViewReturnRequest) return;
+      this.router.navigate(['/listing', listing.id, 'accept-return'], { queryParams: { from: this.router.url } });
+      return;
+    }
+    if (this.borrowerReturnSubmitted) return;
+    this.router.navigate(['/listing', listing.id, 'return'], { queryParams: { from: this.router.url } });
+  }
+
   goToOwnerProfile() {
     const listing = this.listing;
     if (!listing) return;
@@ -521,6 +553,29 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
       this.notifyShare(this.i18n.t('listing.share.link_copied'));
     } catch {
       this.notifyError(`${this.i18n.t('listing.share.copy_prompt')} ${url}`);
+    }
+  }
+
+  private async loadReturnState() {
+    const listing = this.listing;
+    this.returnSession = null;
+    this.returnRequestReady = false;
+    this.borrowerReturnSubmitted = false;
+    if (!listing) return;
+    const active = listing.status === AvailabilityStatus.BORROWED
+      || listing.status === AvailabilityStatus.WAITING_FOR_RETURN
+      || listing.status === AvailabilityStatus.DISPUTED;
+    if (!active) return;
+    try {
+      const session = await this.api.getReturnSession(listing.id);
+      const pending = String((session as any)?.status || '').toUpperCase() === 'PENDING';
+      this.returnSession = session;
+      this.returnRequestReady = this.isOwner && pending;
+      this.borrowerReturnSubmitted = !this.isOwner && pending;
+    } catch {
+      this.returnSession = null;
+      this.returnRequestReady = false;
+      this.borrowerReturnSubmitted = false;
     }
   }
 }

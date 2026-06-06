@@ -31,6 +31,15 @@ public class ReturnController {
         User currentUser = userService.getByEmail(principal.getUsername());
         return ResponseEntity.ok(returnService.initiateReturn(id, currentUser));
     }
+
+    @PostMapping("/submit")
+    public ResponseEntity<ReturnDTOs.ReturnSessionResponse> submitReturn(
+            @PathVariable("id") UUID id,
+            @RequestBody ReturnDTOs.SubmitReturnRequest request,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        User currentUser = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(returnService.submitReturn(id, currentUser, request));
+    }
     
     @GetMapping
     public ResponseEntity<ReturnDTOs.ReturnSessionResponse> getSession(
@@ -56,6 +65,14 @@ public class ReturnController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
         User currentUser = userService.getByEmail(principal.getUsername());
         return ResponseEntity.ok(returnService.manualFallback(id, currentUser, request));
+    }
+
+    @PostMapping("/accept")
+    public ResponseEntity<ReturnDTOs.ReturnSessionResponse> acceptReturn(
+            @PathVariable("id") UUID id,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        User currentUser = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(returnService.acceptReturn(id, currentUser));
     }
 
     @PostMapping("/dispute")

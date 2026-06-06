@@ -70,6 +70,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoadingRecs = false;
   actionLoading: string | null = null;
   ownerReturnSessionReady: Record<string, boolean> = {};
+  borrowerReturnRequestSubmitted: Record<string, boolean> = {};
   paymentSuccess = false;
   upgradeSuccess = false;
   error: string | null = null;
@@ -205,27 +206,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private async refreshOwnerReturnSessionState() {
-    const candidates = this.myListings.filter(item =>
+    const ownerCandidates = this.myListings.filter(item =>
       item.status === AvailabilityStatus.BORROWED ||
       item.status === AvailabilityStatus.WAITING_FOR_RETURN ||
       item.status === AvailabilityStatus.DISPUTED
     );
-    if (!candidates.length) {
+    const borrowerCandidates = this.myBorrows.filter(item =>
+      item.status === AvailabilityStatus.BORROWED ||
+      item.status === AvailabilityStatus.WAITING_FOR_RETURN ||
+      item.status === AvailabilityStatus.DISPUTED
+    );
+    const combined = [...ownerCandidates, ...borrowerCandidates];
+    if (!combined.length) {
       this.ownerReturnSessionReady = {};
+      this.borrowerReturnRequestSubmitted = {};
       this.render();
       return;
     }
 
-    const next: Record<string, boolean> = {};
-    await Promise.all(candidates.map(async item => {
+    const pendingByListing: Record<string, boolean> = {};
+    await Promise.all(combined.map(async item => {
       try {
         const session = await this.api.getReturnSession(item.id);
-        next[item.id] = !!session && String((session as any).status || '').toUpperCase() === 'PENDING';
+        pendingByListing[item.id] = !!session && String((session as any).status || '').toUpperCase() === 'PENDING';
       } catch {
-        next[item.id] = false;
+        pendingByListing[item.id] = false;
       }
     }));
-    this.ownerReturnSessionReady = next;
+    this.ownerReturnSessionReady = Object.fromEntries(ownerCandidates.map(item => [item.id, !!pendingByListing[item.id]]));
+    this.borrowerReturnRequestSubmitted = Object.fromEntries(borrowerCandidates.map(item => [item.id, !!pendingByListing[item.id]]));
     this.render();
   }
 
@@ -412,7 +421,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ownerReturnLabel(item: Listing): string {
-    return this.ownerCanStartReturn(item) ? this.i18n.t('dash.return') : 'Waiting for return';
+    return this.ownerCanStartReturn(item) ? this.i18n.t('dash.view_return_request') : this.i18n.t('dash.waiting_for_return');
   }
 
   ownerCanRequestAdminReturn(item: Listing): boolean {
@@ -428,8 +437,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return 'Mark as picked up';
   }
 
-  borrowerReturnLabel(): string {
-    return 'Start return process';
+  borrowerHasSubmittedReturn(item: Listing): boolean {
+    return !!this.borrowerReturnRequestSubmitted[item.id];
+  }
+
+  borrowerReturnLabel(item: Listing): string {
+    return this.borrowerHasSubmittedReturn(item) ? this.i18n.t('dash.return_submitted') : this.i18n.t('dash.start_return_process');
   }
 
   async handleAddNew() {
@@ -585,6 +598,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   handleReturnClick(item: Listing) {
     if (!this.returnsEnabled) return;
+    if (item.ownerId === this.user?.id) {
+      if (!this.ownerCanStartReturn(item)) return;
+      this.router.navigate(['/listing', item.id, 'accept-return'], { queryParams: { from: '/dashboard' } });
+      return;
+    }
     this.router.navigate(['/listing', item.id, 'return'], { queryParams: { from: '/dashboard' } });
   }
 
