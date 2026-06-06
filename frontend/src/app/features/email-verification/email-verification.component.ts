@@ -44,6 +44,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   userEmail = '';
   flow: 'subscription' | 'signup' = 'subscription';
   verificationToken = '';
+  subscriptionCodeAlreadySent = false;
   loading = true;
   submitting = false;
   sending = false;
@@ -62,6 +63,20 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     } catch { }
   }
 
+  private mapSubscriptionVerificationError(error: any): string {
+    const raw = String(error?.error?.error || error?.error?.message || error?.message || '').trim();
+    switch (raw) {
+      case 'invalid_verification_code':
+      case 'verification_code_expired':
+      case 'verification_code_already_used':
+        return this.i18n.t('verification.email.invalid_code');
+      case 'subscription_disabled':
+        return this.i18n.t('subscription.disabled');
+      default:
+        return raw || this.i18n.t('verification.email.invalid_code');
+    }
+  }
+
   async ngOnInit() {
     await this.settingsConfig.ensureLoaded();
     const initParams = this.route.snapshot.queryParams || {};
@@ -69,6 +84,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     const initFlow = String(initParams['flow'] || '').toLowerCase();
     this.flow = initFlow === 'signup' ? 'signup' : 'subscription';
     this.verificationToken = String(initParams['token'] || '');
+    this.subscriptionCodeAlreadySent = String(initParams['sent'] || '').toLowerCase() === '1' || String(initParams['sent'] || '').toLowerCase() === 'true';
     const initEmail = String(initParams['email'] || '');
     if (initEmail) this.userEmail = initEmail;
     if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
@@ -81,6 +97,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       const flow = String(params['flow'] || '').toLowerCase();
       this.flow = flow === 'signup' ? 'signup' : 'subscription';
       this.verificationToken = String(params['token'] || this.verificationToken);
+      this.subscriptionCodeAlreadySent = String(params['sent'] || '').toLowerCase() === '1' || String(params['sent'] || '').toLowerCase() === 'true';
       const email = String(params['email'] || '');
       if (email) this.userEmail = email;
       if (this.flow !== 'signup' && !this.subscriptionFeature.enabled() && this.verificationToken) {
@@ -133,6 +150,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.render();
     try {
       if (this.flow === 'signup') {
+        this.sent = true;
+        this.startResendCooldown(30);
+      } else if (this.subscriptionCodeAlreadySent) {
         this.sent = true;
         this.startResendCooldown(30);
       } else {
@@ -247,7 +267,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         this.error = this.i18n.t('verification.email.session_url_missing');
       }
     } catch (e: any) {
-      this.error = e?.message || this.i18n.t('verification.email.invalid_code');
+      this.error = this.flow === 'signup'
+        ? (e?.message || this.i18n.t('verification.email.invalid_code'))
+        : this.mapSubscriptionVerificationError(e);
     } finally {
       this.submitting = false;
       this.render();

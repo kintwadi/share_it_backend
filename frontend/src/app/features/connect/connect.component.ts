@@ -92,12 +92,12 @@ export class ConnectComponent implements OnInit {
     this.isLoading = true;
     this.render();
     try {
-      // Map user_admin -> admin@nearshare.local
+      // Map user_admin -> admin@vicinity24.local
       // user_unverified_demo -> new.neighbor@example.com
       // user_lender -> linda.lender@example.com
       // user_borrower -> bob.borrower@example.com
       let demoEmail = `${userId}@example.com`;
-      if (userId === 'user_admin') demoEmail = 'admin@nearshare.local';
+      if (userId === 'user_admin') demoEmail = 'admin@vicinity24.local';
       if (userId === 'user_unverified_demo') demoEmail = 'new.neighbor@example.com';
       if (userId === 'user_lender') demoEmail = 'linda.lender@example.com';
       if (userId === 'user_borrower') demoEmail = 'bob.borrower@example.com';

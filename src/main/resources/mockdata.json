@@ -2,11 +2,11 @@
   "users": [
     {
       "name": "Alice Admin",
-      "email": "admin@nearshare.local",
+      "email": "admin@vicinity24.local",
       "password": "password123",
       "role": "ADMIN",
       "phone": "+1 (800) 555-9999",
-      "address": "NearShare HQ",
+      "address": "Vicinity24 HQ",
       "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2",
       "trustScore": 100,
       "vouchCount": 500,
@@ -135,11 +135,45 @@
       "gallery": ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4"],
       "autoApprove": true,
       "insuranceRequired": true,
-      "status": "BORROWED",
+      "status": "WAITING_FOR_RETURN",
       "borrowerEmail": "bob.borrower@example.com",
       "location": { "lat": 50.118, "lng": 8.6512 },
       "createdAt": "2026-05-11T09:00:00",
       "pickupLocationName": "Public meetup spot"
+    },
+    {
+      "ownerEmail": "linda.lender@example.com",
+      "borrowerEmail": "bob.borrower@example.com",
+      "title": "Cordless Drill Set (18V)",
+      "description": "18V cordless drill with two batteries and a bit set. Great for basic DIY and furniture assembly.",
+      "type": "LEND",
+      "category": "Tools",
+      "hourlyRate": 8.0,
+      "imageUrl": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4",
+      "gallery": [],
+      "autoApprove": false,
+      "insuranceRequired": true,
+      "status": "APPROVED",
+      "location": { "lat": 50.1109, "lng": 8.6821 },
+      "createdAt": "2026-05-12T09:15:00",
+      "pickupLocationName": "Concierge (building front desk)"
+    },
+    {
+      "ownerEmail": "linda.lender@example.com",
+      "borrowerEmail": "bob.borrower@example.com",
+      "title": "Extension Ladder (12ft)",
+      "description": "Sturdy extension ladder for light outdoor work. Please handle with care.",
+      "type": "LEND",
+      "category": "Tools",
+      "hourlyRate": 6.0,
+      "imageUrl": "https://images.unsplash.com/photo-1581579186983-27c1919b0410",
+      "gallery": [],
+      "autoApprove": false,
+      "insuranceRequired": true,
+      "status": "READY_FOR_PICKUP",
+      "location": { "lat": 50.1109, "lng": 8.6821 },
+      "createdAt": "2026-05-12T10:20:00",
+      "pickupLocationName": "Concierge (building front desk)"
     },
     {
       "ownerEmail": "peter.pro@example.com",
@@ -235,6 +269,13 @@
       "receiverEmail": "sarah.smith@example.com",
       "content": "Hey Sarah, can I pick up the tent tonight?",
       "timestamp": "2026-05-11T17:20:00",
+      "isRead": false
+    },
+    {
+      "senderEmail": "linda.lender@example.com",
+      "receiverEmail": "bob.borrower@example.com",
+      "content": "Ready for pickup at Frankfurterstr 2455, Frankfurt.",
+      "timestamp": "2026-05-12T10:25:00",
       "isRead": false
     }
   ]

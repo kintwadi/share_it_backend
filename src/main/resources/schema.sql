@@ -13,6 +13,9 @@ ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_at timesta
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_reviewed_by uuid;
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS partner_borrow_rejection_reason varchar(500);
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS item_reference varchar(8);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS admin_return_requested_at timestamp;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS admin_return_requested_by uuid;
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS admin_return_request_reason varchar(500);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_scope varchar(20);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS reference_id varchar(32);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS street_address varchar(255);
@@ -21,6 +24,23 @@ ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS postal_code varchar(40);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS country varchar(80);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS operating_time_from varchar(8);
 ALTER TABLE pickup_locations ADD COLUMN IF NOT EXISTS operating_time_to varchar(8);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS borrower_qr_code varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS lender_qr_code varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS borrower_code varchar(32);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS lender_code varchar(32);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS borrower_scanned_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS lender_scanned_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS manual_borrower_confirmed_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS manual_lender_confirmed_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS concierge_witness_id varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_method varchar(40);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_place varchar(255);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS return_address varchar(500);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS submitted_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS accepted_at timestamp;
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS dispute_reason varchar(1000);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS dispute_photo_url varchar(1000);
+ALTER TABLE return_sessions ADD COLUMN IF NOT EXISTS expires_at timestamp;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_pickup_locations_reference_id ON pickup_locations (reference_id);
 

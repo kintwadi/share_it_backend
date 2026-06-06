@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Docker Hub Deployment Script for NearShare Backend
+# Docker Hub Deployment Script for Vicinity24 Backend
 # Usage: ./SCRIPTS/deploy-to-docker.sh [version-tag]
 
 set -e  # Exit on any error
@@ -10,7 +10,7 @@ cd "$ROOT_DIR"
 
 # Configuration
 DOCKER_HUB_USERNAME=""  # Set your Docker Hub username here
-IMAGE_NAME="nearshare-backend"
+IMAGE_NAME="vicinity24-core-api"
 DEFAULT_TAG="latest"
 
 # Colors for output
@@ -161,7 +161,7 @@ deploy() {
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     echo "Usage: $0 [version-tag]"
     echo ""
-    echo "Deploy NearShare backend to Docker Hub"
+    echo "Deploy Vicinity24 backend to Docker Hub"
     echo ""
     echo "Arguments:"
     echo "  version-tag  Optional version tag (default: extract from pom.xml or 'latest')"

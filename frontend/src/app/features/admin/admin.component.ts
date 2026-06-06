@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, Shield } from 'lucide-angular';
+import { LucideAngularModule, AlertTriangle, Ban, Loader2, RefreshCcw, Trash2, Shield, MapPin, CreditCard } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { Listing, User } from '../../core/models/types';
@@ -29,6 +29,8 @@ export class AdminComponent implements OnInit {
   readonly RefreshCcw = RefreshCcw;
   readonly Trash2 = Trash2;
   readonly Shield = Shield;
+  readonly MapPin = MapPin;
+  readonly CreditCard = CreditCard;
 
   activeTab: AdminTab = 'OVERVIEW';
   loading = false;
@@ -52,6 +54,7 @@ export class AdminComponent implements OnInit {
   listingSelectedId: string | null = null;
   listingSelected: Listing | null = null;
   listingSelectedLoading = false;
+  listingAdminActionLoading = false;
 
   partnerSubTab: PartnerSubTab = 'SUBMISSIONS';
   partnerSubmissions: any[] = [];
@@ -95,6 +98,9 @@ export class AdminComponent implements OnInit {
   settingsOriginal: Record<string, any> = {};
   settingsSaving = false;
   settingsSaved = false;
+  stripeProvisioning = false;
+  stripeProvisioned = false;
+  stripeProvisionMessage: string | null = null;
 
   pageSize = 20;
 
@@ -182,6 +188,7 @@ export class AdminComponent implements OnInit {
     this.settingsOriginal = original;
     this.settingsSaved = false;
     this.settingsSaving = false;
+    this.stripeProvisioned = false;
     this.render();
   }
 
@@ -196,6 +203,17 @@ export class AdminComponent implements OnInit {
     item.value = item.defaultValue;
     this.settingsSaved = false;
     this.render();
+  }
+
+  get dirtySettingsCount(): number {
+    let count = 0;
+    for (const section of this.settingsSections) {
+      const items = Array.isArray(section?.items) ? section.items : [];
+      for (const item of items) {
+        if (this.isDirtySetting(item)) count++;
+      }
+    }
+    return count;
   }
 
   async saveSettings() {
@@ -229,6 +247,37 @@ export class AdminComponent implements OnInit {
           this.settingsSaved = false;
           this.render();
         }, 2000);
+      }
+    }
+  }
+
+  async provisionStripeSubscriptions() {
+    if (this.stripeProvisioning) return;
+    this.stripeProvisioning = true;
+    this.stripeProvisioned = false;
+    this.stripeProvisionMessage = null;
+    this.error = null;
+    this.render();
+    try {
+      const res = await this.api.adminProvisionStripeSubscriptions();
+      await this.loadAppSettings();
+      const plusPriceId = String(res?.subscriptionConfig?.plus?.priceId || '');
+      const proPriceId = String(res?.subscriptionConfig?.pro?.priceId || '');
+      this.stripeProvisionMessage =
+        plusPriceId || proPriceId
+          ? `${this.i18n.t('admin.stripe.provisioned')} (${plusPriceId || '-'} / ${proPriceId || '-'})`
+          : this.i18n.t('admin.stripe.provisioned');
+      this.stripeProvisioned = true;
+    } catch (e: any) {
+      this.error = e?.message || this.i18n.t('admin.stripe.provision_failed');
+    } finally {
+      this.stripeProvisioning = false;
+      this.render();
+      if (this.stripeProvisioned) {
+        setTimeout(() => {
+          this.stripeProvisioned = false;
+          this.render();
+        }, 3000);
       }
     }
   }
@@ -299,6 +348,35 @@ export class AdminComponent implements OnInit {
       this.listingSelected = listing;
     } finally {
       this.listingSelectedLoading = false;
+      this.render();
+    }
+  }
+
+  async selectListingAndScroll(row: any) {
+    await this.selectListing(row);
+    if (typeof window === 'undefined') return;
+    window.setTimeout(() => {
+      const el = document.getElementById('admin-listing-review-panel');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
+  async acceptRequestedReturnForSelectedListing() {
+    const listing = this.listingSelected;
+    if (!listing?.id || !listing.adminReturnRequestedAt || this.listingAdminActionLoading) return;
+    const ok = typeof window === 'undefined' ? true : window.confirm('Mark this item as returned and unlock the funds?');
+    if (!ok) return;
+    this.listingAdminActionLoading = true;
+    this.render();
+    try {
+      await this.api.adminAcceptReturnDispute(listing.id, 'admin_accept_return_request');
+      await this.loadListings(this.listingsPage);
+      const updated = await this.api.getListingById(listing.id);
+      this.listingSelected = updated;
+    } catch (e: any) {
+      this.error = e?.message || 'Failed to complete admin return.';
+    } finally {
+      this.listingAdminActionLoading = false;
       this.render();
     }
   }

@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
-echo Starting NearShare Backend with SQLite Database (Local Mode)...
+echo Starting Vicinity24 Backend with SQLite Database (Local Mode)...
 
 set "ROOT_DIR=%~dp0.."
 pushd "%ROOT_DIR%" >nul
@@ -13,7 +13,7 @@ if exist "%SQLITE_ENV_FILE%" (
 )
 
 if "%DB_TYPE%"=="" set "DB_TYPE=sqlite"
-if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./nearshare.sqlite"
+if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./vicinity24.sqlite"
 if "%DB_USERNAME%"=="" set "DB_USERNAME=sqlite_user"
 if "%DB_PASSWORD%"=="" set "DB_PASSWORD=sqlite_password_123"
 if "%DB_DRIVER%"=="" set "DB_DRIVER=org.sqlite.JDBC"

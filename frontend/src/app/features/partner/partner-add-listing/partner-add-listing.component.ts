@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Upload } from 'lucide-angular';
 import { PartnerService } from '../../../core/services/partner.service';
 import { ApiService } from '../../../core/services/api.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { ListingType, Partner } from '../../../core/models/types';
 
 @Component({
@@ -19,6 +20,7 @@ export class PartnerAddListingComponent implements OnInit {
   router = inject(Router);
   partnerApi = inject(PartnerService);
   api = inject(ApiService);
+  i18n = inject(I18nService);
 
   readonly ArrowLeft = ArrowLeft;
   readonly Upload = Upload;
@@ -28,6 +30,7 @@ export class PartnerAddListingComponent implements OnInit {
   loading = true;
   saving = false;
   error = '';
+  private readonly allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
   form = this.fb.group({
     partnerId: ['', Validators.required],
@@ -85,11 +88,16 @@ export class PartnerAddListingComponent implements OnInit {
 
   async onUpload(file: File | null) {
     if (!file) return;
+    const fileError = this.validateSelectedImageFile(file);
+    if (fileError) {
+      this.error = fileError;
+      return;
+    }
     try {
       const url = await this.api.uploadListingImage(file);
       this.form.patchValue({ imageUrl: url });
     } catch (e: any) {
-      this.error = e?.message || 'upload_failed';
+      this.error = this.mapImageUploadError(e, file);
     }
   }
 
@@ -138,5 +146,42 @@ export class PartnerAddListingComponent implements OnInit {
       hourlyRate.setValidators([Validators.min(0)]);
     }
     hourlyRate.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private validateSelectedImageFile(file: File): string | null {
+    const ext = this.extractFileExtension(file?.name || '');
+    if (!ext || !this.allowedImageExtensions.includes(ext)) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    const type = String(file?.type || '').toLowerCase();
+    if (type && !type.startsWith('image/')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    return null;
+  }
+
+  private mapImageUploadError(error: any, file: File): string {
+    const localValidation = this.validateSelectedImageFile(file);
+    if (localValidation) return localValidation;
+    const raw = String(
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    return this.i18n.t('new_item.error.upload_failed');
+  }
+
+  private extractFileExtension(filename: string): string {
+    const value = String(filename || '').trim().toLowerCase();
+    const dot = value.lastIndexOf('.');
+    if (dot < 0 || dot >= value.length - 1) return '';
+    return value.slice(dot + 1);
   }
 }

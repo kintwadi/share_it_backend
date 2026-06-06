@@ -4,8 +4,8 @@
 PGDATA="/var/lib/postgresql/data"
 
 # Default values if env vars are not set
-: "${DB_USERNAME:=nearshare_user}"
-: "${DB_PASSWORD:=nearshare_password}"
+: "${DB_USERNAME:=vicinity24_user}"
+: "${DB_PASSWORD:=vicinity24_password}"
 
 # Initialize database if not exists
 if [ -z "$(ls -A "$PGDATA")" ]; then
@@ -30,8 +30,8 @@ if [ -z "$(ls -A "$PGDATA")" ]; then
     echo "Creating user and database..."
     # Check if user already exists (unlikely in fresh init, but good practice)
     psql -d postgres -c "CREATE USER \"$DB_USERNAME\" WITH PASSWORD '$DB_PASSWORD';" || echo "User creation failed or user exists"
-    psql -d postgres -c "CREATE DATABASE nearshare OWNER \"$DB_USERNAME\";" || echo "Database creation failed or database exists"
-    psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE nearshare TO \"$DB_USERNAME\";"
+    psql -d postgres -c "CREATE DATABASE vicinity24 OWNER \"$DB_USERNAME\";" || echo "Database creation failed or database exists"
+    psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE vicinity24 TO \"$DB_USERNAME\";"
     
     echo "Stopping PostgreSQL..."
     pg_ctl stop -D "$PGDATA"

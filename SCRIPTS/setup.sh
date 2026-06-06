@@ -9,7 +9,7 @@ fi
 
 : "${DB_TYPE:=}"
 : "${DB_DRIVER:=}"
-: "${DB_URL:=jdbc:postgresql://localhost:5432/nearshare}"
+: "${DB_URL:=jdbc:postgresql://localhost:5432/Vicinity24}"
 : "${DB_USERNAME:=postgres}"
 : "${DB_PASSWORD:=postgres}"
 
@@ -51,8 +51,6 @@ fi
 : "${STRIPE_PUBLIC_KEY:=}"
 : "${STRIPE_SECRET_KEY:=}"
 : "${STRIPE_WEBHOOK_SECRET:=}"
-: "${SUBSCRIPTION_PLUS_STRIPE_PRICE_ID:=}"
-: "${SUBSCRIPTION_PRO_STRIPE_PRICE_ID:=}"
 
 : "${AWS_ACCESS_KEY_ID:=}"
 : "${AWS_SECRET_ACCESS_KEY:=}"
@@ -71,7 +69,7 @@ fi
 
 set +a
 
-echo "Environment variables set for NearShare Backend:"
+echo "Environment variables set for Vicinity24 Backend:"
 echo "- DB_URL: ${DB_URL}"
 echo "- DB_USERNAME: ${DB_USERNAME}"
 echo "- DB_PASSWORD: ********"
@@ -91,8 +89,6 @@ echo "- FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}"
 echo "- STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}"
 echo "- STRIPE_SECRET_KEY: ********"
 echo "- STRIPE_WEBHOOK_SECRET: ********"
-echo "- SUBSCRIPTION_PLUS_STRIPE_PRICE_ID: ${SUBSCRIPTION_PLUS_STRIPE_PRICE_ID}"
-echo "- SUBSCRIPTION_PRO_STRIPE_PRICE_ID: ${SUBSCRIPTION_PRO_STRIPE_PRICE_ID}"
 echo "- ADMIN_SIGNUP_SECRET: ********"
 echo "- LOCAL_HOST: ${LOCAL_HOST}"
 echo "- LOCAL_127: ${LOCAL_127}"

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Package, Upload, Image as ImageIcon, ChevronDown, X, Plus } from 'lucide-angular';
 import { ApiService } from '../../../core/services/api.service';
 import { PartnerService } from '../../../core/services/partner.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { ListingType, Partner, Category } from '../../../core/models/types';
 
 @Component({
@@ -17,6 +18,7 @@ export class PartnerSubmitListingComponent implements OnInit {
 
   partnerApi = inject(PartnerService);
   api = inject(ApiService);
+  i18n = inject(I18nService);
 
   readonly Package = Package;
   readonly Upload = Upload;
@@ -63,6 +65,7 @@ export class PartnerSubmitListingComponent implements OnInit {
     '14:00','14:30','15:00','15:30','16:00','16:30',
     '17:00','17:30','18:00','18:30','19:00','19:30','20:00'
   ];
+  private readonly allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
   ngOnInit() {
     setTimeout(() => {
@@ -169,6 +172,13 @@ export class PartnerSubmitListingComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    const fileError = this.validateSelectedImageFile(file);
+    if (fileError) {
+      this.error = fileError;
+      this.success = null;
+      input.value = '';
+      return;
+    }
     this.uploadingCover = true;
     this.error = null;
     this.success = null;
@@ -178,7 +188,8 @@ export class PartnerSubmitListingComponent implements OnInit {
       const url = await this.api.uploadListingImage(file);
       if (url) this.imageUrl = url;
     } catch (e: any) {
-      this.error = e?.message || 'upload_failed';
+      this.imageUrl = '';
+      this.error = this.mapImageUploadError(e, file);
     } finally {
       this.uploadingCover = false;
       input.value = '';
@@ -189,6 +200,15 @@ export class PartnerSubmitListingComponent implements OnInit {
     const input = evt.target as HTMLInputElement;
     const files = input.files ? Array.from(input.files) : [];
     if (files.length === 0) return;
+    for (const file of files) {
+      const fileError = this.validateSelectedImageFile(file);
+      if (fileError) {
+        this.error = fileError;
+        this.success = null;
+        input.value = '';
+        return;
+      }
+    }
     this.uploadingGallery = true;
     this.error = null;
     this.success = null;
@@ -206,7 +226,10 @@ export class PartnerSubmitListingComponent implements OnInit {
               this.gallery = next;
             }
           }
-        } catch { }
+        } catch (e: any) {
+          this.gallery = this.gallery.filter(g => g !== localUrl);
+          this.error = this.mapImageUploadError(e, file);
+        }
       }
     } finally {
       this.uploadingGallery = false;
@@ -312,5 +335,42 @@ export class PartnerSubmitListingComponent implements OnInit {
     } finally {
       this.saving = false;
     }
+  }
+
+  private validateSelectedImageFile(file: File): string | null {
+    const ext = this.extractFileExtension(file?.name || '');
+    if (!ext || !this.allowedImageExtensions.includes(ext)) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    const type = String(file?.type || '').toLowerCase();
+    if (type && !type.startsWith('image/')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    return null;
+  }
+
+  private mapImageUploadError(error: any, file: File): string {
+    const localValidation = this.validateSelectedImageFile(file);
+    if (localValidation) return localValidation;
+    const raw = String(
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    return this.i18n.t('new_item.error.upload_failed');
+  }
+
+  private extractFileExtension(filename: string): string {
+    const value = String(filename || '').trim().toLowerCase();
+    const dot = value.lastIndexOf('.');
+    if (dot < 0 || dot >= value.length - 1) return '';
+    return value.slice(dot + 1);
   }
 }

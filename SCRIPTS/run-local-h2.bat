@@ -1,11 +1,11 @@
 @echo off
-echo Starting NearShare Backend with H2 Database (Local Mode)...
+echo Starting Vicinity24 Backend with H2 Database (Local Mode)...
 
 set "ROOT_DIR=%~dp0.."
 pushd "%ROOT_DIR%" >nul
 
 set DB_TYPE=h2
-set DB_URL=jdbc:h2:mem:nearshare;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+set DB_URL=jdbc:h2:mem:Vicinity24;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
 set DB_DRIVER=org.h2.Driver
 set DB_USERNAME=sa
 set DB_PASSWORD=
@@ -26,9 +26,6 @@ set KEYSTORE_ACCESS_TOKEN_ALIAS=accesstoken
 set KEYSTORE_ACCESS_TOKEN_PW=Nshare@132
 set KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken
 set KEYSTORE_REFRESH_TOKEN_PW=Nshare@132
-
-set SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus
-set SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro
 set FRONTEND_BASE_URL=https://localhost:4200
 rem Use provided Gmail app credentials for local email sending (override only if not already set)
 if "%MAIL_USERNAME%"=="" set MAIL_USERNAME=test

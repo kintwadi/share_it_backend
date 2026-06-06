@@ -89,7 +89,7 @@ export class SubscriptionConfirmComponent implements OnInit {
     this.render();
     try {
       await this.api.sendSubscriptionVerificationCode(this.contentPlanKey, this.i18n.language());
-      this.router.navigate(['/verification/email'], { queryParams: { plan: this.contentPlanKey } });
+      this.router.navigate(['/verification/email'], { queryParams: { plan: this.contentPlanKey, sent: '1' } });
     } catch (e: any) {
       this.error = e?.message || this.i18n.t('subscription.confirm.failed');
     } finally {

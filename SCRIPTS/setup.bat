@@ -8,7 +8,7 @@ if exist "%ENV_FILE%" (
 
 :: Database Configuration
 if "%DB_TYPE%"=="" set "DB_TYPE="
-if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./nearshare.sqlite"
+if "%DB_URL%"=="" set "DB_URL=jdbc:sqlite:./vicinity24.sqlite"
 if "%DB_DRIVER%"=="" set "DB_DRIVER="
 
 set "DB_URL_LC=%DB_URL%"
@@ -76,8 +76,6 @@ if "%MAIL_FROM%"=="" set "MAIL_FROM=%MAIL_USERNAME%"
 if "%STRIPE_PUBLIC_KEY%"=="" set "STRIPE_PUBLIC_KEY=test_public_key"
 if "%STRIPE_SECRET_KEY%"=="" set "STRIPE_SECRET_KEY=test_secret_key"
 if "%STRIPE_WEBHOOK_SECRET%"=="" set "STRIPE_WEBHOOK_SECRET=test_webhook_secret"
-if "%SUBSCRIPTION_PLUS_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PLUS_STRIPE_PRICE_ID=price_plus"
-if "%SUBSCRIPTION_PRO_STRIPE_PRICE_ID%"=="" set "SUBSCRIPTION_PRO_STRIPE_PRICE_ID=price_pro"
 if "%FRONTEND_BASE_URL%"=="" set "FRONTEND_BASE_URL=https://localhost:4200"
 if "%ADMIN_SIGNUP_SECRET%"=="" set "ADMIN_SIGNUP_SECRET="
 
@@ -90,7 +88,7 @@ set "REMOTE_RENDE=https://vicinity24.com"
 set "DB_URL_SAFE=%DB_URL%"
 for /f "tokens=1* delims=@" %%A in ("%DB_URL_SAFE%") do if not "%%B"=="" set "DB_URL_SAFE=%%B"
 
-echo Environment variables set for NearShare Backend:
+echo Environment variables set for Vicinity24 Backend:
 echo - DB_URL: %DB_URL_SAFE%
 echo - DB_USERNAME: %DB_USERNAME%
 echo - PORT: %PORT%

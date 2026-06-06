@@ -1,4 +1,4 @@
-# Vicinity24 (NearShare)
+# Vicinity24
 
 Monorepo containing:
 - Spring Boot backend (API + auth + admin + partner + payments)
@@ -46,5 +46,6 @@ When `settings.enable.subscription=false`, the backend applies a fixed service f
 ## Docs
 
 - Local setup: [local-run-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/local-run-guide.md)
+- Full configuration: [configuration-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/configuration-guide.md)
 - API overview: [api-contract.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/api-contract.md)
 - Frontend usage: [user-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/user-guide.md)

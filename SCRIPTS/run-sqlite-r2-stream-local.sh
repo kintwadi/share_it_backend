@@ -2,7 +2,7 @@
 
 set -eu
 
-echo "Starting NearShare (SQLite + Litestream -> R2) using Docker..."
+echo "Starting Vicinity24 (SQLite + Litestream -> R2) using Docker..."
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"

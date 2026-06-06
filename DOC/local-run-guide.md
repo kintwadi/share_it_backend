@@ -27,7 +27,7 @@ If `DB_URL` is not set, the backend defaults to a local SQLite file.
 1) Start PostgreSQL
 
 - Ensure PostgreSQL is running on `localhost:5432`
-- Database: `nearshare`
+- Database: `Vicinity24`
 - User: `postgres`
 - Password: `postgres`
 
@@ -88,7 +88,7 @@ Example seeded login credentials:
 - `bob.borrower@example.com` / (see seed data in `mockdata.json`)
 - `sarah.smith@example.com` / (see seed data in `mockdata.json`)
 - `peter.pro@example.com` / (see seed data in `mockdata.json`)
-- `admin@nearshare.local` / (see seed data in `mockdata.json`)
+- `admin@Vicinity24.local` / (see seed data in `mockdata.json`)
 
 ## Optional: HTTPS local setup
 

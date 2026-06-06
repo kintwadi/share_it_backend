@@ -73,7 +73,7 @@ export class SettingsActionConfirmComponent implements OnInit {
       await this.loadDetails();
       this.configureCopy();
     } catch (e: any) {
-      this.error = e?.message || 'Failed to load';
+      this.error = e?.message || this.i18n.t('settings.action_confirm.load_failed');
     } finally {
       this.loading = false;
       this.render();
@@ -167,21 +167,21 @@ export class SettingsActionConfirmComponent implements OnInit {
     try {
       if (this.action === 'cancel-subscription') {
         await this.api.cancelSubscription();
-        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.subscription.cancel_success') || 'Subscription canceled.' } as any });
+        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.subscription.cancel_success') } as any });
         return;
       }
 
       if (this.action === 'revoke-device') {
         const id = String(this.route.snapshot.paramMap.get('id') || this.device?.id || '').trim();
-        if (!id) throw new Error('Device not found');
+        if (!id) throw new Error(this.i18n.t('settings.action_confirm.device_not_found'));
         await this.api.revokeDevice(id);
-        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.security.revoke_success') || 'Device revoked.' } as any });
+        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.security.revoke_success') } as any });
         return;
       }
 
       if (this.action === 'disable-2fa') {
         await this.api.disable2FA();
-        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.security.2fa_disabled_success') || '2FA disabled.' } as any });
+        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.security.2fa_disabled_success') } as any });
         return;
       }
 
@@ -192,11 +192,11 @@ export class SettingsActionConfirmComponent implements OnInit {
       }
 
       const id = String(this.route.snapshot.paramMap.get('id') || this.paymentMethod?.id || '').trim();
-      if (!id) throw new Error('Payment method not found');
+      if (!id) throw new Error(this.i18n.t('settings.action_confirm.payment_method_not_found'));
       await this.api.removePaymentMethod(id);
-      this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('payments.notice.removed') || 'Payment method removed.' } as any });
+      this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('payments.notice.removed') } as any });
     } catch (e: any) {
-      this.error = e?.message || 'Action failed';
+      this.error = e?.message || this.i18n.t('settings.action_confirm.action_failed');
     } finally {
       this.confirming = false;
       this.render();

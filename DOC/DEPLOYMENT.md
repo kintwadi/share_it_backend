@@ -36,7 +36,7 @@ cp docker-deploy.config docker-deploy.env
 Edit `docker-deploy.env` with your settings:
 ```bash
 DOCKER_HUB_USERNAME=your_dockerhub_username
-IMAGE_NAME=nearshare-backend
+IMAGE_NAME=Vicinity24-backend
 DEFAULT_TAG=latest
 ```
 
@@ -92,14 +92,14 @@ If you prefer to run commands manually:
 
 ```bash
 # Build the image
-docker build -t yourusername/nearshare-backend:version .
+docker build -t yourusername/Vicinity24-backend:version .
 
 # Tag as latest
-docker tag yourusername/nearshare-backend:version yourusername/nearshare-backend:latest
+docker tag yourusername/Vicinity24-backend:version yourusername/Vicinity24-backend:latest
 
 # Push to Docker Hub
-docker push yourusername/nearshare-backend:version
-docker push yourusername/nearshare-backend:latest
+docker push yourusername/Vicinity24-backend:version
+docker push yourusername/Vicinity24-backend:latest
 ```
 
 ## Environment Variables
@@ -165,7 +165,7 @@ For automated deployments, set these environment variables in your CI system:
 
 - `DOCKER_HUB_USERNAME`: Your Docker Hub username
 - `DOCKER_HUB_PASSWORD`: Your Docker Hub password/access token
-- `DOCKER_HUB_REPOSITORY`: Repository name (default: nearshare-backend)
+- `DOCKER_HUB_REPOSITORY`: Repository name (default: Vicinity24-backend)
 
 ## Security Notes
 

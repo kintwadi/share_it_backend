@@ -15,7 +15,7 @@ WORKDIR /app
 RUN apk add --no-cache curl ca-certificates
 
 # Copy the built JAR file from the build stage
-COPY --from=build /app/target/nearshare-back-end-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/vicinity24-core-api-1.0.0.jar app.jar
 COPY --from=litestream /usr/local/bin/litestream /usr/local/bin/litestream
 
 COPY litestream.yml /app/litestream.yml

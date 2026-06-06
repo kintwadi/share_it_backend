@@ -85,9 +85,9 @@ React uses:
 
 - `sessionStorage` + `localStorage`
 - keys:
-  - `nearshare_token`
-  - `nearshare_current_user_id`
-  - `nearshare_notifications`
+  - `auth_token`
+  - `auth_user_id`
+  - `auth_notifications`
 
 In Angular:
 
@@ -194,7 +194,21 @@ React ReturnModal calls:
 In Angular:
 
 - Implement a `ReturnModalComponent` with the same tab behavior and polling.
-- Ensure “Return” is shown only for active borrows (status `BORROWED/APPROVED/DISPUTED`) like the fixed React logic.
+- Ensure “Return” is shown only for active loans after pickup (status `WAITING_FOR_RETURN` or legacy `BORROWED`, and `DISPUTED` where applicable).
+
+### 7.2.1 Pickup workflow (standard listings)
+
+Standard LEND listings now use a 3-step status flow:
+
+- `PENDING` → waiting for lender approval
+- `APPROVED` → approved but not ready yet (borrower waits for “ready for pickup” notification)
+- `READY_FOR_PICKUP` → lender marked ready (borrower is notified in-app + by email)
+- `WAITING_FOR_RETURN` → pickup confirmed by lender or borrower (return flow enabled)
+
+New endpoints:
+
+- `POST /api/listings/{id}/ready-for-pickup`
+- `POST /api/listings/{id}/picked-up`
 
 ### 7.3 Reviews / Rating links
 
