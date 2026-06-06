@@ -441,7 +441,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   borrowerReturnLabel(item: Listing): string {
-    return this.borrowerHasSubmittedReturn(item) ? this.i18n.t('dash.return_submitted') : this.i18n.t('dash.start_return_process');
+    return this.borrowerHasSubmittedReturn(item) ? this.i18n.t('dash.return') : this.i18n.t('dash.start_return_process');
   }
 
   async handleAddNew() {
