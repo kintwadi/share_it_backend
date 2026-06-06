@@ -268,19 +268,21 @@ public class ReturnService {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "failed_to_generate_item_reference");
     }
 
+    @Transactional(readOnly = true)
     public ReturnDTOs.ReturnSessionResponse getSession(UUID listingId, User currentUser) {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found"));
 
-        ReturnSession session = returnSessionRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING)
-                .orElseGet(() -> returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId).orElse(null));
+        boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED
+                || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN
+                || listing.getStatus() == AvailabilityStatus.DISPUTED;
+        ReturnSession session = listingActive
+                ? returnSessionRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listingId, ReturnStatus.PENDING).orElse(null)
+                : returnSessionRepository.findFirstByListingIdOrderByCreatedAtDesc(listingId).orElse(null);
         if (currentUser == null || currentUser.getId() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User not part of this return");
         }
         if (session == null) {
-            boolean listingActive = listing.getStatus() == AvailabilityStatus.BORROWED
-                    || listing.getStatus() == AvailabilityStatus.WAITING_FOR_RETURN
-                    || listing.getStatus() == AvailabilityStatus.DISPUTED;
             if (listingActive && (isBorrower(listing, currentUser) || canActAsLender(listing, currentUser))) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No return session");
             }
