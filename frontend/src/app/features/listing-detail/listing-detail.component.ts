@@ -473,9 +473,9 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     try {
       await this.api.requestAdminReturn(listing.id);
       await this.reloadListing();
-      this.notifySuccess('Admin return unlock requested.');
+      this.notifySuccess(this.i18n.t('return.request_admin_unlock_sent'));
     } catch (e: any) {
-      this.notifyError(e?.message || 'Failed to request admin return unlock');
+      this.notifyError(e?.message || this.i18n.t('return.request_admin_unlock_failed'));
     } finally {
       this.actionLoading = null;
       this.render();

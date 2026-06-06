@@ -430,7 +430,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ownerAdminReturnLabel(item: Listing): string {
-    return item.adminReturnRequestedAt ? 'Admin review requested' : 'Request admin unlock';
+    return item.adminReturnRequestedAt ? this.i18n.t('return.admin_review_requested') : this.i18n.t('return.request_admin_unlock');
   }
 
   borrowerPickupLabel(): string {

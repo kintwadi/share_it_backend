@@ -39,11 +39,19 @@ public class ReturnService {
     private final Random codeRandom = new java.security.SecureRandom();
 
     @Transactional
-     public ReturnDTOs.ReturnSessionResponse initiateReturn(UUID listingId, User currentUser) {
+    public ReturnDTOs.ReturnSessionResponse initiateReturn(UUID listingId, User currentUser) {
+        if (!anyReturnMethodEnabled()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Return methods are disabled");
+        }
         Listing listing = getBorrowedListing(listingId);
         ReturnDTOs.SubmitReturnRequest request = new ReturnDTOs.SubmitReturnRequest();
-        request.setReturnMethod(manualEnabled() ? ReturnMode.MANUAL : ReturnMode.QR_CODE);
-        request.setItemNumber(listing.getItemReference());
+        if (manualEnabled()) {
+            request.setReturnMethod(ReturnMode.MANUAL);
+            request.setItemNumber(listing.getItemReference());
+        } else {
+            request.setReturnMethod(ReturnMode.QR_CODE);
+            request.setQrCode(generateSixDigitCode());
+        }
         return submitReturn(listingId, currentUser, request);
     }
 
@@ -242,6 +250,11 @@ public class ReturnService {
                 .status(session.getStatus())
                 .expiresAt(session.getExpiresAt())
                 .build();
+    }
+
+    private String generateSixDigitCode() {
+        int value = codeRandom.nextInt(900000) + 100000;
+        return String.valueOf(value);
     }
 
     private String generateUniqueItemReference() {

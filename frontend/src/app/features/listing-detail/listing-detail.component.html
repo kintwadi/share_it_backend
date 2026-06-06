@@ -157,7 +157,7 @@
             </span>
             <span *ngIf="!isAvailable && !isPending && !isApproved && !isGifted && isWaitingForReturn && listing.type !== ListingType.GIVE" class="flex items-center text-amber-600 text-sm font-bold bg-amber-50 px-3 py-1.5 rounded-full">
               <span class="w-2 h-2 bg-amber-500 rounded-full mr-2"></span>
-              Waiting for return
+              {{ i18n.t('dash.waiting_for_return') }}
             </span>
             <span *ngIf="!isAvailable && !isPending && !isApproved && !isGifted && (isBorrowed && listing.type === ListingType.GIVE)" class="flex items-center text-pink-600 text-sm font-bold bg-pink-50 px-3 py-1.5 rounded-full">
               <span class="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
@@ -349,7 +349,7 @@
                       </div>
                       <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
                         <button type="button" [disabled]="true" class="flex-1 py-2 bg-amber-100 text-amber-800 rounded-lg font-bold text-xs cursor-not-allowed">
-                          Waiting for pickup
+                          {{ i18n.t('dash.ready_for_pickup') }}
                         </button>
                         <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Borrower
@@ -367,7 +367,7 @@
                           <lucide-icon [img]="Clock" [size]="20"></lucide-icon>
                         </div>
                         <div>
-                          <h4 class="font-bold text-amber-900">Waiting for return</h4>
+                          <h4 class="font-bold text-amber-900">{{ i18n.t('dash.waiting_for_return') }}</h4>
                           <p class="text-xs text-amber-700">If the return is stuck, you can ask admin to complete the return and unlock the funds.</p>
                         </div>
                       </div>
@@ -376,7 +376,7 @@
                         <p class="text-xs text-gray-600 font-mono">{{ listing.itemReference }}</p>
                       </div>
                       <div *ngIf="adminReturnRequested" class="mb-4 bg-white p-3 rounded-xl border border-amber-100 text-xs text-amber-800">
-                        Admin return unlock requested {{ listing.adminReturnRequestedAt | date:'short' }}.
+                        {{ i18n.t('return.admin_review_requested') }} {{ listing.adminReturnRequestedAt | date:'short' }}.
                       </div>
                       <div class="mt-4 pt-4 border-t border-amber-100 grid sm:grid-cols-3 gap-3">
                         <button type="button" (click)="goToReturnPage()" [disabled]="returnActionDisabled" class="py-2 rounded-lg font-bold text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed" [ngClass]="canViewReturnRequest ? 'bg-gray-900 text-white hover:bg-black' : 'bg-amber-100 text-amber-800'">
@@ -384,7 +384,7 @@
                         </button>
                         <button type="button" (click)="handleRequestAdminReturn()" [disabled]="!!actionLoading || adminReturnRequested" class="py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                           <lucide-icon *ngIf="actionLoading === 'ADMIN_RETURN'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                          {{ adminReturnRequested ? 'Admin review requested' : 'Request admin unlock' }}
+                          {{ adminReturnRequested ? i18n.t('return.admin_review_requested') : i18n.t('return.request_admin_unlock') }}
                         </button>
                         <button type="button" (click)="handleContact()" class="py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Borrower
@@ -476,7 +476,7 @@
                       <div class="mt-4 pt-4 border-t border-amber-100 flex gap-3">
                         <button type="button" (click)="handleMarkPickedUp()" [disabled]="actionLoading" class="flex-1 py-2 bg-amber-600 text-white hover:bg-amber-700 rounded-lg font-bold text-xs transition-colors disabled:opacity-60">
                           <lucide-icon *ngIf="actionLoading === 'PICKED_UP'" [img]="Loader2" [size]="16" class="animate-spin mr-2"></lucide-icon>
-                          Confirm pickup
+                          {{ i18n.t('dash.mark_as_picked_up') }}
                         </button>
                         <button type="button" (click)="handleContact()" class="flex-1 py-2 bg-white border border-amber-200 text-amber-700 hover:bg-amber-100 rounded-lg font-bold text-xs transition-colors">
                           Message Owner
