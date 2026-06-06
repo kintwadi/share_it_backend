@@ -324,16 +324,6 @@
                       {{ i18n.t('dash.mark_ready_for_pickup') }}
                     </button>
 
-                    <button
-                      *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP && item.borrowerId"
-                      type="button"
-                      (click)="handleMarkPickedUp(item.id)"
-                      [disabled]="true"
-                      class="text-xs bg-amber-100 text-amber-800 font-semibold px-2 py-1 rounded cursor-not-allowed"
-                    >
-                      {{ ownerPickupLabel(item) }}
-                    </button>
-
                     <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
                       <button
                         type="button"

@@ -407,16 +407,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.listingIsHidden(item) ? 'opacity-60 hover:opacity-100 transition-opacity' : '';
   }
 
-  ownerPickupLabel(item: Listing): string {
-    return item.status === AvailabilityStatus.READY_FOR_PICKUP ? 'Waiting to be picked up' : this.i18n.t('dash.mark_picked_up');
-  }
-
   ownerCanStartReturn(item: Listing): boolean {
     return !!this.ownerReturnSessionReady[item.id];
   }
 
   ownerReturnLabel(item: Listing): string {
-    return this.ownerCanStartReturn(item) ? this.i18n.t('dash.return') : 'Waiting to be returned';
+    return this.ownerCanStartReturn(item) ? this.i18n.t('dash.return') : 'Waiting for return';
   }
 
   ownerCanRequestAdminReturn(item: Listing): boolean {
@@ -429,7 +425,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   borrowerPickupLabel(): string {
-    return 'Confirm pickup';
+    return 'Mark as picked up';
   }
 
   borrowerReturnLabel(): string {
