@@ -441,7 +441,7 @@
                   class="text-xs px-3 py-1.5 bg-amber-600 text-white font-medium rounded hover:bg-amber-700 transition-colors w-full disabled:opacity-60"
                 >
                   <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin mr-1"></lucide-icon>
-                  {{ borrowerPickupLabel() }}
+                  {{ i18n.t('dash.mark_as_picked_up') }}
                 </button>
                 <button
                   type="button"

@@ -433,10 +433,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return item.adminReturnRequestedAt ? this.i18n.t('return.admin_review_requested') : this.i18n.t('return.request_admin_unlock');
   }
 
-  borrowerPickupLabel(): string {
-    return 'Mark as picked up';
-  }
-
   borrowerHasSubmittedReturn(item: Listing): boolean {
     return !!this.borrowerReturnRequestSubmitted[item.id];
   }
