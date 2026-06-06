@@ -12,6 +12,9 @@ set "DB_URL=jdbc:postgresql://localhost:5432/Vicinity24"
 set "DB_DRIVER=org.postgresql.Driver"
 set "DB_USERNAME=postgres"
 set "DB_PASSWORD=postgres"
+set "FRONTEND_BASE_URL=http://localhost:4200"
+
+
 
 echo.
 echo Make sure the configured database is reachable

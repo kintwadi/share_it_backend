@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, QrCode, AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-angular';
+import * as QRCodeGen from 'qrcode';
 import { ApiService } from '../../core/services/api.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { AvailabilityStatus, Listing, ReturnSessionResponse, ReturnStatus, User } from '../../core/models/types';
@@ -35,6 +36,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
 
   session: ReturnSessionResponse | null = null;
+  qrCodeImageUrl: string | null = null;
   loading = true;
   error: string | null = null;
   notice: string | null = null;
@@ -47,6 +49,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
 
   private pollId: any = null;
   private backTo = '/dashboard';
+  private renderedQrValue = '';
 
   private render() {
     try {
@@ -85,7 +88,37 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
 
   get myQrCode(): string | undefined {
     if (!this.session) return undefined;
-    return this.isOwner ? this.session.lenderCode : this.session.borrowerCode;
+    return (this.isOwner ? this.session.lenderCode : this.session.borrowerCode) ?? undefined;
+  }
+
+  private async setSession(session: ReturnSessionResponse | null) {
+    this.session = session;
+    await this.refreshQrCodeImage();
+  }
+
+  private async refreshQrCodeImage() {
+    const qrValue = String(this.myQrCode || '').trim();
+    if (!qrValue) {
+      this.qrCodeImageUrl = null;
+      this.renderedQrValue = '';
+      return;
+    }
+    if (this.renderedQrValue === qrValue && this.qrCodeImageUrl) return;
+    try {
+      this.qrCodeImageUrl = await QRCodeGen.toDataURL(qrValue, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 320,
+        color: {
+          dark: '#111827',
+          light: '#FFFFFFFF'
+        }
+      });
+      this.renderedQrValue = qrValue;
+    } catch {
+      this.qrCodeImageUrl = null;
+      this.renderedQrValue = '';
+    }
   }
 
   get myScanStatus(): boolean {
@@ -238,19 +271,19 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       this.render();
 
       if (!this.anyEnabled) {
-        this.session = null;
+        await this.setSession(null);
         this.error = this.i18n.t('return.error.all_disabled');
         return;
       }
       if (item.status === AvailabilityStatus.DISPUTED) {
-        this.session = null;
+        await this.setSession(null);
         this.error = this.i18n.t('return.error.disputed');
         return;
       }
 
       try {
         const data = await this.api.getReturnSession(item.id);
-        this.session = data;
+        await this.setSession(data);
         this.error = null;
         this.notice = null;
         if (data?.status === ReturnStatus.COMPLETED) {
@@ -268,12 +301,12 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
             return;
           }
           if (refreshed?.status === AvailabilityStatus.AVAILABLE) {
-            this.session = null;
+            await this.setSession(null);
             this.error = this.i18n.t('return.error.already_available');
             return;
           }
           if (refreshed?.status === AvailabilityStatus.DISPUTED) {
-            this.session = null;
+            await this.setSession(null);
             this.error = this.i18n.t('return.error.disputed');
             return;
           }
@@ -281,14 +314,14 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       }
 
       if (!this.canInitiateReturn) {
-        this.session = null;
+        await this.setSession(null);
         this.notice = null;
         this.error = null;
         return;
       }
 
       const created = await this.api.initiateReturnSession(item.id);
-      this.session = created;
+      await this.setSession(created);
       this.error = null;
       this.notice = null;
       if (created?.status === ReturnStatus.COMPLETED) {
@@ -317,7 +350,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.render();
       const updated = await this.api.scanReturnQrCode(item.id, this.scannedCode);
-      this.session = updated;
+      await this.setSession(updated);
       this.error = null;
       this.notice = null;
       if (updated?.status === ReturnStatus.COMPLETED) {
@@ -340,7 +373,7 @@ export class ListingReturnComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.render();
       const updated = await this.api.manualReturnFallback(item.id, this.itemNumber, this.conciergeId || undefined);
-      this.session = updated;
+      await this.setSession(updated);
       this.error = null;
       if (updated?.status === ReturnStatus.COMPLETED) {
         this.goToReview(item.id);
