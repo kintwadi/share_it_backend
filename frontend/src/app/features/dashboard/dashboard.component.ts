@@ -224,17 +224,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const pendingByListing: Record<string, boolean> = {};
-    await Promise.all(combined.map(async item => {
-      try {
-        const session = await this.api.getReturnSession(item.id);
-        pendingByListing[item.id] = !!session && String((session as any).status || '').toUpperCase() === 'PENDING';
-      } catch {
-        pendingByListing[item.id] = false;
-      }
-    }));
-    this.ownerReturnSessionReady = Object.fromEntries(ownerCandidates.map(item => [item.id, !!pendingByListing[item.id]]));
-    this.borrowerReturnRequestSubmitted = Object.fromEntries(borrowerCandidates.map(item => [item.id, !!pendingByListing[item.id]]));
+    // In the simplified return flow, WAITING_FOR_RETURN is the reliable source of truth:
+    // the borrower has already submitted the request and the lender can review it.
+    this.ownerReturnSessionReady = Object.fromEntries(
+      ownerCandidates.map(item => [item.id, item.status === AvailabilityStatus.WAITING_FOR_RETURN])
+    );
+    this.borrowerReturnRequestSubmitted = Object.fromEntries(
+      borrowerCandidates.map(item => [item.id, item.status === AvailabilityStatus.WAITING_FOR_RETURN])
+    );
     this.render();
   }
 
@@ -569,7 +566,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.actionLoading = id;
     this.render();
     this.api.markPickedUp(id)
-      .then(() => this.fetchListings())
+      .then(() => this.router.navigate(['/listing', id, 'return'], { queryParams: { from: '/dashboard' } }))
       .finally(() => {
         this.actionLoading = null;
         this.render();
