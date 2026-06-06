@@ -80,7 +80,18 @@ export class NewItemComponent implements OnInit {
   locationLookupLoading = false;
   locationLookupError: string | null = null;
   locationPermissionHintVisible = false;
-  readonly countryOptions = ['PT', 'DE', 'FR', 'BE', 'NL', 'ES', 'IT', 'AT', 'CH', 'LU'];
+  readonly countryOptions = [
+    { code: 'PT', label: 'Portugal' },
+    { code: 'DE', label: 'Germany' },
+    { code: 'FR', label: 'France' },
+    { code: 'BE', label: 'Belgium' },
+    { code: 'NL', label: 'Netherlands' },
+    { code: 'ES', label: 'Spain' },
+    { code: 'IT', label: 'Italy' },
+    { code: 'AT', label: 'Austria' },
+    { code: 'CH', label: 'Switzerland' },
+    { code: 'LU', label: 'Luxembourg' },
+  ];
   autoApprove = false;
   insuranceRequired = false;
   pickupLocationId: string | null = null;
@@ -116,6 +127,7 @@ export class NewItemComponent implements OnInit {
     '14:00','14:30','15:00','15:30','16:00','16:30',
     '17:00','17:30','18:00','18:30','19:00','19:30','20:00'
   ];
+  private readonly allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
   private render() {
     try {
@@ -446,6 +458,14 @@ export class NewItemComponent implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     if (this.uploadingCover) return;
+    const fileError = this.validateSelectedImageFile(file);
+    if (fileError) {
+      this.error = fileError;
+      input.value = '';
+      this.render();
+      return;
+    }
+    this.error = null;
     this.uploadingCover = true;
     this.render();
     const localUrl = URL.createObjectURL(file);
@@ -453,7 +473,10 @@ export class NewItemComponent implements OnInit {
     try {
       const url = await this.api.uploadListingImage(file);
       if (url) this.imageUrl = url;
-    } catch { }
+    } catch (e: any) {
+      this.imageUrl = '';
+      this.error = this.mapImageUploadError(e, file);
+    }
     this.uploadingCover = false;
     input.value = '';
     this.render();
@@ -464,6 +487,20 @@ export class NewItemComponent implements OnInit {
     const files = input.files ? Array.from(input.files) : [];
     if (files.length === 0) return;
     if (this.uploadingGallery) return;
+    for (const file of files) {
+      const fileError = this.validateSelectedImageFile(file);
+      if (fileError) {
+        this.error = fileError;
+        input.value = '';
+        this.render();
+        return;
+      }
+    } else if (!this.selectedExchangeLocation) {
+      this.error = this.i18n.t('new_item.error.pickup_location_not_found');
+      this.render();
+      return;
+    }
+    this.error = null;
     this.uploadingGallery = true;
     this.render();
 
@@ -481,7 +518,10 @@ export class NewItemComponent implements OnInit {
             this.gallery = next;
           }
         }
-      } catch { }
+      } catch (e: any) {
+        this.gallery = this.gallery.filter(g => g !== localUrl);
+        this.error = this.mapImageUploadError(e, file);
+      }
     }
 
     this.uploadingGallery = false;
@@ -492,6 +532,80 @@ export class NewItemComponent implements OnInit {
   removeGalleryImage(i: number) {
     this.gallery = this.gallery.filter((_, idx) => idx !== i);
     this.render();
+  }
+
+  private validateSelectedImageFile(file: File): string | null {
+    const ext = this.extractFileExtension(file?.name || '');
+    if (!ext || !this.allowedImageExtensions.includes(ext)) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    const type = String(file?.type || '').toLowerCase();
+    if (type && !type.startsWith('image/')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    return null;
+  }
+
+  private mapImageUploadError(error: any, file: File): string {
+    const localValidation = this.validateSelectedImageFile(file);
+    if (localValidation) return localValidation;
+    const raw = String(
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    return this.i18n.t('new_item.error.upload_failed');
+  }
+
+  private extractFileExtension(filename: string): string {
+    const value = String(filename || '').trim().toLowerCase();
+    const dot = value.lastIndexOf('.');
+    if (dot < 0 || dot >= value.length - 1) return '';
+    return value.slice(dot + 1);
+  }
+
+  private mapListingSaveError(error: any): string {
+    const raw = String(
+      error?.error?.error ||
+      error?.error?.message ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('subscription_required_for_lending')) {
+      return this.i18n.t('new_item.error.subscription_required_for_lending');
+    }
+    if (raw.includes('subscription_required_for_selling')) {
+      return this.i18n.t('new_item.error.subscription_required_for_selling');
+    }
+    if (raw.includes('selling_disabled')) {
+      return this.i18n.t('new_item.error.selling_disabled');
+    }
+    if (raw.includes('pickup_location_not_found')) {
+      return this.i18n.t('new_item.error.pickup_location_not_found');
+    }
+    if (raw.includes('validation_error')) {
+      return this.i18n.t('new_item.error.required_fields');
+    }
+    if (raw.includes('invalid_request_body')) {
+      return this.i18n.t('new_item.error.invalid_request_body');
+    }
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    if (raw.includes('forbidden')) {
+      return this.i18n.t('new_item.error.forbidden');
+    }
+    return this.i18n.t('new_item.error.save_failed');
   }
 
   goBack() {
@@ -609,7 +723,7 @@ export class NewItemComponent implements OnInit {
       }
       this.router.navigate(['/dashboard']);
     } catch (e: any) {
-      this.error = e?.message || this.i18n.t('new_item.error.save_failed');
+      this.error = this.mapListingSaveError(e);
     } finally {
       this.saving = false;
       this.render();
@@ -640,7 +754,7 @@ export class NewItemComponent implements OnInit {
 
       const loc = await this.locationApi.reverseGeocode(lat, lng);
       const cc = String(loc.countryCode || '').toUpperCase();
-      const selectedCountry = this.countryOptions.includes(cc) ? cc : String(this.addressForm.get('country')?.value || 'PT');
+      const selectedCountry = this.countryOptions.some(c => c.code === cc) ? cc : String(this.addressForm.get('country')?.value || 'PT');
       this.addressForm.patchValue({
         streetAddress: String(loc.streetAddress || ''),
         city: String(loc.city || ''),

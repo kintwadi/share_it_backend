@@ -39,6 +39,7 @@ export class MessagesComponent implements OnInit, AfterViewChecked {
   messages: Message[] = [];
   
   inputText = '';
+  attachError: string | null = null;
   loadingList = true;
   loadingChat = false;
   currentUserId = '';
@@ -155,6 +156,7 @@ export class MessagesComponent implements OnInit, AfterViewChecked {
   async handleSend(e?: Event) {
     if (e) e.preventDefault();
     if (!this.inputText.trim() || !this.activeUser) return;
+    this.attachError = null;
 
     const content = this.inputText;
     this.inputText = '';
@@ -179,8 +181,16 @@ export class MessagesComponent implements OnInit, AfterViewChecked {
   async handleAttachImage(event: any) {
     const file = event.target.files?.[0];
     if (!file || !this.activeUser) return;
+    const fileError = this.validateSelectedImageFile(file);
+    if (fileError) {
+      this.attachError = fileError;
+      this.render();
+      if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
+      return;
+    }
     
     try {
+      this.attachError = null;
       const url = await this.api.uploadListingImage(file);
       if (this.currentUserId) {
         const content = this.inputText.trim();
@@ -196,8 +206,9 @@ export class MessagesComponent implements OnInit, AfterViewChecked {
         this.scrollToBottom();
         this.render();
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      this.attachError = this.mapImageUploadError(e, file);
+      this.render();
     } finally {
       if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
     }
@@ -237,5 +248,44 @@ export class MessagesComponent implements OnInit, AfterViewChecked {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
     img.src = `https://picsum.photos/seed/${userId}/${size}/${size}`;
+  }
+
+  private readonly allowedImageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+  private validateSelectedImageFile(file: File): string | null {
+    const ext = this.extractFileExtension(file?.name || '');
+    if (!ext || !this.allowedImageExtensions.includes(ext)) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    const type = String(file?.type || '').toLowerCase();
+    if (type && !type.startsWith('image/')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    return null;
+  }
+
+  private mapImageUploadError(error: any, file: File): string {
+    const localValidation = this.validateSelectedImageFile(file);
+    if (localValidation) return localValidation;
+    const raw = String(
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+    if (raw.includes('file_type_not_allowed')) {
+      return this.i18n.t('new_item.error.file_type_not_allowed');
+    }
+    if (raw.includes('file_too_large')) {
+      return this.i18n.t('new_item.error.file_too_large');
+    }
+    return this.i18n.t('new_item.error.upload_failed');
+  }
+
+  private extractFileExtension(filename: string): string {
+    const value = String(filename || '').trim().toLowerCase();
+    const dot = value.lastIndexOf('.');
+    if (dot < 0 || dot >= value.length - 1) return '';
+    return value.slice(dot + 1);
   }
 }
