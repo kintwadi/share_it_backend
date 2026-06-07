@@ -1,4 +1,4 @@
-# Docker Hub Deployment Guide
+﻿# Docker Hub Deployment Guide
 
 This guide explains how to deploy the Vicinity24 backend application to Docker Hub.
 
@@ -74,9 +74,9 @@ The script supports multiple tagging strategies:
 3. **Additional tags**: Always creates `latest` tag in addition to version
 
 Examples:
-- `./SCRIPTS/deploy-to-docker.sh` → tags: `0.0.1-SNAPSHOT` + `latest`
-- `./SCRIPTS/deploy-to-docker.sh v1.0.0` → tags: `v1.0.0` + `latest`
-- `./SCRIPTS/deploy-to-docker.sh production` → tags: `production` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh` -> tags: `0.0.1-SNAPSHOT` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh v1.0.0` -> tags: `v1.0.0` + `latest`
+- `./SCRIPTS/deploy-to-docker.sh production` -> tags: `production` + `latest`
 
 ## What the Script Does
 
@@ -128,7 +128,7 @@ TENANT_DEFAULT_DB_USERNAME=username
 TENANT_DEFAULT_DB_PASSWORD=password
 TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
 # Optional extra tenants
-TENANT_A_DB_URL=jdbc:postgresql://host:5432/tenant_a_database?sslmode=require
+TENANT_A_DB_URL=jdbc:postgresql://host:5432/vicinity24_tenant_a?sslmode=require
 TENANT_A_DB_USERNAME=username
 TENANT_A_DB_PASSWORD=password
 TENANT_A_DB_DRIVER=org.postgresql.Driver
@@ -151,21 +151,21 @@ If your Render deploy fails with `java.net.SocketException: Network unreachable`
 
 Recommended fixes:
 
-1. Use the Supabase connection pooler host (shown in Supabase → Database → Connection string / Pooler). It often provides IPv4 connectivity even when the direct `db.<project>.supabase.co` hostname is IPv6-only.
+1. Use the Supabase connection pooler host (shown in Supabase -> Database -> Connection string / Pooler). It often provides IPv4 connectivity even when the direct `db.<project>.supabase.co` hostname is IPv6-only.
 2. Set `JAVA_TOOL_OPTIONS` in Render to force Java to prefer IPv4:
 
 ```bash
 JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false
 ```
 
-Also make sure you set your environment variables in Render’s Environment tab (Render does not automatically use your local `.env` file).
+Also make sure you set your environment variables in Render's Environment tab (Render does not automatically use your local `.env` file).
 
 For multi-tenant deployments on Render:
 
 1. Set `SETTING_USE_DEFAULT_DATABASE=true` if you want existing clients without `X-Tenant-ID` to continue working.
 2. Set `TENANT_HEADER_NAME` to the request header your gateway or client will send.
 3. Set `TENANT_DEFAULT_ID` and `TENANT_DEFAULT_DB_*` for the fallback database.
-4. Add any extra static tenant databases with `TENANT_A_*`, `TENANT_B_*`, and extend `application.properties` examples if you need more than the documented samples.
+4. Add any extra static tenant databases with `TENANT_A_*`, `TENANT_B_*`, and remember that the request header must match the actual `tenants.config.*` keys in `application.properties` such as `vicinity24_tenant_a` and `vicinity24_tenant_b`.
 
 ## Troubleshooting
 
@@ -202,3 +202,4 @@ For issues with deployment, check:
 1. Docker logs: `docker logs container-name`
 2. Build logs: `docker build .`
 3. Network connectivity: `docker pull hello-world`
+

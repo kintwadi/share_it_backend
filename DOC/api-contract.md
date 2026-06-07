@@ -1,4 +1,4 @@
-# API Contract (Vicinity24)
+﻿# API Contract (Vicinity24)
 
 This document describes the REST API exposed by the Vicinity24 backend.
 
@@ -696,10 +696,13 @@ Base path: `/api/admin/app-settings`
 
 ## Multi-Tenant Environment Note
 
-This project now supports static database-per-tenant routing in the backend configuration layer.
+This project supports static database-per-tenant routing in the backend configuration layer.
 
 - Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
 - Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
-- Default behavior is backward compatible when `SETTING_USE_DEFAULT_DATABASE=true`
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
 

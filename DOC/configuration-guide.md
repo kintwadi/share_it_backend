@@ -277,12 +277,15 @@ TENANT_B_DB_PASSWORD=<password>
 TENANT_B_DB_DRIVER=org.postgresql.Driver
 ```
 
+In the current sample configuration, those environment blocks are mapped to tenant ids `vicinity24_tenant_a` and `vicinity24_tenant_b` via `tenants.config.*` keys in `application.properties`.
+
 Behavior:
 
 - if `X-Tenant-ID` is present and valid, the matching tenant database is used
 - if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=true`, the default tenant database is used
 - if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=false`, the request is rejected cleanly
 - if the tenant header is unknown, the request is rejected cleanly
+- startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 
 ## 7. Security and JWT Setup
 

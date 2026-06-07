@@ -1,4 +1,4 @@
-# Vicinity24
+﻿# Vicinity24
 
 Monorepo containing:
 - Spring Boot backend (API + auth + admin + partner + payments)
@@ -33,7 +33,7 @@ The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` using [prox
 ## Runtime App Settings (Admin)
 
 Admins can edit safe runtime settings at:
-- UI: `/admin` → Settings tab
+- UI: `/admin` â†’ Settings tab
 - API: `GET /api/v1/admin/app-settings`, `PUT /api/v1/admin/app-settings`
 
 Edits are stored as overrides in `app_config_overrides` and merged with the base `settings.*` config at runtime.
@@ -53,8 +53,10 @@ The backend now supports static database-per-tenant routing at the infrastructur
 - Optional extra tenant examples:
   - `TENANT_A_DB_URL`, `TENANT_A_DB_USERNAME`, `TENANT_A_DB_PASSWORD`, `TENANT_A_DB_DRIVER`
   - `TENANT_B_DB_URL`, `TENANT_B_DB_USERNAME`, `TENANT_B_DB_PASSWORD`, `TENANT_B_DB_DRIVER`
+- Current tenant ids in `application.properties`: `default`, `vicinity24_tenant_a`, `vicinity24_tenant_b`
+- Current tenant ids in `application.properties`: `default`, `vicinity24_tenant_a`, `vicinity24_tenant_b`
 
-If `SETTING_USE_DEFAULT_DATABASE=true`, requests without `X-Tenant-ID` continue to use the default database so existing integrations keep working.
+If `SETTING_USE_DEFAULT_DATABASE=true`, requests without `X-Tenant-ID` continue to use the default database so existing integrations keep working. Requests with a valid tenant header still route to that tenant database. Requests with a valid tenant header still route to that tenant database.
 
 ## Service Fee When Subscription Is Disabled
 
@@ -67,3 +69,4 @@ When `settings.enable.subscription=false`, the backend applies a fixed service f
 - Full configuration: [configuration-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/configuration-guide.md)
 - API overview: [api-contract.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/api-contract.md)
 - Frontend usage: [user-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/user-guide.md)
+

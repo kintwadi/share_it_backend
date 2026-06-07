@@ -1,4 +1,4 @@
-# Local Run Guide (Default HTTP)
+﻿# Local Run Guide (Default HTTP)
 
 This guide explains how to run the Vicinity24 backend + Angular frontend locally.
 
@@ -48,7 +48,7 @@ From the repo root:
 The backend now supports static database-per-tenant routing using `X-Tenant-ID` by default.
 
 - If `SETTING_USE_DEFAULT_DATABASE=true`, local requests without `X-Tenant-ID` still use the default database and behave like the old single-tenant setup.
-- If you want to test tenant routing locally, define `TENANT_DEFAULT_DB_*` in `.env` and send `X-Tenant-ID` for any additional configured tenant such as `tenant-a`.
+- If you want to test tenant routing locally, define `TENANT_DEFAULT_DB_*` in `.env` and send `X-Tenant-ID` for any additional configured tenant such as `vicinity24_tenant_a`. The tenant id must match a key configured under `tenants.config.*`.
 
 ## Frontend (Angular)
 
@@ -107,7 +107,7 @@ See:
 ### Option A (fastest): accept the certificate warning once
 
 1. Open `https://localhost/api/v1/health` in your browser
-2. Click Advanced → Proceed (wording varies by browser)
+2. Click Advanced â†’ Proceed (wording varies by browser)
 3. Reload `https://localhost:4200/` (or your current frontend URL)
 
 ### Option B (recommended): install a trusted local CA using mkcert
@@ -153,14 +153,14 @@ openssl pkcs12 -export -in localhost+2.pem -inkey localhost+2-key.pem -out keyst
 
 - `chrome://flags/#allow-insecure-localhost`
 
-2) Enable “Allow invalid certificates for resources loaded from localhost”
+2) Enable â€œAllow invalid certificates for resources loaded from localhostâ€
 3) Restart the browser
 
 ## Common issues
 
 ### Port already in use
 
-If the backend fails to start with “Port was already in use”:
+If the backend fails to start with â€œPort was already in useâ€:
 
 - Stop the process using the configured port (default `8081`), then restart the backend.
 
@@ -168,8 +168,9 @@ If the backend fails to start with “Port was already in use”:
 
 The frontend returns an empty list if the API call fails.
 
-Check DevTools → Network:
+Check DevTools â†’ Network:
 
 - If you see `ERR_CERT_AUTHORITY_INVALID`, fix the certificate trust (section above).
 - If you see `CORS` errors, confirm backend is running and your frontend origin is allowed.
 - If you see `400 missing_tenant` or `400 invalid_tenant`, confirm the tenant env vars are loaded and the request header matches `TENANT_HEADER_NAME`.
+

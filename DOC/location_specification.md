@@ -1,4 +1,4 @@
-# Item Location Specification for Lending Application
+﻿# Item Location Specification for Lending Application
 
 ## 1. The Primary Option: Full Text Address (For Any Location)
 
@@ -94,7 +94,7 @@ For launching in **Germany, France, and Belgium**, utilizing OpenStreetMap data 
 * **Service Provider**: LocationIQ / Geocode Earth (OSM Engine underneath).
 * **Cost Profile**: Free tier provides **5,000 requests/day**, which scales perfectly for a new app launch.
 * **Regional Data Quality**: Western Europe features the world's most detailed open-source street mapping network, guaranteeing high precision coordinates.
-* **Legal Compliance**: The application frontend must display a small text attribute to meet licensing rules: *"Data © OpenStreetMap contributors"*.
+* **Legal Compliance**: The application frontend must display a small text attribute to meet licensing rules: *"Data Â© OpenStreetMap contributors"*.
 
 ---
 
@@ -117,7 +117,7 @@ Rather than attempting to guess location using an IP address, implement an expli
    * Render an overlay or clear header prompt: *"We couldn't detect your location. Enter your City or Postal Code to find items near you."*
 
 3. **Step 3: LocationIQ Autocomplete Search**
-   * As the user types (e.g., *"München"* or *"75002"*), fire a request to the **LocationIQ Autocomplete/Search API**.
+   * As the user types (e.g., *"MÃ¼nchen"* or *"75002"*), fire a request to the **LocationIQ Autocomplete/Search API**.
    * Display a clean drop-down listing matching regional locations.
 
 **Example Request to LocationIQ Autocomplete UI Engine:**
@@ -144,10 +144,13 @@ GET https://locationiq.com
 
 ## Multi-Tenant Environment Note
 
-This project now supports static database-per-tenant routing in the backend configuration layer.
+This project supports static database-per-tenant routing in the backend configuration layer.
 
 - Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
 - Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
-- Default behavior is backward compatible when `SETTING_USE_DEFAULT_DATABASE=true`
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
 
