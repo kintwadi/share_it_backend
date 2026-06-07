@@ -1,10 +1,24 @@
 @echo off
 
-:: Load environment variables from repo-root .env (if present) so this script always matches .env
+:: Load environment variables from repo-root .env using PowerShell so special characters
+:: in URLs, passwords, and tenant ids do not break batch parsing.
 set "ENV_FILE=%~dp0..\.env"
-if exist "%ENV_FILE%" (
-  for /f "usebackq eol=# delims=" %%L in ("%ENV_FILE%") do call :SetEnv "%%L"
+if exist "%ENV_FILE%" goto LoadEnvFile
+goto EnvLoaded
+
+:LoadEnvFile
+set "ENV_LOADER_CMD=%~dp0load-env.generated.cmd"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0load-env.ps1" -EnvFile "%ENV_FILE%" -OutputFile "%ENV_LOADER_CMD%"
+if errorlevel 1 (
+  echo [ERROR] Failed to load environment variables from %ENV_FILE%
+  exit /b 1
 )
+if exist "%ENV_LOADER_CMD%" (
+  call "%ENV_LOADER_CMD%"
+  del "%ENV_LOADER_CMD%" >nul 2>&1
+)
+
+:EnvLoaded
 
 :: Database Configuration
 if "%DB_TYPE%"=="" set "DB_TYPE="
@@ -105,19 +119,3 @@ echo Run the application with: mvn spring-boot:run
 
 exit /b 0
 
-:SetEnv
-set "LINE=%~1"
-if "%LINE%"=="" exit /b 0
-for /f "tokens=1* delims==" %%A in ("%LINE%") do (
-  set "KEY=%%A"
-  set "VAL=%%B"
-)
-for /f "tokens=* delims= " %%K in ("%KEY%") do set "KEY=%%K"
-for /f "tokens=* delims= " %%V in ("%VAL%") do set "VAL=%%V"
-if not "%KEY%"=="" (
-  if not "%VAL%"=="" (
-    if "%VAL:~0,1%"=="\"" if "%VAL:~-1%"=="\"" set "VAL=%VAL:~1,-1%"
-  )
-  set "%KEY%=%VAL%"
-)
-exit /b 0
