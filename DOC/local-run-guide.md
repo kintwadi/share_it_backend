@@ -43,6 +43,13 @@ From the repo root:
 
 - `http://localhost:8081/api/v1/health`
 
+### Multi-tenant local note
+
+The backend now supports static database-per-tenant routing using `X-Tenant-ID` by default.
+
+- If `SETTING_USE_DEFAULT_DATABASE=true`, local requests without `X-Tenant-ID` still use the default database and behave like the old single-tenant setup.
+- If you want to test tenant routing locally, define `TENANT_DEFAULT_DB_*` in `.env` and send `X-Tenant-ID` for any additional configured tenant such as `tenant-a`.
+
 ## Frontend (Angular)
 
 ### 1) Install dependencies
@@ -165,3 +172,4 @@ Check DevTools → Network:
 
 - If you see `ERR_CERT_AUTHORITY_INVALID`, fix the certificate trust (section above).
 - If you see `CORS` errors, confirm backend is running and your frontend origin is allowed.
+- If you see `400 missing_tenant` or `400 invalid_tenant`, confirm the tenant env vars are loaded and the request header matches `TENANT_HEADER_NAME`.

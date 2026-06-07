@@ -9,6 +9,7 @@ Run `npm start` for a dev server. Navigate to `http://localhost:4200/`.
 Notes:
 - The app uses relative API paths (`/api/v1`, `/ws`) in dev.
 - The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via `proxy.conf.json`.
+- If the backend is running in multi-tenant mode, direct API tools or custom clients should send `X-Tenant-ID` unless the backend is configured with `SETTING_USE_DEFAULT_DATABASE=true`.
 
 ## Code scaffolding
 

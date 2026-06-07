@@ -143,6 +143,25 @@ For a real usable environment, these are the main values the team should define.
 - `DB_PASSWORD`
 - `DB_DRIVER` when needed
 
+### Multi-tenant routing
+
+- `SETTING_USE_DEFAULT_DATABASE`
+- `TENANT_HEADER_NAME`
+- `TENANT_DEFAULT_ID`
+- `TENANT_DEFAULT_DB_URL`
+- `TENANT_DEFAULT_DB_USERNAME`
+- `TENANT_DEFAULT_DB_PASSWORD`
+- `TENANT_DEFAULT_DB_DRIVER`
+- optional static tenant examples such as:
+  - `TENANT_A_DB_URL`
+  - `TENANT_A_DB_USERNAME`
+  - `TENANT_A_DB_PASSWORD`
+  - `TENANT_A_DB_DRIVER`
+  - `TENANT_B_DB_URL`
+  - `TENANT_B_DB_USERNAME`
+  - `TENANT_B_DB_PASSWORD`
+  - `TENANT_B_DB_DRIVER`
+
 ### Security
 
 - `JWT_SECRET` or keystore settings
@@ -227,6 +246,43 @@ If the DB provider has IPv6-only connectivity issues, set:
 ```text
 JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false
 ```
+
+### Multi-tenant database-per-tenant setup
+
+The application can now route requests to a tenant-specific physical database using the request header configured by `TENANT_HEADER_NAME`.
+
+Recommended default-preserving setup:
+
+```text
+SETTING_USE_DEFAULT_DATABASE=true
+TENANT_HEADER_NAME=X-Tenant-ID
+TENANT_DEFAULT_ID=default
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://<host>:5432/<default_database>?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=<username>
+TENANT_DEFAULT_DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
+```
+
+Optional additional tenants:
+
+```text
+TENANT_A_DB_URL=jdbc:postgresql://<host>:5432/<tenant_a_database>?sslmode=require
+TENANT_A_DB_USERNAME=<username>
+TENANT_A_DB_PASSWORD=<password>
+TENANT_A_DB_DRIVER=org.postgresql.Driver
+
+TENANT_B_DB_URL=jdbc:postgresql://<host>:5432/<tenant_b_database>?sslmode=require
+TENANT_B_DB_USERNAME=<username>
+TENANT_B_DB_PASSWORD=<password>
+TENANT_B_DB_DRIVER=org.postgresql.Driver
+```
+
+Behavior:
+
+- if `X-Tenant-ID` is present and valid, the matching tenant database is used
+- if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=true`, the default tenant database is used
+- if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=false`, the request is rejected cleanly
+- if the tenant header is unknown, the request is rejected cleanly
 
 ## 7. Security and JWT Setup
 
@@ -579,6 +635,10 @@ For the fastest successful local setup:
    - `JWT_SECRET`
    - `ENCRYPTION_KEY`
    - `FRONTEND_BASE_URL`
+   - `SETTING_USE_DEFAULT_DATABASE`
+   - `TENANT_HEADER_NAME`
+   - `TENANT_DEFAULT_ID`
+   - `TENANT_DEFAULT_DB_*`
    - Stripe keys if payments must work
    - `LOCATION_IQ_API_KEY` if address search must work
 5. Start backend with:
@@ -600,6 +660,7 @@ For the fastest successful local setup:
 1. Provision PostgreSQL
 2. Configure all required environment variables
 3. Set `FRONTEND_BASE_URL` to the real frontend URL
+4. Configure `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_*`, and any extra `TENANT_A_*` / `TENANT_B_*` values
 4. Set real Stripe live keys
 5. Enable Stripe Connect
 6. Configure Stripe webhook endpoint
@@ -629,6 +690,7 @@ Check:
 - backend is running on `8081`
 - frontend proxy is active
 - browser console/network for CORS or TLS issues
+- if multi-tenant routing is enabled, confirm the request carries a valid `X-Tenant-ID` when you are not relying on the default database
 
 ### Stripe payments fail
 

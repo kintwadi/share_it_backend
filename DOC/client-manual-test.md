@@ -483,3 +483,13 @@ For issues during testing, contact:
 *Document Version: 1.0*
 *Last Updated: [Date]*
 *Test Plan Owner: [Name]*
+
+## Multi-Tenant Environment Note
+
+This project now supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Default behavior is backward compatible when `SETTING_USE_DEFAULT_DATABASE=true`
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+

@@ -20,6 +20,8 @@ In development, the app uses relative URLs:
 
 The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
 
+If the backend uses multi-tenant database routing, any direct API calls outside the dev proxy flow should include the tenant header configured by `TENANT_HEADER_NAME` unless the backend falls back to the default database.
+
 ## Run (Dev)
 
 ```bash

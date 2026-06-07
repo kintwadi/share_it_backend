@@ -38,6 +38,24 @@ Admins can edit safe runtime settings at:
 
 Edits are stored as overrides in `app_config_overrides` and merged with the base `settings.*` config at runtime.
 
+## Multi-Tenant Backend
+
+The backend now supports static database-per-tenant routing at the infrastructure layer.
+
+- Header: `X-Tenant-ID` by default
+- Fallback switch: `SETTING_USE_DEFAULT_DATABASE=true`
+- Default tenant id: `TENANT_DEFAULT_ID=default`
+- Default tenant database env vars:
+  - `TENANT_DEFAULT_DB_URL`
+  - `TENANT_DEFAULT_DB_USERNAME`
+  - `TENANT_DEFAULT_DB_PASSWORD`
+  - `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples:
+  - `TENANT_A_DB_URL`, `TENANT_A_DB_USERNAME`, `TENANT_A_DB_PASSWORD`, `TENANT_A_DB_DRIVER`
+  - `TENANT_B_DB_URL`, `TENANT_B_DB_USERNAME`, `TENANT_B_DB_PASSWORD`, `TENANT_B_DB_DRIVER`
+
+If `SETTING_USE_DEFAULT_DATABASE=true`, requests without `X-Tenant-ID` continue to use the default database so existing integrations keep working.
+
 ## Service Fee When Subscription Is Disabled
 
 When `settings.enable.subscription=false`, the backend applies a fixed service fee to every `LEND` checkout:

@@ -203,3 +203,13 @@ There is an integration test that boots Spring with an in-memory H2 database and
 - **Transaction typing**: current decision uses `Listing.type` as the primary SELL/LEND/GIVE signal; a more accurate approach is to persist a transaction outcome type on `Transaction`.
 - **Better candidate search**: replace the title keyword heuristic with a proper search strategy (tokenization, trigram similarity, or full-text search).
 - **Batch model refresh**: use scheduled rebuilds or incremental updates instead of rebuilding on-demand.
+
+## Multi-Tenant Environment Note
+
+This project now supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Default behavior is backward compatible when `SETTING_USE_DEFAULT_DATABASE=true`
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+

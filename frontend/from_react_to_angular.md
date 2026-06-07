@@ -94,6 +94,7 @@ In Angular:
 - Create an `AuthStorageService` that reads/writes exactly these keys.
 - Create an HTTP interceptor that:
   - attaches `Authorization: Bearer <token>` when present
+  - supports forwarding the tenant header (`X-Tenant-ID` by default) when the backend is running in multi-tenant mode
   - sets `Content-Type: application/json` unless using `FormData`
   - on `401`, clears session and produces a user-facing “Please sign in again.”
 

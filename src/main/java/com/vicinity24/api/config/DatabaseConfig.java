@@ -1,24 +1,147 @@
 package com.vicinity24.api.config;
 
+import com.vicinity24.api.config.tenant.TenantConfigurationProperties;
+import com.vicinity24.api.config.tenant.TenantFilter;
+import com.vicinity24.api.config.tenant.TenantRegistry;
+import com.vicinity24.api.config.tenant.TenantRoutingDataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
+import org.springframework.core.Ordered;
 
 import javax.sql.DataSource;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Locale;
 
 @Configuration
+@EnableConfigurationProperties(TenantConfigurationProperties.class)
 public class DatabaseConfig {
     @Bean
-    @Primary
-    public DataSource dataSource(Environment env) {
-        String dbType = effectiveDbType(env);
+    public TenantRegistry tenantRegistry(Environment env, TenantConfigurationProperties properties) {
+        Map<String, TenantRegistry.TenantDefinition> tenants = resolveTenantDefinitions(env, properties);
+        String defaultTenantId = resolveDefaultTenantId(properties, tenants);
+        if (!tenants.containsKey(defaultTenantId)) {
+            throw new IllegalStateException("Default tenant '" + defaultTenantId + "' is not configured");
+        }
+        return new TenantRegistry(
+                firstNonBlank(properties.getHeaderName(), "X-Tenant-ID"),
+                defaultTenantId,
+                properties.isUseDefaultDatabase(),
+                tenants
+        );
+    }
 
+    @Bean
+    public FilterRegistrationBean<TenantFilter> tenantFilterRegistration(TenantRegistry tenantRegistry) {
+        FilterRegistrationBean<TenantFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TenantFilter(tenantRegistry));
+        registration.setName("tenantFilter");
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
+        return registration;
+    }
+
+    @Bean
+    @Primary
+    public DataSource dataSource(Environment env, TenantRegistry tenantRegistry) {
+        Map<Object, Object> targetDataSources = new LinkedHashMap<>();
+        tenantRegistry.getTenants().forEach((tenantId, definition) ->
+                targetDataSources.put(tenantId, buildTenantDataSource(tenantId, definition, env))
+        );
+
+        TenantRoutingDataSource routingDataSource = new TenantRoutingDataSource();
+        routingDataSource.setManagedTargetDataSources(targetDataSources);
+        routingDataSource.setDefaultTargetDataSource(targetDataSources.get(tenantRegistry.getDefaultTenantId()));
+        routingDataSource.setLenientFallback(false);
+        routingDataSource.afterPropertiesSet();
+        return routingDataSource;
+    }
+
+    @Bean
+    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(Environment env, TenantRegistry tenantRegistry) {
+        return props -> {
+            if (props.containsKey("hibernate.dialect")) return;
+            if (!isBlank(env.getProperty("spring.jpa.database-platform"))) return;
+
+            String dbType = effectiveDbType(env, tenantRegistry);
+            String dialect = switch (dbType) {
+                case "h2" -> "org.hibernate.dialect.H2Dialect";
+                case "sqlite" -> "org.hibernate.community.dialect.SQLiteDialect";
+                default -> "org.hibernate.dialect.PostgreSQLDialect";
+            };
+            props.put("hibernate.dialect", dialect);
+        };
+    }
+
+    private DataSource buildTenantDataSource(String tenantId, TenantRegistry.TenantDefinition definition, Environment env) {
+        String dbType = detectDbType(definition.url());
+        HikariConfig cfg = new HikariConfig();
+        cfg.setPoolName("tenant-" + sanitizeTenantId(tenantId) + "-pool");
+        cfg.setJdbcUrl(definition.url());
+        if (!isBlank(definition.username())) cfg.setUsername(definition.username());
+        if (definition.password() != null) cfg.setPassword(definition.password());
+        if (!isBlank(definition.driverClassName())) cfg.setDriverClassName(definition.driverClassName());
+
+        Long connectionTimeout = env.getProperty("spring.datasource.hikari.connection-timeout", Long.class);
+        Integer maximumPoolSize = env.getProperty("spring.datasource.hikari.maximum-pool-size", Integer.class);
+        if (connectionTimeout != null) cfg.setConnectionTimeout(connectionTimeout);
+        if (maximumPoolSize != null) cfg.setMaximumPoolSize(maximumPoolSize);
+        if (maximumPoolSize == null && "sqlite".equals(dbType)) cfg.setMaximumPoolSize(1);
+        if ("postgres".equals(dbType) && isSupabasePoolerUrl(definition.url())) {
+            cfg.addDataSourceProperty("preferQueryMode", "simple");
+            cfg.addDataSourceProperty("preparedStatementCacheQueries", "0");
+            cfg.addDataSourceProperty("preparedStatementCacheSizeMiB", "0");
+        }
+
+        return new HikariDataSource(cfg);
+    }
+
+    private Map<String, TenantRegistry.TenantDefinition> resolveTenantDefinitions(Environment env, TenantConfigurationProperties properties) {
+        Map<String, TenantRegistry.TenantDefinition> tenants = new LinkedHashMap<>();
+        properties.getConfig().forEach((tenantId, tenantDataSourceProperties) -> {
+            if (!hasConfiguredUrl(tenantDataSourceProperties)) {
+                return;
+            }
+
+            DbConnectionInfo normalized = normalizeDbConnection(
+                    tenantDataSourceProperties.getUrl(),
+                    tenantDataSourceProperties.getUsername(),
+                    tenantDataSourceProperties.getPassword()
+            );
+            String driverClassName = firstNonBlank(
+                    tenantDataSourceProperties.getDriverClassName(),
+                    defaultDriverFor(detectDbType(normalized.url()), normalized.url())
+            );
+
+            if (isBlank(normalized.url())) {
+                throw new IllegalStateException("Tenant '" + tenantId + "' is missing a JDBC URL");
+            }
+            if (isBlank(driverClassName)) {
+                throw new IllegalStateException("Tenant '" + tenantId + "' is missing a driver class name");
+            }
+
+            tenants.put(tenantId, new TenantRegistry.TenantDefinition(
+                    tenantId,
+                    normalized.url(),
+                    normalized.username(),
+                    normalized.password(),
+                    driverClassName
+            ));
+        });
+
+        if (!tenants.isEmpty()) {
+            return tenants;
+        }
+
+        String dbType = effectiveDbType(env, null);
         String url = firstNonBlank(
                 env.getProperty("spring.datasource.url"),
                 env.getProperty("DB_URL"),
@@ -35,58 +158,63 @@ public class DatabaseConfig {
                 defaultPasswordFor(dbType)
         );
         String driverClassName = firstNonBlank(
+                env.getProperty("spring.datasource.driver-class-name"),
                 env.getProperty("spring.datasource.driverClassName"),
                 env.getProperty("DB_DRIVER"),
                 defaultDriverFor(dbType, url)
         );
 
         DbConnectionInfo normalized = normalizeDbConnection(url, username, password);
-        url = normalized.url();
-        username = normalized.username();
-        password = normalized.password();
+        String defaultTenantId = firstNonBlank(properties.getDefaultTenantId(), "default");
+        if (isBlank(normalized.url())) {
+            throw new IllegalStateException("No default datasource URL configured for tenant '" + defaultTenantId + "'");
+        }
+        if (isBlank(driverClassName)) {
+            throw new IllegalStateException("No driver class name configured for tenant '" + defaultTenantId + "'");
+        }
+        tenants.put(defaultTenantId, new TenantRegistry.TenantDefinition(
+                defaultTenantId,
+                normalized.url(),
+                normalized.username(),
+                normalized.password(),
+                driverClassName
+        ));
+        return tenants;
+    }
 
-        HikariConfig cfg = new HikariConfig();
-        cfg.setJdbcUrl(url);
-        if (!isBlank(username)) cfg.setUsername(username);
-        if (password != null) cfg.setPassword(password);
-        if (!isBlank(driverClassName)) cfg.setDriverClassName(driverClassName);
+    private String resolveDefaultTenantId(
+            TenantConfigurationProperties properties,
+            Map<String, TenantRegistry.TenantDefinition> tenants
+    ) {
+        String configuredDefault = firstNonBlank(properties.getDefaultTenantId(), "default");
+        if (tenants.containsKey(configuredDefault)) {
+            return configuredDefault;
+        }
+        return tenants.keySet().stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("At least one tenant must be configured"));
+    }
 
-        Long connectionTimeout = env.getProperty("spring.datasource.hikari.connection-timeout", Long.class);
-        Integer maximumPoolSize = env.getProperty("spring.datasource.hikari.maximum-pool-size", Integer.class);
-        if (connectionTimeout != null) cfg.setConnectionTimeout(connectionTimeout);
-        if (maximumPoolSize != null) cfg.setMaximumPoolSize(maximumPoolSize);
-        if (maximumPoolSize == null && "sqlite".equals(dbType)) cfg.setMaximumPoolSize(1);
-        if ("postgres".equals(dbType) && isSupabasePoolerUrl(url)) {
-            cfg.addDataSourceProperty("preferQueryMode", "simple");
-            cfg.addDataSourceProperty("preparedStatementCacheQueries", "0");
-            cfg.addDataSourceProperty("preparedStatementCacheSizeMiB", "0");
+    private boolean hasConfiguredUrl(TenantConfigurationProperties.TenantDataSourceProperties properties) {
+        return properties != null && !isBlank(properties.getUrl());
+    }
+
+    private String effectiveDbType(Environment env, TenantRegistry tenantRegistry) {
+        if (tenantRegistry != null) {
+            TenantRegistry.TenantDefinition defaultTenant = tenantRegistry.getTenants().get(tenantRegistry.getDefaultTenantId());
+            if (defaultTenant != null && !isBlank(defaultTenant.url())) {
+                return detectDbType(defaultTenant.url());
+            }
         }
 
-        return new HikariDataSource(cfg);
-    }
-
-    @Bean
-    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(Environment env) {
-        return props -> {
-            if (props.containsKey("hibernate.dialect")) return;
-            if (!isBlank(env.getProperty("spring.jpa.database-platform"))) return;
-
-            String dbType = effectiveDbType(env);
-            String dialect = switch (dbType) {
-                case "h2" -> "org.hibernate.dialect.H2Dialect";
-                case "sqlite" -> "org.hibernate.community.dialect.SQLiteDialect";
-                default -> "org.hibernate.dialect.PostgreSQLDialect";
-            };
-            props.put("hibernate.dialect", dialect);
-        };
-    }
-
-    private String effectiveDbType(Environment env) {
         String configured = firstNonBlank(env.getProperty("enable.db.type"), env.getProperty("DB_TYPE"));
         if (!isBlank(configured)) return configured.trim().toLowerCase(Locale.ROOT);
 
         String url = firstNonBlank(env.getProperty("spring.datasource.url"), env.getProperty("DB_URL"));
-        if (url == null) return "postgres";
+        return detectDbType(url);
+    }
+
+    private String detectDbType(String url) {
+        if (isBlank(url)) return "postgres";
         String normalized = url.trim().toLowerCase(Locale.ROOT);
         if (normalized.startsWith("jdbc:h2:")) return "h2";
         if (normalized.startsWith("jdbc:sqlite:")) return "sqlite";
@@ -217,5 +345,10 @@ public class DatabaseConfig {
         if (isBlank(url)) return false;
         String u = url.trim().toLowerCase(Locale.ROOT);
         return u.contains("pooler.supabase.com") || u.contains("pgbouncer");
+    }
+
+    private String sanitizeTenantId(String tenantId) {
+        if (isBlank(tenantId)) return "default";
+        return tenantId.replaceAll("[^a-zA-Z0-9_-]", "_");
     }
 }

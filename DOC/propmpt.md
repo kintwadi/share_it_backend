@@ -30,3 +30,13 @@ Please generate/update(following the existing code) the following decoupled code
 
 Ensure all external HTTP calls feature clean error handling structures (e.g., address not found, API timeout fallbacks) and apply production best practices throughout. Use standard spatial math for calculations.
 In the location_specification.md you will find more information including examples.
+
+## Multi-Tenant Environment Note
+
+This project now supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Default behavior is backward compatible when `SETTING_USE_DEFAULT_DATABASE=true`
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+

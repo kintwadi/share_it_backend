@@ -119,6 +119,20 @@ KEYSTORE_ACCESS_TOKEN_PW=your_access_token_key_password
 KEYSTORE_REFRESH_TOKEN_ALIAS=refreshtoken
 KEYSTORE_REFRESH_TOKEN_PW=your_refresh_token_key_password
 
+# Multi-tenant routing
+SETTING_USE_DEFAULT_DATABASE=true
+TENANT_HEADER_NAME=X-Tenant-ID
+TENANT_DEFAULT_ID=default
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://host:5432/default_database?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=username
+TENANT_DEFAULT_DB_PASSWORD=password
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
+# Optional extra tenants
+TENANT_A_DB_URL=jdbc:postgresql://host:5432/tenant_a_database?sslmode=require
+TENANT_A_DB_USERNAME=username
+TENANT_A_DB_PASSWORD=password
+TENANT_A_DB_DRIVER=org.postgresql.Driver
+
 # Encryption
 ENCRYPTION_KEY=1234567890123456
 
@@ -145,6 +159,13 @@ JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses
 ```
 
 Also make sure you set your environment variables in Render’s Environment tab (Render does not automatically use your local `.env` file).
+
+For multi-tenant deployments on Render:
+
+1. Set `SETTING_USE_DEFAULT_DATABASE=true` if you want existing clients without `X-Tenant-ID` to continue working.
+2. Set `TENANT_HEADER_NAME` to the request header your gateway or client will send.
+3. Set `TENANT_DEFAULT_ID` and `TENANT_DEFAULT_DB_*` for the fallback database.
+4. Add any extra static tenant databases with `TENANT_A_*`, `TENANT_B_*`, and extend `application.properties` examples if you need more than the documented samples.
 
 ## Troubleshooting
 
