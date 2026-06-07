@@ -3,6 +3,7 @@ import { ApiClientService } from './api-client.service';
 import { firstValueFrom } from 'rxjs';
 import { Category, Listing, ListingRecommendationRequest, ListingRecommendationResult, ExchangeLocation, User, AvailabilityStatus, Message, InsuranceTypeInfo, InsuranceQuoteResponse, InsurancePurchaseResponse } from '../models/types';
 import { AuthStorageService } from './auth-storage.service';
+import { withTenantHeader } from '../config/runtime-env';
 
 @Injectable({
   providedIn: 'root'
@@ -174,10 +175,10 @@ export class ApiService {
   async verify2FALogin(code: string, token: string): Promise<any> {
     const res = await fetch(`${this.api.getBaseUrl()}/auth/verify-2fa-login`, {
       method: 'POST',
-      headers: {
+      headers: withTenantHeader({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ code })
     });
     if (!res.ok) throw new Error('Invalid code');
@@ -196,10 +197,10 @@ export class ApiService {
   async verify2FALoginAdmin(code: string, token: string): Promise<any> {
     const res = await fetch(`${this.api.getBaseUrl()}/admin/auth/verify-2fa-login`, {
       method: 'POST',
-      headers: {
+      headers: withTenantHeader({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ code })
     });
     if (!res.ok) throw new Error('Invalid code');
@@ -223,10 +224,10 @@ export class ApiService {
   async verify2FALoginPartner(code: string, token: string): Promise<any> {
     const res = await fetch(`${this.api.getBaseUrl()}/partner/auth/verify-2fa-login`, {
       method: 'POST',
-      headers: {
+      headers: withTenantHeader({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ code })
     });
     if (!res.ok) throw new Error('Invalid code');

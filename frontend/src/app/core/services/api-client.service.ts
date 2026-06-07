@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { getRuntimeApiUrl } from '../config/runtime-env';
 
 function normalizeBaseUrl(baseUrl: string): string {
   const trimmed = String(baseUrl || '').trim();
@@ -25,8 +26,7 @@ export class ApiClientService {
   private http = inject(HttpClient);
 
   private baseUrl = (() => {
-    const runtime = (globalThis as any)?.__env?.API_URL;
-    const url = typeof runtime === 'string' && runtime.trim() ? runtime.trim() : environment.apiUrl;
+    const url = getRuntimeApiUrl() ?? environment.apiUrl;
     return normalizeBaseUrl(url);
   })();
 
