@@ -26,6 +26,10 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource implement
         return TenantContextHolder.getTenantId();
     }
 
+    public Map<Object, DataSource> getManagedDataSources() {
+        return Map.copyOf(managedDataSources);
+    }
+
     @Override
     public void destroy() {
         managedDataSources.values().forEach(dataSource -> {
