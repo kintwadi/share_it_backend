@@ -144,23 +144,19 @@ public class DatabaseConfig {
         String dbType = effectiveDbType(env, null);
         String url = firstNonBlank(
                 env.getProperty("spring.datasource.url"),
-                env.getProperty("DB_URL"),
                 defaultUrlFor(dbType)
         );
         String username = firstNonBlank(
                 env.getProperty("spring.datasource.username"),
-                env.getProperty("DB_USERNAME"),
                 defaultUsernameFor(dbType)
         );
         String password = firstNonBlank(
                 env.getProperty("spring.datasource.password"),
-                env.getProperty("DB_PASSWORD"),
                 defaultPasswordFor(dbType)
         );
         String driverClassName = firstNonBlank(
                 env.getProperty("spring.datasource.driver-class-name"),
                 env.getProperty("spring.datasource.driverClassName"),
-                env.getProperty("DB_DRIVER"),
                 defaultDriverFor(dbType, url)
         );
 
@@ -209,7 +205,7 @@ public class DatabaseConfig {
         String configured = firstNonBlank(env.getProperty("enable.db.type"), env.getProperty("DB_TYPE"));
         if (!isBlank(configured)) return configured.trim().toLowerCase(Locale.ROOT);
 
-        String url = firstNonBlank(env.getProperty("spring.datasource.url"), env.getProperty("DB_URL"));
+        String url = env.getProperty("spring.datasource.url");
         return detectDbType(url);
     }
 

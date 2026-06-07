@@ -107,10 +107,20 @@ docker push yourusername/Vicinity24-backend:latest
 The application requires these environment variables when running the container:
 
 ```bash
-# Database
-DB_URL=jdbc:postgresql://host:5432/database?sslmode=require
-DB_USERNAME=username
-DB_PASSWORD=password
+# Database type hint
+DB_TYPE=postgres
+
+# Multi-tenant default database
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://host:5432/default_database?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=username
+TENANT_DEFAULT_DB_PASSWORD=password
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
+
+# Optional extra tenants
+TENANT_A_DB_URL=jdbc:postgresql://host:5432/vicinity24_tenant_a?sslmode=require
+TENANT_A_DB_USERNAME=username
+TENANT_A_DB_PASSWORD=password
+TENANT_A_DB_DRIVER=org.postgresql.Driver
 
 # TLS / Keystore
 SSL_PASSWORD=your_keystore_password

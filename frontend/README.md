@@ -10,7 +10,7 @@ Notes:
 - The app uses relative API paths (`/api/v1`, `/ws`) in dev.
 - The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via `proxy.conf.json`.
 - If the backend is running in multi-tenant mode, direct API tools or custom clients should send `X-Tenant-ID` unless the backend is configured with `SETTING_USE_DEFAULT_DATABASE=true` and the request should fall back only when the header is missing.
-- The Angular app can send the tenant header automatically when runtime env includes values that match a backend tenant id:
+- The Angular app can send the tenant header automatically when runtime env includes values that match a backend tenant id configured on the backend:
   - `TENANT_ID=<tenant-id>`
   - optional `TENANT_HEADER_NAME=X-Tenant-ID`
 

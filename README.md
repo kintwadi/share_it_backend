@@ -16,7 +16,7 @@ mvn spring-boot:run
 
 Defaults (override via env vars / properties):
 - API base: `http://localhost:8081/api/v1`
-- DB: SQLite when `DB_URL` is not set
+- DB: configure the default tenant with `TENANT_DEFAULT_DB_*` in `.env` or your deployment environment
 - SSL: disabled by default for local runs
 
 ### Frontend
@@ -33,7 +33,7 @@ The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` using [prox
 ## Runtime App Settings (Admin)
 
 Admins can edit safe runtime settings at:
-- UI: `/admin` â†’ Settings tab
+- UI: `/admin` -> Settings tab
 - API: `GET /api/v1/admin/app-settings`, `PUT /api/v1/admin/app-settings`
 
 Edits are stored as overrides in `app_config_overrides` and merged with the base `settings.*` config at runtime.
@@ -45,6 +45,7 @@ The backend now supports static database-per-tenant routing at the infrastructur
 - Header: `X-Tenant-ID` by default
 - Fallback switch: `SETTING_USE_DEFAULT_DATABASE=true`
 - Default tenant id: `TENANT_DEFAULT_ID=default`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` are no longer needed for the multi-tenant setup
 - Default tenant database env vars:
   - `TENANT_DEFAULT_DB_URL`
   - `TENANT_DEFAULT_DB_USERNAME`
@@ -54,9 +55,8 @@ The backend now supports static database-per-tenant routing at the infrastructur
   - `TENANT_A_DB_URL`, `TENANT_A_DB_USERNAME`, `TENANT_A_DB_PASSWORD`, `TENANT_A_DB_DRIVER`
   - `TENANT_B_DB_URL`, `TENANT_B_DB_USERNAME`, `TENANT_B_DB_PASSWORD`, `TENANT_B_DB_DRIVER`
 - Current tenant ids in `application.properties`: `default`, `vicinity24_tenant_a`, `vicinity24_tenant_b`
-- Current tenant ids in `application.properties`: `default`, `vicinity24_tenant_a`, `vicinity24_tenant_b`
 
-If `SETTING_USE_DEFAULT_DATABASE=true`, requests without `X-Tenant-ID` continue to use the default database so existing integrations keep working. Requests with a valid tenant header still route to that tenant database. Requests with a valid tenant header still route to that tenant database.
+If `SETTING_USE_DEFAULT_DATABASE=true`, requests without `X-Tenant-ID` continue to use the default database so existing integrations keep working. Requests with a valid tenant header still route to that tenant database.
 
 ## Service Fee When Subscription Is Disabled
 

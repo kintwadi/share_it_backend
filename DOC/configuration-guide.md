@@ -135,13 +135,10 @@ For a real usable environment, these are the main values the team should define.
 - `SETTINGS_HTTP_ENABLED`
 - `FRONTEND_BASE_URL`
 
-### Database
+### Database type hint
 
 - `DB_TYPE`
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `DB_DRIVER` when needed
+- Active database connections are configured through the tenant-scoped `TENANT_*_DB_*` variables below
 
 ### Multi-tenant routing
 
@@ -220,11 +217,13 @@ If using the provided Postgres script, the expected credentials are:
 - user: `postgres`
 - password: `postgres`
 
-The script forces:
+The script expects the default tenant env values to point at the local database:
 
 - `DB_TYPE=postgres`
-- `DB_URL=jdbc:postgresql://localhost:5432/Vicinity24`
-- `DB_DRIVER=org.postgresql.Driver`
+- `TENANT_DEFAULT_DB_URL=jdbc:postgresql://localhost:5432/Vicinity24`
+- `TENANT_DEFAULT_DB_USERNAME=postgres`
+- `TENANT_DEFAULT_DB_PASSWORD=postgres`
+- `TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver`
 
 Reference:
 
@@ -236,9 +235,10 @@ For hosted deployments, configure:
 
 ```text
 DB_TYPE=postgres
-DB_URL=jdbc:postgresql://<host>:5432/<database>?sslmode=require
-DB_USERNAME=<username>
-DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://<host>:5432/<default_database>?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=<username>
+TENANT_DEFAULT_DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
 ```
 
 If the DB provider has IPv6-only connectivity issues, set:
@@ -251,7 +251,7 @@ JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses
 
 The application can now route requests to a tenant-specific physical database using the request header configured by `TENANT_HEADER_NAME`.
 
-Recommended default-preserving setup:
+Recommended default-preserving setup (legacy `DB_*` variables are not required):
 
 ```text
 SETTING_USE_DEFAULT_DATABASE=true
