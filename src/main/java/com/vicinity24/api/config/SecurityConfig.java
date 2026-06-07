@@ -25,16 +25,19 @@ import java.util.List;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final List<String> allowedOriginPatterns;
+    private final String tenantHeaderName;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtFilter,
-            @Value("${security.cors.allowed-origin-patterns:}") String allowedOriginPatterns
+            @Value("${security.cors.allowed-origin-patterns:}") String allowedOriginPatterns,
+            @Value("${tenants.header-name:X-Tenant-ID}") String tenantHeaderName
     ) {
         this.jwtFilter = jwtFilter;
         this.allowedOriginPatterns = Arrays.stream(allowedOriginPatterns.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
                 .toList();
+        this.tenantHeaderName = tenantHeaderName;
         if (this.allowedOriginPatterns.isEmpty()) {
             throw new IllegalStateException("security.cors.allowed-origin-patterns must not be empty");
         }
@@ -68,7 +71,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(allowedOriginPatterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", tenantHeaderName));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

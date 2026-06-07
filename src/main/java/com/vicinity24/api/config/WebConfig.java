@@ -14,6 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${spring.mvc.cors.allowed-origins}")
     private String[] allowedOrigins;
 
+    @Value("${tenants.header-name:X-Tenant-ID}")
+    private String tenantHeaderName;
+
     private final com.vicinity24.api.admin.security.AdminScopeInterceptor adminScopeInterceptor;
 
     public WebConfig(com.vicinity24.api.admin.security.AdminScopeInterceptor adminScopeInterceptor) {
@@ -26,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins)
                 .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*", "https://*.onrender.com")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Cache-Control", "Content-Type")
+                .allowedHeaders("Authorization", "Cache-Control", "Content-Type", tenantHeaderName)
                 .allowCredentials(true);
     }
 
