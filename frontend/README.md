@@ -14,6 +14,34 @@ Notes:
   - `TENANT_ID=<tenant-id>`
   - optional `TENANT_HEADER_NAME=X-Tenant-ID`
 
+## Frontend .env
+
+The frontend runtime generator now reads:
+
+- `frontend/.env`
+- `frontend/.env.local`
+
+Create your local file by copying [`.env.template`](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/.env.template):
+
+```bash
+cd frontend
+cp .env.template .env
+```
+
+Example values:
+
+```bash
+API_URL=/api/v1
+TENANT_HEADER_NAME=X-Tenant-ID
+TENANT_ID=tenant-a
+```
+
+Priority order:
+
+- real shell environment variables win first
+- then `frontend/.env`
+- then `frontend/.env.local`
+
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.

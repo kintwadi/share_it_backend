@@ -1,6 +1,48 @@
 const fs = require('fs');
 const path = require('path');
 
+const initialEnvKeys = new Set(Object.keys(process.env));
+
+function loadEnvFile(filePath, options = {}) {
+  const { override = false } = options;
+  if (!fs.existsSync(filePath)) {
+    return;
+  }
+
+  const content = fs.readFileSync(filePath, 'utf8');
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+
+    const eqIndex = line.indexOf('=');
+    if (eqIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, eqIndex).trim();
+    if (!key) {
+      continue;
+    }
+
+    const hasExisting = Object.prototype.hasOwnProperty.call(process.env, key);
+    if (hasExisting && (!override || initialEnvKeys.has(key))) {
+      continue;
+    }
+
+    let value = line.slice(eqIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    process.env[key] = value;
+  }
+}
+
 function normalizeApiUrl(raw) {
   const v = String(raw || '').trim().replace(/\/+$/, '');
   if (!v) return '';
@@ -14,6 +56,10 @@ function normalizeOptional(raw) {
   const v = String(raw || '').trim();
   return v || '';
 }
+
+const frontendRoot = path.join(__dirname, '..');
+loadEnvFile(path.join(frontendRoot, '.env'));
+loadEnvFile(path.join(frontendRoot, '.env.local'), { override: true });
 
 const apiUrl =
   normalizeApiUrl(process.env.API_URL) ||
@@ -36,6 +82,6 @@ const content =
   `window.__env.TENANT_HEADER_NAME = ${JSON.stringify(tenantHeaderName)};\n` +
   `window.__env.TENANT_ID = ${JSON.stringify(tenantId)};\n`;
 
-const outPath = path.join(__dirname, '..', 'public', 'env.js');
+const outPath = path.join(frontendRoot, 'public', 'env.js');
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, content, 'utf8');
