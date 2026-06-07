@@ -7,11 +7,14 @@ import com.vicinity24.api.model.Listing;
 import com.vicinity24.api.model.Message;
 import com.vicinity24.api.model.Review;
 import com.vicinity24.api.model.Subscription;
+import com.vicinity24.api.model.SubscriptionVerificationCode;
 import com.vicinity24.api.model.Transaction;
 import com.vicinity24.api.model.User;
 import com.vicinity24.api.model.Device;
+import com.vicinity24.api.model.EmailVerificationToken;
 import com.vicinity24.api.model.embeddable.Location;
 import com.vicinity24.api.recommendation.model.MahoutIdMapping;
+import com.vicinity24.api.model.PasswordResetToken;
 import com.vicinity24.api.recommendation.service.RecommendationSeederService;
 import com.vicinity24.api.recommendation.service.RecommendationService;
 import com.vicinity24.api.repository.CategoryRepository;
@@ -61,7 +64,10 @@ public class TenantDatabaseBootstrap implements ApplicationRunner {
             Message.class,
             Transaction.class,
             Device.class,
-            MahoutIdMapping.class
+            MahoutIdMapping.class,
+            SubscriptionVerificationCode.class,
+            PasswordResetToken.class,
+            EmailVerificationToken.class
     );
 
     private final DataSource dataSource;
