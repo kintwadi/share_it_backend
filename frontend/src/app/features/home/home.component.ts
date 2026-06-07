@@ -272,6 +272,22 @@ export class HomeComponent implements OnInit {
 
   private async initBorrowerLocation() {
     if (this.borrowerLat != null && this.borrowerLng != null) return;
+
+    if (!('geolocation' in navigator)) {
+      this.clearBorrowerLocation();
+      this.locationDenied = true;
+      return;
+    }
+
+    try {
+      const status = await (navigator as any)?.permissions?.query?.({ name: 'geolocation' });
+      if (status?.state === 'denied') {
+        this.clearBorrowerLocation();
+        this.locationDenied = true;
+        return;
+      }
+    } catch { }
+
     try {
       const storedLat = parseFloat(String(localStorage.getItem(this.borrowerLatKey) || ''));
       const storedLng = parseFloat(String(localStorage.getItem(this.borrowerLngKey) || ''));
@@ -285,19 +301,6 @@ export class HomeComponent implements OnInit {
       }
     } catch { }
 
-    if (!('geolocation' in navigator)) {
-      this.locationDenied = true;
-      return;
-    }
-
-    try {
-      const status = await (navigator as any)?.permissions?.query?.({ name: 'geolocation' });
-      if (status?.state === 'denied') {
-        this.locationDenied = true;
-        return;
-      }
-    } catch { }
-
     try {
       const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
@@ -305,6 +308,7 @@ export class HomeComponent implements OnInit {
       this.setBorrowerLocation(pos.coords.latitude, pos.coords.longitude, 'Current location');
       this.locationDenied = false;
     } catch {
+      this.clearBorrowerLocation();
       this.locationDenied = true;
     }
   }
@@ -317,6 +321,17 @@ export class HomeComponent implements OnInit {
       localStorage.setItem(this.borrowerLatKey, String(lat));
       localStorage.setItem(this.borrowerLngKey, String(lng));
       if (label) localStorage.setItem(this.borrowerLabelKey, label);
+    } catch { }
+  }
+
+  private clearBorrowerLocation() {
+    this.borrowerLat = null;
+    this.borrowerLng = null;
+    this.locationSelectedLabel = null;
+    try {
+      localStorage.removeItem(this.borrowerLatKey);
+      localStorage.removeItem(this.borrowerLngKey);
+      localStorage.removeItem(this.borrowerLabelKey);
     } catch { }
   }
 
