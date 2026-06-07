@@ -27,7 +27,9 @@ function loadEnvFile(filePath, options = {}) {
     }
 
     const hasExisting = Object.prototype.hasOwnProperty.call(process.env, key);
-    if (hasExisting && (!override || initialEnvKeys.has(key))) {
+    const existingValue = hasExisting ? String(process.env[key] ?? '').trim() : '';
+    const hasMeaningfulExistingValue = existingValue !== '';
+    if (hasExisting && hasMeaningfulExistingValue && (!override || initialEnvKeys.has(key))) {
       continue;
     }
 
