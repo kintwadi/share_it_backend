@@ -107,10 +107,6 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     });
 
     if (this.flow === 'signup') {
-      if (this.subscriptionFeature.enabled()) {
-        this.router.navigate(['/subscription']);
-        return;
-      }
       if (!this.verificationToken && this.userEmail) {
         try {
           const started = await this.api.startEmailVerification(this.userEmail, this.i18n.language());
@@ -244,7 +240,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         if (data?.user?.id) this.authStorage.setUserId(data.user.id);
         this.authStorage.setAuthContext('user');
         if (data?.user) this.session.user.set(data.user);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate([this.subscriptionFeature.enabled() ? '/subscription' : '/dashboard']);
         return;
       }
 
