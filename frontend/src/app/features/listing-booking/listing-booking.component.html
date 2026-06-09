@@ -18,7 +18,7 @@
     <div *ngIf="!loading && listing" class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
       <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <div class="font-bold text-gray-900 text-lg">
-          {{ bookingStep === 'PATH_SELECTION' ? 'Borrowing Options' : (bookingStep === 'DURATION' ? 'Request Details' : (bookingStep === 'INSURANCE' ? 'Insurance' : 'Checkout')) }}
+          {{ bookingStep === 'PATH_SELECTION' ? i18n.t('listing.booking.borrowing_options') : (bookingStep === 'DURATION' ? i18n.t('listing.booking.request_details') : (bookingStep === 'INSURANCE' ? i18n.t('listing.booking.insurance') : i18n.t('listing.booking.checkout'))) }}
         </div>
         <div class="text-xs text-gray-500 font-semibold">{{ listing.title }}</div>
       </div>
@@ -35,7 +35,7 @@
             <div class="font-bold">{{ i18n.formatPrice(baseTotal) }}</div>
           </div>
           <div *ngIf="requiresInsurance" class="flex items-center justify-between mt-2">
-            <div>Insurance</div>
+            <div>{{ i18n.t('listing.booking.insurance') }}</div>
             <div class="font-bold">{{ i18n.formatPrice(insuranceCost) }}</div>
           </div>
           <div *ngIf="serviceFee > 0" class="flex items-center justify-between mt-2">
@@ -54,7 +54,7 @@
         </div>
 
         <div *ngIf="bookingStep === 'PATH_SELECTION' && !isPartnerListing" class="animate-fade-in">
-          <h4 class="font-bold text-gray-900 mb-6 text-center text-xl">How would you like to borrow?</h4>
+          <h4 class="font-bold text-gray-900 mb-6 text-center text-xl">{{ i18n.t('listing.booking.how_like_to_borrow') }}</h4>
 
           <div class="space-y-4 mb-8">
             <div
@@ -64,23 +64,23 @@
               [ngClass]="selectedPath === 'VERIFIED' ? 'border-brand-500 bg-brand-50 shadow-md ring-1 ring-brand-200' : 'border-gray-200 hover:border-brand-200 hover:bg-gray-50'"
             >
               <div class="absolute top-0 right-0 bg-brand-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl tracking-wide">
-                RECOMMENDED
+                {{ i18n.t('listing.booking.recommended') }}
               </div>
               <div class="flex items-start gap-4">
                 <div class="mt-1 p-2 rounded-full" [ngClass]="selectedPath === 'VERIFIED' ? 'bg-brand-100 text-brand-600' : 'bg-gray-100 text-gray-400'">
                   <lucide-icon [img]="Zap" [size]="20"></lucide-icon>
                 </div>
                 <div>
-                  <h5 class="font-bold text-gray-900 text-base">Start Verified Trial</h5>
+                  <h5 class="font-bold text-gray-900 text-base">{{ i18n.t('listing.booking.start_verified_trial') }}</h5>
                   <p class="text-xs text-gray-500 mt-0.5">{{ verifiedTrialCaption }}</p>
                   <ul class="mt-3 space-y-1.5">
                     <li class="flex items-center text-xs text-gray-600 font-medium">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      No Transaction fee
+                      {{ i18n.t('listing.booking.no_transaction_fee') }}
                     </li>
                     <li class="flex items-center text-xs text-gray-600 font-medium">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Instant borrowing
+                      {{ i18n.t('listing.booking.instant_borrowing') }}
                     </li>
                   </ul>
                 </div>
@@ -98,16 +98,16 @@
                   <lucide-icon [img]="LockIcon" [size]="20"></lucide-icon>
                 </div>
                 <div>
-                  <h5 class="font-bold text-gray-900 text-base">Refundable Deposit</h5>
-                  <p class="text-xs text-gray-500 mt-0.5">€50 held until return</p>
+                  <h5 class="font-bold text-gray-900 text-base">{{ i18n.t('listing.booking.refundable_deposit') }}</h5>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('listing.booking.deposit_held_until_return') }}</p>
                   <ul class="mt-3 space-y-1.5">
                     <li class="flex items-center text-xs text-gray-600 font-medium">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Refund on return
+                      {{ i18n.t('listing.booking.refund_on_return') }}
                     </li>
                     <li class="flex items-center text-xs text-gray-600 font-medium">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      Instant borrowing
+                      {{ i18n.t('listing.booking.instant_borrowing') }}
                     </li>
                   </ul>
                 </div>
@@ -125,12 +125,12 @@
                   <lucide-icon [img]="DollarSign" [size]="20"></lucide-icon>
                 </div>
                 <div>
-                  <h5 class="font-bold text-gray-900 text-base">One-time Fee</h5>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ serviceFeePercentLabel }} transaction fee</p>
+                  <h5 class="font-bold text-gray-900 text-base">{{ i18n.t('listing.booking.one_time_fee') }}</h5>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ serviceFeePercentLabel }} {{ i18n.t('listing.booking.transaction_fee') }}</p>
                   <ul class="mt-3 space-y-1.5">
                     <li class="flex items-center text-xs text-gray-600 font-medium">
                       <lucide-icon [img]="CheckCircle2" [size]="12" class="text-emerald-500 mr-2 flex-shrink-0"></lucide-icon>
-                      No subscription required
+                      {{ i18n.t('listing.booking.no_subscription_required') }}
                     </li>
                   </ul>
                 </div>
@@ -144,12 +144,12 @@
             [disabled]="!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee"
             class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Continue
+            {{ i18n.t('listing.booking.continue') }}
           </button>
 
           <p class="text-[10px] text-gray-400 text-center mt-6 flex items-center justify-center gap-1.5">
             <lucide-icon [img]="ShieldCheck" [size]="12" class="text-emerald-500"></lucide-icon>
-            Your address is never shared. Handoffs at neutral locations only.
+            {{ i18n.t('listing.booking.address_privacy_note') }}
           </p>
         </div>
 
@@ -161,7 +161,7 @@
             class="text-sm text-gray-500 hover:text-gray-800 mb-4 flex items-center"
           >
             <lucide-icon [img]="ChevronLeft" [size]="16" class="mr-1"></lucide-icon>
-            Back
+            {{ i18n.t('listing.booking.back') }}
           </button>
 
           <div class="flex gap-4 mb-6 relative">
@@ -170,13 +170,13 @@
               <h4 class="font-bold text-gray-900 line-clamp-1">{{ listing.title }}</h4>
               <p class="text-sm text-gray-500">{{ listing.category }}</p>
               <p class="text-xs text-brand-600 font-medium mt-1">
-                {{ isFree ? 'Free' : (i18n.formatPrice(listing.hourlyRate || 0) + '/hr') }}
+                {{ isFree ? i18n.t('listing.booking.free') : (i18n.formatPrice(listing.hourlyRate || 0) + i18n.t('listing.booking.per_hour_short')) }}
               </p>
             </div>
           </div>
 
           <div *ngIf="isTimeBased" class="mb-6">
-            <label class="block text-sm font-bold text-gray-700 mb-2">How long do you need it?</label>
+            <label class="block text-sm font-bold text-gray-700 mb-2">{{ i18n.t('listing.booking.how_long_needed') }}</label>
             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-200">
               <button
                 type="button"
@@ -188,7 +188,7 @@
               </button>
               <div class="text-center px-4">
                 <div class="text-2xl font-black text-gray-900">{{ bookingDuration }}</div>
-                <div class="text-xs text-gray-500">hours</div>
+                <div class="text-xs text-gray-500">{{ i18n.t('listing.booking.hours') }}</div>
               </div>
               <button
                 type="button"
@@ -203,26 +203,26 @@
 
           <button type="button" (click)="proceedFromDuration()" [disabled]="borrowing" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 rounded-xl shadow-lg transition-colors disabled:opacity-60 flex items-center justify-center">
             <lucide-icon *ngIf="borrowing" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
-            Proceed to Checkout
+            {{ i18n.t('listing.booking.proceed_to_checkout') }}
           </button>
         </div>
 
         <div *ngIf="bookingStep === 'INSURANCE'" class="animate-fade-in space-y-4">
           <button type="button" (click)="backToDuration()" class="text-sm text-gray-500 hover:text-gray-800 flex items-center">
             <lucide-icon [img]="ChevronLeft" [size]="16" class="mr-1"></lucide-icon>
-            Back
+            {{ i18n.t('listing.booking.back') }}
           </button>
 
-          <div class="text-sm font-bold text-gray-900">Select insurance</div>
-          <div class="text-xs text-gray-500">Required for this item</div>
+          <div class="text-sm font-bold text-gray-900">{{ i18n.t('listing.booking.select_insurance') }}</div>
+          <div class="text-xs text-gray-500">{{ i18n.t('listing.booking.insurance_required_for_item') }}</div>
 
           <div class="rounded-xl border border-gray-200 bg-white p-3">
-            <label class="block text-xs font-bold text-gray-700 mb-2">Zip code (optional)</label>
+            <label class="block text-xs font-bold text-gray-700 mb-2">{{ i18n.t('listing.booking.zip_code_optional') }}</label>
             <input
               [(ngModel)]="insuranceZipCode"
               (blur)="selectedInsuranceType && selectInsuranceType(selectedInsuranceType)"
               class="w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm"
-              placeholder="e.g. 90001"
+              [placeholder]="i18n.t('listing.booking.zip_code_example')"
             />
           </div>
 
@@ -232,7 +232,7 @@
 
           <div *ngIf="insuranceLoading && insuranceTypes.length === 0" class="p-3 bg-gray-50 text-gray-700 text-sm rounded-xl border border-gray-200 flex items-center gap-2">
             <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
-            Loading insurance options...
+            {{ i18n.t('listing.booking.loading_insurance_options') }}
           </div>
 
           <div class="space-y-2" *ngIf="insuranceTypes.length > 0">
@@ -248,7 +248,7 @@
                 <div class="text-xs text-gray-500">{{ (t.percent * 100) | number:'1.0-2' }}% (min {{i18n.formatPrice(t.min)}}, max {{i18n.formatPrice(t.max)}})</div>
               </div>
               <div class="text-sm font-black text-gray-900" *ngIf="selectedInsuranceType === t.insuranceType">
-                {{ insuranceLoading ? '...' : i18n.formatPrice(insuranceCost) }}
+                {{ insuranceLoading ? i18n.t('listing.booking.loading_price') : i18n.formatPrice(insuranceCost) }}
               </div>
             </button>
           </div>
@@ -259,7 +259,7 @@
             [disabled]="insuranceLoading || (requiresInsurance && !insuranceQuote)"
             class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl disabled:opacity-60"
           >
-            Continue
+            {{ i18n.t('listing.booking.continue') }}
           </button>
         </div>
 
