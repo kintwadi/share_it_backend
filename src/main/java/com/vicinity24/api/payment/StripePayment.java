@@ -199,6 +199,13 @@ public class StripePayment implements PaymentStrategy {
         }
     }
 
+    public PaymentIntent retrievePaymentIntent(String paymentToken) throws StripeException {
+        if (paymentToken == null || paymentToken.isBlank()) {
+            return null;
+        }
+        return PaymentIntent.retrieve(paymentToken);
+    }
+
     public PaymentIntent createPaymentIntent(BigDecimal amount, String currency, String customerId, java.util.Map<String, String> metadata) {
         try {
             PaymentIntentCreateParams.Builder paramsBuilder = PaymentIntentCreateParams.builder()

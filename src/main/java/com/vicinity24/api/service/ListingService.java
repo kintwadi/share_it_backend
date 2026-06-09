@@ -9,6 +9,8 @@ import com.vicinity24.api.config.RuntimeSettingsService;
 import com.vicinity24.api.model.Listing;
 import com.vicinity24.api.model.User;
 import com.vicinity24.api.model.Report;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import com.vicinity24.api.model.embeddable.Location;
 import com.vicinity24.api.model.enums.AvailabilityStatus;
 import com.vicinity24.api.model.enums.ListingType;
@@ -45,6 +47,7 @@ public class ListingService {
     private final com.vicinity24.api.repository.RecommendationDismissRepository dismissRepository;
     private final com.vicinity24.api.payment.PaymentManager paymentManager;
     private final com.vicinity24.api.repository.TransactionRepository transactionRepository;
+    private final com.vicinity24.api.payment.StripePayment stripePayment;
     private final ReturnSessionRepository returnSessionRepository;
     private final ReportRepository reportRepository;
     private final ReviewRepository reviewRepository;
@@ -63,6 +66,7 @@ public class ListingService {
             com.vicinity24.api.repository.RecommendationDismissRepository dismissRepository,
             com.vicinity24.api.payment.PaymentManager paymentManager,
             com.vicinity24.api.repository.TransactionRepository transactionRepository,
+            com.vicinity24.api.payment.StripePayment stripePayment,
             ReturnSessionRepository returnSessionRepository,
             ReportRepository reportRepository,
             ReviewRepository reviewRepository,
@@ -78,6 +82,7 @@ public class ListingService {
         this.dismissRepository = dismissRepository;
         this.paymentManager = paymentManager;
         this.transactionRepository = transactionRepository;
+        this.stripePayment = stripePayment;
         this.returnSessionRepository = returnSessionRepository;
         this.reportRepository = reportRepository;
         this.reviewRepository = reviewRepository;
@@ -101,6 +106,48 @@ public class ListingService {
             rate = DEFAULT_SERVICE_FEE_PERCENT;
         }
         return BigDecimal.valueOf(rate);
+    }
+
+    private boolean isConfirmedStripeBorrowPayment(Listing listing, User borrower, com.vicinity24.api.dto.BorrowRequest request, BigDecimal expectedAmount) {
+        String paymentToken = request != null ? request.getPaymentToken() : null;
+        if (stripePayment == null || paymentToken == null || paymentToken.isBlank()) {
+            return false;
+        }
+        try {
+            PaymentIntent intent = stripePayment.retrievePaymentIntent(paymentToken);
+            if (intent == null || !"succeeded".equalsIgnoreCase(intent.getStatus())) {
+                return false;
+            }
+            if (!"usd".equalsIgnoreCase(intent.getCurrency())) {
+                return false;
+            }
+            long expectedAmountCents = expectedAmount.multiply(new BigDecimal(100)).longValue();
+            Long intentAmount = intent.getAmountReceived() != null && intent.getAmountReceived() > 0
+                    ? intent.getAmountReceived()
+                    : intent.getAmount();
+            if (intentAmount == null || intentAmount < expectedAmountCents) {
+                return false;
+            }
+            java.util.Map<String, String> metadata = intent.getMetadata();
+            if (metadata != null) {
+                String listingId = metadata.get("listingId");
+                String borrowerId = metadata.get("borrowerId");
+                if (listingId != null && listing != null && listing.getId() != null && !listing.getId().toString().equals(listingId)) {
+                    return false;
+                }
+                if (borrowerId != null && borrower != null && borrower.getId() != null && !borrower.getId().toString().equals(borrowerId)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (StripeException ex) {
+            logger.warn("Stripe borrow payment verification failed for listing={} borrower={} token={} reason={}",
+                    listing != null ? listing.getId() : null,
+                    borrower != null ? borrower.getId() : null,
+                    paymentToken,
+                    ex.getMessage());
+            return false;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -511,12 +558,15 @@ public class ListingService {
 
         // Process payment if amount > 0 and payment method is not CASH
         if (amount.compareTo(BigDecimal.ZERO) > 0 && request.getPaymentMethod() != null && !"CASH".equalsIgnoreCase(request.getPaymentMethod())) {
-             boolean success = paymentManager.processPayment(
-                 request.getPaymentMethod(), 
-                 amount, 
-                 "USD", 
-                 request.getPaymentToken()
-             );
+             boolean isStripeBorrowFlow = "STRIPE".equalsIgnoreCase(request.getPaymentMethod());
+             boolean success = isStripeBorrowFlow
+                 ? isConfirmedStripeBorrowPayment(l, borrower, request, amount)
+                 : paymentManager.processPayment(
+                     request.getPaymentMethod(),
+                     amount,
+                     "USD",
+                     request.getPaymentToken()
+                 );
              
              if (!success) {
                  throw new RuntimeException("payment_failed");
