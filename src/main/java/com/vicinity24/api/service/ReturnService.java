@@ -229,11 +229,13 @@ public class ReturnService {
 
     private ReturnDTOs.ReturnSessionResponse mapToResponse(ReturnSession session) {
         Listing listing = session.getListing();
+        User borrower = session.getBorrower() != null ? session.getBorrower() : (listing != null ? listing.getBorrower() : null);
+        User lender = session.getLender() != null ? session.getLender() : (listing != null ? listing.getOwner() : null);
         return ReturnDTOs.ReturnSessionResponse.builder()
                 .id(session.getId())
                 .listingId(listing != null ? listing.getId() : null)
-                .borrowerName(displayName(session.getBorrower()))
-                .lenderName(displayName(session.getLender()))
+                .borrowerName(displayName(borrower))
+                .lenderName(displayName(lender))
                 .itemReference(listing != null ? listing.getItemReference() : null)
                 .returnMethod(session.getReturnMethod())
                 .returnPlace(session.getReturnPlace())

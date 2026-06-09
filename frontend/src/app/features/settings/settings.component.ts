@@ -193,6 +193,7 @@ export class SettingsComponent implements OnInit {
 
   get paymentsLocked(): boolean {
     const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
+    if (this.paymentsEntryFromNewItem) return false;
     return !subscriptionEnabled && !this.hasLendListing;
   }
 
@@ -354,12 +355,14 @@ export class SettingsComponent implements OnInit {
   }
 
   private requestedTab: SettingsTabId | null = null;
+  private paymentsEntryFromNewItem = false;
 
   ngOnInit() {
     this.applyPrefsFromService();
     this.route.queryParams.subscribe(params => {
       const t = params['tab'] as SettingsTabId | undefined;
       this.requestedTab = t || null;
+      this.paymentsEntryFromNewItem = String(params['from'] || '') === 'new-item-lend';
       this.applyRequestedTab();
     });
     this.settingsConfig.ensureLoaded().then(() => this.applyRequestedTab());

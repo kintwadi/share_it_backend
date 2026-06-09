@@ -71,7 +71,7 @@ public class PaymentController {
         this.listingRepository = listingRepository;
         this.userService = userService;
         this.subscriptionService = subscriptionService;
-        this.runtimeSettingsService = runtimeSettingsService;
+        this.runtimeSettingsService = runtimeSettingsService; 
         this.escrowService = escrowService;
         this.transactionRepository = transactionRepository;
         this.objectMapper = objectMapper;

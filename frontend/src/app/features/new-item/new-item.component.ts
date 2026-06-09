@@ -119,6 +119,7 @@ export class NewItemComponent implements OnInit {
   requiredPlan: 'plus' | 'pro' = 'pro';
   payoutSetupLoading = false;
   private connectStatus: any | null = null;
+  showLendPayoutNotice = false;
   isSaving = false;
 
   readonly timeOptions = [
@@ -357,18 +358,24 @@ export class NewItemComponent implements OnInit {
     }
   }
 
-  onTypeSelect(type: ListingType, rate?: number) {
+  async onTypeSelect(type: ListingType, rate?: number) {
     if (type === ListingType.SELL && !this.sellEnabled) return;
     const subscriptionEnabled = this.subscriptionFeature.enabled();
+    if (type !== ListingType.LEND) {
+      this.showLendPayoutNotice = false;
+    }
     if (type === ListingType.LEND) {
       if (subscriptionEnabled && this.plan === 'starter') {
         this.requiredPlan = 'plus';
         this.goToUpgrade();
         return;
       }
-      if (subscriptionEnabled && !this.editId && this.plan === 'plus') {
-        this.ensurePayoutsReadyForPaidLending();
-        return;
+      if (!this.editId) {
+        const ready = await this.ensurePayoutsReadyForLending();
+        if (!ready) {
+          this.render();
+          return;
+        }
       }
     }
     if (type === ListingType.SELL) {
@@ -379,6 +386,7 @@ export class NewItemComponent implements OnInit {
         return;
       }
     }
+    this.showLendPayoutNotice = false;
     this.type = type;
     if (typeof rate === 'number' && rate > 0 && type !== ListingType.GIVE) {
       this.hourlyRate = rate;
@@ -390,25 +398,25 @@ export class NewItemComponent implements OnInit {
     this.render();
   }
 
-  private async ensurePayoutsReadyForPaidLending(): Promise<boolean> {
+  private async ensurePayoutsReadyForLending(): Promise<boolean> {
+    if (this.editId) return true;
     if (this.payoutSetupLoading) return false;
     this.payoutSetupLoading = true;
     this.render();
     try {
-      if (!this.connectStatus) {
-        this.connectStatus = await this.api.getConnectStatus();
-      }
+      this.connectStatus = await this.api.getConnectStatus();
       const ready = !!(this.connectStatus?.connected && this.connectStatus?.payoutsEnabled);
       if (!ready) {
-        this.router.navigate(['/new-item/payout-setup']);
+        this.showLendPayoutNotice = true;
         return false;
       }
+      this.showLendPayoutNotice = false;
       this.type = ListingType.LEND;
       if (this.isPremiumLender) this.autoApprove = true;
       this.triggerRecommendation();
       return true;
     } catch {
-      this.router.navigate(['/new-item/payout-setup']);
+      this.showLendPayoutNotice = true;
       return false;
     } finally {
       this.payoutSetupLoading = false;
@@ -615,6 +623,12 @@ export class NewItemComponent implements OnInit {
     });
   }
 
+  goToPaymentsManage() {
+    this.router.navigate(['/settings'], {
+      queryParams: { tab: 'payments', from: 'new-item-lend' }
+    });
+  }
+
   async handleSave() {
     this.error = null;
     this.availabilityError = null;
@@ -675,8 +689,8 @@ export class NewItemComponent implements OnInit {
       this.goToUpgrade();
       return;
     }
-    if (this.type === ListingType.LEND && this.plan === 'plus' && Number(this.hourlyRate || 0) > 0) {
-      const ok = await this.ensurePayoutsReadyForPaidLending();
+    if (!this.editId && this.type === ListingType.LEND) {
+      const ok = await this.ensurePayoutsReadyForLending();
       if (!ok) return;
     }
 
