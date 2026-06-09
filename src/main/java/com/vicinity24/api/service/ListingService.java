@@ -111,21 +111,37 @@ public class ListingService {
     private boolean isConfirmedStripeBorrowPayment(Listing listing, User borrower, com.vicinity24.api.dto.BorrowRequest request, BigDecimal expectedAmount) {
         String paymentToken = request != null ? request.getPaymentToken() : null;
         if (stripePayment == null || paymentToken == null || paymentToken.isBlank()) {
+            logger.warn("Stripe borrow payment verification failed: missing Stripe client or payment token for listing={} borrower={}",
+                    listing != null ? listing.getId() : null,
+                    borrower != null ? borrower.getId() : null);
             return false;
         }
         try {
             PaymentIntent intent = stripePayment.retrievePaymentIntent(paymentToken);
-            if (intent == null || !"succeeded".equalsIgnoreCase(intent.getStatus())) {
+            if (intent == null) {
+                logger.warn("Stripe borrow payment verification failed: payment intent not found for listing={} borrower={} token={}",
+                        listing != null ? listing.getId() : null,
+                        borrower != null ? borrower.getId() : null,
+                        paymentToken);
                 return false;
             }
-            if (!"usd".equalsIgnoreCase(intent.getCurrency())) {
+            if (!"succeeded".equalsIgnoreCase(intent.getStatus())) {
+                logger.warn("Stripe borrow payment verification failed: unexpected status={} for listing={} borrower={} token={}",
+                        intent.getStatus(),
+                        listing != null ? listing.getId() : null,
+                        borrower != null ? borrower.getId() : null,
+                        paymentToken);
                 return false;
             }
-            long expectedAmountCents = expectedAmount.multiply(new BigDecimal(100)).longValue();
-            Long intentAmount = intent.getAmountReceived() != null && intent.getAmountReceived() > 0
-                    ? intent.getAmountReceived()
-                    : intent.getAmount();
-            if (intentAmount == null || intentAmount < expectedAmountCents) {
+            if (intent.getCustomer() != null && borrower != null && borrower.getStripeCustomerId() != null
+                    && !borrower.getStripeCustomerId().isBlank()
+                    && !borrower.getStripeCustomerId().equals(intent.getCustomer())) {
+                logger.warn("Stripe borrow payment verification failed: customer mismatch for listing={} borrower={} token={} expectedCustomer={} actualCustomer={}",
+                        listing != null ? listing.getId() : null,
+                        borrower != null ? borrower.getId() : null,
+                        paymentToken,
+                        borrower.getStripeCustomerId(),
+                        intent.getCustomer());
                 return false;
             }
             java.util.Map<String, String> metadata = intent.getMetadata();
@@ -133,12 +149,25 @@ public class ListingService {
                 String listingId = metadata.get("listingId");
                 String borrowerId = metadata.get("borrowerId");
                 if (listingId != null && listing != null && listing.getId() != null && !listing.getId().toString().equals(listingId)) {
+                    logger.warn("Stripe borrow payment verification failed: listing metadata mismatch expected={} actual={} token={}",
+                            listing.getId(),
+                            listingId,
+                            paymentToken);
                     return false;
                 }
                 if (borrowerId != null && borrower != null && borrower.getId() != null && !borrower.getId().toString().equals(borrowerId)) {
+                    logger.warn("Stripe borrow payment verification failed: borrower metadata mismatch expected={} actual={} token={}",
+                            borrower.getId(),
+                            borrowerId,
+                            paymentToken);
                     return false;
                 }
             }
+            logger.info("Stripe borrow payment verified for listing={} borrower={} token={} expectedAmount={}",
+                    listing != null ? listing.getId() : null,
+                    borrower != null ? borrower.getId() : null,
+                    paymentToken,
+                    expectedAmount);
             return true;
         } catch (StripeException ex) {
             logger.warn("Stripe borrow payment verification failed for listing={} borrower={} token={} reason={}",
