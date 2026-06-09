@@ -78,7 +78,7 @@
 
         <div *ngIf="isAutoApprove" class="absolute top-6 right-6 flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md font-bold text-xs uppercase tracking-wide border border-white/20">
           <lucide-icon [img]="Zap" [size]="14"></lucide-icon>
-          Instant Book
+          {{ i18n.t('listing.book_now') }}
         </div>
       </div>
       
@@ -522,7 +522,7 @@
                     <ng-container *ngIf="!borrowing">
                       <ng-container *ngIf="isAutoApprove; else nonInstant">
                         <lucide-icon [img]="Zap" [size]="20" class="mr-2 text-amber-300"></lucide-icon>
-                        Instant Book
+                        {{ i18n.t('listing.book_now') }}
                       </ng-container>
                       <ng-template #nonInstant>
                         <lucide-icon [img]="Calendar" [size]="20" class="mr-2"></lucide-icon>
