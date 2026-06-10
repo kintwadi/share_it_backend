@@ -1,4 +1,4 @@
-﻿# Vicinity24 Client
+# Vicinity24 Client
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
 
@@ -14,33 +14,40 @@ Notes:
   - `TENANT_ID=<tenant-id>`
   - optional `TENANT_HEADER_NAME=X-Tenant-ID`
 
-## Frontend .env
+## Runtime config
 
-The frontend runtime generator now reads:
+- Web uses the tracked file `frontend/public/env.js`.
+- Android uses `frontend/.env.android`.
 
-- `frontend/.env`
-- `frontend/.env.local`
+### Web
 
-Create your local file by copying [`.env.template`](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/.env.template):
+Edit `frontend/public/env.js` directly:
+
+```js
+window.__env = window.__env || {};
+window.__env.API_URL = "/api/v1";
+window.__env.TENANT_HEADER_NAME = "X-Tenant-ID";
+window.__env.TENANT_ID = "";
+```
+
+### Android
+
+Create `frontend/.env.android` by copying [`.env.android.template`](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/.env.android.template):
 
 ```bash
 cd frontend
-cp .env.template .env
+cp .env.android.template .env.android
 ```
 
 Example values:
 
 ```bash
-API_URL=/api/v1
-TENANT_HEADER_NAME=X-Tenant-ID
-TENANT_ID=vicinity24_tenant_a
+ANDROID_API_URL=http://192.168.178.114:8081/api/v1
+ANDROID_TENANT_HEADER_NAME=X-Tenant-ID
+ANDROID_TENANT_ID=vicinity24_tenant_a
 ```
 
-Priority order:
-
-- real shell environment variables win first
-- then `frontend/.env`
-- then `frontend/.env.local`
+`npm start` and `npm run build` no longer rewrite `frontend/public/env.js`.
 
 ## Code scaffolding
 
@@ -61,4 +68,3 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-

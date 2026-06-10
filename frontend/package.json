@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "node scripts/write-env.cjs && ng serve --proxy-config proxy.conf.json",
-    "prebuild": "node scripts/write-env.cjs",
+    "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "build:android": "node scripts/build-android.cjs",
     "build:android:remote": "node scripts/build-android.cjs --remote",
