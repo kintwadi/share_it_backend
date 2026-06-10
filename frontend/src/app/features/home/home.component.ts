@@ -11,6 +11,7 @@ import { ButtonComponent } from '../../shared/components/button/button';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
+import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
 
 @Component({
   selector: 'app-home',
@@ -25,6 +26,7 @@ export class HomeComponent implements OnInit {
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
   locationApi = inject(LocationApiService);
+  platformGeolocation = inject(PlatformGeolocationService);
 
   readonly Search = Search;
   readonly Filter = Filter;
@@ -273,12 +275,6 @@ export class HomeComponent implements OnInit {
   private async initBorrowerLocation() {
     if (this.borrowerLat != null && this.borrowerLng != null) return;
 
-    if (!('geolocation' in navigator)) {
-      this.clearBorrowerLocation();
-      this.locationDenied = true;
-      return;
-    }
-
     try {
       const status = await (navigator as any)?.permissions?.query?.({ name: 'geolocation' });
       if (status?.state === 'denied') {
@@ -302,8 +298,10 @@ export class HomeComponent implements OnInit {
     } catch { }
 
     try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+      const pos = await this.platformGeolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 60000
       });
       this.setBorrowerLocation(pos.coords.latitude, pos.coords.longitude, 'Current location');
       this.locationDenied = false;
