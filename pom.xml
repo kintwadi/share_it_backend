@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.vicinity24</groupId>
+  <groupId>com.vicinity24.api.core</groupId>
   <artifactId>vicinity24-core-api</artifactId>
   <version>1.0.0</version>
   <name>vicinity24-core-api</name>
@@ -237,7 +237,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
         <configuration>
-          <mainClass>com.vicinity24.api.Vicinity24CoreApiApplication</mainClass>
+          <mainClass>com.vicinity24.api.core.Vicinity24CoreApiApplication</mainClass>
           <executable>true</executable>
         </configuration>
         <executions>
