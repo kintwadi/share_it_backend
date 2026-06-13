@@ -1,0 +1,30 @@
+<section class="calculator">
+  <h3>Rent-to-Own</h3>
+
+  <p *ngIf="!rentToOwnEligible" class="muted">This bicycle is currently rental-only.</p>
+
+  <ng-container *ngIf="rentToOwnEligible">
+    <p class="muted">Apply prior rental spend toward the retail purchase price.</p>
+
+    <div class="row">
+      <span>Retail price</span>
+      <strong>{{ retailPurchasePrice ?? 0 | currency:'EUR' }}</strong>
+    </div>
+
+    <div class="row" *ngIf="quote">
+      <span>Rental credit applied</span>
+      <strong>- {{ quote.rentalCreditApplied | currency:(quote.currency || 'EUR') }}</strong>
+    </div>
+
+    <div class="row total" *ngIf="quote">
+      <span>Guaranteed purchase price</span>
+      <strong>{{ quote.settlementAmount | currency:(quote.currency || 'EUR') }}</strong>
+    </div>
+
+    <button type="button" (click)="loadQuote()" [disabled]="loading">
+      {{ loading ? 'Loading quote...' : 'Refresh quote' }}
+    </button>
+
+    <p *ngIf="error" class="error">{{ error }}</p>
+  </ng-container>
+</section>

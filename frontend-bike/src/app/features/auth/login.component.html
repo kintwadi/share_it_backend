@@ -1,0 +1,27 @@
+<section class="auth-shell">
+  <div class="auth-card">
+    <p class="eyebrow">Bike Login</p>
+    <h1>Welcome back</h1>
+    <p class="copy">Use your dedicated bike account to browse inventory, subscribe, and manage bike listings.</p>
+
+    <form class="auth-form" (ngSubmit)="submit()">
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" [(ngModel)]="email" required />
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" [(ngModel)]="password" required />
+      </label>
+
+      <button type="submit" [disabled]="loading">{{ loading ? 'Signing in...' : 'Login' }}</button>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <div class="links">
+      <a routerLink="/password-recovery">Forgot password?</a>
+      <a routerLink="/signup">Create account</a>
+    </div>
+  </div>
+</section>

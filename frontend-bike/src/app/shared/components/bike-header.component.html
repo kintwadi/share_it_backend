@@ -1,0 +1,30 @@
+<header class="header">
+  <div class="inner">
+    <a class="brand" routerLink="/">
+      <span class="brand-mark">V24</span>
+      <span class="brand-copy">
+        <strong>Vicinity24 Bike</strong>
+        <small>Independent bicycle marketplace</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+      <a routerLink="/bikes" routerLinkActive="active">Discovery</a>
+      <a routerLink="/listings/new" routerLinkActive="active">List a Bike</a>
+      <a routerLink="/subscription" routerLinkActive="active">Subscription</a>
+    </nav>
+
+    <div class="actions" *ngIf="user as current; else guestLinks">
+      <span class="welcome">{{ current.name }}</span>
+      <button type="button" (click)="logout()">Logout</button>
+    </div>
+
+    <ng-template #guestLinks>
+      <div class="actions">
+        <a class="text-link" routerLink="/login">Login</a>
+        <a class="cta" routerLink="/signup">Signup</a>
+      </div>
+    </ng-template>
+  </div>
+</header>

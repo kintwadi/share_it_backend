@@ -1,0 +1,110 @@
+<section class="listing-shell">
+  <div class="form-card">
+    <p class="eyebrow">Bike Listing</p>
+    <h1>Submit bike inventory</h1>
+    <p>Create bike listings independently from the main frontend.</p>
+
+    <form class="listing-form" (ngSubmit)="submit()">
+      <label>
+        <span>Title</span>
+        <input type="text" name="title" [(ngModel)]="form.title" required />
+      </label>
+
+      <label>
+        <span>Description</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="4" required></textarea>
+      </label>
+
+      <div class="two-up">
+        <label>
+          <span>Type</span>
+          <select name="type" [(ngModel)]="form.type">
+            <option value="LEND">Lend</option>
+            <option value="SELL">Sell</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Hourly rate</span>
+          <input type="number" name="hourlyRate" [(ngModel)]="form.hourlyRate" min="0" />
+        </label>
+      </div>
+
+      <label>
+        <span>Primary image URL</span>
+        <input type="url" name="imageUrl" [(ngModel)]="form.imageUrl" />
+      </label>
+
+      <label>
+        <span>Gallery URLs (one per line)</span>
+        <textarea name="gallery" [(ngModel)]="galleryText" rows="3"></textarea>
+      </label>
+
+      <div class="two-up">
+        <label>
+          <span>Street</span>
+          <input type="text" name="streetAddress" [(ngModel)]="form.streetAddress" />
+        </label>
+
+        <label>
+          <span>Postal code</span>
+          <input type="text" name="postalCode" [(ngModel)]="form.postalCode" />
+        </label>
+      </div>
+
+      <div class="two-up">
+        <label>
+          <span>City</span>
+          <input type="text" name="city" [(ngModel)]="form.city" />
+        </label>
+
+        <label>
+          <span>Country</span>
+          <input type="text" name="country" [(ngModel)]="form.country" />
+        </label>
+      </div>
+
+      <div class="two-up">
+        <label class="toggle">
+          <input type="checkbox" name="autoApprove" [(ngModel)]="form.autoApprove" />
+          <span>Auto approve requests</span>
+        </label>
+
+        <label class="toggle">
+          <input type="checkbox" name="insuranceRequired" [(ngModel)]="form.insuranceRequired" />
+          <span>Insurance required</span>
+        </label>
+      </div>
+
+      <button type="submit" [disabled]="loading">{{ loading ? 'Submitting...' : 'Create listing' }}</button>
+      <p class="success" *ngIf="success">{{ success }}</p>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+  </div>
+
+  <div class="list-card">
+    <div class="list-head">
+      <div>
+        <p class="eyebrow">Current Listings</p>
+        <h2>Your bike inventory</h2>
+      </div>
+    </div>
+
+    <p *ngIf="listLoading">Loading your listings...</p>
+
+    <div class="inventory" *ngIf="!listLoading">
+      <article class="inventory-item" *ngFor="let listing of listings">
+        <div>
+          <h3>{{ listing.title }}</h3>
+          <p>{{ listing.description }}</p>
+        </div>
+        <div class="meta">
+          <span>{{ listing.type || 'LEND' }}</span>
+          <span>{{ (listing.hourlyRate ?? 0) | currency:'EUR' }}</span>
+        </div>
+      </article>
+
+      <p *ngIf="!listings.length" class="empty">No partner bike listings found for this account yet.</p>
+    </div>
+  </div>
+</section>

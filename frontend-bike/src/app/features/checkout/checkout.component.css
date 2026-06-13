@@ -1,0 +1,64 @@
+.checkout {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 220px);
+}
+
+.summary {
+  width: min(560px, 100%);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  border: 1px solid #d9e2ec;
+  background: #fff;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.05);
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: #2563eb;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+}
+
+.summary h1,
+.summary p {
+  margin: 0;
+}
+
+.summary p + .fact,
+.summary p + button,
+.fact + .fact {
+  margin-top: 1rem;
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+button {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  cursor: pointer;
+}
+
+.error {
+  margin-top: 1rem;
+  color: #b91c1c;
+}
+
+a {
+  display: inline-block;
+  margin-top: 1rem;
+  color: #2563eb;
+  text-decoration: none;
+}

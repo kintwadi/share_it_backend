@@ -1,0 +1,40 @@
+<section class="hero">
+  <div class="copy">
+    <p class="eyebrow">Independent Frontend</p>
+    <h1>Vicinity24 Bike runs as its own standalone customer experience.</h1>
+    <p class="lede">
+      Discover ready-to-ride inventory, onboard new riders, recover passwords, subscribe, and launch checkout flows
+      without coupling this UX to the main marketplace frontend.
+    </p>
+    <div class="actions">
+      <a class="primary" routerLink="/bikes">Browse Bikes</a>
+      <a class="secondary" routerLink="/signup">Create Bike Account</a>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Bike-only capabilities</h2>
+    <ul>
+      <li>Dedicated signup, login, and password recovery</li>
+      <li>Standalone discovery, listing detail, and rent-to-own quote flow</li>
+      <li>Bike-only subscription and checkout screens</li>
+      <li>Separate listing submission workflow for bike inventory</li>
+    </ul>
+  </div>
+</section>
+
+<section class="featured">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Featured Inventory</p>
+      <h2>Currently seeded bikes</h2>
+    </div>
+    <a routerLink="/bikes">View all bikes</a>
+  </div>
+
+  <p *ngIf="loading">Loading featured bikes...</p>
+
+  <div class="grid" *ngIf="!loading">
+    <app-bike-card *ngFor="let bike of featuredBikes" [bike]="bike" />
+  </div>
+</section>

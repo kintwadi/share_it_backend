@@ -1,0 +1,12 @@
+<a class="card" [routerLink]="['/bikes', bike.id]">
+  <img *ngIf="bike.imageUrl" [src]="bike.imageUrl" [alt]="bike.title" />
+  <div class="body">
+    <p class="eyebrow">{{ bike.bikeType || 'Bike' }}</p>
+    <h3>{{ bike.title }}</h3>
+    <p>{{ bike.description }}</p>
+    <div class="meta">
+      <span>{{ bike.city || 'Germany' }}</span>
+      <span>{{ (bike.hourlyRate ?? 0) | currency:'EUR' }}</span>
+    </div>
+  </div>
+</a>

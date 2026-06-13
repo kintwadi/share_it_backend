@@ -1,0 +1,43 @@
+<section class="auth-shell">
+  <div class="auth-card">
+    <p class="eyebrow">Bike Signup</p>
+    <h1>Create your bike account</h1>
+    <p class="copy">Register independently from the main marketplace and stay inside the bike-only experience.</p>
+
+    <form class="auth-form" (ngSubmit)="submit()">
+      <label>
+        <span>Full name</span>
+        <input type="text" name="name" [(ngModel)]="name" required />
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" [(ngModel)]="email" required />
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" [(ngModel)]="password" minlength="6" required />
+      </label>
+
+      <label>
+        <span>Phone</span>
+        <input type="text" name="phone" [(ngModel)]="phone" />
+      </label>
+
+      <label>
+        <span>Address</span>
+        <input type="text" name="address" [(ngModel)]="address" />
+      </label>
+
+      <button type="submit" [disabled]="loading">{{ loading ? 'Creating account...' : 'Signup' }}</button>
+      <p class="success" *ngIf="success">{{ success }}</p>
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <div class="links">
+      <a routerLink="/login">Already have an account?</a>
+      <a routerLink="/bikes">Browse first</a>
+    </div>
+  </div>
+</section>

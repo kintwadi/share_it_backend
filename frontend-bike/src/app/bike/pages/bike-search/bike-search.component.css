@@ -1,0 +1,73 @@
+.bike-search {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.hero h1,
+.hero p {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.filters input,
+.filters button {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+}
+
+.filters button {
+  background: #0f172a;
+  color: #fff;
+  border: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #d9e2ec;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.card-body {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.card-body h2,
+.card-body p {
+  margin: 0;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  color: #475569;
+  font-size: 0.95rem;
+}

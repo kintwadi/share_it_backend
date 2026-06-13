@@ -1,0 +1,29 @@
+<section class="bike-search">
+  <header class="hero">
+    <p class="eyebrow">Bicycle Vertical</p>
+    <h1>Find ready-to-ride bikes and workshop-prep inventory.</h1>
+  </header>
+
+  <form class="filters" (ngSubmit)="load()">
+    <input type="text" [(ngModel)]="search" name="search" placeholder="Search bikes" />
+    <input type="text" [(ngModel)]="frameSize" name="frameSize" placeholder="Frame size" />
+    <input type="text" [(ngModel)]="bikeType" name="bikeType" placeholder="Bike type" />
+    <button type="submit">Search</button>
+  </form>
+
+  <p *ngIf="loading">Loading bicycle catalog...</p>
+
+  <div class="grid" *ngIf="!loading">
+    <a class="card" *ngFor="let bike of bikes" [routerLink]="['/bikes', bike.id]">
+      <img *ngIf="bike.imageUrl" [src]="bike.imageUrl" [alt]="bike.title" />
+      <div class="card-body">
+        <h2>{{ bike.title }}</h2>
+        <p>{{ bike.description }}</p>
+        <div class="meta">
+          <span>{{ bike.bikeType || 'Bike' }}</span>
+          <span>{{ bike.frameSize || 'n/a' }}</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>

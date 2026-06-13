@@ -1,0 +1,32 @@
+<section class="bike-detail" *ngIf="!loading && bike as current; else stateTpl">
+  <a routerLink="/bikes" class="back-link">Back to bikes</a>
+
+  <div class="hero">
+    <img *ngIf="current.imageUrl" [src]="current.imageUrl" [alt]="current.title" />
+    <div class="hero-copy">
+      <p class="eyebrow">{{ current.bikeType || 'Bike' }}</p>
+      <h1>{{ current.title }}</h1>
+      <p>{{ current.description }}</p>
+      <div class="stats">
+        <span>Frame: {{ current.frameSize || 'n/a' }}</span>
+        <span>Prep: {{ current.assemblyBufferMinutes || 0 }} min</span>
+        <span>Retail: {{ (current.retailPurchasePrice ?? 0) | currency:'EUR' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <app-rent-to-own-calculator
+      [bikeId]="current.id"
+      [retailPurchasePrice]="current.retailPurchasePrice"
+      [rentToOwnEligible]="current.rentToOwnEligible" />
+    <app-handover-checklist [bikeTitle]="current.title" />
+  </div>
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">Loading bike details...</p>
+    <p *ngIf="!loading && error">{{ error }}</p>
+  </section>
+</ng-template>

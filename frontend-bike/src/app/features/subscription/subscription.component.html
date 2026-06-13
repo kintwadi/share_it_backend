@@ -1,0 +1,34 @@
+<section class="subscription">
+  <header class="hero">
+    <p class="eyebrow">Bike Subscription</p>
+    <h1>Choose the plan for your dedicated bike experience.</h1>
+    <p>Subscriptions stay branded and isolated inside the new bike-only frontend.</p>
+  </header>
+
+  <p *ngIf="loading">Loading subscription configuration...</p>
+
+  <div class="grid" *ngIf="!loading && config.enabled">
+    <article class="plan" *ngIf="config.starter">
+      <p class="plan-name">Starter</p>
+      <h2>Get started</h2>
+      <p>Ideal for discovery and lightweight rider access.</p>
+      <a routerLink="/checkout" [queryParams]="{ plan: 'starter' }">Continue to checkout</a>
+    </article>
+
+    <article class="plan featured" *ngIf="config.plus">
+      <p class="plan-name">Plus</p>
+      <h2>Operational control</h2>
+      <p>Designed for recurring bike operations and marketplace growth.</p>
+      <a routerLink="/checkout" [queryParams]="{ plan: 'plus' }">Continue to checkout</a>
+    </article>
+
+    <article class="plan" *ngIf="config.pro">
+      <p class="plan-name">Pro</p>
+      <h2>Full deployment</h2>
+      <p>Best for partners running larger catalog and handover operations.</p>
+      <a routerLink="/checkout" [queryParams]="{ plan: 'pro' }">Continue to checkout</a>
+    </article>
+  </div>
+
+  <p *ngIf="!loading && !config.enabled" class="empty">Subscription sales are currently disabled.</p>
+</section>
