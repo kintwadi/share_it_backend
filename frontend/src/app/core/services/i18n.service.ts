@@ -622,7 +622,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'home.location.placeholder_fallback': 'Enter City or Postal Code...',
     'home.location.osm_attrib': 'Data © OpenStreetMap contributors',
 
-    'app.brand': 'Vicinity24',
+    'app.brand': 'v24pool',
     'nav.partner': 'Partner',
 
     'new_item.title': 'Create a listing',
@@ -935,7 +935,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'footer.privacy': 'Privacy Policy',
     'footer.cookies': 'Cookie Notice',
     'footer.terms': 'Terms',
-    'footer.copyright': 'Vicinity24 © 2026. All rights reserved.',
+    'footer.copyright': 'v24pool © 2026. All rights reserved.',
     'legal.back_to_discover': 'Back to Discover',
 
     'terms.title': 'Terms',
@@ -979,7 +979,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'privacy.sharing.title': 'Data Sharing',
     'privacy.sharing.text': 'We may share data with service providers required to run the platform (for example: hosting, email, payments), and when required by law.',
     'privacy.contact.title': 'Contact',
-    'privacy.contact.text': 'If you have questions about this policy, contact the Vicinity24 team.',
+    'privacy.contact.text': 'If you have questions about this policy, contact the v24pool team.',
 
     'cookies.title': 'Cookie Notice',
     'cookies.intro': 'This notice explains how ShareIt uses cookies and similar storage technologies.',
@@ -1613,7 +1613,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'home.location.placeholder_fallback': 'Introduza cidade ou CEP...',
     'home.location.osm_attrib': 'Dados © contribuidores do OpenStreetMap',
 
-    'app.brand': 'Vicinity24',
+    'app.brand': 'v24pool',
     'nav.partner': 'Parceiro',
 
     'new_item.title': 'Criar anúncio',
@@ -1926,7 +1926,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'footer.privacy': 'Política de Privacidade',
     'footer.cookies': 'Aviso de Cookies',
     'footer.terms': 'Termos',
-    'footer.copyright': 'Vicinity24 © 2026. Todos os direitos reservados.',
+    'footer.copyright': 'v24pool © 2026. Todos os direitos reservados.',
     'legal.back_to_discover': 'Voltar à descoberta',
 
     'terms.title': 'Termos',
@@ -1970,7 +1970,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'privacy.sharing.title': 'Partilha de Dados',
     'privacy.sharing.text': 'Podemos partilhar dados com fornecedores necessários para operar a plataforma (por exemplo: alojamento, email, pagamentos) e quando exigido por lei.',
     'privacy.contact.title': 'Contacto',
-    'privacy.contact.text': 'Se tiver dúvidas sobre esta política, contacte a equipa do Vicinity24.',
+    'privacy.contact.text': 'Se tiver dúvidas sobre esta política, contacte a equipa do v24pool.',
 
     'cookies.title': 'Aviso de Cookies',
     'cookies.intro': 'Este aviso explica como o ShareIt utiliza cookies e tecnologias semelhantes.',
@@ -2604,7 +2604,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'home.location.placeholder_fallback': 'Stadt oder PLZ eingeben...',
     'home.location.osm_attrib': 'Daten © OpenStreetMap-Mitwirkende',
 
-    'app.brand': 'Vicinity24',
+    'app.brand': 'v24pool',
     'nav.partner': 'Partner',
 
     'new_item.title': 'Anzeige erstellen',
@@ -2917,7 +2917,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'footer.privacy': 'Datenschutzerklärung',
     'footer.cookies': 'Cookie-Hinweis',
     'footer.terms': 'AGB',
-    'footer.copyright': 'Vicinity24 © 2026. Alle Rechte vorbehalten.',
+    'footer.copyright': 'v24pool © 2026. Alle Rechte vorbehalten.',
     'legal.back_to_discover': 'Zurück zur Übersicht',
 
     'terms.title': 'AGB',
@@ -2961,7 +2961,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'privacy.sharing.title': 'Datenweitergabe',
     'privacy.sharing.text': 'Wir können Daten an Dienstleister weitergeben, die für den Betrieb der Plattform erforderlich sind (z. B. Hosting, E-Mail, Zahlungen), sowie wenn gesetzlich erforderlich.',
     'privacy.contact.title': 'Kontakt',
-    'privacy.contact.text': 'Wenn du Fragen zu dieser Erklärung hast, kontaktiere das Vicinity24-Team.',
+    'privacy.contact.text': 'Wenn du Fragen zu dieser Erklärung hast, kontaktiere das v24pool-Team.',
 
     'cookies.title': 'Cookie-Hinweis',
     'cookies.intro': 'Dieser Hinweis erklärt, wie ShareIt Cookies und ähnliche Technologien verwendet.',
@@ -3100,3 +3100,4 @@ export class I18nService {
     return words.join(' ');
   }
 }
+

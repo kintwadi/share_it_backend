@@ -1,17 +1,30 @@
-<section class="checkout">
+﻿<section class="checkout">
   <div class="summary">
-    <p class="eyebrow">Bike Checkout</p>
-    <h1>Finalize your {{ plan | titlecase }} subscription</h1>
-    <p>This isolated frontend calls the existing checkout backend without relying on the main marketplace UI.</p>
-
-    <div class="fact">
-      <span>Signed in as</span>
-      <strong>{{ user?.email }}</strong>
+    <div class="summary-head">
+      <div>
+        <p class="eyebrow">Bike Checkout</p>
+        <h1>Finalize your {{ plan | titlecase }} subscription</h1>
+      </div>
+      <span class="checkout-pill">Secure redirect</span>
     </div>
 
-    <div class="fact">
-      <span>Plan</span>
-      <strong>{{ plan | titlecase }}</strong>
+    <p class="intro">This bike-only frontend creates the backend checkout session and redirects directly to Stripe.</p>
+
+    <div class="facts">
+      <div class="fact">
+        <span>Signed in as</span>
+        <strong>{{ user?.email }}</strong>
+      </div>
+
+      <div class="fact">
+        <span>Selected plan</span>
+        <strong>{{ plan | titlecase }}</strong>
+      </div>
+
+      <div class="fact">
+        <span>Experience</span>
+        <strong>Isolated bike storefront</strong>
+      </div>
     </div>
 
     <button type="button" (click)="startCheckout()" [disabled]="loading">

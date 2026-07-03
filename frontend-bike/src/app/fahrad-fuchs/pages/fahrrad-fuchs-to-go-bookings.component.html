@@ -1,0 +1,50 @@
+<section class="bookings-shell" *ngIf="!loading && store as currentStore; else stateTpl">
+  <section class="bookings-card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">{{ 'bookings.eyebrow' | t }}</p>
+        <h1>{{ 'bookings.title' | t }}</h1>
+      </div>
+      <a routerLink="/fahrad-fuchs">{{ 'bookings.back' | t }}</a>
+    </div>
+
+    <div class="empty-state" *ngIf="!bookings.length">
+      <strong>{{ 'bookings.emptyTitle' | t }}</strong>
+      <p>{{ 'bookings.emptyLead' | t }}</p>
+    </div>
+
+    <div class="booking-list" *ngIf="bookings.length">
+      <article
+        class="booking-card"
+        *ngFor="let booking of bookings"
+        [style.--brand-accent]="theme(booking).accent"
+        [style.--brand-soft]="theme(booking).soft"
+        [style.--brand-deep]="theme(booking).deep"
+        [style.--brand-muted]="theme(booking).muted">
+        <img [src]="booking.imageUrl" [alt]="booking.bikeTitle" />
+        <div class="booking-copy">
+          <p class="eyebrow">{{ booking.bookingReference }}</p>
+          <div class="booking-topline">
+            <span class="manufacturer">{{ manufacturer(booking) }}</span>
+            <span class="status-pill">{{ statusKey(booking) | t }}</span>
+          </div>
+          <h2>{{ booking.bikeTitle }}</h2>
+          <p>{{ booking.startDate | date:'mediumDate' }} - {{ booking.endDate | date:'mediumDate' }}</p>
+          <div class="booking-meta">
+            <span>{{ booking.frameSizeOption }}</span>
+            <span>{{ booking.totalAmount | currency:'EUR' }}</span>
+            <span>{{ 'bookings.showroomVisit' | t }}</span>
+          </div>
+          <a [routerLink]="['/fahrad-fuchs/bikes', booking.bikeSlug]">{{ 'bookings.exploreBike' | t }}</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">{{ 'bookings.loading' | t }}</p>
+    <p *ngIf="!loading && errorKey">{{ errorKey | t }}</p>
+  </section>
+</ng-template>

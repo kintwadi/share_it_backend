@@ -1,16 +1,47 @@
-<section class="bike-detail" *ngIf="!loading && bike as current; else stateTpl">
+﻿<section class="bike-detail" *ngIf="!loading && bike as current; else stateTpl">
   <a routerLink="/bikes" class="back-link">Back to bikes</a>
 
   <div class="hero">
-    <img *ngIf="current.imageUrl" [src]="current.imageUrl" [alt]="current.title" />
+    <div class="media-column">
+      <img *ngIf="current.imageUrl" [src]="current.imageUrl" [alt]="current.title" />
+      <div class="quick-facts">
+        <div>
+          <span>Inventory</span>
+          <strong>{{ current.inventoryStatus || 'Ready now' }}</strong>
+        </div>
+        <div>
+          <span>City</span>
+          <strong>{{ current.city || 'Germany' }}</strong>
+        </div>
+        <div>
+          <span>Frame</span>
+          <strong>{{ current.frameSize || 'Universal fit' }}</strong>
+        </div>
+      </div>
+    </div>
+
     <div class="hero-copy">
       <p class="eyebrow">{{ current.bikeType || 'Bike' }}</p>
       <h1>{{ current.title }}</h1>
-      <p>{{ current.description }}</p>
+      <p class="description">{{ current.description }}</p>
+
       <div class="stats">
-        <span>Frame: {{ current.frameSize || 'n/a' }}</span>
         <span>Prep: {{ current.assemblyBufferMinutes || 0 }} min</span>
         <span>Retail: {{ (current.retailPurchasePrice ?? 0) | currency:'EUR' }}</span>
+        <span *ngIf="current.rentToOwnEligible">Rent to own enabled</span>
+      </div>
+
+      <div class="info-panels">
+        <article>
+          <span class="panel-label">Operations</span>
+          <h2>Workshop-ready handover</h2>
+          <p>Track prep buffer, checklist completion, and delivery readiness in one isolated bike flow.</p>
+        </article>
+        <article>
+          <span class="panel-label">Commerce</span>
+          <h2>Flexible purchase path</h2>
+          <p>Use rent-to-own quotes and checkout journeys without relying on the main marketplace frontend.</p>
+        </article>
       </div>
     </div>
   </div>

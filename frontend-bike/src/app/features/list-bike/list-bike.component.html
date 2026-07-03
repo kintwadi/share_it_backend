@@ -1,82 +1,124 @@
-<section class="listing-shell">
+﻿<section class="listing-shell">
   <div class="form-card">
-    <p class="eyebrow">Bike Listing</p>
-    <h1>Submit bike inventory</h1>
-    <p>Create bike listings independently from the main frontend.</p>
+    <div class="form-head">
+      <div>
+        <p class="eyebrow">Bike Listing</p>
+        <h1>Submit bike inventory</h1>
+        <p>Create polished bike listings independently from the main frontend.</p>
+      </div>
+      <div class="head-chip">Partner workflow</div>
+    </div>
 
     <form class="listing-form" (ngSubmit)="submit()">
-      <label>
-        <span>Title</span>
-        <input type="text" name="title" [(ngModel)]="form.title" required />
-      </label>
+      <section class="form-section card-hover-surface">
+        <div class="section-head">
+          <div>
+            <span class="section-step">01</span>
+            <h2>Core listing</h2>
+          </div>
+          <p>Set the public-facing title, description, and pricing details riders see first.</p>
+        </div>
 
-      <label>
-        <span>Description</span>
-        <textarea name="description" [(ngModel)]="form.description" rows="4" required></textarea>
-      </label>
-
-      <div class="two-up">
         <label>
-          <span>Type</span>
-          <select name="type" [(ngModel)]="form.type">
-            <option value="LEND">Lend</option>
-            <option value="SELL">Sell</option>
-          </select>
+          <span>Title</span>
+          <input type="text" name="title" [(ngModel)]="form.title" required />
         </label>
 
         <label>
-          <span>Hourly rate</span>
-          <input type="number" name="hourlyRate" [(ngModel)]="form.hourlyRate" min="0" />
+          <span>Description</span>
+          <textarea name="description" [(ngModel)]="form.description" rows="4" required></textarea>
         </label>
+
+        <div class="two-up">
+          <label>
+            <span>Type</span>
+            <select name="type" [(ngModel)]="form.type">
+              <option value="LEND">Lend</option>
+              <option value="SELL">Sell</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Hourly rate</span>
+            <input type="number" name="hourlyRate" [(ngModel)]="form.hourlyRate" min="0" />
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section card-hover-surface">
+        <div class="section-head">
+          <div>
+            <span class="section-step">02</span>
+            <h2>Media</h2>
+          </div>
+          <p>Give each bike a strong cover image and optional gallery to improve conversion.</p>
+        </div>
+
+        <label>
+          <span>Primary image URL</span>
+          <input type="url" name="imageUrl" [(ngModel)]="form.imageUrl" />
+        </label>
+
+        <label>
+          <span>Gallery URLs (one per line)</span>
+          <textarea name="gallery" [(ngModel)]="galleryText" rows="3"></textarea>
+        </label>
+      </section>
+
+      <section class="form-section card-hover-surface">
+        <div class="section-head">
+          <div>
+            <span class="section-step">03</span>
+            <h2>Location and operations</h2>
+          </div>
+          <p>Define the location and request handling rules for the bike inventory workflow.</p>
+        </div>
+
+        <div class="two-up">
+          <label>
+            <span>Street</span>
+            <input type="text" name="streetAddress" [(ngModel)]="form.streetAddress" />
+          </label>
+
+          <label>
+            <span>Postal code</span>
+            <input type="text" name="postalCode" [(ngModel)]="form.postalCode" />
+          </label>
+        </div>
+
+        <div class="two-up">
+          <label>
+            <span>City</span>
+            <input type="text" name="city" [(ngModel)]="form.city" />
+          </label>
+
+          <label>
+            <span>Country</span>
+            <input type="text" name="country" [(ngModel)]="form.country" />
+          </label>
+        </div>
+
+        <div class="two-up options-row">
+          <label class="toggle">
+            <input type="checkbox" name="autoApprove" [(ngModel)]="form.autoApprove" />
+            <span>Auto approve requests</span>
+          </label>
+
+          <label class="toggle">
+            <input type="checkbox" name="insuranceRequired" [(ngModel)]="form.insuranceRequired" />
+            <span>Insurance required</span>
+          </label>
+        </div>
+      </section>
+
+      <div class="action-bar">
+        <div>
+          <strong>Ready to publish</strong>
+          <p>Submit the listing when the customer-facing content and operations details are complete.</p>
+        </div>
+        <button type="submit" [disabled]="loading">{{ loading ? 'Submitting...' : 'Create listing' }}</button>
       </div>
 
-      <label>
-        <span>Primary image URL</span>
-        <input type="url" name="imageUrl" [(ngModel)]="form.imageUrl" />
-      </label>
-
-      <label>
-        <span>Gallery URLs (one per line)</span>
-        <textarea name="gallery" [(ngModel)]="galleryText" rows="3"></textarea>
-      </label>
-
-      <div class="two-up">
-        <label>
-          <span>Street</span>
-          <input type="text" name="streetAddress" [(ngModel)]="form.streetAddress" />
-        </label>
-
-        <label>
-          <span>Postal code</span>
-          <input type="text" name="postalCode" [(ngModel)]="form.postalCode" />
-        </label>
-      </div>
-
-      <div class="two-up">
-        <label>
-          <span>City</span>
-          <input type="text" name="city" [(ngModel)]="form.city" />
-        </label>
-
-        <label>
-          <span>Country</span>
-          <input type="text" name="country" [(ngModel)]="form.country" />
-        </label>
-      </div>
-
-      <div class="two-up">
-        <label class="toggle">
-          <input type="checkbox" name="autoApprove" [(ngModel)]="form.autoApprove" />
-          <span>Auto approve requests</span>
-        </label>
-
-        <label class="toggle">
-          <input type="checkbox" name="insuranceRequired" [(ngModel)]="form.insuranceRequired" />
-          <span>Insurance required</span>
-        </label>
-      </div>
-
-      <button type="submit" [disabled]="loading">{{ loading ? 'Submitting...' : 'Create listing' }}</button>
       <p class="success" *ngIf="success">{{ success }}</p>
       <p class="error" *ngIf="error">{{ error }}</p>
     </form>
@@ -87,13 +129,17 @@
       <div>
         <p class="eyebrow">Current Listings</p>
         <h2>Your bike inventory</h2>
+        <p>Monitor the catalog you already pushed through the isolated bike app.</p>
       </div>
+      <div class="count-pill">{{ listings.length }} items</div>
     </div>
 
-    <p *ngIf="listLoading">Loading your listings...</p>
+    <app-metric-strip [items]="overviewMetrics" [compact]="true" />
+
+    <p class="state" *ngIf="listLoading">Loading your listings...</p>
 
     <div class="inventory" *ngIf="!listLoading">
-      <article class="inventory-item" *ngFor="let listing of listings">
+      <article class="inventory-item card-hover-surface" *ngFor="let listing of listings">
         <div>
           <h3>{{ listing.title }}</h3>
           <p>{{ listing.description }}</p>

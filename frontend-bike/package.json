@@ -7,8 +7,9 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json --port 4300",
     "build": "ng build",
-    "test:bike:headed": "node scripts/playwright-headed-bike-check.mjs",
-    "test:bike:headed:install": "npx playwright install chromium && npm run test:bike:headed"
+    "test:bike": "playwright test tests/fahrad-fuchs.spec.js --project=chrome",
+    "test:bike:headed": "playwright test tests/fahrad-fuchs.spec.js --headed --project=chrome",
+    "test:bike:headed:install": "npx playwright install chrome && npm run test:bike:headed"
   },
   "dependencies": {
     "@angular/common": "^21.2.6",

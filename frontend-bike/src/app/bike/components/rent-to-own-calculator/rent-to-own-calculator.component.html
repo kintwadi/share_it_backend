@@ -1,10 +1,13 @@
-<section class="calculator">
-  <h3>Rent-to-Own</h3>
+﻿<section class="calculator">
+  <div>
+    <p class="eyebrow">Commerce</p>
+    <h3>Rent-to-Own</h3>
+  </div>
 
-  <p *ngIf="!rentToOwnEligible" class="muted">This bicycle is currently rental-only.</p>
+  <p *ngIf="!rentToOwnEligible" class="muted">This bicycle is currently rental-only and is not eligible for the purchase conversion flow.</p>
 
   <ng-container *ngIf="rentToOwnEligible">
-    <p class="muted">Apply prior rental spend toward the retail purchase price.</p>
+    <p class="muted">Apply prior rental spend toward the retail purchase price and refresh the quote any time.</p>
 
     <div class="row">
       <span>Retail price</span>

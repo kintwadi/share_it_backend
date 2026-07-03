@@ -1,13 +1,14 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+﻿import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PartnerListingSummary } from '../../core/models/commerce.models';
 import { PartnerListingService } from '../../core/services/partner-listing.service';
+import { MetricStripComponent } from '../../shared/components/metric-strip.component';
 
 @Component({
   selector: 'app-list-bike',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, MetricStripComponent],
   templateUrl: './list-bike.component.html',
   styleUrl: './list-bike.component.css'
 })
@@ -37,6 +38,13 @@ export class ListBikeComponent implements OnInit {
   listLoading = true;
   error = '';
   success = '';
+
+  get overviewMetrics() {
+    return [
+      { value: String(this.listings.length), label: 'Total listings' },
+      { value: this.form.city || 'Berlin', label: 'Current base city' }
+    ];
+  }
 
   async ngOnInit(): Promise<void> {
     await this.loadListings();

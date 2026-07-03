@@ -1,43 +1,70 @@
-<section class="auth-shell">
-  <div class="auth-card">
-    <p class="eyebrow">Bike Signup</p>
-    <h1>Create your bike account</h1>
-    <p class="copy">Register independently from the main marketplace and stay inside the bike-only experience.</p>
+﻿<section class="auth-shell">
+  <div class="auth-layout">
+    <aside class="auth-aside">
+      <p class="eyebrow">Bike Signup</p>
+      <h2>Create your account and stay inside the bike-only journey.</h2>
+      <p class="aside-copy">Registration, discovery, subscriptions, and listing submission all stay scoped to the isolated bicycle frontend.</p>
 
-    <form class="auth-form" (ngSubmit)="submit()">
-      <label>
-        <span>Full name</span>
-        <input type="text" name="name" [(ngModel)]="name" required />
-      </label>
+      <ul class="mini-list">
+        <li>Dedicated bike discovery and listing detail flow</li>
+        <li>Separate subscription and checkout journey</li>
+        <li>Password recovery without switching apps</li>
+      </ul>
 
-      <label>
-        <span>Email</span>
-        <input type="email" name="email" [(ngModel)]="email" required />
-      </label>
+      <div class="tip-box">
+        <strong>What happens next</strong>
+        <p>Create your account, browse seeded inventory, then move into subscription or listing workflows when you are ready.</p>
+      </div>
+    </aside>
 
-      <label>
-        <span>Password</span>
-        <input type="password" name="password" [(ngModel)]="password" minlength="6" required />
-      </label>
+    <div class="auth-card">
+      <p class="eyebrow">Create account</p>
+      <h1>Join the bike storefront</h1>
+      <p class="copy">Register independently from the main marketplace and keep your full experience inside `frontend-bike`.</p>
 
-      <label>
-        <span>Phone</span>
-        <input type="text" name="phone" [(ngModel)]="phone" />
-      </label>
+      <form class="auth-form" (ngSubmit)="submit()">
+        <div class="field-group two-up">
+          <label>
+            <span>Full name</span>
+            <input type="text" name="name" [(ngModel)]="name" required />
+          </label>
 
-      <label>
-        <span>Address</span>
-        <input type="text" name="address" [(ngModel)]="address" />
-      </label>
+          <label>
+            <span>Phone</span>
+            <input type="text" name="phone" [(ngModel)]="phone" />
+          </label>
+        </div>
 
-      <button type="submit" [disabled]="loading">{{ loading ? 'Creating account...' : 'Signup' }}</button>
-      <p class="success" *ngIf="success">{{ success }}</p>
-      <p class="error" *ngIf="error">{{ error }}</p>
-    </form>
+        <div class="field-group">
+          <label>
+            <span>Email</span>
+            <input type="email" name="email" [(ngModel)]="email" required />
+          </label>
 
-    <div class="links">
-      <a routerLink="/login">Already have an account?</a>
-      <a routerLink="/bikes">Browse first</a>
+          <label>
+            <span>Password</span>
+            <input type="password" name="password" [(ngModel)]="password" minlength="6" required />
+            <small class="helper">Use at least 6 characters for the current backend password policy.</small>
+          </label>
+
+          <label>
+            <span>Address</span>
+            <input type="text" name="address" [(ngModel)]="address" />
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button type="submit" [disabled]="loading">{{ loading ? 'Creating account...' : 'Create bike account' }}</button>
+        </div>
+
+        <p class="success" *ngIf="success">{{ success }}</p>
+        <p class="error" *ngIf="error">{{ error }}</p>
+      </form>
+
+      <div class="links">
+        <a routerLink="/login">Already have an account?</a>
+        <a routerLink="/bikes">Browse first</a>
+      </div>
     </div>
   </div>
 </section>

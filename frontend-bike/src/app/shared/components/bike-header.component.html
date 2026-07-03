@@ -1,30 +1,50 @@
 <header class="header">
   <div class="inner">
-    <a class="brand" routerLink="/">
-      <span class="brand-mark">V24</span>
+    <a class="brand" routerLink="/bikes/fahrrad-fuchs" (click)="closeMenu()">
       <span class="brand-copy">
-        <strong>Vicinity24 Bike</strong>
-        <small>Independent bicycle marketplace</small>
+        <strong>{{ 'nav.brand' | t }}</strong>
+        <small>{{ 'nav.poweredBy' | t }}</small>
       </span>
     </a>
 
-    <nav class="nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-      <a routerLink="/bikes" routerLinkActive="active">Discovery</a>
-      <a routerLink="/listings/new" routerLinkActive="active">List a Bike</a>
-      <a routerLink="/subscription" routerLinkActive="active">Subscription</a>
-    </nav>
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen"
+      [attr.aria-label]="'nav.toggleMenu' | t">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    <div class="actions" *ngIf="user as current; else guestLinks">
-      <span class="welcome">{{ current.name }}</span>
-      <button type="button" (click)="logout()">Logout</button>
-    </div>
+    <div class="menu-panel" [class.open]="menuOpen">
+      <div class="actions toolbar">
+        <div class="language-switcher">
+          <label class="language-select-wrap">
+            <select
+              class="language-select"
+              [value]="activeLanguage"
+              [attr.aria-label]="'common.language' | t"
+              (change)="setLanguage($any($event.target).value)">
+              <option value="en">🇺🇸 {{ 'common.english' | t }}</option>
+              <option value="de">🇩🇪 {{ 'common.german' | t }}</option>
+            </select>
+          </label>
+        </div>
 
-    <ng-template #guestLinks>
-      <div class="actions">
-        <a class="text-link" routerLink="/login">Login</a>
-        <a class="cta" routerLink="/signup">Signup</a>
+        <ng-container *ngIf="user as current; else guestLinks">
+          <div class="account-pill">
+            <span class="account-label">{{ 'nav.signedIn' | t }}</span>
+            <strong>{{ current.name }}</strong>
+          </div>
+          <button type="button" class="compact-cta" (click)="logout()">{{ 'nav.logout' | t }}</button>
+        </ng-container>
+
+        <ng-template #guestLinks>
+          <a class="cta compact-cta" routerLink="/login" (click)="closeMenu()">{{ 'nav.connect' | t }}</a>
+        </ng-template>
       </div>
-    </ng-template>
+    </div>
   </div>
 </header>

@@ -1,34 +1,71 @@
-<section class="subscription">
+﻿<section class="subscription">
   <header class="hero">
-    <p class="eyebrow">Bike Subscription</p>
-    <h1>Choose the plan for your dedicated bike experience.</h1>
-    <p>Subscriptions stay branded and isolated inside the new bike-only frontend.</p>
+    <div>
+      <p class="eyebrow">Bike Subscription</p>
+      <h1>Choose the plan for your dedicated bike experience.</h1>
+      <p>Subscriptions stay branded, bike-first, and visually separate from the main marketplace experience.</p>
+    </div>
+    <div class="hero-note">
+      <span>Live backend driven</span>
+      <strong>{{ config.enabled ? 'Plans available' : 'Plans disabled' }}</strong>
+      <p>Pick the plan that matches your current stage, then continue directly into checkout.</p>
+    </div>
   </header>
 
-  <p *ngIf="loading">Loading subscription configuration...</p>
+  <p class="state" *ngIf="loading">Loading subscription configuration...</p>
 
   <div class="grid" *ngIf="!loading && config.enabled">
-    <article class="plan" *ngIf="config.starter">
+    <article class="plan card-hover-surface" *ngIf="config.starter">
       <p class="plan-name">Starter</p>
       <h2>Get started</h2>
+      <p class="price">EUR 0 entry</p>
       <p>Ideal for discovery and lightweight rider access.</p>
-      <a routerLink="/checkout" [queryParams]="{ plan: 'starter' }">Continue to checkout</a>
+      <ul>
+        <li>Catalog access</li>
+        <li>Basic rider onboarding</li>
+        <li>Bike storefront entry flow</li>
+      </ul>
+      <div class="plan-footer">
+        <span>Best for testing the bike storefront</span>
+        <a routerLink="/checkout" [queryParams]="{ plan: 'starter' }">Continue to checkout</a>
+      </div>
     </article>
 
-    <article class="plan featured" *ngIf="config.plus">
+    <article class="plan featured card-hover-surface" *ngIf="config.plus">
+      <div class="featured-badge">Recommended</div>
       <p class="plan-name">Plus</p>
       <h2>Operational control</h2>
+      <p class="price">Most popular</p>
       <p>Designed for recurring bike operations and marketplace growth.</p>
-      <a routerLink="/checkout" [queryParams]="{ plan: 'plus' }">Continue to checkout</a>
+      <ul>
+        <li>Dedicated customer experience</li>
+        <li>Subscription checkout flow</li>
+        <li>Bike listing operations</li>
+      </ul>
+      <div class="plan-footer">
+        <span>Best for active bike programs</span>
+        <a routerLink="/checkout" [queryParams]="{ plan: 'plus' }">Continue to checkout</a>
+      </div>
     </article>
 
-    <article class="plan" *ngIf="config.pro">
+    <article class="plan card-hover-surface" *ngIf="config.pro">
       <p class="plan-name">Pro</p>
       <h2>Full deployment</h2>
+      <p class="price">Enterprise-ready</p>
       <p>Best for partners running larger catalog and handover operations.</p>
-      <a routerLink="/checkout" [queryParams]="{ plan: 'pro' }">Continue to checkout</a>
+      <ul>
+        <li>Advanced bike workflows</li>
+        <li>Expanded partner operations</li>
+        <li>Higher-volume storefront use</li>
+      </ul>
+      <div class="plan-footer">
+        <span>Best for scaled operations</span>
+        <a routerLink="/checkout" [queryParams]="{ plan: 'pro' }">Continue to checkout</a>
+      </div>
     </article>
   </div>
+
+  <app-metric-strip *ngIf="!loading && config.enabled" [items]="planMetrics" [compact]="true" />
 
   <p *ngIf="!loading && !config.enabled" class="empty">Subscription sales are currently disabled.</p>
 </section>

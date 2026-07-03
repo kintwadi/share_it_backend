@@ -1,0 +1,764 @@
+{
+    "defaultLanguage":  "en",
+    "supportedLanguages":  [
+                               {
+                                   "code":  "en",
+                                   "label":  "English"
+                               },
+                               {
+                                   "code":  "de",
+                                   "label":  "Deutsch"
+                               },
+                               {
+                                   "code":  "pt",
+                                   "label":  "Portugues"
+                               },
+                               {
+                                   "code":  "fr",
+                                   "label":  "Francais"
+                               }
+                           ],
+    "section-visiility":  {
+                              "nav":  true,
+                              "hero":  true,
+                              "platformSection":  true,
+                              "testimonial":  false,
+                              "finalCta":  false,
+                              "footer":  true
+                          },
+    "item-visiility":  {
+                           "navLinks":  {
+                                            "solutions":  true,
+                                            "contact":  true
+                                        },
+                           "platformCards":  {
+                                                 "sas":  true,
+                                                 "onlineStore":  false,
+                                                 "linkedStore":  true,
+                                                 "consulting":  false
+                                             },
+                           "testimonial":  true,
+                           "footerGroups":  {
+                                                "product":  true,
+                                                "company":  true
+                                            }
+                       },
+    "locales":  {
+                    "en":  {
+                               "nav":  {
+                                           "brand":  {
+                                                         "mark":  "V",
+                                                         "name":  "Vicinity24",
+                                                         "ariaLabel":  "Vicinity24 home"
+                                                     },
+                                           "links":  [
+                                                         {
+                                                             "id":  "solutions",
+                                                             "label":  "Solutions",
+                                                             "href":  "#solutions"
+                                                         },
+                                                         {
+                                                             "id":  "about",
+                                                             "label":  "About Us",
+                                                             "href":  "/about"
+                                                         },
+                                                         {
+                                                             "id":  "contact",
+                                                             "label":  "Contact",
+                                                             "href":  "#contact"
+                                                         }
+                                                     ]
+                                       },
+                               "hero":  {
+                                            "showSection":  true,
+                                            "badge":  "Purpose-Built Software for SMBs",
+                                            "title":  "Unlock Shared Potential,",
+                                            "accent":  "Power Your Growth.",
+                                            "description":  "We build intelligent, resource-sharing software that helps small and medium businesses eliminate waste, streamline operations, and grow without the complexity of enterprise systems."
+                                        },
+                               "platformSection":  {
+                                                       "showSection":  true,
+                                                       "eyebrow":  "Our Platform",
+                                                       "title":  "Digital Solutions for Integrated Business Networks",
+                                                       "subtitle":  "From sharing resources within a single location to unifying your entire multi-location network.",
+                                                       "ctaLabel":  "Explore All Solutions",
+                                                       "ctaHref":  "#demo",
+                                                       "platforms":  [
+                                                                         {
+                                                                             "id":  "sas",
+                                                                             "label":  "SAS",
+                                                                             "title":  "SAS: The Sharing Economy Platform for Businesses",
+                                                                             "tagline":  "Share. Borrow. Save.",
+                                                                             "description":  "A powerful peer-to-peer platform designed to help businesses and individuals lend and borrow resources locally. Whether it\u0027s equipment, tools, or commercial assets, SAS makes it easy to reduce ownership costs, optimize usage, and build trust through a verified, transparent community.",
+                                                                             "features":  [
+                                                                                              "Proximity-based resource discovery",
+                                                                                              "Verified profiles \u0026 community reviews",
+                                                                                              "Secure transaction \u0026 usage tracking",
+                                                                                              "Cost-savings management tools"
+                                                                                          ],
+                                                                             "image":  "/images/sas-sharing-platform.svg",
+                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+                                                                             "link":  "https://v24pool.com",
+                                                                             "visible":  true
+                                                                         },
+                                                                         {
+                                                                             "id":  "onlineStore",
+                                                                             "label":  "Online Store",
+                                                                             "title":  "Customizable Online Store",
+                                                                             "tagline":  "Your brand. Your rules. Your margins.",
+                                                                             "description":  "Launch a high-converting, fully tailored e-commerce storefront built for serious retail operations. Match your brand identity precisely while delivering the frictionless checkout and backend operations your business demands.",
+                                                                             "features":  [
+                                                                                              "Drag-and-drop builder",
+                                                                                              "Local delivery routing",
+                                                                                              "Real-time inventory sync"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+                                                                             "alt":  "E-commerce analytics dashboard with sales metrics",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         },
+                                                                         {
+                                                                             "id":  "linkedStore",
+                                                                             "label":  "Linked-Store",
+                                                                             "title":  "Linked-Store: Unified Inventory for Multi-Location Success",
+                                                                             "tagline":  "One Network, One Unified Inventory.",
+                                                                             "description":  "A groundbreaking inventory network for multi-location retailers and partners. Pool and share stock across all locations to reduce overstock, fulfill orders from anywhere in your network, and provide a seamless shopping experience for your customers.",
+                                                                             "features":  [
+                                                                                              "Cross-location inventory pooling",
+                                                                                              "Smart, shared fulfillment routing",
+                                                                                              "Centralized reporting \u0026 analytics",
+                                                                                              "Network-wide customer access"
+                                                                                          ],
+                                                                             "image":  "/images/linked-store-network.svg",
+                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
+                                                                             "link":  "https://v24mart.com",
+                                                                             "visible":  true,
+                                                                             "ctaLabel":  "Book a demo"
+                                                                         },
+                                                                         {
+                                                                             "id":  "consulting",
+                                                                             "label":  "Consulting",
+                                                                             "title":  "Consulting \u0026 On-Demand Projects",
+                                                                             "tagline":  "Custom solutions for complex operations.",
+                                                                             "description":  "When you need more than a standard product, our expert team works with you to design and build custom software solutions. We tackle complex operational challenges with strategic consulting and dedicated development teams.",
+                                                                             "features":  [
+                                                                                              "Workflow automation",
+                                                                                              "Custom API integrations",
+                                                                                              "Dedicated project teams"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+                                                                             "alt":  "Business strategy consulting session with analytics",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         }
+                                                                     ]
+                                                   },
+                               "testimonial":  {
+                                                   "showSection":  true,
+                                                   "eyebrow":  "Customer Results",
+                                                   "title":  "Trusted by growing businesses nationwide",
+                                                   "quote":  "Linked-Store revolutionized our multi-location operations. By pooling inventory, we slashed carrying costs by 40% and boosted cross-store sales by 30% in just three months. It\u0027s the smart, shared infrastructure we needed.",
+                                                   "author":  "Sarah T.",
+                                                   "authorRole":  "COO of Regional Retail Group"
+                                               },
+                               "finalCta":  {
+                                                "showSection":  true,
+                                                "title":  "Ready to upgrade your business operations?",
+                                                "description":  "Join thousands of forward-thinking SMBs using Vicinity24 to cut costs, streamline operations, and scale with confidence.",
+                                                "primaryCta":  {
+                                                                   "label":  "Start Your Free Trial",
+                                                                   "href":  "#demo"
+                                                               },
+                                                "secondaryCta":  {
+                                                                     "label":  "Contact Sales",
+                                                                     "href":  "#contact"
+                                                                 }
+                                            },
+                               "footer":  {
+                                              "showSection":  true,
+                                              "brand":  {
+                                                            "mark":  "V",
+                                                            "name":  "Vicinity24",
+                                                            "ariaLabel":  "Vicinity24 home"
+                                                        },
+                                              "description":  "Intelligent software for the businesses that power the economy.",
+                                              "groups":  [
+                                                             {
+                                                                 "id":  "product",
+                                                                 "title":  "Product",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "SAS",
+                                                                                   "href":  "#solutions"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Linked-Store",
+                                                                                   "href":  "#solutions"
+                                                                               }
+                                                                           ]
+                                                             },
+                                                             {
+                                                                 "id":  "company",
+                                                                 "title":  "Company",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "About Us",
+                                                                                   "href":  "/about"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Privacy Policy",
+                                                                                   "href":  "#contact"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Terms of Service",
+                                                                                   "href":  "#contact"
+                                                                               }
+                                                                           ]
+                                                             }
+                                                         ],
+                                              "contactTitle":  "Contact",
+                                              "email":  "info@vicinity24.com",
+                                              "phone":  "+1 (555) 123-4567",
+                                              "bottomLeft":  "© 2026 Vicinity24. Empowering business growth.",
+                                              "bottomRight":  ""
+                                          }
+                           },
+                    "de":  {
+                               "nav":  {
+                                           "brand":  {
+                                                         "mark":  "V",
+                                                         "name":  "Vicinity24",
+                                                         "ariaLabel":  "Vicinity24 Startseite"
+                                                     },
+                                           "links":  [
+                                                         {
+                                                             "id":  "solutions",
+                                                             "label":  "Lösungen",
+                                                             "href":  "#solutions"
+                                                         },
+                                                         {
+                                                             "id":  "about",
+                                                             "label":  "Über uns",
+                                                             "href":  "/about"
+                                                         },
+                                                         {
+                                                             "id":  "contact",
+                                                             "label":  "Kontakt",
+                                                             "href":  "#contact"
+                                                         }
+                                                     ]
+                                       },
+                               "hero":  {
+                                            "showSection":  true,
+                                            "badge":  "Maßgeschneiderte Software für KMU",
+                                            "title":  "Gemeinsames Potenzial freisetzen,",
+                                            "accent":  "Wachstum beschleunigen.",
+                                            "description":  "Wir entwickeln intelligente Software für Ressourcen-Sharing, die kleinen und mittleren Unternehmen hilft, Verschwendung zu vermeiden, Abläufe zu optimieren und ohne die Komplexität von Konzernsystemen zu wachsen."
+                                        },
+                               "platformSection":  {
+                                                       "showSection":  true,
+                                                       "eyebrow":  "Unsere Plattform",
+                                                       "title":  "Smarte Technologie für ein vernetztes Geschäftsökosystem",
+                                                       "subtitle":  "Vom Teilen von Ressourcen innerhalb eines Standorts bis zur Vereinheitlichung Ihres gesamten Multi-Standort-Netzwerks.",
+                                                       "ctaLabel":  "Alle Lösungen entdecken",
+                                                       "ctaHref":  "#demo",
+                                                       "platforms":  [
+                                                                         {
+                                                                             "id":  "sas",
+                                                                             "label":  "SAS",
+                                                                             "title":  "SAS: Die Sharing-Economy-Plattform für Unternehmen",
+                                                                             "tagline":  "Teilen. Ausleihen. Sparen.",
+                                                                             "description":  "Eine leistungsstarke Peer-to-Peer-Plattform, die Unternehmen und Privatpersonen hilft, Ressourcen lokal zu verleihen und auszuleihen. Ob Werkzeuge oder Betriebsmittel, SAS macht es einfach, Eigentumskosten zu senken, die Nutzung zu optimieren und durch ein verifiziertes, transparentes Ökosystem Vertrauen aufzubauen.",
+                                                                             "features":  [
+                                                                                              "Standortbasierte Ressourcensuche",
+                                                                                              "Verifizierte Profile \u0026 Bewertungen",
+                                                                                              "Sichere Transaktionsverfolgung",
+                                                                                              "Tools zur Kosteneinsparung"
+                                                                                          ],
+                                                                             "image":  "/images/sas-sharing-platform.svg",
+                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+                                                                             "link":  "https://v24pool.com",
+                                                                             "visible":  true
+                                                                         },
+                                                                         {
+                                                                             "id":  "onlineStore",
+                                                                             "label":  "Online Store",
+                                                                             "title":  "Anpassbarer Online-Shop",
+                                                                             "tagline":  "Ihre Marke. Ihre Regeln. Ihre Marge.",
+                                                                             "description":  "Starten Sie einen leistungsstarken E-Commerce-Shop, der exakt zu Ihrer Marke passt und reibungslose Backend-Prozesse unterstützt.",
+                                                                             "features":  [
+                                                                                              "Drag-and-drop Builder",
+                                                                                              "Lokale Lieferlogik",
+                                                                                              "Live-Inventarsync"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+                                                                             "alt":  "Analyse-Dashboard für E-Commerce",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         },
+                                                                         {
+                                                                             "id":  "linkedStore",
+                                                                             "label":  "Linked-Store",
+                                                                             "title":  "Linked-Store: Vereinheitlichter Bestand für Multi-Standort-Erfolg",
+                                                                             "tagline":  "Ein Netzwerk, ein gemeinsamer Bestand.",
+                                                                             "description":  "Ein revolutionäres Bestandsnetzwerk für Einzelhändler mit mehreren Standorten und Partnerunternehmen. Bündeln Sie Lagerbestände standortübergreifend, senken Sie Überbestände und bieten Sie Ihren Kunden ein nahtloses Einkaufserlebnis.",
+                                                                             "features":  [
+                                                                                              "Standortübergreifende Bestandsbündelung",
+                                                                                              "Intelligente Auftragsabwicklung",
+                                                                                              "Zentrales Reporting \u0026 Analysen",
+                                                                                              "Netzwerkweiter Kunden-Zugang"
+                                                                                          ],
+                                                                             "image":  "/images/linked-store-network.svg",
+                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
+                                                                             "link":  "https://v24mart.com",
+                                                                             "visible":  true,
+                                                                             "ctaLabel":  "Demo buchen"
+                                                                         },
+                                                                         {
+                                                                             "id":  "consulting",
+                                                                             "label":  "Consulting",
+                                                                             "title":  "Beratung \u0026 On-Demand-Projekte",
+                                                                             "tagline":  "Individuelle Lösungen für komplexe Abläufe.",
+                                                                             "description":  "Wenn Sie mehr als ein Standardprodukt benötigen, arbeitet unser Expertenteam mit Ihnen zusammen, um maßgeschneiderte Softwarelösungen zu entwickeln. Wir bewältigen komplexe operative Herausforderungen mit strategischer Beratung und engagierten Entwicklungsteams.",
+                                                                             "features":  [
+                                                                                              "Workflow-Automatisierung",
+                                                                                              "API-Integrationen",
+                                                                                              "Dedizierte Projektteams"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+                                                                             "alt":  "Beratungssitzung mit Analysen",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         }
+                                                                     ]
+                                                   },
+                               "testimonial":  {
+                                                   "showSection":  true,
+                                                   "eyebrow":  "Kundenergebnisse",
+                                                   "title":  "Geschätzt von wachsenden Unternehmen im ganzen Land",
+                                                   "quote":  "Linked-Store hat unsere standortübergreifenden Abläufe revolutioniert. Durch die Bündelung der Bestände haben wir die Lagerkosten um 40 % gesenkt und den standortübergreifenden Umsatz innerhalb von drei Monaten um 30 % gesteigert.",
+                                                   "author":  "Sarah T.",
+                                                   "authorRole":  "COO einer regionalen Handelsgruppe"
+                                               },
+                               "finalCta":  {
+                                                "showSection":  true,
+                                                "title":  "Bereit, Ihre Betriebsabläufe zu verbessern?",
+                                                "description":  "Schließen Sie sich zukunftsorientierten KMU an, die mit Vicinity24 Kosten senken, Prozesse vereinfachen und sicher wachsen.",
+                                                "primaryCta":  {
+                                                                   "label":  "Kostenlos starten",
+                                                                   "href":  "#demo"
+                                                               },
+                                                "secondaryCta":  {
+                                                                     "label":  "Vertrieb kontaktieren",
+                                                                     "href":  "#contact"
+                                                                 }
+                                            },
+                               "footer":  {
+                                              "showSection":  true,
+                                              "brand":  {
+                                                            "mark":  "V",
+                                                            "name":  "Vicinity24",
+                                                            "ariaLabel":  "Vicinity24 Startseite"
+                                                        },
+                                              "description":  "Intelligente Software für die Unternehmen, die die Wirtschaft antreiben.",
+                                              "groups":  [
+                                                             {
+                                                                 "id":  "product",
+                                                                 "title":  "Produkt",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "SAS",
+                                                                                   "href":  "#solutions"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Linked-Store",
+                                                                                   "href":  "#solutions"
+                                                                               }
+                                                                           ]
+                                                             },
+                                                             {
+                                                                 "id":  "company",
+                                                                 "title":  "Unternehmen",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "Über uns",
+                                                                                   "href":  "/about"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Datenschutz",
+                                                                                   "href":  "#contact"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "AGB",
+                                                                                   "href":  "#contact"
+                                                                               }
+                                                                           ]
+                                                             }
+                                                         ],
+                                              "contactTitle":  "Kontakt",
+                                              "email":  "info@vicinity24.com",
+                                              "phone":  "+1 (555) 123-4567",
+                                              "bottomLeft":  "© 2026 Vicinity24. Wachstum für Unternehmen.",
+                                              "bottomRight":  ""
+                                          }
+                           },
+                    "pt":  {
+                               "nav":  {
+                                           "brand":  {
+                                                         "mark":  "V",
+                                                         "name":  "Vicinity24",
+                                                         "ariaLabel":  "Página inicial da Vicinity24"
+                                                     },
+                                           "links":  [
+                                                         {
+                                                             "id":  "solutions",
+                                                             "label":  "Soluções",
+                                                             "href":  "#solutions"
+                                                         },
+                                                         {
+                                                             "id":  "about",
+                                                             "label":  "Sobre nós",
+                                                             "href":  "/about"
+                                                         },
+                                                         {
+                                                             "id":  "contact",
+                                                             "label":  "Contato",
+                                                             "href":  "#contact"
+                                                         }
+                                                     ]
+                                       },
+                               "hero":  {
+                                            "showSection":  true,
+                                            "badge":  "Software personalizado para PMEs",
+                                            "title":  "Desbloqueie o potencial compartilhado,",
+                                            "accent":  "Impulsione seu crescimento.",
+                                            "description":  "Desenvolvemos software inteligente para compartilhamento de recursos que ajuda pequenas e médias empresas a eliminar desperdícios, otimizar operações e crescer sem a complexidade dos sistemas empresariais."
+                                        },
+                               "platformSection":  {
+                                                       "showSection":  true,
+                                                       "eyebrow":  "Nossa Plataforma",
+                                                       "title":  "Tecnologia inteligente para um ecossistema de negócios conectado",
+                                                       "subtitle":  "Do compartilhamento de recursos dentro de uma única unidade à unificação de toda a sua rede multi-local.",
+                                                       "ctaLabel":  "Explorar todas as soluções",
+                                                       "ctaHref":  "#demo",
+                                                       "platforms":  [
+                                                                         {
+                                                                             "id":  "sas",
+                                                                             "label":  "SAS",
+                                                                             "title":  "SAS: A Plataforma de Economia Compartilhada para Empresas",
+                                                                             "tagline":  "Compartilhe. Pegue emprestado. Economize.",
+                                                                             "description":  "Uma poderosa plataforma peer-to-peer que ajuda empresas e indivíduos a emprestar e tomar emprestado recursos localmente. Seja ferramentas ou ativos comerciais, o SAS facilita a redução de custos de propriedade, otimização de uso e construção de confiança por meio de uma comunidade verificada e transparente.",
+                                                                             "features":  [
+                                                                                              "Busca de recursos por proximidade",
+                                                                                              "Perfis verificados e avaliações",
+                                                                                              "Rastreamento seguro de transações",
+                                                                                              "Ferramentas de gestão de economia"
+                                                                                          ],
+                                                                             "image":  "/images/sas-sharing-platform.svg",
+                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+                                                                             "link":  "https://v24pool.com",
+                                                                             "visible":  true
+                                                                         },
+                                                                         {
+                                                                             "id":  "onlineStore",
+                                                                             "label":  "Online Store",
+                                                                             "title":  "Loja Online Customizável",
+                                                                             "tagline":  "Sua marca. Suas regras. Sua margem.",
+                                                                             "description":  "Lance uma loja online de alta conversão, alinhada à sua identidade e preparada para operações de varejo exigentes.",
+                                                                             "features":  [
+                                                                                              "Builder drag-and-drop",
+                                                                                              "Rotas de entrega local",
+                                                                                              "Sincronização de estoque"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+                                                                             "alt":  "Painel de analytics para e-commerce",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         },
+                                                                         {
+                                                                             "id":  "linkedStore",
+                                                                             "label":  "Linked-Store",
+                                                                             "title":  "Linked-Store: Inventário Unificado para Sucesso em Múltiplas Unidades",
+                                                                             "tagline":  "Uma rede, um estoque unificado.",
+                                                                             "description":  "Uma rede de inventário revolucionária para varejistas com várias unidades e parceiros. Consolide e compartilhe estoque entre todas as localizações para reduzir o excesso, atender pedidos de qualquer lugar da sua rede e proporcionar uma experiência de compra perfeita aos seus clientes.",
+                                                                             "features":  [
+                                                                                              "Pool de inventário entre unidades",
+                                                                                              "Roteamento inteligente de pedidos",
+                                                                                              "Relatórios e análises centralizados",
+                                                                                              "Acesso do cliente em toda a rede"
+                                                                                          ],
+                                                                             "image":  "/images/linked-store-network.svg",
+                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
+                                                                             "link":  "https://v24mart.com",
+                                                                             "visible":  true,
+                                                                             "ctaLabel":  "Agendar demo"
+                                                                         },
+                                                                         {
+                                                                             "id":  "consulting",
+                                                                             "label":  "Consulting",
+                                                                             "title":  "Consultoria e Projetos Sob Demanda",
+                                                                             "tagline":  "Soluções personalizadas para operações complexas.",
+                                                                             "description":  "Quando você precisa de mais do que um produto padrão, nossa equipe de especialistas trabalha com você para projetar e construir soluções de software personalizadas, enfrentando desafios operacionais complexos.",
+                                                                             "features":  [
+                                                                                              "Automação de workflow",
+                                                                                              "Integrações de API",
+                                                                                              "Times dedicados"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+                                                                             "alt":  "Sessão de consultoria com analytics",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         }
+                                                                     ]
+                                                   },
+                               "testimonial":  {
+                                                   "showSection":  true,
+                                                   "eyebrow":  "Resultados dos clientes",
+                                                   "title":  "Confiado por empresas em crescimento",
+                                                   "quote":  "O Linked-Store revolucionou nossas operações em várias unidades. Ao consolidar o estoque, reduzimos os custos de manutenção em 40% e aumentamos as vendas entre lojas em 30% em apenas três meses.",
+                                                   "author":  "Sarah T.",
+                                                   "authorRole":  "COO de um grupo regional de varejo"
+                                               },
+                               "finalCta":  {
+                                                "showSection":  true,
+                                                "title":  "Pronto para modernizar sua operação?",
+                                                "description":  "Junte-se a PMEs inovadoras que usam a Vicinity24 para reduzir custos, simplificar processos e crescer com confiança.",
+                                                "primaryCta":  {
+                                                                   "label":  "Começar teste gratuito",
+                                                                   "href":  "#demo"
+                                                               },
+                                                "secondaryCta":  {
+                                                                     "label":  "Falar com vendas",
+                                                                     "href":  "#contact"
+                                                                 }
+                                            },
+                               "footer":  {
+                                              "showSection":  true,
+                                              "brand":  {
+                                                            "mark":  "V",
+                                                            "name":  "Vicinity24",
+                                                            "ariaLabel":  "Página inicial da Vicinity24"
+                                                        },
+                                              "description":  "Software inteligente para as empresas que movem a economia.",
+                                              "groups":  [
+                                                             {
+                                                                 "id":  "product",
+                                                                 "title":  "Produto",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "SAS",
+                                                                                   "href":  "#solutions"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Linked-Store",
+                                                                                   "href":  "#solutions"
+                                                                               }
+                                                                           ]
+                                                             },
+                                                             {
+                                                                 "id":  "company",
+                                                                 "title":  "Empresa",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "Sobre nós",
+                                                                                   "href":  "/about"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Privacidade",
+                                                                                   "href":  "#contact"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Termos de uso",
+                                                                                   "href":  "#contact"
+                                                                               }
+                                                                           ]
+                                                             }
+                                                         ],
+                                              "contactTitle":  "Contato",
+                                              "email":  "info@vicinity24.com",
+                                              "phone":  "+1 (555) 123-4567",
+                                              "bottomLeft":  "© 2026 Vicinity24. Impulsionando o crescimento dos negócios.",
+                                              "bottomRight":  ""
+                                          }
+                           },
+                    "fr":  {
+                               "nav":  {
+                                           "brand":  {
+                                                         "mark":  "V",
+                                                         "name":  "Vicinity24",
+                                                         "ariaLabel":  "Accueil Vicinity24"
+                                                     },
+                                           "links":  [
+                                                         {
+                                                             "id":  "solutions",
+                                                             "label":  "Solutions",
+                                                             "href":  "#solutions"
+                                                         },
+                                                         {
+                                                             "id":  "about",
+                                                             "label":  "À propos",
+                                                             "href":  "/about"
+                                                         },
+                                                         {
+                                                             "id":  "contact",
+                                                             "label":  "Contact",
+                                                             "href":  "#contact"
+                                                         }
+                                                     ]
+                                       },
+                               "hero":  {
+                                            "showSection":  true,
+                                            "badge":  "Logiciel sur mesure pour les PME",
+                                            "title":  "Libérez le potentiel du partage,",
+                                            "accent":  "Accélérez votre croissance.",
+                                            "description":  "Nous développons des logiciels intelligents de partage de ressources qui aident les PME à éliminer le gaspillage, optimiser leurs opérations et se développer sans la complexité des systèmes d\u0027entreprise."
+                                        },
+                               "platformSection":  {
+                                                       "showSection":  true,
+                                                       "eyebrow":  "Notre Plateforme",
+                                                       "title":  "Une technologie intelligente pour un écosystème d\u0027affaires connecté",
+                                                       "subtitle":  "Du partage de ressources au sein d\u0027un site unique à l\u0027unification de votre réseau multi-sites.",
+                                                       "ctaLabel":  "Explorer toutes les solutions",
+                                                       "ctaHref":  "#demo",
+                                                       "platforms":  [
+                                                                         {
+                                                                             "id":  "sas",
+                                                                             "label":  "SAS",
+                                                                             "title":  "SAS : La plateforme d\u0027économie de partage pour les entreprises",
+                                                                             "tagline":  "Partagez. Empruntez. Économisez.",
+                                                                             "description":  "Une puissante plateforme peer-to-peer qui aide les entreprises et les particuliers à prêter et emprunter des ressources localement. Qu\u0027il s\u0027agisse d\u0027outils ou d\u0027actifs commerciaux, SAS facilite la réduction des coûts de possession, l\u0027optimisation de l\u0027utilisation et la création de confiance grâce à une communauté vérifiée et transparente.",
+                                                                             "features":  [
+                                                                                              "Recherche de ressources par proximité",
+                                                                                              "Profils vérifiés et avis",
+                                                                                              "Suivi sécurisé des transactions",
+                                                                                              "Outils de gestion des économies"
+                                                                                          ],
+                                                                             "image":  "/images/sas-sharing-platform.svg",
+                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+                                                                             "link":  "https://v24pool.com",
+                                                                             "visible":  true
+                                                                         },
+                                                                         {
+                                                                             "id":  "onlineStore",
+                                                                             "label":  "Online Store",
+                                                                             "title":  "Boutique en ligne personnalisable",
+                                                                             "tagline":  "Votre marque. Vos règles. Votre marge.",
+                                                                             "description":  "Lancez une boutique e-commerce performante, parfaitement adaptée à votre marque et à vos opérations retail.",
+                                                                             "features":  [
+                                                                                              "Builder drag-and-drop",
+                                                                                              "Livraison locale",
+                                                                                              "Sync temps réel"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+                                                                             "alt":  "Tableau de bord analytics e-commerce",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         },
+                                                                         {
+                                                                             "id":  "linkedStore",
+                                                                             "label":  "Linked-Store",
+                                                                             "title":  "Linked-Store : Stock unifié pour le succès multi-sites",
+                                                                             "tagline":  "Un réseau, un stock unifié.",
+                                                                             "description":  "Un réseau de stock révolutionnaire pour les détaillants multi-sites et les partenaires. Regroupez et partagez les stocks sur tous les sites pour réduire les surplus, traiter les commandes de n\u0027importe où dans votre réseau et offrir une expérience d\u0027achat fluide à vos clients.",
+                                                                             "features":  [
+                                                                                              "Mise en commun des stocks inter-sites",
+                                                                                              "Acheminement intelligent des commandes",
+                                                                                              "Rapports et analyses centralisés",
+                                                                                              "Accès client à l\u0027échelle du réseau"
+                                                                                          ],
+                                                                             "image":  "/images/linked-store-network.svg",
+                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
+                                                                             "link":  "https://v24mart.com",
+                                                                             "visible":  true,
+                                                                             "ctaLabel":  "Réserver une démo"
+                                                                         },
+                                                                         {
+                                                                             "id":  "consulting",
+                                                                             "label":  "Consulting",
+                                                                             "title":  "Conseil et projets sur demande",
+                                                                             "tagline":  "Des solutions sur mesure pour des opérations complexes.",
+                                                                             "description":  "Lorsque vous avez besoin de plus qu\u0027un produit standard, notre équipe d\u0027experts travaille avec vous pour concevoir et construire des solutions logicielles personnalisées, répondant à des défis opérationnels complexes.",
+                                                                             "features":  [
+                                                                                              "Automatisation",
+                                                                                              "Intégrations API",
+                                                                                              "Équipe dédiée"
+                                                                                          ],
+                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+                                                                             "alt":  "Session de conseil avec analytics",
+                                                                             "link":  "#contact",
+                                                                             "visible":  false
+                                                                         }
+                                                                     ]
+                                                   },
+                               "testimonial":  {
+                                                   "showSection":  true,
+                                                   "eyebrow":  "Résultats clients",
+                                                   "title":  "Adopté par des entreprises en croissance",
+                                                   "quote":  "Linked-Store a révolutionné nos opérations multi-sites. En mutualisant les stocks, nous avons réduit les coûts de possession de 40 % et augmenté les ventes inter-magasins de 30 % en seulement trois mois.",
+                                                   "author":  "Sarah T.",
+                                                   "authorRole":  "COO d\u0027un groupe régional de retail"
+                                               },
+                               "finalCta":  {
+                                                "showSection":  true,
+                                                "title":  "Prêt à moderniser vos opérations ?",
+                                                "description":  "Rejoignez des PME innovantes qui utilisent Vicinity24 pour réduire les coûts, fluidifier les opérations et accélérer leur croissance.",
+                                                "primaryCta":  {
+                                                                   "label":  "Commencer l\u0027essai gratuit",
+                                                                   "href":  "#demo"
+                                                               },
+                                                "secondaryCta":  {
+                                                                     "label":  "Contacter les ventes",
+                                                                     "href":  "#contact"
+                                                                 }
+                                            },
+                               "footer":  {
+                                              "showSection":  true,
+                                              "brand":  {
+                                                            "mark":  "V",
+                                                            "name":  "Vicinity24",
+                                                            "ariaLabel":  "Accueil Vicinity24"
+                                                        },
+                                              "description":  "Un logiciel intelligent pour les sociétés qui font avancer l\u0027économie.",
+                                              "groups":  [
+                                                             {
+                                                                 "id":  "product",
+                                                                 "title":  "Produit",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "SAS",
+                                                                                   "href":  "#solutions"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Linked-Store",
+                                                                                   "href":  "#solutions"
+                                                                               }
+                                                                           ]
+                                                             },
+                                                             {
+                                                                 "id":  "company",
+                                                                 "title":  "Entreprise",
+                                                                 "links":  [
+                                                                               {
+                                                                                   "label":  "À propos",
+                                                                                   "href":  "/about"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Confidentialité",
+                                                                                   "href":  "#contact"
+                                                                               },
+                                                                               {
+                                                                                   "label":  "Conditions",
+                                                                                   "href":  "#contact"
+                                                                               }
+                                                                           ]
+                                                             }
+                                                         ],
+                                              "contactTitle":  "Contact",
+                                              "email":  "info@vicinity24.com",
+                                              "phone":  "+1 (555) 123-4567",
+                                              "bottomLeft":  "© 2026 Vicinity24. Accélère la croissance des entreprises.",
+                                              "bottomRight":  ""
+                                          }
+                           }
+                }
+}

@@ -1,10 +1,26 @@
-import { Routes } from '@angular/router';
+import { Routes, UrlSegment } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+
+const fahrradFuchsListingAlias = (url: UrlSegment[]) =>
+  url.length === 2 && url[0].path === 'bikes' && url[1].path === 'fahrrad-fuchs'
+    ? { consumed: url }
+    : null;
+
+const fahrradFuchsDetailAlias = (url: UrlSegment[]) =>
+  url.length === 3 && url[0].path === 'bikes' && url[1].path === 'fahrrad-fuchs'
+    ? {
+        consumed: url,
+        posParams: {
+          slug: url[2]
+        }
+      }
+    : null;
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent)
+    redirectTo: 'bikes',
+    pathMatch: 'full'
   },
   {
     path: 'discover',
@@ -12,8 +28,20 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    matcher: fahrradFuchsListingAlias,
+    loadComponent: () => import('./fahrad-fuchs/pages/fahrrad-fuchs-to-go-home.component').then((m) => m.FahrradFuchsToGoHomeComponent)
+  },
+  {
+    matcher: fahrradFuchsDetailAlias,
+    loadComponent: () => import('./fahrad-fuchs/pages/fahrrad-fuchs-to-go-bike-detail.component').then((m) => m.FahrradFuchsToGoBikeDetailComponent)
+  },
+  {
     path: 'bikes',
     loadChildren: () => import('./bike/bike.routes').then((m) => m.BIKE_ROUTES)
+  },
+  {
+    path: 'fahrad-fuchs',
+    loadChildren: () => import('./fahrad-fuchs/fahrrad-fuchs-to-go.routes').then((m) => m.FAHRRAD_FUCHS_TO_GO_ROUTES)
   },
   {
     path: 'login',
@@ -21,7 +49,7 @@ export const routes: Routes = [
   },
   {
     path: 'signup',
-    loadComponent: () => import('./features/auth/signup.component').then((m) => m.SignupComponent)
+    loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent)
   },
   {
     path: 'password-recovery',
@@ -43,6 +71,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: ''
+    redirectTo: 'bikes'
   }
 ];

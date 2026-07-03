@@ -1,29 +1,269 @@
-<section class="bike-search">
+<section class="bike-search" *ngIf="vm$ | async as vm">
   <header class="hero">
-    <p class="eyebrow">Bicycle Vertical</p>
-    <h1>Find ready-to-ride bikes and workshop-prep inventory.</h1>
+    <div class="hero-copy">
+      <p class="eyebrow">Premium Bike Catalog</p>
+      <h1>Merchandise a boutique bicycle assortment with live stock, spec, and fit-aware discovery.</h1>
+      <p>The catalog responds to real tenant inventory, commercial assortment rules, and frameset-aware filtering logic.</p>
+    </div>
+    <a routerLink="/bikes/admin/catalog" class="hero-admin-link">Catalog admin</a>
   </header>
 
-  <form class="filters" (ngSubmit)="load()">
-    <input type="text" [(ngModel)]="search" name="search" placeholder="Search bikes" />
-    <input type="text" [(ngModel)]="frameSize" name="frameSize" placeholder="Frame size" />
-    <input type="text" [(ngModel)]="bikeType" name="bikeType" placeholder="Bike type" />
-    <button type="submit">Search</button>
-  </form>
-
-  <p *ngIf="loading">Loading bicycle catalog...</p>
-
-  <div class="grid" *ngIf="!loading">
-    <a class="card" *ngFor="let bike of bikes" [routerLink]="['/bikes', bike.id]">
-      <img *ngIf="bike.imageUrl" [src]="bike.imageUrl" [alt]="bike.title" />
-      <div class="card-body">
-        <h2>{{ bike.title }}</h2>
-        <p>{{ bike.description }}</p>
-        <div class="meta">
-          <span>{{ bike.bikeType || 'Bike' }}</span>
-          <span>{{ bike.frameSize || 'n/a' }}</span>
+  <div class="catalog-shell">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <h2>Refine The Range</h2>
+        <p>Every option updates from the active tenant assortment and soft-disables automatically when a commercial selection path is exhausted.</p>
+        <div class="sidebar-stats" *ngIf="vm.response?.sidebar as sidebar">
+          <article>
+            <strong>{{ vm.response?.pagination?.totalElements ?? 0 }}</strong>
+            <span>Products</span>
+          </article>
+          <article>
+            <strong>{{ sidebar.sections.length }}</strong>
+            <span>Filter groups</span>
+          </article>
         </div>
       </div>
-    </a>
+
+      <form class="search-form" [formGroup]="searchForm">
+        <label>
+          <span>Search Catalog</span>
+          <input type="text" formControlName="query" placeholder="Brand, model, category, merchandising keyword" />
+        </label>
+
+        <div class="price-group">
+          <label>
+            <span>From</span>
+            <input type="number" formControlName="minPrice" placeholder="2500" />
+          </label>
+          <label>
+            <span>To</span>
+            <input type="number" formControlName="maxPrice" placeholder="7000" />
+          </label>
+        </div>
+        <p class="price-hint">{{ priceHint(vm.response) }}</p>
+      </form>
+
+      <div class="filter-sections" *ngIf="vm.response?.sidebar as sidebar">
+        <section class="filter-section" *ngFor="let section of sidebar.sections; trackBy: trackSection">
+          <div class="filter-section-head">
+            <div class="filter-title">
+              <h3>{{ displaySectionLabel(section) }}</h3>
+              <small *ngIf="section.componentSpecific">Hidden when framesets are active</small>
+            </div>
+            <span *ngIf="section.isCustom" class="custom-badge">Custom</span>
+          </div>
+
+          <div class="segmented-options" *ngIf="section.uiControl === 'SEGMENTED'">
+            <button
+              *ngFor="let option of section.options; trackBy: trackOption"
+              type="button"
+              class="segmented-option"
+              [class.active]="option.selected"
+              [class.disabled]="option.disabled && !option.selected"
+              [disabled]="option.disabled && !option.selected"
+              (click)="toggleSectionOption(section, option)">
+              <span>{{ displayOptionLabel(section, option) }}</span>
+              <small>{{ option.count }}</small>
+            </button>
+          </div>
+
+          <div class="filter-options" *ngIf="section.uiControl !== 'SEGMENTED'">
+            <button
+              *ngFor="let option of section.options; trackBy: trackOption"
+              type="button"
+              class="filter-option"
+              [class.selected]="option.selected"
+              [class.disabled]="option.disabled && !option.selected"
+              [disabled]="option.disabled && !option.selected"
+              (click)="toggleSectionOption(section, option)">
+              <span class="checkmark" aria-hidden="true"></span>
+              <span class="option-copy">
+                <strong>{{ displayOptionLabel(section, option) }}</strong>
+                <small>{{ option.count }} match<span *ngIf="option.count !== 1">es</span></small>
+              </span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div class="sidebar-actions">
+        <button type="button" class="ghost-button" (click)="clearFilters()" [disabled]="!vm.hasActiveFilters">Reset filters</button>
+      </div>
+    </aside>
+
+    <div class="catalog-content">
+      <div class="results-toolbar">
+        <div class="toolbar-summary">
+          <p class="summary-title">Curated Assortment</p>
+          <p class="summary-copy" *ngIf="vm.response?.pagination as pagination">
+            Showing {{ pagination.from }}-{{ pagination.to }} of {{ pagination.totalElements }} catalog entries across {{ pagination.totalPages }} page<span *ngIf="pagination.totalPages !== 1">s</span> for the active store assortment
+          </p>
+        </div>
+
+        <div class="toolbar-actions">
+          <label class="sort-control">
+            <span class="sort-shell">
+              <span class="sort-icon" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+              <select [formControl]="searchForm.controls.sort">
+                <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+              </select>
+              <span class="sort-chevron" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <div class="view-toggle" aria-label="Listing view">
+            <button
+              type="button"
+              class="view-option view-option-modern"
+              [class.active]="vm.viewMode === 'modern'"
+              aria-label="Modern view"
+              (click)="setViewMode('modern')">
+              <span class="view-icon view-icon-grid" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="view-option view-option-traditional"
+              [class.active]="vm.viewMode === 'traditional'"
+              aria-label="Traditional view"
+              (click)="setViewMode('traditional')">
+              <span class="view-icon view-icon-list" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+              <span class="view-option-label">List</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="active-tags" *ngIf="activeTags(vm).length">
+        <button
+          type="button"
+          class="tag"
+          *ngFor="let tag of activeTags(vm)"
+          (click)="removeTag(tag.sectionKey, tag.value)">
+          <span>{{ tag.sectionLabel }}: {{ tag.label }}</span>
+          <strong aria-hidden="true">&times;</strong>
+        </button>
+      </div>
+
+      <p class="state" *ngIf="vm.loading">Loading bicycle catalog...</p>
+      <p class="state error-state" *ngIf="!vm.loading && vm.error">{{ vm.error }}</p>
+
+      <div class="grid modern-grid" *ngIf="!vm.loading && vm.response?.products?.length && vm.viewMode === 'modern'">
+        <a class="card" *ngFor="let bike of vm.response?.products" [routerLink]="['/bikes/catalog', bike.id]">
+          <div class="media-shell">
+            <img [src]="bike.imageUrl" [alt]="bike.displayName" />
+            <span class="media-gradient" aria-hidden="true"></span>
+            <span class="floating-pill">{{ bike.inStock ? 'In stock' : 'Pre-order' }}</span>
+            <span class="media-year">{{ bike.modelYear }}</span>
+          </div>
+          <div class="card-body">
+            <div class="title-row">
+              <div>
+                <p class="card-kicker">{{ formatEnum(bike.category) }} <span>&bull;</span> {{ formatEnum(bike.saleType) }}</p>
+                <h2>{{ bike.displayName }}</h2>
+              </div>
+              <strong>{{ bike.basePrice | currency:'EUR' }}</strong>
+            </div>
+            <p>{{ bike.description }}</p>
+            <div class="meta">
+              <span>{{ bike.modelYear }}</span>
+              <span>{{ bike.defaultColor }}</span>
+              <span>{{ bike.skuCount }} SKU<span *ngIf="bike.skuCount !== 1">s</span></span>
+            </div>
+            <div class="card-footer">
+              <span>{{ bike.totalStock }} unit<span *ngIf="bike.totalStock !== 1">s</span> available for sale</span>
+              <span class="card-link">Open product brief</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="traditional-list" *ngIf="!vm.loading && vm.response?.products?.length && vm.viewMode === 'traditional'">
+        <a class="list-row" *ngFor="let bike of vm.response?.products" [routerLink]="['/bikes/catalog', bike.id]">
+          <div class="row-media">
+            <img [src]="bike.imageUrl" [alt]="bike.displayName" />
+          </div>
+
+          <div class="row-main">
+            <div class="row-main-head">
+              <div>
+                <h2>{{ bike.displayName }}</h2>
+                <p class="row-subline">{{ formatEnum(bike.category) }} <span>&bull;</span> {{ formatEnum(bike.saleType) }}</p>
+              </div>
+              <span class="row-badge">{{ bike.inStock ? 'In stock' : 'Pre-order' }}</span>
+            </div>
+            <p class="row-description">{{ bike.description }}</p>
+            <p class="row-location">{{ bike.modelYear }} model year <span>&bull;</span> {{ bike.defaultColor }}</p>
+          </div>
+
+          <div class="row-price">
+            <strong>{{ bike.basePrice | currency:'EUR' }}</strong>
+            <span>{{ bike.totalStock }} in stock</span>
+          </div>
+
+          <div class="row-details">
+            <div>
+              <span>Category</span>
+              <strong>{{ formatEnum(bike.category) }}</strong>
+            </div>
+            <div>
+              <span>Offer</span>
+              <strong>{{ formatEnum(bike.saleType) }}</strong>
+            </div>
+            <div>
+              <span>SKUs</span>
+              <strong>{{ bike.skuCount }}</strong>
+            </div>
+          </div>
+
+          <div class="row-action">
+            <span>Open brief</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="pagination" *ngIf="!vm.loading && (vm.response?.pagination?.totalPages ?? 0) > 1" aria-label="Bike catalog pagination">
+        <button
+          type="button"
+          class="page-nav"
+          aria-label="Previous page"
+          (click)="goToPage((vm.response?.pagination?.currentPage ?? 0) - 1, vm.response?.pagination?.totalPages ?? 0)"
+          [disabled]="!(vm.response?.pagination?.hasPrevious)">
+          <span aria-hidden="true">&#8249;</span>
+        </button>
+
+        <div class="pagination-pages">
+          <button
+            *ngFor="let item of vm.response?.pagination?.pages"
+            type="button"
+            class="page-number"
+            (click)="goToPage(item, vm.response?.pagination?.totalPages ?? 0)"
+            [class.active]="item === vm.response?.pagination?.currentPage"
+            [attr.aria-label]="'Page ' + (item + 1)">
+            {{ item + 1 }}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="page-nav"
+          aria-label="Next page"
+          (click)="goToPage((vm.response?.pagination?.currentPage ?? 0) + 1, vm.response?.pagination?.totalPages ?? 0)"
+          [disabled]="!(vm.response?.pagination?.hasNext)">
+          <span aria-hidden="true">&#8250;</span>
+        </button>
+      </nav>
+
+      <section class="empty" *ngIf="!vm.loading && !vm.error && !(vm.response?.products?.length)">
+        <h2>No bicycles match the current assortment filter</h2>
+        <p>Broaden the search, clear a specification group, or switch the active sale format to reopen more commercial options.</p>
+      </section>
+    </div>
   </div>
 </section>

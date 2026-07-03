@@ -1,0 +1,135 @@
+<section
+  class="detail-shell"
+  *ngIf="!loading && bike as current; else stateTpl"
+  [style.--brand-accent]="theme.accent"
+  [style.--brand-soft]="theme.soft"
+  [style.--brand-deep]="theme.deep"
+  [style.--brand-muted]="theme.muted">
+  <a routerLink="/fahrad-fuchs" class="back-link">{{ 'detail.back' | t }}</a>
+
+  <section class="detail-layout">
+    <div class="product-column">
+      <div class="carousel">
+        <img [src]="current.gallery[activeImageIndex] || current.imageUrl" [alt]="current.title" />
+        <div class="thumb-row">
+          <button
+            type="button"
+            *ngFor="let image of current.gallery; let i = index"
+            [class.active]="i === activeImageIndex"
+            (click)="selectImage(i)">
+            <img [src]="image" [alt]="current.title + ' image ' + (i + 1)" />
+          </button>
+        </div>
+      </div>
+
+      <div class="intro-card">
+        <div class="intro-badges">
+          <span class="manufacturer">{{ manufacturer }}</span>
+          <span class="availability">{{ current.availabilityBadge }}</span>
+          <span class="readiness">{{ readinessKey | t }}</span>
+          <p class="category">{{ current.category }}</p>
+        </div>
+        <p class="eyebrow">{{ 'detail.curatedBike' | t }}</p>
+        <h1>{{ modelLine || current.title }}</h1>
+        <p class="description">{{ current.description }}</p>
+
+        <div class="hero-spec-strip" *ngIf="heroSpecs.length">
+          <article *ngFor="let spec of heroSpecs">
+            <span>{{ spec.label }}</span>
+            <strong>{{ spec.value }}</strong>
+          </article>
+        </div>
+
+        <ul class="value-points">
+          <li *ngFor="let point of current.valuePoints">{{ point }}</li>
+        </ul>
+      </div>
+
+      <section class="specs-card">
+        <button type="button" class="accordion-trigger" (click)="toggleSpecs()">
+          <span>{{ 'detail.technicalDetails' | t }}</span>
+          <strong>{{ showSpecs ? ('detail.hide' | t) : ('detail.show' | t) }}</strong>
+        </button>
+
+        <div class="accordion-body" *ngIf="showSpecs">
+          <div class="spec-grid">
+            <article *ngFor="let spec of current.technicalSpecs">
+              <span>{{ spec.label }}</span>
+              <strong>{{ spec.value }}</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="sticky-widget">
+      <div class="shop-readiness">
+        <span>{{ 'detail.rideStatus' | t }}</span>
+        <strong>{{ readinessKey | t }}</strong>
+        <p>{{ 'detail.rideStatusLead' | t }}</p>
+      </div>
+
+      <div class="field-grid">
+        <label>
+          <span>{{ 'detail.pickupDate' | t }}</span>
+          <input type="date" [(ngModel)]="startDate" />
+        </label>
+        <label>
+          <span>{{ 'detail.returnDate' | t }}</span>
+          <input type="date" [(ngModel)]="endDate" />
+        </label>
+      </div>
+
+      <label>
+        <span>{{ 'detail.frameSize' | t }}</span>
+        <select [(ngModel)]="selectedFrameSize">
+          <option *ngFor="let option of current.frameOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+
+      <div class="price-breakdown">
+        <div class="price-breakdown-head">
+          <span>{{ 'detail.tryBeforeBuy' | t }}</span>
+          <strong>{{ 'detail.depositAmount' | t:{ amount: (trialDepositAmount | currency:'EUR') } }}</strong>
+        </div>
+
+        <div class="price-breakdown-grid">
+          <div>
+            <span>{{ 'detail.retailPrice' | t }}</span>
+            <strong>{{ current.retailPrice | currency:'EUR' }}</strong>
+          </div>
+          <div>
+            <span>{{ 'detail.depositToday' | t }}</span>
+            <strong>{{ trialDepositAmount | currency:'EUR' }}</strong>
+          </div>
+          <div>
+            <span>{{ 'detail.buyLater' | t }}</span>
+            <strong>{{ 'common.remaining' | t:{ amount: (remainingPurchaseBalance | currency:'EUR') } }}</strong>
+          </div>
+          <div>
+            <span>{{ 'detail.trialWindow' | t }}</span>
+            <strong>{{ 'common.daysIncluded' | t:{ count: trialWindowDays } }}</strong>
+          </div>
+        </div>
+
+        <p class="price-breakdown-note">{{ 'detail.breakdownBuyNote' | t }}</p>
+        <p class="price-breakdown-note">{{ 'detail.breakdownLeaseNote' | t:{ count: trialWindowDays } }}</p>
+      </div>
+
+      <a
+        class="reserve-button"
+        [routerLink]="reservationLink(current.slug)"
+        [queryParams]="reservationQueryParams(current.slug)">
+        {{ 'detail.cta' | t }}
+      </a>
+      <p class="reserve-auth-note" *ngIf="requiresLoginForReservation">{{ 'home.loginRequired' | t }}</p>
+    </aside>
+  </section>
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">{{ 'detail.loading' | t }}</p>
+    <p *ngIf="!loading && errorKey">{{ errorKey | t }}</p>
+  </section>
+</ng-template>
