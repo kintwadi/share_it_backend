@@ -1,11 +1,12 @@
 import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ProductSolution } from '../../models/landing.models';
 import { RevealOnScrollDirective } from '../../directives/reveal-on-scroll.directive';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [RevealOnScrollDirective],
+  imports: [RevealOnScrollDirective, RouterLink],
   template: `
     <article class="product-card" appRevealOnScroll [class.delay-1]="delayClass() === 'delay-1'">
       <div class="product-image">
@@ -21,12 +22,21 @@ import { RevealOnScrollDirective } from '../../directives/reveal-on-scroll.direc
             <span class="feature-chip">{{ feature }}</span>
           }
         </div>
-        <a class="product-link" [href]="ctaHref()">
-          {{ product().ctaLabel || 'Explore' }}
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </a>
+        @if (isInternalRoute()) {
+          <a class="product-link" routerLink="/contact" [queryParams]="ctaQueryParams()">
+            {{ product().ctaLabel || 'Explore' }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+        } @else {
+          <a class="product-link" [href]="ctaHref()">
+            {{ product().ctaLabel || 'Explore' }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </a>
+        }
       </div>
     </article>
   `
@@ -35,6 +45,8 @@ export class ProductCardComponent {
   readonly product = input.required<ProductSolution>();
   readonly delayClass = input('');
   readonly ctaHref = computed(() => this.product().link || `/contact?solution=${this.product().id}`);
+  readonly ctaQueryParams = computed(() => ({ solution: this.product().id }));
+  readonly isInternalRoute = computed(() => !this.product().link);
   readonly displayTitle = computed(() => {
     const product = this.product();
     const prefixedLabel = `${product.label}: `;

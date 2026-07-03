@@ -1,17 +1,26 @@
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LanguageCode } from '../../models/landing.models';
 import { PlatformConfigService } from '../../services/platform-config.service';
 
 @Component({
   selector: 'app-site-nav',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <nav class="nav" [class.scrolled]="scrolled()" aria-label="Main navigation">
       <div class="container nav-inner">
-        <a class="logo" [href]="homeHref()" [attr.aria-label]="locale().nav.brand.ariaLabel" (click)="closeMenu()">
-          <span class="logo-mark">{{ locale().nav.brand.mark }}</span>
-          <strong>{{ locale().nav.brand.name }}</strong>
-        </a>
+        @if (isHomePage()) {
+          <a class="logo" href="#top" [attr.aria-label]="locale().nav.brand.ariaLabel" (click)="closeMenu()">
+            <span class="logo-mark">{{ locale().nav.brand.mark }}</span>
+            <strong>{{ locale().nav.brand.name }}</strong>
+          </a>
+        } @else {
+          <a class="logo" routerLink="/" [attr.aria-label]="locale().nav.brand.ariaLabel" (click)="closeMenu()">
+            <span class="logo-mark">{{ locale().nav.brand.mark }}</span>
+            <strong>{{ locale().nav.brand.name }}</strong>
+          </a>
+        }
 
         <button
           type="button"
@@ -29,12 +38,21 @@ import { PlatformConfigService } from '../../services/platform-config.service';
         <div class="nav-links" id="primary-nav" [class.open]="menuOpen()">
           <div class="nav-primary">
             @for (item of navLinks(); track item.id) {
-              <a
-                [href]="resolveHref(item.href, item.id)"
-                [class.active]="activePrimaryId() === item.id"
-                (click)="closeMenu()">
-                {{ item.label }}
-              </a>
+              @if (isRouteItem(item.href, item.id)) {
+                <a
+                  [routerLink]="routePath(item.href, item.id)"
+                  [class.active]="activePrimaryId() === item.id"
+                  (click)="closeMenu()">
+                  {{ item.label }}
+                </a>
+              } @else {
+                <a
+                  [href]="resolveHref(item.href, item.id)"
+                  [class.active]="activePrimaryId() === item.id"
+                  (click)="closeMenu()">
+                  {{ item.label }}
+                </a>
+              }
             }
           </div>
 
@@ -79,8 +97,6 @@ export class SiteNavComponent implements OnInit {
 
     return null;
   });
-  readonly homeHref = computed(() => (this.isHomePage() ? '#top' : '/'));
-
   ngOnInit(): void {
     this.updateHeaderState();
   }
@@ -121,6 +137,22 @@ export class SiteNavComponent implements OnInit {
     }
 
     return this.isHomePage() ? href : `/${href}`;
+  }
+
+  isRouteItem(href: string, id: string): boolean {
+    return id === 'contact' || id === 'about' || href === '/about' || href === '/contact';
+  }
+
+  routePath(href: string, id: string): string {
+    if (id === 'contact') {
+      return '/contact';
+    }
+
+    if (id === 'about') {
+      return '/about';
+    }
+
+    return href;
   }
 
   private updateHeaderState(): void {
