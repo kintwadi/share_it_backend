@@ -26,11 +26,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final List<String> allowedOriginPatterns;
     private final String tenantHeaderName;
+    private final String publicContactHeaderName;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtFilter,
             @Value("${security.cors.allowed-origin-patterns:}") String allowedOriginPatterns,
-            @Value("${tenants.header-name:X-Tenant-ID}") String tenantHeaderName
+            @Value("${tenants.header-name:X-Tenant-ID}") String tenantHeaderName,
+            @Value("${mail.contact.public-header-name:X-Public-Origin}") String publicContactHeaderName
     ) {
         this.jwtFilter = jwtFilter;
         this.allowedOriginPatterns = Arrays.stream(allowedOriginPatterns.split(","))
@@ -38,6 +40,7 @@ public class SecurityConfig {
                 .filter(s -> !s.isBlank())
                 .toList();
         this.tenantHeaderName = tenantHeaderName;
+        this.publicContactHeaderName = publicContactHeaderName;
         if (this.allowedOriginPatterns.isEmpty()) {
             throw new IllegalStateException("security.cors.allowed-origin-patterns must not be empty");
         }
@@ -56,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password", "/api/auth/email-verification/**", "/api/admin/auth/login", "/api/admin/auth/register", "/api/partner/auth/login", "/api/partner/auth/register", "/api/config/**", "/api/location/**", "/ws/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/payments/webhook", "/api/health", "/api/seed").permitAll()
                 .requestMatchers("/api/subscriptions/**").permitAll()
                 .requestMatchers("/api/insurance/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/mail-contact-request").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/items/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/listings/evaluate").permitAll()
@@ -71,7 +75,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(allowedOriginPatterns);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", tenantHeaderName));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", tenantHeaderName, publicContactHeaderName));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

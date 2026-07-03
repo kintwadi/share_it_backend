@@ -1,0 +1,25 @@
+<div class="store-header-wrap">
+  <header class="store-header">
+    <a routerLink="/fahrad-fuchs" class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 84 84" aria-hidden="true">
+          <circle cx="24" cy="58" r="12"></circle>
+          <circle cx="60" cy="58" r="12"></circle>
+          <path d="M24 58 L36 34 L48 58 L60 58"></path>
+          <path d="M34 34 H48 L54 24"></path>
+          <path d="M41 34 L54 24"></path>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <small>Gross-Gerau Pickup Edition</small>
+        <strong>Fahrrad Fuchs to go</strong>
+        <span>{{ store.storeName }} · Book your ride · powered by Vicinity24</span>
+      </div>
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/fahrad-fuchs/bookings">Your rides</a>
+      <a class="support-link" [href]="'tel:' + store.phone.replaceAll(' ', '')">Call: {{ store.phone }}</a>
+    </nav>
+  </header>
+</div>

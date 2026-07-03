@@ -1,0 +1,90 @@
+<section class="auth-shell">
+  <div class="auth-layout">
+    <aside class="auth-aside">
+      <p class="eyebrow">{{ 'auth.brandEyebrow' | t }}</p>
+      <h2>{{ 'auth.loginSignupTitle' | t }}</h2>
+      <p class="aside-copy">{{ 'auth.loginSignupLead' | t }}</p>
+
+      <div class="aside-metrics">
+        <div>
+          <strong>4</strong>
+          <span>{{ 'auth.bikesReady' | t }}</span>
+        </div>
+        <div>
+          <strong>1</strong>
+          <span>{{ 'auth.authExperience' | t }}</span>
+        </div>
+      </div>
+
+      <div class="demo-box">
+        <strong>{{ 'auth.demoAccess' | t }}</strong>
+        <p>{{ 'auth.demoAccessLead' | t }}</p>
+        <code>linda.lender@example.com</code>
+        <code>password123</code>
+      </div>
+
+      <ul class="mini-list">
+        <li>{{ 'auth.miniListOne' | t }}</li>
+        <li>{{ 'auth.miniListTwo' | t }}</li>
+        <li>{{ 'auth.miniListThree' | t }}</li>
+      </ul>
+    </aside>
+
+    <div class="auth-card">
+      <div class="auth-switch">
+        <button type="button" [class.active]="!isSignupMode" (click)="setMode('login')">{{ 'auth.connect' | t }}</button>
+        <button type="button" [class.active]="isSignupMode" (click)="setMode('signup')">{{ 'auth.createAccount' | t }}</button>
+      </div>
+
+      <p class="eyebrow">{{ isSignupMode ? ('auth.createAccount' | t) : ('auth.welcomeBack' | t) }}</p>
+      <h1>{{ isSignupMode ? ('auth.createAccountTitle' | t) : ('auth.signInTitle' | t) }}</h1>
+      <p class="copy">
+        {{ isSignupMode
+          ? ('auth.createAccountLead' | t)
+          : ('auth.signInLead' | t) }}
+      </p>
+
+      <form class="auth-form" (ngSubmit)="submit()">
+        <div class="field-group two-up" *ngIf="isSignupMode">
+          <label>
+            <span>{{ 'auth.fullName' | t }}</span>
+            <input type="text" name="name" [(ngModel)]="name" required />
+          </label>
+
+          <label>
+            <span>{{ 'auth.phone' | t }}</span>
+            <input type="text" name="phone" [(ngModel)]="phone" />
+          </label>
+        </div>
+
+        <div class="field-group">
+          <label>
+            <span>{{ 'auth.email' | t }}</span>
+            <input type="email" name="email" [(ngModel)]="email" required />
+          </label>
+
+          <label>
+            <span>{{ 'auth.password' | t }}</span>
+            <input type="password" name="password" [(ngModel)]="password" [attr.minlength]="isSignupMode ? 6 : null" required />
+            <small class="helper" *ngIf="isSignupMode">{{ 'auth.passwordHelper' | t }}</small>
+          </label>
+
+          <label *ngIf="isSignupMode">
+            <span>{{ 'auth.address' | t }}</span>
+            <input type="text" name="address" [(ngModel)]="address" />
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button type="submit" [disabled]="loading">
+            {{ loading ? (isSignupMode ? ('auth.creatingAccount' | t) : ('auth.signingIn' | t)) : (isSignupMode ? ('auth.createAccount' | t) : ('auth.login' | t)) }}
+          </button>
+          <a class="inline-link" routerLink="/password-recovery" *ngIf="!isSignupMode">{{ 'auth.forgotPassword' | t }}</a>
+        </div>
+
+        <p class="success" *ngIf="successKey">{{ successKey | t }}</p>
+        <p class="error" *ngIf="errorKey">{{ errorKey | t }}</p>
+      </form>
+    </div>
+  </div>
+</section>

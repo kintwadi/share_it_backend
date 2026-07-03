@@ -978,7 +978,7 @@ export class SettingsComponent implements OnInit {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'vicinity24-export.json';
+      a.download = 'v24pool-export.json';
       a.click();
       URL.revokeObjectURL(url);
     } catch { }

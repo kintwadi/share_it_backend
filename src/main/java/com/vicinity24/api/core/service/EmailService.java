@@ -1,5 +1,6 @@
 package com.vicinity24.api.core.service;
 
+import com.vicinity24.api.core.dto.MailContactRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -121,6 +122,37 @@ public class EmailService {
             logger.error("Failed to send pickup ready email to: {}", toEmail, e);
         }
     }
+
+    public boolean sendContactInquiryEmail(String toEmail, MailContactRequest request) {
+        if (request == null) {
+            logger.warn("Contact inquiry email skipped because request was null");
+            return false;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            String senderEmail = request.getEmail() != null ? request.getEmail().trim() : "";
+            String senderName = request.getFullName() != null ? request.getFullName().trim() : "";
+            String recipient = toEmail != null && !toEmail.isBlank() ? toEmail.trim() : fromEmail;
+
+            helper.setFrom(fromEmail);
+            helper.setTo(recipient);
+            if (!senderEmail.isBlank()) {
+                helper.setReplyTo(senderEmail);
+            }
+            helper.setSubject(buildContactInquirySubject(request));
+            helper.setText(buildContactInquiryEmail(request), true);
+
+            mailSender.send(message);
+            logger.info("Contact inquiry email sent from {} <{}> to {}", senderName, senderEmail, recipient);
+            return true;
+        } catch (MessagingException | MailException e) {
+            logger.error("Failed to send contact inquiry email", e);
+            return false;
+        }
+    }
     
     private String buildPasswordResetEmail(String code) {
         return """
@@ -204,6 +236,69 @@ public class EmailService {
             </body>
             </html>
             """.formatted(escapeHtml(safeRecipient), escapeHtml(safeTitle), locationLine, itemReferenceLine, buildStandardFooter());
+    }
+
+    private String buildContactInquirySubject(MailContactRequest request) {
+        String solution = request.getSolution() != null && !request.getSolution().isBlank()
+                ? request.getSolution().trim()
+                : "General inquiry";
+        String company = request.getCompany() != null && !request.getCompany().isBlank()
+                ? request.getCompany().trim()
+                : "Unknown company";
+        return "New contact inquiry - " + solution + " - " + company;
+    }
+
+    private String buildContactInquiryEmail(MailContactRequest request) {
+        String fullName = request.getFullName() != null && !request.getFullName().isBlank() ? request.getFullName().trim() : "Unknown";
+        String email = request.getEmail() != null ? request.getEmail().trim() : "";
+        String company = request.getCompany() != null && !request.getCompany().isBlank() ? request.getCompany().trim() : "Unknown company";
+        String solution = request.getSolution() != null && !request.getSolution().isBlank() ? request.getSolution().trim() : "General inquiry";
+        String body = request.getMessage() != null ? request.getMessage().trim() : "";
+
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 680px; margin: 0 auto; padding: 20px; }
+                    .header { background: #0f172a; color: white; padding: 20px; text-align: center; }
+                    .content { background: #f8fafc; padding: 28px; border-radius: 8px; }
+                    .meta { width: 100%%; border-collapse: collapse; margin-bottom: 22px; }
+                    .meta td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+                    .meta td:first-child { width: 180px; font-weight: bold; color: #0f172a; }
+                    .message-box { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; white-space: pre-wrap; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>Vicinity24 Contact Request</h2>
+                    </div>
+                    <div class="content">
+                        <p>A new contact request was submitted from the Vicinity24 company site.</p>
+                        <table class="meta">
+                            <tr><td>Full name</td><td>%s</td></tr>
+                            <tr><td>Work email</td><td>%s</td></tr>
+                            <tr><td>Company</td><td>%s</td></tr>
+                            <tr><td>Solution</td><td>%s</td></tr>
+                        </table>
+                        <p><strong>Message</strong></p>
+                        <div class="message-box">%s</div>
+                    </div>
+                    %s
+                </div>
+            </body>
+            </html>
+            """.formatted(
+                escapeHtml(fullName),
+                escapeHtml(email),
+                escapeHtml(company),
+                escapeHtml(solution),
+                escapeHtml(body),
+                buildStandardFooter()
+            );
     }
 
     private String escapeHtml(String s) {

@@ -1,0 +1,141 @@
+.store-footer-wrap {
+  width: min(100%, 88rem);
+  margin: 0 auto;
+  padding: 1.4rem 0 0.35rem;
+}
+
+.store-footer {
+  display: grid;
+  gap: 1rem;
+}
+
+.signature-band,
+.logistics,
+.checklist {
+  display: grid;
+  gap: 1rem;
+  padding: 1.35rem;
+  border-radius: 1.75rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.06);
+}
+
+.signature-band {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 28%),
+    linear-gradient(135deg, #0f172a 0%, #1f2937 55%, #0f766e 100%);
+  color: #fff;
+  box-shadow:
+    0 16px 24px rgba(15, 23, 42, 0.08),
+    0 34px 80px rgba(15, 23, 42, 0.12);
+}
+
+.signature-band .eyebrow {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.signature-band strong,
+.signature-band span {
+  display: block;
+}
+
+.signature-band strong {
+  font-size: 1.15rem;
+}
+
+.signature-band span {
+  margin-top: 0.25rem;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.signature-band a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0.85rem 1.05rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.logistics {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.logistics h3,
+.logistics p,
+.hours ul,
+.checklist p {
+  margin: 0;
+}
+
+.hours {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.hours ul {
+  padding-left: 1rem;
+  color: #475569;
+}
+
+.logistics a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0.85rem 1.05rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+  color: #fff;
+  font-weight: 700;
+}
+
+.checklist {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.checklist article {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.05rem;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 45%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.checklist strong {
+  font-size: 0.96rem;
+}
+
+.checklist p {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+@media (max-width: 920px) {
+  .signature-band,
+  .logistics,
+  .checklist {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,110 @@
+:root {
+  color-scheme: light;
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --bg: #ffffff;
+  --bg-subtle: #f5f8f3;
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --text: #1f2a1f;
+  --muted: #617061;
+  --border: #e4ebe3;
+  --shadow: 0 8px 24px rgba(26, 53, 33, 0.08);
+  --shadow-soft: 0 3px 12px rgba(26, 53, 33, 0.05);
+  --primary: #2f855a;
+  --primary-dark: #246946;
+  --primary-soft: #edf7f0;
+  --primary-line: #cfe4d4;
+  --success: #2f855a;
+  --danger: #c13515;
+  background: var(--bg);
+  color: var(--text);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: rgba(47, 133, 90, 0.18);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.15;
+}
+
+button,
+input,
+textarea,
+select,
+a,
+.card-hover-surface {
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+
+button:hover:not(:disabled),
+a:hover,
+.card-hover-surface:hover {
+  transform: translateY(-1px);
+}
+
+.card-hover-surface:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: default;
+  transform: none;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  color: var(--text);
+  background: #fff;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: none;
+  border-color: rgba(47, 133, 90, 0.45);
+  box-shadow: 0 0 0 3px rgba(47, 133, 90, 0.14);
+}

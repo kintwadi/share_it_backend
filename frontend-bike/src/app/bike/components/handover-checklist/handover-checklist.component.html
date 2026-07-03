@@ -1,0 +1,19 @@
+﻿<section class="checklist">
+  <div class="checklist-header">
+    <p class="eyebrow">Operations</p>
+    <h3>Handover Checklist</h3>
+    <p>StVZO-ready delivery checks for {{ bikeTitle || 'this bicycle' }}.</p>
+  </div>
+
+  <label class="checklist-row" *ngFor="let item of checklist">
+    <input type="checkbox" [(ngModel)]="item.done" />
+    <span>{{ item.label }}</span>
+  </label>
+
+  <label class="signature">
+    <span>Digital handover signature</span>
+    <input type="text" [(ngModel)]="signature" placeholder="Type customer name" />
+  </label>
+
+  <p class="summary">{{ completedCount }}/{{ checklist.length }} safety checks completed.</p>
+</section>

@@ -1,0 +1,27 @@
+.footer {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.inner {
+  width: min(1280px, calc(100% - 2rem));
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 1.2rem;
+  color: var(--muted);
+}
+
+.footer-note {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .inner {
+    padding: 0.95rem 0 1.1rem;
+  }
+}

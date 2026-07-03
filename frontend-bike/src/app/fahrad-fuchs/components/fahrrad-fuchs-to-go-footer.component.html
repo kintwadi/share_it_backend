@@ -1,0 +1,45 @@
+<div class="store-footer-wrap">
+  <footer class="store-footer">
+    <section class="signature-band">
+      <div>
+        <p class="eyebrow">Detached Dealer Signature</p>
+        <strong>Fahrrad Fuchs to go</strong>
+        <span>{{ store.storeName }} · Test rides, pickup, and guidance in Gross-Gerau</span>
+      </div>
+      <a [href]="'tel:' + store.phone.replaceAll(' ', '')">Call the showroom</a>
+    </section>
+
+    <section class="logistics">
+      <div>
+        <p class="eyebrow">Pickup In Store</p>
+        <h3>Fahrrad Fuchs to go</h3>
+        <p>{{ store.addressLine1 }}, {{ store.cityLine }}</p>
+        <p>{{ store.phone }} · {{ store.email }}</p>
+      </div>
+
+      <div class="hours">
+        <strong>Opening hours</strong>
+        <ul>
+          <li *ngFor="let item of store.openingHours">{{ item }}</li>
+        </ul>
+      </div>
+
+      <a [href]="store.mapUrl" target="_blank" rel="noreferrer">Plan route</a>
+    </section>
+
+    <section class="checklist">
+      <article>
+        <strong>Valid photo ID</strong>
+        <p>Please bring an ID card or driver's license that matches the booking.</p>
+      </article>
+      <article>
+        <strong>Matching payment card</strong>
+        <p>The card used for the booking is needed for the usual store security checks.</p>
+      </article>
+      <article>
+        <strong>Helmet required</strong>
+        <p>Bring your own helmet or ask for a loan helmet before your ride starts.</p>
+      </article>
+    </section>
+  </footer>
+</div>

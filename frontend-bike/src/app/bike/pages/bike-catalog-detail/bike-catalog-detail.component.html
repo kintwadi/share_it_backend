@@ -1,0 +1,100 @@
+<section class="bike-catalog-detail" *ngIf="!loading && bike as current; else stateTpl">
+  <div class="detail-nav">
+    <a routerLink="/bikes" class="back-link">Back to catalog range</a>
+    <a [routerLink]="['/bikes/admin/catalog', current.id]" class="back-link admin-link">Edit in admin</a>
+  </div>
+
+  <div class="hero">
+    <div class="media-column">
+      <img [src]="current.imageUrl" [alt]="current.displayName" />
+      <div class="media-badge-row">
+        <span>{{ formatEnum(current.category) }}</span>
+        <span>{{ formatEnum(current.saleType) }}</span>
+      </div>
+    </div>
+
+    <div class="hero-copy">
+      <p class="eyebrow">{{ formatEnum(current.category) }} <span>&bull;</span> {{ formatEnum(current.saleType) }}</p>
+      <h1>{{ current.displayName }}</h1>
+      <p class="description">{{ current.description }}</p>
+
+      <div class="stats">
+        <span>{{ current.modelYear }} model year</span>
+        <span>{{ current.skus.length }} SKU<span *ngIf="current.skus.length !== 1">s</span></span>
+        <span>{{ current.basePrice | currency:'EUR' }}</span>
+      </div>
+
+      <div class="purchase-card">
+        <div>
+          <span class="purchase-label">Retail from</span>
+          <strong>{{ current.basePrice | currency:'EUR' }}</strong>
+        </div>
+        <p>Each variant keeps fit guidance, stock visibility, and size-specific data attached for store teams, buyers, and sales staff.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Build Specifications</h2>
+        <p>Core and custom selling points are grouped below for the active tenant assortment.</p>
+      </div>
+
+      <div class="spec-groups">
+        <article class="spec-group" *ngFor="let group of current.specs">
+          <div class="spec-head">
+            <strong>{{ group.attributeName }}</strong>
+            <span *ngIf="group.custom">Custom</span>
+          </div>
+          <div class="spec-values">
+            <span *ngFor="let value of group.values">{{ value }}</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Variants And Fit Data</h2>
+        <p>Stock, sizing, and fit guidance stay attached to every sellable configuration.</p>
+      </div>
+
+      <div class="sku-list">
+        <article class="sku-card" *ngFor="let sku of current.skus">
+          <div class="sku-title">
+            <div>
+              <strong>{{ sku.colorName }}</strong>
+              <p>{{ sku.sizeValue }} <span>&bull;</span> {{ sku.skuCode }}</p>
+            </div>
+            <span>{{ sku.stockQuantity }} in stock</span>
+          </div>
+
+          <div class="sku-meta">
+            <div>
+              <span>Recommended rider height</span>
+              <strong>
+                {{ sku.riderHeightMinCm || '-' }} - {{ sku.riderHeightMaxCm || '-' }} cm
+              </strong>
+            </div>
+            <div>
+              <span>Stack / reach</span>
+              <strong>{{ sku.stackMm || '-' }} / {{ sku.reachMm || '-' }} mm</strong>
+            </div>
+            <div>
+              <span>Variant price delta</span>
+              <strong>{{ (sku.priceModifier || 0) | currency:'EUR' }}</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">Loading bike details...</p>
+    <p *ngIf="!loading && error">{{ error }}</p>
+  </section>
+</ng-template>

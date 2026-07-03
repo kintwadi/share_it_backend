@@ -1,0 +1,155 @@
+﻿.bike-detail {
+  display: grid;
+  gap: 1rem;
+}
+
+.back-link {
+  width: fit-content;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.media-column,
+.hero-copy,
+.state {
+  border-radius: 1.5rem;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: none;
+}
+
+.media-column {
+  overflow: hidden;
+}
+
+.hero img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+
+.quick-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.quick-facts div {
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: #f7f7f7;
+}
+
+.quick-facts span,
+.panel-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.quick-facts strong {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 1rem;
+  padding: 1.7rem;
+}
+
+.hero-copy h1,
+.hero-copy p,
+.info-panels h2,
+.info-panels p {
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+}
+
+.description {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.stats span {
+  padding: 0.48rem 0.75rem;
+  border-radius: 999px;
+  background: #f7f7f7;
+  color: var(--muted);
+}
+
+.info-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.info-panels article {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+
+.info-panels h2 {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+.info-panels p {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.state {
+  padding: 1.5rem;
+}
+
+@media (max-width: 980px) {
+  .hero,
+  .info-panels,
+  .quick-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .hero img {
+    height: 320px;
+  }
+}
