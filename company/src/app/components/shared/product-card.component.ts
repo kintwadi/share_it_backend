@@ -22,7 +22,7 @@ import { RevealOnScrollDirective } from '../../directives/reveal-on-scroll.direc
           }
         </div>
         <a class="product-link" [href]="ctaHref()">
-          {{ product().ctaLabel || 'Explore Solutions' }}
+          {{ product().ctaLabel || 'Explore' }}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>

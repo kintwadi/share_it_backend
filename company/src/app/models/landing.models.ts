@@ -103,6 +103,7 @@ export interface FooterConfig {
   contactTitle: string;
   email: string;
   phone: string;
+  address: string;
   bottomLeft: string;
   bottomRight: string;
 }

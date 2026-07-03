@@ -14,6 +14,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=10000
+ENV BASE_API_URL=vicinity24api.com
 
 RUN npm install -g serve
 
@@ -21,4 +22,4 @@ COPY --from=build /app/dist/vicinity24-company/browser ./browser
 
 EXPOSE 10000
 
-CMD sh -c "serve -s /app/browser -l tcp://0.0.0.0:${PORT}"
+CMD sh -c "printf 'window.__env = window.__env || {}; window.__env.BASE_API_URL = \"%s\";\n' \"$BASE_API_URL\" > /app/browser/env.js && serve -s /app/browser -l tcp://0.0.0.0:${PORT}"

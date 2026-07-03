@@ -93,6 +93,7 @@ function createEmptyLocaleContent(): SiteLocaleContent {
       contactTitle: '',
       email: '',
       phone: '',
+      address: '',
       bottomLeft: '',
       bottomRight: ''
     }

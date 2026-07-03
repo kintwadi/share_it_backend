@@ -655,6 +655,46 @@ section {
   background: var(--mint);
 }
 
+.contact-info-cards {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.contact-info-card {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--bg-alt);
+}
+
+.contact-info-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.contact-info-card a,
+.contact-info-card p {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.contact-info-card a {
+  text-decoration: none;
+}
+
+.contact-info-card a:hover {
+  color: var(--brand);
+}
+
 .contact-form-card {
   padding: 32px;
 }

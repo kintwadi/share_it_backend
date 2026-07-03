@@ -20,7 +20,7 @@ import { PlatformConfigService } from '../services/platform-config.service';
         <div class="container">
           <div class="contact-hero-copy">
             <span class="section-tag">Contact Sales</span>
-            <h1>Explore Solutions With Our Team</h1>
+            <h1>Explore With Our Team</h1>
             <p>
               Share your goals and we will help you find the right setup for your business.
             </p>
@@ -41,6 +41,17 @@ import { PlatformConfigService } from '../services/platform-config.service';
               <li>Implementation recommendations</li>
               <li>Customized solution matching</li>
             </ul>
+
+            <div class="contact-info-cards">
+              <div class="contact-info-card">
+                <span class="contact-info-label">Phone</span>
+                <a [href]="contactPhoneHref()">{{ locale().footer.phone }}</a>
+              </div>
+              <div class="contact-info-card">
+                <span class="contact-info-label">Address</span>
+                <p>{{ locale().footer.address }}</p>
+              </div>
+            </div>
           </div>
 
           <div class="contact-form-card">
@@ -108,6 +119,7 @@ export class ContactPageComponent {
   private readonly publicHeaderValue = 'vicinity24.com';
 
   readonly siteConfig = this.platformConfigService.siteConfig;
+  readonly locale = this.platformConfigService.locale;
   readonly solutionParam = toSignal(
     this.route.queryParamMap.pipe(map((params) => params.get('solution'))),
     { initialValue: null }
@@ -116,6 +128,7 @@ export class ContactPageComponent {
   readonly submitState = signal<'idle' | 'submitting' | 'success' | 'error'>('idle');
   readonly submitMessage = signal('');
   readonly isSubmitting = computed(() => this.submitState() === 'submitting');
+  readonly contactPhoneHref = computed(() => this.toTelHref(this.locale().footer.phone));
 
   async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
@@ -177,7 +190,7 @@ export class ContactPageComponent {
 
   private resolveContactEndpoint(): string {
     if (typeof window === 'undefined') {
-      return 'https://www.vicinity24api.com/api/mail-contact-request';
+      return 'https://vicinity24api.com/api/mail-contact-request';
     }
 
     const hostname = window.location.hostname.toLowerCase();
@@ -185,6 +198,26 @@ export class ContactPageComponent {
       return 'http://localhost:8081/api/mail-contact-request';
     }
 
-    return 'https://www.vicinity24api.com/api/mail-contact-request';
+    const runtimeApiUrl = this.normalizeBaseApiUrl((window as any).__env?.BASE_API_URL);
+    if (runtimeApiUrl) {
+      return `${runtimeApiUrl}/api/mail-contact-request`;
+    }
+
+    return 'https://vicinity24api.com/api/mail-contact-request';
+  }
+
+  private normalizeBaseApiUrl(value: unknown): string | null {
+    const trimmed = String(value ?? '').trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    return withProtocol.replace(/\/+$/, '');
+  }
+
+  private toTelHref(phone: string): string {
+    const normalized = String(phone ?? '').replace(/[^\d+]/g, '');
+    return normalized ? `tel:${normalized}` : 'tel:';
   }
 }

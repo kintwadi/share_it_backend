@@ -86,10 +86,10 @@
                                                        "platforms":  [
                                                                          {
                                                                              "id":  "sas",
-                                                                             "label":  "SAS",
-                                                                             "title":  "SAS: The Sharing Economy Platform for Businesses",
+                                                                            "label":  "v24Pool",
+                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
                                                                              "tagline":  "Share. Borrow. Save.",
-                                                                             "description":  "A powerful peer-to-peer platform designed to help businesses and individuals lend and borrow resources locally. Whether it\u0027s equipment, tools, or commercial assets, SAS makes it easy to reduce ownership costs, optimize usage, and build trust through a verified, transparent community.",
+                                                                            "description":  "A powerful peer-to-peer platform designed to help businesses and individuals lend and borrow resources locally. Whether it\u0027s equipment, tools, or commercial assets, v24Pool makes it easy to reduce ownership costs, optimize usage, and build trust through a verified, transparent community.",
                                                                              "features":  [
                                                                                               "Proximity-based resource discovery",
                                                                                               "Verified profiles \u0026 community reviews",
@@ -120,14 +120,14 @@
                                                                          {
                                                                              "id":  "linkedStore",
                                                                              "label":  "Linked-Store",
-                                                                             "title":  "Linked-Store: Unified Inventory for Multi-Location Success",
-                                                                             "tagline":  "One Network, One Unified Inventory.",
-                                                                             "description":  "A groundbreaking inventory network for multi-location retailers and partners. Pool and share stock across all locations to reduce overstock, fulfill orders from anywhere in your network, and provide a seamless shopping experience for your customers.",
+                                                                                "title":  "Never Lose a Sale Again.",
+                                                                                "tagline":  "The Dynamic Inventory Network for Multi-Location Retail.",
+                                                                                "description":  "Maximize your revenue by unlocking hidden stock. Instantly tap into inventory across all your locations and authorized networks to fulfill every order, boost profits, and keep customers smiling.",
                                                                              "features":  [
-                                                                                              "Cross-location inventory pooling",
-                                                                                              "Smart, shared fulfillment routing",
-                                                                                              "Centralized reporting \u0026 analytics",
-                                                                                              "Network-wide customer access"
+                                                                                                 "On-Demand Inventory Pooling",
+                                                                                                 "Instant Profit Routing",
+                                                                                                 "Unified Network Intelligence",
+                                                                                                 "Frictionless Customer Catchment"
                                                                                           ],
                                                                              "image":  "/images/linked-store-network.svg",
                                                                              "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
@@ -188,7 +188,7 @@
                                                                  "title":  "Product",
                                                                  "links":  [
                                                                                {
-                                                                                   "label":  "SAS",
+                                                                                  "label":  "v24Pool",
                                                                                    "href":  "#solutions"
                                                                                },
                                                                                {
@@ -219,6 +219,7 @@
                                               "contactTitle":  "Contact",
                                               "email":  "info@vicinity24.com",
                                               "phone":  "+1 (555) 123-4567",
+                                              "address":  "Muellerstrasse 45, 10961 Berlin",
                                               "bottomLeft":  "© 2026 Vicinity24. Empowering business growth.",
                                               "bottomRight":  ""
                                           }
@@ -265,10 +266,10 @@
                                                        "platforms":  [
                                                                          {
                                                                              "id":  "sas",
-                                                                             "label":  "SAS",
-                                                                             "title":  "SAS: Die Sharing-Economy-Plattform für Unternehmen",
+                                                                            "label":  "v24Pool",
+                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
                                                                              "tagline":  "Teilen. Ausleihen. Sparen.",
-                                                                             "description":  "Eine leistungsstarke Peer-to-Peer-Plattform, die Unternehmen und Privatpersonen hilft, Ressourcen lokal zu verleihen und auszuleihen. Ob Werkzeuge oder Betriebsmittel, SAS macht es einfach, Eigentumskosten zu senken, die Nutzung zu optimieren und durch ein verifiziertes, transparentes Ökosystem Vertrauen aufzubauen.",
+                                                                            "description":  "Eine leistungsstarke Peer-to-Peer-Plattform, die Unternehmen und Privatpersonen hilft, Ressourcen lokal zu verleihen und auszuleihen. Ob Werkzeuge oder Betriebsmittel, v24Pool macht es einfach, Eigentumskosten zu senken, die Nutzung zu optimieren und durch ein verifiziertes, transparentes Ökosystem Vertrauen aufzubauen.",
                                                                              "features":  [
                                                                                               "Standortbasierte Ressourcensuche",
                                                                                               "Verifizierte Profile \u0026 Bewertungen",
@@ -367,7 +368,7 @@
                                                                  "title":  "Produkt",
                                                                  "links":  [
                                                                                {
-                                                                                   "label":  "SAS",
+                                                                                  "label":  "v24Pool",
                                                                                    "href":  "#solutions"
                                                                                },
                                                                                {
@@ -398,6 +399,7 @@
                                               "contactTitle":  "Kontakt",
                                               "email":  "info@vicinity24.com",
                                               "phone":  "+1 (555) 123-4567",
+                                              "address":  "Muellerstrasse 45, 10961 Berlin",
                                               "bottomLeft":  "© 2026 Vicinity24. Wachstum für Unternehmen.",
                                               "bottomRight":  ""
                                           }
@@ -444,10 +446,10 @@
                                                        "platforms":  [
                                                                          {
                                                                              "id":  "sas",
-                                                                             "label":  "SAS",
-                                                                             "title":  "SAS: A Plataforma de Economia Compartilhada para Empresas",
+                                                                            "label":  "v24Pool",
+                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
                                                                              "tagline":  "Compartilhe. Pegue emprestado. Economize.",
-                                                                             "description":  "Uma poderosa plataforma peer-to-peer que ajuda empresas e indivíduos a emprestar e tomar emprestado recursos localmente. Seja ferramentas ou ativos comerciais, o SAS facilita a redução de custos de propriedade, otimização de uso e construção de confiança por meio de uma comunidade verificada e transparente.",
+                                                                            "description":  "Uma poderosa plataforma peer-to-peer que ajuda empresas e indivíduos a emprestar e tomar emprestado recursos localmente. Seja ferramentas ou ativos comerciais, o v24Pool facilita a redução de custos de propriedade, otimização de uso e construção de confiança por meio de uma comunidade verificada e transparente.",
                                                                              "features":  [
                                                                                               "Busca de recursos por proximidade",
                                                                                               "Perfis verificados e avaliações",
@@ -546,7 +548,7 @@
                                                                  "title":  "Produto",
                                                                  "links":  [
                                                                                {
-                                                                                   "label":  "SAS",
+                                                                                  "label":  "v24Pool",
                                                                                    "href":  "#solutions"
                                                                                },
                                                                                {
@@ -577,6 +579,7 @@
                                               "contactTitle":  "Contato",
                                               "email":  "info@vicinity24.com",
                                               "phone":  "+1 (555) 123-4567",
+                                              "address":  "Muellerstrasse 45, 10961 Berlin",
                                               "bottomLeft":  "© 2026 Vicinity24. Impulsionando o crescimento dos negócios.",
                                               "bottomRight":  ""
                                           }
@@ -623,10 +626,10 @@
                                                        "platforms":  [
                                                                          {
                                                                              "id":  "sas",
-                                                                             "label":  "SAS",
-                                                                             "title":  "SAS : La plateforme d\u0027économie de partage pour les entreprises",
+                                                                            "label":  "v24Pool",
+                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
                                                                              "tagline":  "Partagez. Empruntez. Économisez.",
-                                                                             "description":  "Une puissante plateforme peer-to-peer qui aide les entreprises et les particuliers à prêter et emprunter des ressources localement. Qu\u0027il s\u0027agisse d\u0027outils ou d\u0027actifs commerciaux, SAS facilite la réduction des coûts de possession, l\u0027optimisation de l\u0027utilisation et la création de confiance grâce à une communauté vérifiée et transparente.",
+                                                                            "description":  "Une puissante plateforme peer-to-peer qui aide les entreprises et les particuliers à prêter et emprunter des ressources localement. Qu\u0027il s\u0027agisse d\u0027outils ou d\u0027actifs commerciaux, v24Pool facilite la réduction des coûts de possession, l\u0027optimisation de l\u0027utilisation et la création de confiance grâce à une communauté vérifiée et transparente.",
                                                                              "features":  [
                                                                                               "Recherche de ressources par proximité",
                                                                                               "Profils vérifiés et avis",
@@ -725,7 +728,7 @@
                                                                  "title":  "Produit",
                                                                  "links":  [
                                                                                {
-                                                                                   "label":  "SAS",
+                                                                                  "label":  "v24Pool",
                                                                                    "href":  "#solutions"
                                                                                },
                                                                                {
@@ -756,6 +759,7 @@
                                               "contactTitle":  "Contact",
                                               "email":  "info@vicinity24.com",
                                               "phone":  "+1 (555) 123-4567",
+                                              "address":  "Muellerstrasse 45, 10961 Berlin",
                                               "bottomLeft":  "© 2026 Vicinity24. Accélère la croissance des entreprises.",
                                               "bottomRight":  ""
                                           }
