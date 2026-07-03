@@ -300,14 +300,14 @@
                                                                          {
                                                                              "id":  "linkedStore",
                                                                              "label":  "Linked-Store",
-                                                                             "title":  "Linked-Store: Vereinheitlichter Bestand für Multi-Standort-Erfolg",
-                                                                             "tagline":  "Ein Netzwerk, ein gemeinsamer Bestand.",
-                                                                             "description":  "Ein revolutionäres Bestandsnetzwerk für Einzelhändler mit mehreren Standorten und Partnerunternehmen. Bündeln Sie Lagerbestände standortübergreifend, senken Sie Überbestände und bieten Sie Ihren Kunden ein nahtloses Einkaufserlebnis.",
+                                                                            "title":  "Nie wieder einen Verkauf verpassen.",
+                                                                            "tagline":  "Das dynamische Bestandsnetzwerk für den Einzelhandel mit mehreren Standorten.",
+                                                                            "description":  "Maximieren Sie Ihren Umsatz, indem Sie verborgene Bestände freischalten. Greifen Sie sofort auf Inventar an all Ihren Standorten und in autorisierten Netzwerken zu, um jede Bestellung zu erfüllen, Gewinne zu steigern und Ihre Kunden zufriedenzustellen.",
                                                                              "features":  [
-                                                                                              "Standortübergreifende Bestandsbündelung",
-                                                                                              "Intelligente Auftragsabwicklung",
-                                                                                              "Zentrales Reporting \u0026 Analysen",
-                                                                                              "Netzwerkweiter Kunden-Zugang"
+                                                                                             "Bestandspooling auf Abruf",
+                                                                                             "Sofortige Profit-Routing-Logik",
+                                                                                             "Einheitliche Netzwerkintelligenz",
+                                                                                             "Reibungslose Kundenreichweite"
                                                                                           ],
                                                                              "image":  "/images/linked-store-network.svg",
                                                                              "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
@@ -480,14 +480,14 @@
                                                                          {
                                                                              "id":  "linkedStore",
                                                                              "label":  "Linked-Store",
-                                                                             "title":  "Linked-Store: Inventário Unificado para Sucesso em Múltiplas Unidades",
-                                                                             "tagline":  "Uma rede, um estoque unificado.",
-                                                                             "description":  "Uma rede de inventário revolucionária para varejistas com várias unidades e parceiros. Consolide e compartilhe estoque entre todas as localizações para reduzir o excesso, atender pedidos de qualquer lugar da sua rede e proporcionar uma experiência de compra perfeita aos seus clientes.",
+                                                                            "title":  "Nunca perca uma venda novamente.",
+                                                                            "tagline":  "A rede dinâmica de inventário para o varejo com múltiplas unidades.",
+                                                                            "description":  "Maximize sua receita desbloqueando estoque oculto. Acesse instantaneamente o inventário em todas as suas unidades e redes autorizadas para atender cada pedido, aumentar os lucros e manter os clientes satisfeitos.",
                                                                              "features":  [
-                                                                                              "Pool de inventário entre unidades",
-                                                                                              "Roteamento inteligente de pedidos",
-                                                                                              "Relatórios e análises centralizados",
-                                                                                              "Acesso do cliente em toda a rede"
+                                                                                             "Pool de inventário sob demanda",
+                                                                                             "Roteamento instantâneo de lucro",
+                                                                                             "Inteligência unificada da rede",
+                                                                                             "Captação de clientes sem fricção"
                                                                                           ],
                                                                              "image":  "/images/linked-store-network.svg",
                                                                              "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
@@ -660,14 +660,14 @@
                                                                          {
                                                                              "id":  "linkedStore",
                                                                              "label":  "Linked-Store",
-                                                                             "title":  "Linked-Store : Stock unifié pour le succès multi-sites",
-                                                                             "tagline":  "Un réseau, un stock unifié.",
-                                                                             "description":  "Un réseau de stock révolutionnaire pour les détaillants multi-sites et les partenaires. Regroupez et partagez les stocks sur tous les sites pour réduire les surplus, traiter les commandes de n\u0027importe où dans votre réseau et offrir une expérience d\u0027achat fluide à vos clients.",
+                                                                            "title":  "Ne perdez plus jamais une vente.",
+                                                                            "tagline":  "Le réseau d\u0027inventaire dynamique pour le commerce de détail multi-sites.",
+                                                                            "description":  "Maximisez vos revenus en débloquant les stocks cachés. Accédez instantanément à l\u0027inventaire de tous vos sites et réseaux autorisés pour honorer chaque commande, augmenter vos profits et garder vos clients satisfaits.",
                                                                              "features":  [
-                                                                                              "Mise en commun des stocks inter-sites",
-                                                                                              "Acheminement intelligent des commandes",
-                                                                                              "Rapports et analyses centralisés",
-                                                                                              "Accès client à l\u0027échelle du réseau"
+                                                                                             "Mutualisation des stocks à la demande",
+                                                                                             "Routage instantané vers le profit",
+                                                                                             "Intelligence réseau unifiée",
+                                                                                             "Acquisition client sans friction"
                                                                                           ],
                                                                              "image":  "/images/linked-store-network.svg",
                                                                              "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
