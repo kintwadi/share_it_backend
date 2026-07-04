@@ -41,10 +41,12 @@ public class ListingsController {
             @RequestParam(name = "minPrice", required = false) Double minPrice,
             @RequestParam(name = "viewerLat", required = false) Double viewerLat,
             @RequestParam(name = "viewerLng", required = false) Double viewerLng,
+            @RequestParam(name = "nearbyRadiusKm", required = false) Double nearbyRadiusKm,
+            @RequestParam(name = "sortBy", required = false) String sortBy,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         User current = principal != null ? userService.getByEmail(principal.getUsername()) : null;
-        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, viewerLat, viewerLng));
+        return ResponseEntity.ok(listingService.findAll(current, search, category, type, minPrice, page, size, viewerLat, viewerLng, nearbyRadiusKm, sortBy));
     }
 
     @GetMapping("/nearby")

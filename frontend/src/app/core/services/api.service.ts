@@ -12,6 +12,50 @@ export class ApiService {
   private api = inject(ApiClientService);
   private authStorage = inject(AuthStorageService);
 
+  private buildListingQuery(params?: {
+    search?: string | null;
+    category?: string | null;
+    type?: string | null;
+    minPrice?: number | null;
+    viewerLat?: number | null;
+    viewerLng?: number | null;
+    nearbyRadiusKm?: number | null;
+    sortBy?: string | null;
+    page?: number;
+    size?: number;
+  }): string {
+    const query = new URLSearchParams();
+    query.set('page', String(params?.page ?? 0));
+    query.set('size', String(params?.size ?? 100));
+
+    const search = String(params?.search ?? '').trim();
+    if (search) query.set('search', search);
+
+    const category = String(params?.category ?? '').trim();
+    if (category) query.set('category', category);
+
+    const type = String(params?.type ?? '').trim();
+    if (type) query.set('type', type);
+
+    const sortBy = String(params?.sortBy ?? '').trim();
+    if (sortBy) query.set('sortBy', sortBy);
+
+    if (typeof params?.minPrice === 'number' && Number.isFinite(params.minPrice)) {
+      query.set('minPrice', String(params.minPrice));
+    }
+    if (typeof params?.viewerLat === 'number' && Number.isFinite(params.viewerLat)) {
+      query.set('viewerLat', String(params.viewerLat));
+    }
+    if (typeof params?.viewerLng === 'number' && Number.isFinite(params.viewerLng)) {
+      query.set('viewerLng', String(params.viewerLng));
+    }
+    if (typeof params?.nearbyRadiusKm === 'number' && Number.isFinite(params.nearbyRadiusKm) && params.nearbyRadiusKm > 0) {
+      query.set('nearbyRadiusKm', String(params.nearbyRadiusKm));
+    }
+
+    return query.toString();
+  }
+
   private extractApiErrorCode(error: any): string {
     return String(
       error?.error?.error ??
@@ -102,9 +146,20 @@ export class ApiService {
     }
   }
 
-  async getListings(): Promise<Listing[]> {
+  async getListings(params?: {
+    search?: string | null;
+    category?: string | null;
+    type?: string | null;
+    minPrice?: number | null;
+    viewerLat?: number | null;
+    viewerLng?: number | null;
+    nearbyRadiusKm?: number | null;
+    sortBy?: string | null;
+    page?: number;
+    size?: number;
+  }): Promise<Listing[]> {
     try {
-      const page = await firstValueFrom(this.api.get<any>('/listings/?page=0&size=100'));
+      const page = await firstValueFrom(this.api.get<any>(`/listings/?${this.buildListingQuery(params)}`));
       return page.content || [];
     } catch {
       return [];
@@ -129,12 +184,7 @@ export class ApiService {
   }
 
   async searchListings(query: string): Promise<Listing[]> {
-    try {
-      const page = await firstValueFrom(this.api.get<any>(`/listings/?search=${encodeURIComponent(query)}&page=0&size=100`));
-      return page.content || [];
-    } catch {
-      return [];
-    }
+    return this.getListings({ search: query });
   }
 
   async getRecommendedListings(size: number = 6): Promise<Listing[]> {

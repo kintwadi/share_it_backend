@@ -181,11 +181,21 @@ public class ListingService {
 
     @Transactional(readOnly = true)
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size) {
-        return findAll(current, search, category, type, minPrice, page, size, null, null);
+        return findAll(current, search, category, type, minPrice, page, size, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
     public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, Double viewerLat, Double viewerLng) {
+        return findAll(current, search, category, type, minPrice, page, size, viewerLat, viewerLng, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, Double viewerLat, Double viewerLng, Double nearbyRadiusKm) {
+        return findAll(current, search, category, type, minPrice, page, size, viewerLat, viewerLng, nearbyRadiusKm, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ListingDTO> findAll(User current, String search, String category, String type, Double minPrice, int page, int size, Double viewerLat, Double viewerLng, Double nearbyRadiusKm, String sortBy) {
         List<Listing> all = listingRepository.findAll();
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
@@ -203,11 +213,28 @@ public class ListingService {
             .filter(l -> minPrice == null || (l.getHourlyRate() != null && l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0))
             .toList();
 
-        if (viewerLat != null && viewerLng != null) {
-            filtered = filtered.stream()
-                    .sorted((a, b) -> Double.compare(distanceForSort(viewerLat, viewerLng, a), distanceForSort(viewerLat, viewerLng, b)))
-                    .toList();
-        }
+        final boolean hasViewerLocation = viewerLat != null && viewerLng != null;
+        final double nearbyRadiusMiles = nearbyRadiusKm != null && nearbyRadiusKm > 0
+                ? nearbyRadiusKm * 0.621371d
+                : Double.POSITIVE_INFINITY;
+        final String normalizedSearch = normalizeSearchText(search);
+        final String sortMode = normalizeSortMode(sortBy);
+
+        filtered = filtered.stream()
+                .sorted((a, b) -> compareListings(
+                        sortMode,
+                        viewerLat,
+                        viewerLng,
+                        hasViewerLocation,
+                        nearbyRadiusMiles,
+                        normalizedSearch,
+                        category,
+                        type,
+                        a,
+                        b
+                ))
+                .toList();
+
         int start = Math.min(page * size, filtered.size());
         int end = Math.min(start + size, filtered.size());
         List<ListingDTO> content = filtered.subList(start, end).stream().map(l -> toDTO(l, current, viewerLat, viewerLng)).toList();
@@ -1006,6 +1033,259 @@ public class ListingService {
         if (viewerLat == null || viewerLng == null) return Double.MAX_VALUE;
         if (l == null || l.getLocation() == null || l.getLocation().getLat() == null || l.getLocation().getLng() == null) return Double.MAX_VALUE;
         return DistanceUtil.haversineMiles(viewerLat, viewerLng, l.getLocation().getLat(), l.getLocation().getLng());
+    }
+
+    private int compareListings(
+            String sortMode,
+            Double viewerLat,
+            Double viewerLng,
+            boolean hasViewerLocation,
+            double nearbyRadiusMiles,
+            String normalizedSearch,
+            String category,
+            String type,
+            Listing a,
+            Listing b
+    ) {
+        return switch (sortMode) {
+            case "nearest" -> compareNearestListings(viewerLat, viewerLng, hasViewerLocation, nearbyRadiusMiles, a, b);
+            case "newest" -> compareNewestListings(viewerLat, viewerLng, hasViewerLocation, nearbyRadiusMiles, a, b);
+            default -> compareBestMatchListings(viewerLat, viewerLng, hasViewerLocation, nearbyRadiusMiles, normalizedSearch, category, type, a, b);
+        };
+    }
+
+    private int compareBestMatchListings(
+            Double viewerLat,
+            Double viewerLng,
+            boolean hasViewerLocation,
+            double nearbyRadiusMiles,
+            String normalizedSearch,
+            String category,
+            String type,
+            Listing a,
+            Listing b
+    ) {
+        double distanceA = distanceForSort(viewerLat, viewerLng, a);
+        double distanceB = distanceForSort(viewerLat, viewerLng, b);
+
+        int bucketCompare = compareLocationBuckets(hasViewerLocation, nearbyRadiusMiles, distanceA, distanceB);
+        if (bucketCompare != 0) {
+            return bucketCompare;
+        }
+
+        double scoreA = rankingScore(a, distanceA, hasViewerLocation, nearbyRadiusMiles, normalizedSearch, category, type);
+        double scoreB = rankingScore(b, distanceB, hasViewerLocation, nearbyRadiusMiles, normalizedSearch, category, type);
+        int scoreCompare = Double.compare(scoreB, scoreA);
+        if (scoreCompare != 0) {
+            return scoreCompare;
+        }
+
+        return compareTieBreakers(distanceA, distanceB, a, b);
+    }
+
+    private int compareNearestListings(
+            Double viewerLat,
+            Double viewerLng,
+            boolean hasViewerLocation,
+            double nearbyRadiusMiles,
+            Listing a,
+            Listing b
+    ) {
+        double distanceA = distanceForSort(viewerLat, viewerLng, a);
+        double distanceB = distanceForSort(viewerLat, viewerLng, b);
+
+        int bucketCompare = compareLocationBuckets(hasViewerLocation, nearbyRadiusMiles, distanceA, distanceB);
+        if (bucketCompare != 0) {
+            return bucketCompare;
+        }
+
+        int distanceCompare = Double.compare(distanceA, distanceB);
+        if (distanceCompare != 0) {
+            return distanceCompare;
+        }
+
+        return compareTieBreakers(distanceA, distanceB, a, b);
+    }
+
+    private int compareNewestListings(
+            Double viewerLat,
+            Double viewerLng,
+            boolean hasViewerLocation,
+            double nearbyRadiusMiles,
+            Listing a,
+            Listing b
+    ) {
+        double distanceA = distanceForSort(viewerLat, viewerLng, a);
+        double distanceB = distanceForSort(viewerLat, viewerLng, b);
+
+        int bucketCompare = compareLocationBuckets(hasViewerLocation, nearbyRadiusMiles, distanceA, distanceB);
+        if (bucketCompare != 0) {
+            return bucketCompare;
+        }
+
+        int recencyCompare = compareCreatedAtDesc(a, b);
+        if (recencyCompare != 0) {
+            return recencyCompare;
+        }
+
+        return compareTieBreakers(distanceA, distanceB, a, b);
+    }
+
+    private int compareLocationBuckets(boolean hasViewerLocation, double nearbyRadiusMiles, double distanceA, double distanceB) {
+        if (!hasViewerLocation) {
+            return 0;
+        }
+
+        boolean aIsNearby = distanceA <= nearbyRadiusMiles;
+        boolean bIsNearby = distanceB <= nearbyRadiusMiles;
+        if (aIsNearby != bIsNearby) {
+            return aIsNearby ? -1 : 1;
+        }
+        return 0;
+    }
+
+    private int compareTieBreakers(double distanceA, double distanceB, Listing a, Listing b) {
+        int distanceCompare = Double.compare(distanceA, distanceB);
+        if (distanceCompare != 0) {
+            return distanceCompare;
+        }
+
+        int recencyCompare = compareCreatedAtDesc(a, b);
+        if (recencyCompare != 0) {
+            return recencyCompare;
+        }
+
+        String titleA = a != null && a.getTitle() != null ? a.getTitle() : "";
+        String titleB = b != null && b.getTitle() != null ? b.getTitle() : "";
+        return titleA.compareToIgnoreCase(titleB);
+    }
+
+    private int compareCreatedAtDesc(Listing a, Listing b) {
+        LocalDateTime createdAtA = a != null ? a.getCreatedAt() : null;
+        LocalDateTime createdAtB = b != null ? b.getCreatedAt() : null;
+        if (createdAtA != null || createdAtB != null) {
+            if (createdAtA == null) return 1;
+            if (createdAtB == null) return -1;
+            int recencyCompare = createdAtB.compareTo(createdAtA);
+            if (recencyCompare != 0) {
+                return recencyCompare;
+            }
+        }
+        return 0;
+    }
+
+    private double rankingScore(
+            Listing listing,
+            double distanceMiles,
+            boolean hasViewerLocation,
+            double nearbyRadiusMiles,
+            String normalizedSearch,
+            String category,
+            String type
+    ) {
+        double score = 0.0d;
+
+        if (hasViewerLocation && Double.isFinite(distanceMiles)) {
+            double safeRadius = Double.isFinite(nearbyRadiusMiles) && nearbyRadiusMiles > 0 && nearbyRadiusMiles < Double.MAX_VALUE
+                    ? nearbyRadiusMiles
+                    : 25.0d;
+            if (distanceMiles <= nearbyRadiusMiles) {
+                score += 6.0d;
+                score += Math.max(0.0d, 1.0d - (distanceMiles / safeRadius)) * 3.0d;
+            } else {
+                score += Math.max(0.0d, 1.0d / (1.0d + (distanceMiles / safeRadius))) * 1.0d;
+            }
+        }
+
+        score += searchRelevanceScore(listing, normalizedSearch) * 6.0d;
+
+        if (category != null && !category.isBlank() && listing != null && listing.getCategory() != null
+                && listing.getCategory().equalsIgnoreCase(category)) {
+            score += 1.25d;
+        }
+        if (type != null && !type.isBlank() && listing != null && listing.getType() != null
+                && listing.getType().name().equalsIgnoreCase(type)) {
+            score += 0.75d;
+        }
+
+        score += recencyScore(listing);
+        return score;
+    }
+
+    private double searchRelevanceScore(Listing listing, String normalizedSearch) {
+        if (listing == null || normalizedSearch == null || normalizedSearch.isBlank()) {
+            return 0.0d;
+        }
+
+        String title = normalizeSearchText(listing.getTitle());
+        String description = normalizeSearchText(listing.getDescription());
+        String category = normalizeSearchText(listing.getCategory());
+        String type = listing.getType() != null ? normalizeSearchText(listing.getType().name()) : "";
+
+        double score = 0.0d;
+        if (title.equals(normalizedSearch)) {
+            score += 1.0d;
+        } else if (title.startsWith(normalizedSearch)) {
+            score += 0.8d;
+        } else if (title.contains(normalizedSearch)) {
+            score += 0.55d;
+        }
+
+        if (description.contains(normalizedSearch)) {
+            score += 0.2d;
+        }
+        if (category.equals(normalizedSearch)) {
+            score += 0.35d;
+        } else if (category.contains(normalizedSearch)) {
+            score += 0.2d;
+        }
+        if (type.equals(normalizedSearch)) {
+            score += 0.2d;
+        }
+
+        for (String token : normalizedSearch.split("\\s+")) {
+            if (token.isBlank()) continue;
+            if (title.startsWith(token)) {
+                score += 0.18d;
+            } else if (title.contains(token)) {
+                score += 0.08d;
+            }
+            if (category.equals(token)) {
+                score += 0.1d;
+            }
+        }
+
+        return score;
+    }
+
+    private double recencyScore(Listing listing) {
+        if (listing == null || listing.getCreatedAt() == null) {
+            return 0.0d;
+        }
+
+        long ageDays = java.time.temporal.ChronoUnit.DAYS.between(listing.getCreatedAt(), nowUtc());
+        if (ageDays <= 0) {
+            return 2.0d;
+        }
+        if (ageDays >= 30) {
+            return 0.0d;
+        }
+        return (30.0d - ageDays) / 30.0d * 2.0d;
+    }
+
+    private String normalizeSearchText(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase();
+    }
+
+    private String normalizeSortMode(String sortBy) {
+        String normalized = normalizeSearchText(sortBy);
+        if ("nearest".equals(normalized) || "newest".equals(normalized) || "best_match".equals(normalized)) {
+            return normalized;
+        }
+        return "best_match";
     }
 
     private boolean isAvailableForDiscovery(User current, Listing l) {
