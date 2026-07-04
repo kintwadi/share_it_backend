@@ -61,6 +61,27 @@ function createEmptyLocaleContent(): SiteLocaleContent {
       accent: '',
       description: ''
     },
+    about: {
+      badge: '',
+      title: '',
+      accent: '',
+      lead: '',
+      intro: [],
+      projectsEyebrow: '',
+      projectsTitle: '',
+      projectsSubtitle: '',
+      projects: [],
+      visionEyebrow: '',
+      visionTitle: '',
+      visionDescription: '',
+      visionPrinciples: [],
+      benefitsEyebrow: '',
+      benefitsTitle: '',
+      benefits: [],
+      closingTitle: '',
+      closingDescription: '',
+      closingCta: { label: '', href: '' }
+    },
     platformSection: {
       showSection: false,
       eyebrow: '',
@@ -257,6 +278,18 @@ export class PlatformConfigService {
       hero: {
         ...empty.hero,
         ...locale?.hero
+      },
+      about: {
+        ...empty.about,
+        ...locale?.about,
+        intro: locale?.about?.intro ?? empty.about.intro,
+        projects: locale?.about?.projects ?? empty.about.projects,
+        visionPrinciples: locale?.about?.visionPrinciples ?? empty.about.visionPrinciples,
+        benefits: locale?.about?.benefits ?? empty.about.benefits,
+        closingCta: {
+          ...empty.about.closingCta,
+          ...locale?.about?.closingCta
+        }
       },
       platformSection: {
         ...empty.platformSection,

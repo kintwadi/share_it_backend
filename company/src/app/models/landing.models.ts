@@ -89,6 +89,41 @@ export interface FinalCtaSectionConfig {
   secondaryCta: CtaButtonConfig;
 }
 
+export interface AboutProjectConfig {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  points: string[];
+}
+
+export interface AboutBenefitConfig {
+  title: string;
+  description: string;
+}
+
+export interface AboutSectionConfig {
+  badge: string;
+  title: string;
+  accent: string;
+  lead: string;
+  intro: string[];
+  projectsEyebrow: string;
+  projectsTitle: string;
+  projectsSubtitle: string;
+  projects: AboutProjectConfig[];
+  visionEyebrow: string;
+  visionTitle: string;
+  visionDescription: string;
+  visionPrinciples: string[];
+  benefitsEyebrow: string;
+  benefitsTitle: string;
+  benefits: AboutBenefitConfig[];
+  closingTitle: string;
+  closingDescription: string;
+  closingCta: CtaButtonConfig;
+}
+
 export interface FooterLinkGroup {
   id: string;
   title: string;
@@ -127,6 +162,7 @@ export interface ItemVisibilityConfig {
 export interface SiteLocaleContent {
   nav: NavConfig;
   hero: HeroSectionConfig;
+  about: AboutSectionConfig;
   platformSection: PlatformSectionConfig;
   testimonial: TestimonialSectionConfig;
   finalCta: FinalCtaSectionConfig;
