@@ -326,6 +326,7 @@ export class HomeComponent implements OnInit {
 
   async requestCurrentLocation() {
     const hadLocation = this.isLocationEnabled;
+    const hadLocationText = !!String(this.locationQuery || this.locationSelectedLabel || '').trim();
     this.locationLoading = true;
     this.locationResults = [];
     this.render();
@@ -345,8 +346,9 @@ export class HomeComponent implements OnInit {
       await this.fetchData();
     } catch {
       this.locationDenied = true;
-      this.clearBorrowerCoordinates();
-      if (hadLocation) {
+      this.clearBorrowerLocation();
+      this.locationResults = [];
+      if (hadLocation || hadLocationText) {
         await this.fetchData();
       }
     } finally {
