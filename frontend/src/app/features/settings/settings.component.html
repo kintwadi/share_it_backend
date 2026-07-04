@@ -1,64 +1,66 @@
-<div class="min-h-screen bg-slate-50 py-8 px-4">
-  <div class="max-w-6xl mx-auto">
-    <div class="mb-6">
-      <button type="button" (click)="router.navigate(['/dashboard'])" class="flex items-center text-gray-600 hover:text-gray-900 mb-2">
-        ← {{ i18n.t('settings.back_to_dashboard') }}
-      </button>
-      <div class="flex justify-between items-start">
-        <div>
-          <div class="text-sm font-semibold text-brand-600 uppercase tracking-wide">{{ i18n.t('settings.header_kicker') }}</div>
-          <h1 class="text-4xl font-bold text-gray-900 mt-1">{{ i18n.t('settings.header_title') }}</h1>
-          <p class="text-gray-600 mt-2">{{ i18n.t('settings.header_subtitle') }}</p>
-        </div>
-        <button
-          type="button"
-          (click)="sidebarOpen = !sidebarOpen"
-          class="md:hidden px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm"
-        >
-          {{ sidebarOpen ? i18n.t('settings.sidebar_close') : i18n.t('settings.sidebar_open') }}
-        </button>
+<div class="settings-page">
+  <div class="settings-main">
+    <button type="button" (click)="router.navigate(['/dashboard'])" class="settings-back-link">
+      <lucide-icon [img]="ChevronRight" [size]="16" class="settings-back-link__icon"></lucide-icon>
+      <span>{{ i18n.t('settings.back_to_dashboard') }}</span>
+    </button>
+
+    <div class="settings-page-header">
+      <div>
+        <div class="settings-page-header__kicker">{{ i18n.t('settings.header_kicker') }}</div>
+        <h1>{{ i18n.t('settings.header_title') }}</h1>
+        <p>{{ i18n.t('settings.header_subtitle') }}</p>
       </div>
-      <div class="flex items-center gap-2 mt-4 text-sm text-gray-500">
+      <button
+        type="button"
+        (click)="sidebarOpen = !sidebarOpen"
+        class="settings-mobile-toggle"
+      >
+        {{ sidebarOpen ? i18n.t('settings.sidebar_close') : i18n.t('settings.sidebar_open') }}
+      </button>
+    </div>
+
+    <div class="settings-page-meta">
+      <div class="settings-breadcrumb">
         <span>{{ i18n.t('settings.breadcrumb_root') }}</span>
-        <span>/</span>
-        <span class="font-semibold text-gray-700">{{ i18n.t(tabs.find(t => t.id === activeTab)?.labelKey || 'settings.tabs.overview') }}</span>
-        <div *ngIf="settingsConfig.isSectionEnabled(activeTab, 'header.privacy.badge')" class="ml-auto flex items-center gap-2">
-          <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
-            {{ i18n.t('settings.header.privacy_badge') }}
-          </span>
-          <span class="text-xs">{{ i18n.t('settings.header.privacy_hint') }}</span>
-        </div>
+        <span class="settings-breadcrumb__sep">/</span>
+        <span class="settings-breadcrumb__current">{{ i18n.t(currentTabLabelKey) }}</span>
+      </div>
+      <div *ngIf="settingsConfig.isSectionEnabled(activeTab, 'header.privacy.badge')" class="settings-private-badge">
+        <lucide-icon [img]="Shield" [size]="12"></lucide-icon>
+        <span>{{ i18n.t('settings.header.privacy_badge') }}</span>
+        <span class="settings-private-badge__note">{{ i18n.t('settings.header.privacy_hint') }}</span>
       </div>
     </div>
 
-    <div class="flex gap-6 relative">
-    <div class="md:w-64 flex-shrink-0" [ngClass]="{'hidden md:block': !sidebarOpen}">
-      <div class="bg-white rounded-2xl shadow-soft p-4 sticky top-8 border border-gray-100">
+    <div class="settings-layout">
+      <aside class="settings-sidebar" [class.is-open]="sidebarOpen">
         <nav [attr.aria-label]="i18n.t('settings.sidebar_aria')">
-          <ul class="space-y-1">
+          <ul class="settings-sidebar__list">
             <li *ngFor="let tab of visibleTabs">
               <button
                 type="button"
                 (click)="handleTabClick(tab.id)"
-                class="relative w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
-                [ngClass]="activeTab === tab.id ? 'bg-white text-gray-900 shadow-soft border border-indigo-100' : 'text-gray-600 hover:bg-gray-50'"
+                class="settings-sidebar__link"
+                [class.is-active]="activeTab === tab.id"
                 [attr.aria-current]="activeTab === tab.id ? 'page' : null"
               >
-                <span *ngIf="activeTab === tab.id" class="absolute inset-y-1 left-0 w-1 rounded-full bg-gradient-to-b from-indigo-500 to-purple-500"></span>
-                <span class="relative flex items-center gap-2">
-                  <span>{{ tab.icon }}</span>
-                  <span>{{ i18n.t(tab.labelKey) }}</span>
-                </span>
+                <lucide-icon [img]="getTabIcon(tab.id)" [size]="18"></lucide-icon>
+                <span>{{ i18n.t(tab.labelKey) }}</span>
               </button>
             </li>
           </ul>
         </nav>
-      </div>
-    </div>
+      </aside>
 
-    <!-- Main Content Area -->
-    <div class="flex-1">
-      <div class="min-h-[600px] space-y-6">
+      <div class="settings-content-card">
+        <div class="settings-content-header">
+          <h2>{{ i18n.t(currentTabLabelKey) }}</h2>
+          <p>{{ i18n.t(currentTabHelpKey) }}</p>
+        </div>
+
+        <div class="settings-content-body">
+          <div class="min-h-[600px] space-y-6">
         
         <!-- Overview Tab -->
         <ng-container *ngIf="activeTab === 'overview'">
@@ -1336,19 +1338,21 @@
           </div>
         </ng-container>
 
+          </div>
+
+          <div class="settings-footer-note">
+            <span *ngIf="footerGdprEnabled">{{ i18n.t('settings.footer_gdpr_note') }}</span>
+            <a
+              *ngIf="footerDpoEnabled"
+              [href]="'mailto:' + i18n.t('settings.footer_dpo_email')"
+              class="settings-footer-note__link"
+            >
+              <lucide-icon [img]="Shield" [size]="12"></lucide-icon>
+              {{ i18n.t('settings.footer_dpo_label') }}
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="mt-6 text-[11px] text-gray-500 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
-    <span *ngIf="footerGdprEnabled">{{ i18n.t('settings.footer_gdpr_note') }}</span>
-    <a
-      *ngIf="footerDpoEnabled"
-      [href]="'mailto:' + i18n.t('settings.footer_dpo_email')"
-      class="inline-flex items-center text-brand-600 hover:text-brand-700"
-    >
-      <lucide-icon [img]="Shield" [size]="12" class="mr-1"></lucide-icon>
-      {{ i18n.t('settings.footer_dpo_label') }}
-    </a>
   </div>
 </div>

@@ -191,6 +191,64 @@ export class SettingsComponent implements OnInit {
     );
   }
 
+  get currentTabLabelKey(): string {
+    return this.tabs.find(t => t.id === this.activeTab)?.labelKey || 'settings.tabs.overview';
+  }
+
+  get currentTabHelpKey(): string {
+    switch (this.activeTab) {
+      case 'overview':
+        return 'settings.overview.summary_help';
+      case 'profile':
+        return 'settings.profile.help';
+      case 'subscription':
+        return 'settings.subscription.help';
+      case 'security':
+        return 'settings.security.help';
+      case 'privacy':
+        return 'settings.privacy.help';
+      case 'notifications':
+        return 'settings.notifications.help';
+      case 'payments':
+        return 'settings.payments.help';
+      case 'building':
+        return 'settings.building.help';
+      case 'stats':
+        return 'settings.stats.help';
+      case 'support':
+        return 'settings.support.help';
+      default:
+        return 'settings.header_subtitle';
+    }
+  }
+
+  getTabIcon(id: SettingsTabId) {
+    switch (id) {
+      case 'overview':
+        return this.BarChart2;
+      case 'profile':
+        return this.UserIcon;
+      case 'subscription':
+        return this.CreditCard;
+      case 'security':
+        return this.Lock;
+      case 'privacy':
+        return this.Shield;
+      case 'notifications':
+        return this.Bell;
+      case 'payments':
+        return this.CreditCard;
+      case 'building':
+        return this.Home;
+      case 'stats':
+        return this.BarChart2;
+      case 'support':
+        return this.HelpCircle;
+      default:
+        return this.UserIcon;
+    }
+  }
+
   get paymentsLocked(): boolean {
     const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
     if (this.paymentsEntryFromNewItem) return false;
