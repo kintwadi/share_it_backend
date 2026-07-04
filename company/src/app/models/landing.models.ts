@@ -124,6 +124,33 @@ export interface AboutSectionConfig {
   closingCta: CtaButtonConfig;
 }
 
+export interface ContactFieldConfig {
+  label: string;
+  placeholder: string;
+}
+
+export interface ContactSectionConfig {
+  badge: string;
+  title: string;
+  description: string;
+  panelTitle: string;
+  panelDescription: string;
+  highlights: string[];
+  phoneLabel: string;
+  addressLabel: string;
+  fullName: ContactFieldConfig;
+  email: ContactFieldConfig;
+  company: ContactFieldConfig;
+  solution: ContactFieldConfig;
+  message: ContactFieldConfig;
+  generalInquiryLabel: string;
+  sendingLabel: string;
+  submitLabel: string;
+  backToHomeLabel: string;
+  successMessage: string;
+  errorMessage: string;
+}
+
 export interface FooterLinkGroup {
   id: string;
   title: string;
@@ -163,6 +190,7 @@ export interface SiteLocaleContent {
   nav: NavConfig;
   hero: HeroSectionConfig;
   about: AboutSectionConfig;
+  contact: ContactSectionConfig;
   platformSection: PlatformSectionConfig;
   testimonial: TestimonialSectionConfig;
   finalCta: FinalCtaSectionConfig;

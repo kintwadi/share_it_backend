@@ -289,6 +289,46 @@
           "label": "Contact us",
           "href": "/contact"
         }
+      },
+      "contact": {
+        "badge": "Contact Sales",
+        "title": "Explore With Our Team",
+        "description": "Share your goals and we will help you find the right setup for your business.",
+        "panelTitle": "Tell us what you need",
+        "panelDescription": "Fill out the form and our team will follow up with next steps, pricing guidance, and the best product fit for your operation.",
+        "highlights": [
+          "Fast product guidance",
+          "Implementation recommendations",
+          "Customized solution matching"
+        ],
+        "phoneLabel": "Phone",
+        "addressLabel": "Address",
+        "fullName": {
+          "label": "Full name",
+          "placeholder": "Jane Doe"
+        },
+        "email": {
+          "label": "Work email",
+          "placeholder": "jane@company.com"
+        },
+        "company": {
+          "label": "Company",
+          "placeholder": "Your company"
+        },
+        "solution": {
+          "label": "Solution of interest",
+          "placeholder": ""
+        },
+        "message": {
+          "label": "Message",
+          "placeholder": "Tell us about your business needs, locations, and goals."
+        },
+        "generalInquiryLabel": "General inquiry",
+        "sendingLabel": "Sending...",
+        "submitLabel": "Send Request",
+        "backToHomeLabel": "Back to Home",
+        "successMessage": "Your request has been sent. Our team will contact you soon.",
+        "errorMessage": "We could not send your request right now. Please try again in a moment."
       }
     },
     "de": {
@@ -536,6 +576,46 @@
           "label": "Kontakt aufnehmen",
           "href": "/contact"
         }
+      },
+      "contact": {
+        "badge": "Vertrieb kontaktieren",
+        "title": "Entdecken Sie die passende Losung mit unserem Team",
+        "description": "Teilen Sie uns Ihre Ziele mit und wir helfen Ihnen, die richtige Losung fur Ihr Unternehmen zu finden.",
+        "panelTitle": "Sagen Sie uns, was Sie brauchen",
+        "panelDescription": "Fullen Sie das Formular aus und unser Team meldet sich mit den nachsten Schritten, Preisorientierung und der passenden Produktoption fur Ihren Betrieb.",
+        "highlights": [
+          "Schnelle Produktberatung",
+          "Empfehlungen zur Einfuhrung",
+          "Passgenaue Losungszuordnung"
+        ],
+        "phoneLabel": "Telefon",
+        "addressLabel": "Adresse",
+        "fullName": {
+          "label": "Vollstandiger Name",
+          "placeholder": "Max Mustermann"
+        },
+        "email": {
+          "label": "Geschaftliche E-Mail",
+          "placeholder": "max@firma.de"
+        },
+        "company": {
+          "label": "Unternehmen",
+          "placeholder": "Ihr Unternehmen"
+        },
+        "solution": {
+          "label": "Gewunschte Losung",
+          "placeholder": ""
+        },
+        "message": {
+          "label": "Nachricht",
+          "placeholder": "Erzahlen Sie uns mehr uber Ihre Anforderungen, Standorte und Ziele."
+        },
+        "generalInquiryLabel": "Allgemeine Anfrage",
+        "sendingLabel": "Wird gesendet...",
+        "submitLabel": "Anfrage senden",
+        "backToHomeLabel": "Zur Startseite",
+        "successMessage": "Ihre Anfrage wurde gesendet. Unser Team meldet sich in Kurze bei Ihnen.",
+        "errorMessage": "Ihre Anfrage konnte gerade nicht gesendet werden. Bitte versuchen Sie es in einem Moment erneut."
       }
     },
     "pt": {
@@ -783,6 +863,46 @@
           "label": "Fale connosco",
           "href": "/contact"
         }
+      },
+      "contact": {
+        "badge": "Fale com vendas",
+        "title": "Explore com a nossa equipa",
+        "description": "Partilhe os seus objetivos e vamos ajudar a encontrar a configuracao certa para o seu negocio.",
+        "panelTitle": "Diga-nos do que precisa",
+        "panelDescription": "Preencha o formulario e a nossa equipa entrara em contacto com os proximos passos, orientacao de preco e a melhor solucao para a sua operacao.",
+        "highlights": [
+          "Orientacao rapida sobre o produto",
+          "Recomendacoes de implementacao",
+          "Correspondencia de solucao personalizada"
+        ],
+        "phoneLabel": "Telefone",
+        "addressLabel": "Endereco",
+        "fullName": {
+          "label": "Nome completo",
+          "placeholder": "Joana Silva"
+        },
+        "email": {
+          "label": "Email profissional",
+          "placeholder": "joana@empresa.com"
+        },
+        "company": {
+          "label": "Empresa",
+          "placeholder": "A sua empresa"
+        },
+        "solution": {
+          "label": "Solucao de interesse",
+          "placeholder": ""
+        },
+        "message": {
+          "label": "Mensagem",
+          "placeholder": "Fale-nos sobre as necessidades do seu negocio, localizacoes e objetivos."
+        },
+        "generalInquiryLabel": "Pedido geral",
+        "sendingLabel": "A enviar...",
+        "submitLabel": "Enviar pedido",
+        "backToHomeLabel": "Voltar ao inicio",
+        "successMessage": "O seu pedido foi enviado. A nossa equipa entrara em contacto em breve.",
+        "errorMessage": "Nao foi possivel enviar o seu pedido neste momento. Tente novamente daqui a pouco."
       }
     },
     "fr": {
@@ -1030,6 +1150,46 @@
           "label": "Nous contacter",
           "href": "/contact"
         }
+      },
+      "contact": {
+        "badge": "Contacter les ventes",
+        "title": "Explorez avec notre equipe",
+        "description": "Partagez vos objectifs et nous vous aiderons a trouver la configuration adaptee a votre entreprise.",
+        "panelTitle": "Dites-nous ce dont vous avez besoin",
+        "panelDescription": "Remplissez le formulaire et notre equipe reviendra vers vous avec les prochaines etapes, des indications tarifaires et la solution la plus adaptee a votre activite.",
+        "highlights": [
+          "Orientation produit rapide",
+          "Recommandations de mise en oeuvre",
+          "Correspondance de solution sur mesure"
+        ],
+        "phoneLabel": "Telephone",
+        "addressLabel": "Adresse",
+        "fullName": {
+          "label": "Nom complet",
+          "placeholder": "Jean Dupont"
+        },
+        "email": {
+          "label": "Email professionnel",
+          "placeholder": "jean@entreprise.com"
+        },
+        "company": {
+          "label": "Entreprise",
+          "placeholder": "Votre entreprise"
+        },
+        "solution": {
+          "label": "Solution souhaitee",
+          "placeholder": ""
+        },
+        "message": {
+          "label": "Message",
+          "placeholder": "Parlez-nous de vos besoins, de vos sites et de vos objectifs."
+        },
+        "generalInquiryLabel": "Demande generale",
+        "sendingLabel": "Envoi en cours...",
+        "submitLabel": "Envoyer la demande",
+        "backToHomeLabel": "Retour a l accueil",
+        "successMessage": "Votre demande a ete envoyee. Notre equipe vous contactera bientot.",
+        "errorMessage": "Nous n avons pas pu envoyer votre demande pour le moment. Veuillez reessayer dans un instant."
       }
     }
   }

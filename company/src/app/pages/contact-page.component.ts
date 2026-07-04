@@ -19,10 +19,10 @@ import { PlatformConfigService } from '../services/platform-config.service';
       <section class="contact-hero">
         <div class="container">
           <div class="contact-hero-copy">
-            <span class="section-tag">Contact Sales</span>
-            <h1>Explore With Our Team</h1>
+            <span class="section-tag">{{ contact().badge }}</span>
+            <h1>{{ contact().title }}</h1>
             <p>
-              Share your goals and we will help you find the right setup for your business.
+              {{ contact().description }}
             </p>
           </div>
         </div>
@@ -31,24 +31,23 @@ import { PlatformConfigService } from '../services/platform-config.service';
       <section class="contact-section">
         <div class="container contact-layout">
           <div class="contact-panel">
-            <h2>Tell us what you need</h2>
+            <h2>{{ contact().panelTitle }}</h2>
             <p>
-              Fill out the form and our team will follow up with next steps, pricing guidance, and the
-              best product fit for your operation.
+              {{ contact().panelDescription }}
             </p>
             <ul class="contact-highlights">
-              <li>Fast product guidance</li>
-              <li>Implementation recommendations</li>
-              <li>Customized solution matching</li>
+              @for (highlight of contact().highlights; track highlight) {
+                <li>{{ highlight }}</li>
+              }
             </ul>
 
             <div class="contact-info-cards">
               <div class="contact-info-card">
-                <span class="contact-info-label">Phone</span>
+                <span class="contact-info-label">{{ contact().phoneLabel }}</span>
                 <a [href]="contactPhoneHref()">{{ locale().footer.phone }}</a>
               </div>
               <div class="contact-info-card">
-                <span class="contact-info-label">Address</span>
+                <span class="contact-info-label">{{ contact().addressLabel }}</span>
                 <p>{{ locale().footer.address }}</p>
               </div>
             </div>
@@ -58,32 +57,32 @@ import { PlatformConfigService } from '../services/platform-config.service';
             <form class="contact-form" (submit)="onSubmit($event)">
               <div class="form-grid">
                 <label>
-                  <span>Full name</span>
-                  <input type="text" name="fullName" placeholder="Jane Doe" required [disabled]="isSubmitting()" />
+                  <span>{{ contact().fullName.label }}</span>
+                  <input type="text" name="fullName" [placeholder]="contact().fullName.placeholder" required [disabled]="isSubmitting()" />
                 </label>
                 <label>
-                  <span>Work email</span>
-                  <input type="email" name="email" placeholder="jane@company.com" required [disabled]="isSubmitting()" />
+                  <span>{{ contact().email.label }}</span>
+                  <input type="email" name="email" [placeholder]="contact().email.placeholder" required [disabled]="isSubmitting()" />
                 </label>
               </div>
 
               <div class="form-grid">
                 <label>
-                  <span>Company</span>
-                  <input type="text" name="company" placeholder="Your company" required [disabled]="isSubmitting()" />
+                  <span>{{ contact().company.label }}</span>
+                  <input type="text" name="company" [placeholder]="contact().company.placeholder" required [disabled]="isSubmitting()" />
                 </label>
                 <label>
-                  <span>Solution of interest</span>
+                  <span>{{ contact().solution.label }}</span>
                   <input type="text" name="solution" [value]="selectedSolution()" readonly [disabled]="isSubmitting()" />
                 </label>
               </div>
 
               <label>
-                <span>Message</span>
+                <span>{{ contact().message.label }}</span>
                 <textarea
                   name="message"
                   rows="6"
-                  placeholder="Tell us about your business needs, locations, and goals."
+                  [placeholder]="contact().message.placeholder"
                   required
                   [disabled]="isSubmitting()"></textarea>
               </label>
@@ -96,9 +95,9 @@ import { PlatformConfigService } from '../services/platform-config.service';
 
               <div class="contact-actions">
                 <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
-                  {{ isSubmitting() ? 'Sending...' : 'Send Request' }}
+                  {{ isSubmitting() ? contact().sendingLabel : contact().submitLabel }}
                 </button>
-                <a routerLink="/" class="btn btn-outline">Back to Home</a>
+                <a routerLink="/" class="btn btn-outline">{{ contact().backToHomeLabel }}</a>
               </div>
             </form>
           </div>
@@ -120,6 +119,7 @@ export class ContactPageComponent {
 
   readonly siteConfig = this.platformConfigService.siteConfig;
   readonly locale = this.platformConfigService.locale;
+  readonly contact = computed(() => this.locale().contact);
   readonly solutionParam = toSignal(
     this.route.queryParamMap.pipe(map((params) => params.get('solution'))),
     { initialValue: null }
@@ -170,16 +170,16 @@ export class ContactPageComponent {
 
       form.reset();
       this.submitState.set('success');
-      this.submitMessage.set('Your request has been sent. Our team will contact you soon.');
+      this.submitMessage.set(this.contact().successMessage);
     } catch {
       this.submitState.set('error');
-      this.submitMessage.set('We could not send your request right now. Please try again in a moment.');
+      this.submitMessage.set(this.contact().errorMessage);
     }
   }
 
   private formatSolution(value: string | null): string {
     if (!value) {
-      return 'General inquiry';
+      return this.contact().generalInquiryLabel;
     }
 
     return value
