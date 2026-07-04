@@ -67,6 +67,7 @@ export class HomeComponent implements OnInit {
   readonly sortOptions: HomeSortMode[] = ['best_match', 'nearest', 'newest'];
   private searchSubject = new Subject<void>();
   private locationSubject = new Subject<void>();
+  private fetchRequestId = 0;
   private readonly viewModeStorageKey = 'home_view_mode';
   private readonly sortModeStorageKey = 'home_sort_mode';
   private readonly borrowerLatKey = 'borrower_lat';
@@ -211,47 +212,40 @@ export class HomeComponent implements OnInit {
   }
 
   async fetchData() {
+    const requestId = ++this.fetchRequestId;
     this.loading = true;
     this.render();
     try {
-      const data = await this.api.getListings({
-        search: this.searchQuery || null,
-        category: this.selectedCategory !== this.i18n.t('home.category_all') ? this.selectedCategory : null,
-        type: this.filterType !== 'ALL' && this.filterType !== 'ITEMS' ? this.filterType : null,
-        viewerLat: this.isLocationEnabled ? this.borrowerLat : null,
-        viewerLng: this.isLocationEnabled ? this.borrowerLng : null,
-        nearbyRadiusKm: this.isLocationEnabled ? this.searchRadiusKm : null,
-        sortBy: this.sortMode,
-        size: 200
-      });
+      const hadLocation = this.isLocationEnabled;
+      const data = await this.loadListings(hadLocation);
+      if (requestId !== this.fetchRequestId) return;
 
-      let filtered = data.filter(l =>
-        l.status !== AvailabilityStatus.BLOCKED &&
-        l.status !== AvailabilityStatus.HIDDEN
-      );
+      let filtered = this.applyClientFilters(data);
 
-      if (this.searchQuery) {
-        const q = this.searchQuery.toLowerCase();
-        filtered = filtered.filter(l => String(l.title || '').toLowerCase().includes(q));
+      if (hadLocation && filtered.length === 0) {
+        const fallbackData = await this.loadListings(false);
+        if (requestId !== this.fetchRequestId) return;
+
+        const fallbackFiltered = this.applyClientFilters(fallbackData);
+        if (fallbackFiltered.length > 0) {
+          this.clearBorrowerLocation();
+          this.locationResults = [];
+          filtered = fallbackFiltered;
+        }
       }
 
-      if (this.filterType === 'ITEMS') {
-        filtered = filtered.filter(l => l.type !== ListingType.SKILL);
-      } else if (this.filterType !== 'ALL') {
-        filtered = filtered.filter(l => l.type === this.filterType);
-      }
-
-      if (this.selectedCategory !== this.i18n.t('home.category_all')) {
-        filtered = filtered.filter(l => l.category === this.selectedCategory);
-      }
-
+      if (requestId !== this.fetchRequestId) return;
       this.listings = filtered;
       this.currentPage = 1;
     } catch (err) {
-      console.error(err);
+      if (requestId === this.fetchRequestId) {
+        console.error(err);
+      }
     } finally {
-      this.loading = false;
-      this.render();
+      if (requestId === this.fetchRequestId) {
+        this.loading = false;
+        this.render();
+      }
     }
   }
 
@@ -434,6 +428,43 @@ export class HomeComponent implements OnInit {
   private clearBorrowerLocation() {
     this.clearBorrowerCoordinates();
     this.locationQuery = '';
+  }
+
+  private loadListings(useLocation: boolean) {
+    return this.api.getListings({
+      search: this.searchQuery || null,
+      category: this.selectedCategory !== this.i18n.t('home.category_all') ? this.selectedCategory : null,
+      type: this.filterType !== 'ALL' && this.filterType !== 'ITEMS' ? this.filterType : null,
+      viewerLat: useLocation ? this.borrowerLat : null,
+      viewerLng: useLocation ? this.borrowerLng : null,
+      nearbyRadiusKm: useLocation ? this.searchRadiusKm : null,
+      sortBy: this.sortMode,
+      size: 200
+    });
+  }
+
+  private applyClientFilters(data: Listing[]) {
+    let filtered = data.filter(l =>
+      l.status !== AvailabilityStatus.BLOCKED &&
+      l.status !== AvailabilityStatus.HIDDEN
+    );
+
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(l => String(l.title || '').toLowerCase().includes(q));
+    }
+
+    if (this.filterType === 'ITEMS') {
+      filtered = filtered.filter(l => l.type !== ListingType.SKILL);
+    } else if (this.filterType !== 'ALL') {
+      filtered = filtered.filter(l => l.type === this.filterType);
+    }
+
+    if (this.selectedCategory !== this.i18n.t('home.category_all')) {
+      filtered = filtered.filter(l => l.category === this.selectedCategory);
+    }
+
+    return filtered;
   }
 
   private async fetchLocationAutocomplete() {
