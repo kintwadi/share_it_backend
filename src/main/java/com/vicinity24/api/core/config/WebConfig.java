@@ -36,6 +36,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "https://localhost:*",
                         "http://127.0.0.1:*",
                         "https://127.0.0.1:*",
+                        "https://v24pool.com",
+                        "https://*.v24pool.com",
                         "https://*.onrender.com"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
