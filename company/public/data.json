@@ -225,16 +225,16 @@
       },
       "about": {
         "badge": "About Vicinity24",
-        "title": "Building the neighbourhood economy with",
+        "title": "Building stronger local networks with",
         "accent": "shared local networks.",
-        "lead": "Connecting neighbours, empowering local shops, and building a circular community - together.",
+        "lead": "Connecting locals, empowering local shops, and building a stronger local sharing network - together.",
         "intro": [
-          "At Vicinity24, we believe the strongest communities grow when neighbours, shop owners, and local residents work together. Our goal is simple: no sale lost, no customer left disappointed, and no useful item sitting idle when someone nearby needs it.",
+          "At Vicinity24, we believe the strongest communities grow when locals, shop owners, and local residents work together. Our goal is simple: no sale lost, no customer left disappointed, and no useful item sitting idle when someone nearby needs it.",
           "That belief comes to life through two connected platforms: v24mart helps local retailers cooperate around real-time inventory, and v24Pool helps people and businesses borrow and lend useful items nearby."
         ],
         "projectsEyebrow": "Two connected platforms",
         "projectsTitle": "One mission, two practical products",
-        "projectsSubtitle": "Each platform solves a different neighbourhood problem, but both strengthen local commerce, reduce waste, and keep value circulating nearby.",
+        "projectsSubtitle": "Each platform solves a different local coordination challenge, but both strengthen local commerce, reduce waste, and keep value circulating nearby.",
         "projects": [
           {
             "id": "v24mart",
@@ -250,8 +250,8 @@
           {
             "id": "v24pool",
             "label": "v24Pool",
-            "title": "Borrow and lend within your neighbourhood",
-            "description": "v24Pool is a local borrowing marketplace for people, freelancers, and businesses that want access without unnecessary ownership. Instead of buying rarely used items, neighbours can share what already exists and extend the life of every useful asset.",
+            "title": "Borrow and lend through your local network",
+            "description": "v24Pool is a local borrowing marketplace for people, freelancers, and businesses that want access without unnecessary ownership. Instead of buying rarely used items, nearby peers can share what already exists and extend the life of every useful asset.",
             "points": [
               "Borrow seldom-used items close to home",
               "Earn from idle tools and equipment",
@@ -260,7 +260,7 @@
           }
         ],
         "visionEyebrow": "Our vision",
-        "visionTitle": "A circular neighbourhood economy that works for everyone",
+        "visionTitle": "A shared local network that works for everyone",
         "visionDescription": "We do not deny competition; we reject the idea that it must be zero-sum. We are building a model where local businesses cooperate when it matters, households reuse what already exists, and the community becomes stronger with every shared transaction.",
         "visionPrinciples": [
           "No sale is lost because shops choose to cooperate instead of competing blindly.",
@@ -268,7 +268,7 @@
           "No usable item is thrown away while someone nearby is about to buy the same thing new."
         ],
         "benefitsEyebrow": "Why Vicinity24",
-        "benefitsTitle": "Practical value for shops, neighbours, and the planet",
+        "benefitsTitle": "Practical value for shops, locals, and the planet",
         "benefits": [
           {
             "title": "For local shops",
@@ -280,10 +280,10 @@
           },
           {
             "title": "For the planet",
-            "description": "Both platforms support the circular economy by reducing overproduction, unnecessary purchases, and avoidable waste."
+            "description": "Both platforms reduce overproduction, unnecessary purchases, and avoidable waste while making better use of existing local resources."
           }
         ],
-        "closingTitle": "Let's grow the neighbourhood economy. Together.",
+        "closingTitle": "Let's grow stronger local networks. Together.",
         "closingDescription": "Whether you run a boutique tired of losing customers to out-of-stock moments or you would rather borrow a tent than store one all year, Vicinity24 gives you a better local way to buy, sell, lend, and borrow.",
         "closingCta": {
           "label": "Contact us",
