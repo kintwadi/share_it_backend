@@ -13,6 +13,8 @@ import { debounceTime } from 'rxjs/operators';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
 
+type HomeSortMode = 'best_match' | 'nearest' | 'newest';
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -50,6 +52,8 @@ export class HomeComponent implements OnInit {
   locationSelectedLabel: string | null = null;
   locationResults: LocationResponse[] = [];
   locationLoading = false;
+  searchRadiusKm = 25;
+  sortMode: HomeSortMode = 'best_match';
   selectedCategory = '';
   currentPage = 1;
   viewMode: 'modern' | 'list' = 'modern';
@@ -59,9 +63,12 @@ export class HomeComponent implements OnInit {
   homeConfig = { showHeroBadge: true, showHeroTitle: true, showHeroDesc: true };
 
   readonly ITEMS_PER_PAGE = 6;
+  readonly radiusOptions = [5, 10, 25, 50, 100];
+  readonly sortOptions: HomeSortMode[] = ['best_match', 'nearest', 'newest'];
   private searchSubject = new Subject<void>();
   private locationSubject = new Subject<void>();
   private readonly viewModeStorageKey = 'home_view_mode';
+  private readonly sortModeStorageKey = 'home_sort_mode';
   private readonly borrowerLatKey = 'borrower_lat';
   private readonly borrowerLngKey = 'borrower_lng';
   private readonly borrowerLabelKey = 'borrower_location_label';
@@ -92,6 +99,14 @@ export class HomeComponent implements OnInit {
     return Array.from({ length: blockEnd - blockStart + 1 }, (_, i) => blockStart + i);
   }
 
+  get isLocationEnabled(): boolean {
+    return typeof this.borrowerLat === 'number' && typeof this.borrowerLng === 'number';
+  }
+
+  get showNearbyFirstBadge(): boolean {
+    return this.isLocationEnabled && this.sortMode !== 'newest';
+  }
+
   setViewMode(mode: 'modern' | 'list') {
     this.viewMode = mode;
     try {
@@ -105,6 +120,10 @@ export class HomeComponent implements OnInit {
     try {
       const v = String(localStorage.getItem(this.viewModeStorageKey) || '').toLowerCase();
       if (v === 'modern' || v === 'list') this.viewMode = v as any;
+      const storedSort = String(localStorage.getItem(this.sortModeStorageKey) || '').toLowerCase();
+      if (storedSort === 'best_match' || storedSort === 'nearest' || storedSort === 'newest') {
+        this.sortMode = storedSort as HomeSortMode;
+      }
     } catch { }
     this.render();
 
@@ -142,6 +161,33 @@ export class HomeComponent implements OnInit {
 
   onSearchChange() {
     this.searchSubject.next();
+  }
+
+  onLocationInputChange(value: string) {
+    this.locationQuery = value;
+    const normalizedQuery = String(value || '').trim();
+    const normalizedSelected = String(this.locationSelectedLabel || '').trim();
+    const hadLocation = this.isLocationEnabled;
+
+    if (!normalizedQuery) {
+      this.clearBorrowerLocation();
+      this.locationResults = [];
+      this.locationDenied = false;
+      if (hadLocation) {
+        this.fetchData();
+      } else {
+        this.render();
+      }
+      return;
+    }
+
+    if (!normalizedSelected || normalizedQuery !== normalizedSelected) {
+      this.clearBorrowerCoordinates();
+      if (hadLocation) {
+        this.fetchData();
+      }
+    }
+
     this.locationSubject.next();
   }
 
@@ -168,13 +214,16 @@ export class HomeComponent implements OnInit {
     this.loading = true;
     this.render();
     try {
-      const lat = this.borrowerLat;
-      const lng = this.borrowerLng;
-      const canUseNearby = typeof lat === 'number' && typeof lng === 'number' && !Number.isNaN(lat) && !Number.isNaN(lng);
-
-      const data = canUseNearby
-        ? await this.api.getNearbyListings(lat, lng, 25, 200)
-        : (this.searchQuery ? await this.api.searchListings(this.searchQuery) : await this.api.getListings());
+      const data = await this.api.getListings({
+        search: this.searchQuery || null,
+        category: this.selectedCategory !== this.i18n.t('home.category_all') ? this.selectedCategory : null,
+        type: this.filterType !== 'ALL' && this.filterType !== 'ITEMS' ? this.filterType : null,
+        viewerLat: this.isLocationEnabled ? this.borrowerLat : null,
+        viewerLng: this.isLocationEnabled ? this.borrowerLng : null,
+        nearbyRadiusKm: this.isLocationEnabled ? this.searchRadiusKm : null,
+        sortBy: this.sortMode,
+        size: 200
+      });
 
       let filtered = data.filter(l =>
         l.status !== AvailabilityStatus.BLOCKED &&
@@ -257,9 +306,12 @@ export class HomeComponent implements OnInit {
   clearFilters() {
     this.searchQuery = '';
     this.locationQuery = '';
+    this.locationDenied = false;
     this.filterType = 'ALL';
+    this.searchRadiusKm = 25;
     this.selectedCategory = this.i18n.t('home.category_all');
     this.locationResults = [];
+    this.clearBorrowerCoordinates();
     this.fetchData();
   }
 
@@ -272,17 +324,73 @@ export class HomeComponent implements OnInit {
     this.recommended = this.recommended.filter(l => l.id !== id);
   }
 
-  private async initBorrowerLocation() {
-    if (this.borrowerLat != null && this.borrowerLng != null) return;
+  async requestCurrentLocation() {
+    const hadLocation = this.isLocationEnabled;
+    this.locationLoading = true;
+    this.locationResults = [];
+    this.render();
 
     try {
-      const status = await (navigator as any)?.permissions?.query?.({ name: 'geolocation' });
-      if (status?.state === 'denied') {
-        this.clearBorrowerLocation();
-        this.locationDenied = true;
-        return;
+      const pos = await this.platformGeolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 60000
+      });
+      this.setBorrowerLocation(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        this.i18n.t('home.location.current_location')
+      );
+      this.locationDenied = false;
+      await this.fetchData();
+    } catch {
+      this.locationDenied = true;
+      this.clearBorrowerCoordinates();
+      if (hadLocation) {
+        await this.fetchData();
       }
+    } finally {
+      this.locationLoading = false;
+      this.render();
+    }
+  }
+
+  onRadiusChange(value: string | number) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return;
+    this.searchRadiusKm = parsed;
+    if (this.isLocationEnabled) {
+      this.fetchData();
+    }
+  }
+
+  onSortChange(value: string) {
+    if (value !== 'best_match' && value !== 'nearest' && value !== 'newest') {
+      return;
+    }
+    this.sortMode = value;
+    try {
+      localStorage.setItem(this.sortModeStorageKey, value);
     } catch { }
+    this.fetchData();
+  }
+
+  clearLocationFilter() {
+    if (!this.locationQuery && !this.isLocationEnabled) return;
+    const hadLocation = this.isLocationEnabled;
+    this.locationQuery = '';
+    this.locationResults = [];
+    this.locationDenied = false;
+    this.clearBorrowerCoordinates();
+    if (hadLocation) {
+      this.fetchData();
+    } else {
+      this.render();
+    }
+  }
+
+  private async initBorrowerLocation() {
+    if (this.borrowerLat != null && this.borrowerLng != null) return;
 
     try {
       const storedLat = parseFloat(String(localStorage.getItem(this.borrowerLatKey) || ''));
@@ -292,22 +400,9 @@ export class HomeComponent implements OnInit {
         this.borrowerLat = storedLat;
         this.borrowerLng = storedLng;
         this.locationSelectedLabel = label || null;
-        this.locationDenied = false;
-        return;
+        this.locationQuery = label || '';
       }
-    } catch { }
-
-    try {
-      const pos = await this.platformGeolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 60000
-      });
-      this.setBorrowerLocation(pos.coords.latitude, pos.coords.longitude, 'Current location');
-      this.locationDenied = false;
     } catch {
-      this.clearBorrowerLocation();
-      this.locationDenied = true;
     }
   }
 
@@ -315,6 +410,7 @@ export class HomeComponent implements OnInit {
     this.borrowerLat = lat;
     this.borrowerLng = lng;
     this.locationSelectedLabel = label;
+    this.locationQuery = label || '';
     try {
       localStorage.setItem(this.borrowerLatKey, String(lat));
       localStorage.setItem(this.borrowerLngKey, String(lng));
@@ -322,7 +418,7 @@ export class HomeComponent implements OnInit {
     } catch { }
   }
 
-  private clearBorrowerLocation() {
+  private clearBorrowerCoordinates() {
     this.borrowerLat = null;
     this.borrowerLng = null;
     this.locationSelectedLabel = null;
@@ -333,13 +429,18 @@ export class HomeComponent implements OnInit {
     } catch { }
   }
 
+  private clearBorrowerLocation() {
+    this.clearBorrowerCoordinates();
+    this.locationQuery = '';
+  }
+
   private async fetchLocationAutocomplete() {
-    if (!this.locationDenied || this.borrowerLat != null || this.borrowerLng != null) {
+    const q = String(this.locationQuery || '').trim();
+    if (this.isLocationEnabled && q === String(this.locationSelectedLabel || '').trim()) {
       this.locationResults = [];
       this.render();
       return;
     }
-    const q = String(this.locationQuery || '').trim();
     if (q.length < 2) {
       this.locationResults = [];
       this.render();
