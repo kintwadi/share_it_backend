@@ -1,768 +1,1036 @@
 {
-    "defaultLanguage":  "en",
-    "supportedLanguages":  [
-                               {
-                                   "code":  "en",
-                                   "label":  "English"
-                               },
-                               {
-                                   "code":  "de",
-                                   "label":  "Deutsch"
-                               },
-                               {
-                                   "code":  "pt",
-                                   "label":  "Portugues"
-                               },
-                               {
-                                   "code":  "fr",
-                                   "label":  "Francais"
-                               }
-                           ],
-    "section-visiility":  {
-                              "nav":  true,
-                              "hero":  true,
-                              "platformSection":  true,
-                              "testimonial":  false,
-                              "finalCta":  false,
-                              "footer":  true
-                          },
-    "item-visiility":  {
-                           "navLinks":  {
-                                            "solutions":  true,
-                                            "contact":  true
-                                        },
-                           "platformCards":  {
-                                                 "sas":  true,
-                                                 "onlineStore":  false,
-                                                 "linkedStore":  true,
-                                                 "consulting":  false
-                                             },
-                           "testimonial":  true,
-                           "footerGroups":  {
-                                                "product":  true,
-                                                "company":  true
-                                            }
-                       },
-    "locales":  {
-                    "en":  {
-                               "nav":  {
-                                           "brand":  {
-                                                         "mark":  "V",
-                                                         "name":  "Vicinity24",
-                                                         "ariaLabel":  "Vicinity24 home"
-                                                     },
-                                           "links":  [
-                                                         {
-                                                             "id":  "solutions",
-                                                             "label":  "Solutions",
-                                                             "href":  "#solutions"
-                                                         },
-                                                         {
-                                                             "id":  "about",
-                                                             "label":  "About Us",
-                                                             "href":  "/about"
-                                                         },
-                                                         {
-                                                             "id":  "contact",
-                                                             "label":  "Contact",
-                                                             "href":  "#contact"
-                                                         }
-                                                     ]
-                                       },
-                               "hero":  {
-                                            "showSection":  true,
-                                            "badge":  "Purpose-Built Software for SMBs",
-                                            "title":  "Unlock Shared Potential,",
-                                            "accent":  "Power Your Growth.",
-                                            "description":  "We build intelligent, resource-sharing software that helps small and medium businesses eliminate waste, streamline operations, and grow without the complexity of enterprise systems."
-                                        },
-                               "platformSection":  {
-                                                       "showSection":  true,
-                                                       "eyebrow":  "Our Platform",
-                                                       "title":  "Digital Solutions for Integrated Business Networks",
-                                                       "subtitle":  "From sharing resources within a single location to unifying your entire multi-location network.",
-                                                       "ctaLabel":  "Explore All Solutions",
-                                                       "ctaHref":  "#demo",
-                                                       "platforms":  [
-                                                                         {
-                                                                             "id":  "sas",
-                                                                            "label":  "v24Pool",
-                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
-                                                                             "tagline":  "Share. Borrow. Save.",
-                                                                            "description":  "A powerful peer-to-peer platform designed to help businesses and individuals lend and borrow resources locally. Whether it\u0027s equipment, tools, or commercial assets, v24Pool makes it easy to reduce ownership costs, optimize usage, and build trust through a verified, transparent community.",
-                                                                             "features":  [
-                                                                                              "Proximity-based resource discovery",
-                                                                                              "Verified profiles \u0026 community reviews",
-                                                                                              "Secure transaction \u0026 usage tracking",
-                                                                                              "Cost-savings management tools"
-                                                                                          ],
-                                                                             "image":  "/images/sas-sharing-platform.svg",
-                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
-                                                                             "link":  "https://v24pool.com",
-                                                                             "visible":  true
-                                                                         },
-                                                                         {
-                                                                             "id":  "onlineStore",
-                                                                             "label":  "Online Store",
-                                                                             "title":  "Customizable Online Store",
-                                                                             "tagline":  "Your brand. Your rules. Your margins.",
-                                                                             "description":  "Launch a high-converting, fully tailored e-commerce storefront built for serious retail operations. Match your brand identity precisely while delivering the frictionless checkout and backend operations your business demands.",
-                                                                             "features":  [
-                                                                                              "Drag-and-drop builder",
-                                                                                              "Local delivery routing",
-                                                                                              "Real-time inventory sync"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
-                                                                             "alt":  "E-commerce analytics dashboard with sales metrics",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         },
-                                                                         {
-                                                                             "id":  "linkedStore",
-                                                                             "label":  "Linked-Store",
-                                                                                "title":  "Never Lose a Sale Again.",
-                                                                                "tagline":  "The Dynamic Inventory Network for Multi-Location Retail.",
-                                                                                "description":  "Maximize your revenue by unlocking hidden stock. Instantly tap into inventory across all your locations and authorized networks to fulfill every order, boost profits, and keep customers smiling.",
-                                                                             "features":  [
-                                                                                                 "On-Demand Inventory Pooling",
-                                                                                                 "Instant Profit Routing",
-                                                                                                 "Unified Network Intelligence",
-                                                                                                 "Frictionless Customer Catchment"
-                                                                                          ],
-                                                                             "image":  "/images/linked-store-network.svg",
-                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
-                                                                             "link":  "https://v24mart.com",
-                                                                             "visible":  true,
-                                                                             "ctaLabel":  "Book a demo"
-                                                                         },
-                                                                         {
-                                                                             "id":  "consulting",
-                                                                             "label":  "Consulting",
-                                                                             "title":  "Consulting \u0026 On-Demand Projects",
-                                                                             "tagline":  "Custom solutions for complex operations.",
-                                                                             "description":  "When you need more than a standard product, our expert team works with you to design and build custom software solutions. We tackle complex operational challenges with strategic consulting and dedicated development teams.",
-                                                                             "features":  [
-                                                                                              "Workflow automation",
-                                                                                              "Custom API integrations",
-                                                                                              "Dedicated project teams"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
-                                                                             "alt":  "Business strategy consulting session with analytics",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         }
-                                                                     ]
-                                                   },
-                               "testimonial":  {
-                                                   "showSection":  true,
-                                                   "eyebrow":  "Customer Results",
-                                                   "title":  "Trusted by growing businesses nationwide",
-                                                   "quote":  "Linked-Store revolutionized our multi-location operations. By pooling inventory, we slashed carrying costs by 40% and boosted cross-store sales by 30% in just three months. It\u0027s the smart, shared infrastructure we needed.",
-                                                   "author":  "Sarah T.",
-                                                   "authorRole":  "COO of Regional Retail Group"
-                                               },
-                               "finalCta":  {
-                                                "showSection":  true,
-                                                "title":  "Ready to upgrade your business operations?",
-                                                "description":  "Join thousands of forward-thinking SMBs using Vicinity24 to cut costs, streamline operations, and scale with confidence.",
-                                                "primaryCta":  {
-                                                                   "label":  "Start Your Free Trial",
-                                                                   "href":  "#demo"
-                                                               },
-                                                "secondaryCta":  {
-                                                                     "label":  "Contact Sales",
-                                                                     "href":  "#contact"
-                                                                 }
-                                            },
-                               "footer":  {
-                                              "showSection":  true,
-                                              "brand":  {
-                                                            "mark":  "V",
-                                                            "name":  "Vicinity24",
-                                                            "ariaLabel":  "Vicinity24 home"
-                                                        },
-                                              "description":  "Intelligent software for the businesses that power the economy.",
-                                              "groups":  [
-                                                             {
-                                                                 "id":  "product",
-                                                                 "title":  "Product",
-                                                                 "links":  [
-                                                                               {
-                                                                                  "label":  "v24Pool",
-                                                                                   "href":  "#solutions"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Linked-Store",
-                                                                                   "href":  "#solutions"
-                                                                               }
-                                                                           ]
-                                                             },
-                                                             {
-                                                                 "id":  "company",
-                                                                 "title":  "Company",
-                                                                 "links":  [
-                                                                               {
-                                                                                   "label":  "About Us",
-                                                                                   "href":  "/about"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Privacy Policy",
-                                                                                   "href":  "#contact"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Terms of Service",
-                                                                                   "href":  "#contact"
-                                                                               }
-                                                                           ]
-                                                             }
-                                                         ],
-                                              "contactTitle":  "Contact",
-                                              "email":  "info@vicinity24.com",
-                                              "phone":  "+1 (555) 123-4567",
-                                              "address":  "Muellerstrasse 45, 10961 Berlin",
-                                              "bottomLeft":  "© 2026 Vicinity24. Empowering business growth.",
-                                              "bottomRight":  ""
-                                          }
-                           },
-                    "de":  {
-                               "nav":  {
-                                           "brand":  {
-                                                         "mark":  "V",
-                                                         "name":  "Vicinity24",
-                                                         "ariaLabel":  "Vicinity24 Startseite"
-                                                     },
-                                           "links":  [
-                                                         {
-                                                             "id":  "solutions",
-                                                             "label":  "Lösungen",
-                                                             "href":  "#solutions"
-                                                         },
-                                                         {
-                                                             "id":  "about",
-                                                             "label":  "Über uns",
-                                                             "href":  "/about"
-                                                         },
-                                                         {
-                                                             "id":  "contact",
-                                                             "label":  "Kontakt",
-                                                             "href":  "#contact"
-                                                         }
-                                                     ]
-                                       },
-                               "hero":  {
-                                            "showSection":  true,
-                                            "badge":  "Maßgeschneiderte Software für KMU",
-                                            "title":  "Gemeinsames Potenzial freisetzen,",
-                                            "accent":  "Wachstum beschleunigen.",
-                                            "description":  "Wir entwickeln intelligente Software für Ressourcen-Sharing, die kleinen und mittleren Unternehmen hilft, Verschwendung zu vermeiden, Abläufe zu optimieren und ohne die Komplexität von Konzernsystemen zu wachsen."
-                                        },
-                               "platformSection":  {
-                                                       "showSection":  true,
-                                                       "eyebrow":  "Unsere Plattform",
-                                                       "title":  "Smarte Technologie für ein vernetztes Geschäftsökosystem",
-                                                       "subtitle":  "Vom Teilen von Ressourcen innerhalb eines Standorts bis zur Vereinheitlichung Ihres gesamten Multi-Standort-Netzwerks.",
-                                                       "ctaLabel":  "Alle Lösungen entdecken",
-                                                       "ctaHref":  "#demo",
-                                                       "platforms":  [
-                                                                         {
-                                                                             "id":  "sas",
-                                                                            "label":  "v24Pool",
-                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
-                                                                             "tagline":  "Teilen. Ausleihen. Sparen.",
-                                                                            "description":  "Eine leistungsstarke Peer-to-Peer-Plattform, die Unternehmen und Privatpersonen hilft, Ressourcen lokal zu verleihen und auszuleihen. Ob Werkzeuge oder Betriebsmittel, v24Pool macht es einfach, Eigentumskosten zu senken, die Nutzung zu optimieren und durch ein verifiziertes, transparentes Ökosystem Vertrauen aufzubauen.",
-                                                                             "features":  [
-                                                                                              "Standortbasierte Ressourcensuche",
-                                                                                              "Verifizierte Profile \u0026 Bewertungen",
-                                                                                              "Sichere Transaktionsverfolgung",
-                                                                                              "Tools zur Kosteneinsparung"
-                                                                                          ],
-                                                                             "image":  "/images/sas-sharing-platform.svg",
-                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
-                                                                             "link":  "https://v24pool.com",
-                                                                             "visible":  true
-                                                                         },
-                                                                         {
-                                                                             "id":  "onlineStore",
-                                                                             "label":  "Online Store",
-                                                                             "title":  "Anpassbarer Online-Shop",
-                                                                             "tagline":  "Ihre Marke. Ihre Regeln. Ihre Marge.",
-                                                                             "description":  "Starten Sie einen leistungsstarken E-Commerce-Shop, der exakt zu Ihrer Marke passt und reibungslose Backend-Prozesse unterstützt.",
-                                                                             "features":  [
-                                                                                              "Drag-and-drop Builder",
-                                                                                              "Lokale Lieferlogik",
-                                                                                              "Live-Inventarsync"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
-                                                                             "alt":  "Analyse-Dashboard für E-Commerce",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         },
-                                                                         {
-                                                                             "id":  "linkedStore",
-                                                                             "label":  "Linked-Store",
-                                                                            "title":  "Nie wieder einen Verkauf verpassen.",
-                                                                            "tagline":  "Das dynamische Bestandsnetzwerk für den Einzelhandel mit mehreren Standorten.",
-                                                                            "description":  "Maximieren Sie Ihren Umsatz, indem Sie verborgene Bestände freischalten. Greifen Sie sofort auf Inventar an all Ihren Standorten und in autorisierten Netzwerken zu, um jede Bestellung zu erfüllen, Gewinne zu steigern und Ihre Kunden zufriedenzustellen.",
-                                                                             "features":  [
-                                                                                             "Bestandspooling auf Abruf",
-                                                                                             "Sofortige Profit-Routing-Logik",
-                                                                                             "Einheitliche Netzwerkintelligenz",
-                                                                                             "Reibungslose Kundenreichweite"
-                                                                                          ],
-                                                                             "image":  "/images/linked-store-network.svg",
-                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
-                                                                             "link":  "https://v24mart.com",
-                                                                             "visible":  true,
-                                                                             "ctaLabel":  "Demo buchen"
-                                                                         },
-                                                                         {
-                                                                             "id":  "consulting",
-                                                                             "label":  "Consulting",
-                                                                             "title":  "Beratung \u0026 On-Demand-Projekte",
-                                                                             "tagline":  "Individuelle Lösungen für komplexe Abläufe.",
-                                                                             "description":  "Wenn Sie mehr als ein Standardprodukt benötigen, arbeitet unser Expertenteam mit Ihnen zusammen, um maßgeschneiderte Softwarelösungen zu entwickeln. Wir bewältigen komplexe operative Herausforderungen mit strategischer Beratung und engagierten Entwicklungsteams.",
-                                                                             "features":  [
-                                                                                              "Workflow-Automatisierung",
-                                                                                              "API-Integrationen",
-                                                                                              "Dedizierte Projektteams"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
-                                                                             "alt":  "Beratungssitzung mit Analysen",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         }
-                                                                     ]
-                                                   },
-                               "testimonial":  {
-                                                   "showSection":  true,
-                                                   "eyebrow":  "Kundenergebnisse",
-                                                   "title":  "Geschätzt von wachsenden Unternehmen im ganzen Land",
-                                                   "quote":  "Linked-Store hat unsere standortübergreifenden Abläufe revolutioniert. Durch die Bündelung der Bestände haben wir die Lagerkosten um 40 % gesenkt und den standortübergreifenden Umsatz innerhalb von drei Monaten um 30 % gesteigert.",
-                                                   "author":  "Sarah T.",
-                                                   "authorRole":  "COO einer regionalen Handelsgruppe"
-                                               },
-                               "finalCta":  {
-                                                "showSection":  true,
-                                                "title":  "Bereit, Ihre Betriebsabläufe zu verbessern?",
-                                                "description":  "Schließen Sie sich zukunftsorientierten KMU an, die mit Vicinity24 Kosten senken, Prozesse vereinfachen und sicher wachsen.",
-                                                "primaryCta":  {
-                                                                   "label":  "Kostenlos starten",
-                                                                   "href":  "#demo"
-                                                               },
-                                                "secondaryCta":  {
-                                                                     "label":  "Vertrieb kontaktieren",
-                                                                     "href":  "#contact"
-                                                                 }
-                                            },
-                               "footer":  {
-                                              "showSection":  true,
-                                              "brand":  {
-                                                            "mark":  "V",
-                                                            "name":  "Vicinity24",
-                                                            "ariaLabel":  "Vicinity24 Startseite"
-                                                        },
-                                              "description":  "Intelligente Software für die Unternehmen, die die Wirtschaft antreiben.",
-                                              "groups":  [
-                                                             {
-                                                                 "id":  "product",
-                                                                 "title":  "Produkt",
-                                                                 "links":  [
-                                                                               {
-                                                                                  "label":  "v24Pool",
-                                                                                   "href":  "#solutions"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Linked-Store",
-                                                                                   "href":  "#solutions"
-                                                                               }
-                                                                           ]
-                                                             },
-                                                             {
-                                                                 "id":  "company",
-                                                                 "title":  "Unternehmen",
-                                                                 "links":  [
-                                                                               {
-                                                                                   "label":  "Über uns",
-                                                                                   "href":  "/about"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Datenschutz",
-                                                                                   "href":  "#contact"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "AGB",
-                                                                                   "href":  "#contact"
-                                                                               }
-                                                                           ]
-                                                             }
-                                                         ],
-                                              "contactTitle":  "Kontakt",
-                                              "email":  "info@vicinity24.com",
-                                              "phone":  "+1 (555) 123-4567",
-                                              "address":  "Muellerstrasse 45, 10961 Berlin",
-                                              "bottomLeft":  "© 2026 Vicinity24. Wachstum für Unternehmen.",
-                                              "bottomRight":  ""
-                                          }
-                           },
-                    "pt":  {
-                               "nav":  {
-                                           "brand":  {
-                                                         "mark":  "V",
-                                                         "name":  "Vicinity24",
-                                                         "ariaLabel":  "Página inicial da Vicinity24"
-                                                     },
-                                           "links":  [
-                                                         {
-                                                             "id":  "solutions",
-                                                             "label":  "Soluções",
-                                                             "href":  "#solutions"
-                                                         },
-                                                         {
-                                                             "id":  "about",
-                                                             "label":  "Sobre nós",
-                                                             "href":  "/about"
-                                                         },
-                                                         {
-                                                             "id":  "contact",
-                                                             "label":  "Contato",
-                                                             "href":  "#contact"
-                                                         }
-                                                     ]
-                                       },
-                               "hero":  {
-                                            "showSection":  true,
-                                            "badge":  "Software personalizado para PMEs",
-                                            "title":  "Desbloqueie o potencial compartilhado,",
-                                            "accent":  "Impulsione seu crescimento.",
-                                            "description":  "Desenvolvemos software inteligente para compartilhamento de recursos que ajuda pequenas e médias empresas a eliminar desperdícios, otimizar operações e crescer sem a complexidade dos sistemas empresariais."
-                                        },
-                               "platformSection":  {
-                                                       "showSection":  true,
-                                                       "eyebrow":  "Nossa Plataforma",
-                                                       "title":  "Tecnologia inteligente para um ecossistema de negócios conectado",
-                                                       "subtitle":  "Do compartilhamento de recursos dentro de uma única unidade à unificação de toda a sua rede multi-local.",
-                                                       "ctaLabel":  "Explorar todas as soluções",
-                                                       "ctaHref":  "#demo",
-                                                       "platforms":  [
-                                                                         {
-                                                                             "id":  "sas",
-                                                                            "label":  "v24Pool",
-                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
-                                                                             "tagline":  "Compartilhe. Pegue emprestado. Economize.",
-                                                                            "description":  "Uma poderosa plataforma peer-to-peer que ajuda empresas e indivíduos a emprestar e tomar emprestado recursos localmente. Seja ferramentas ou ativos comerciais, o v24Pool facilita a redução de custos de propriedade, otimização de uso e construção de confiança por meio de uma comunidade verificada e transparente.",
-                                                                             "features":  [
-                                                                                              "Busca de recursos por proximidade",
-                                                                                              "Perfis verificados e avaliações",
-                                                                                              "Rastreamento seguro de transações",
-                                                                                              "Ferramentas de gestão de economia"
-                                                                                          ],
-                                                                             "image":  "/images/sas-sharing-platform.svg",
-                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
-                                                                             "link":  "https://v24pool.com",
-                                                                             "visible":  true
-                                                                         },
-                                                                         {
-                                                                             "id":  "onlineStore",
-                                                                             "label":  "Online Store",
-                                                                             "title":  "Loja Online Customizável",
-                                                                             "tagline":  "Sua marca. Suas regras. Sua margem.",
-                                                                             "description":  "Lance uma loja online de alta conversão, alinhada à sua identidade e preparada para operações de varejo exigentes.",
-                                                                             "features":  [
-                                                                                              "Builder drag-and-drop",
-                                                                                              "Rotas de entrega local",
-                                                                                              "Sincronização de estoque"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
-                                                                             "alt":  "Painel de analytics para e-commerce",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         },
-                                                                         {
-                                                                             "id":  "linkedStore",
-                                                                             "label":  "Linked-Store",
-                                                                            "title":  "Nunca perca uma venda novamente.",
-                                                                            "tagline":  "A rede dinâmica de inventário para o varejo com múltiplas unidades.",
-                                                                            "description":  "Maximize sua receita desbloqueando estoque oculto. Acesse instantaneamente o inventário em todas as suas unidades e redes autorizadas para atender cada pedido, aumentar os lucros e manter os clientes satisfeitos.",
-                                                                             "features":  [
-                                                                                             "Pool de inventário sob demanda",
-                                                                                             "Roteamento instantâneo de lucro",
-                                                                                             "Inteligência unificada da rede",
-                                                                                             "Captação de clientes sem fricção"
-                                                                                          ],
-                                                                             "image":  "/images/linked-store-network.svg",
-                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
-                                                                             "link":  "https://v24mart.com",
-                                                                             "visible":  true,
-                                                                             "ctaLabel":  "Agendar demo"
-                                                                         },
-                                                                         {
-                                                                             "id":  "consulting",
-                                                                             "label":  "Consulting",
-                                                                             "title":  "Consultoria e Projetos Sob Demanda",
-                                                                             "tagline":  "Soluções personalizadas para operações complexas.",
-                                                                             "description":  "Quando você precisa de mais do que um produto padrão, nossa equipe de especialistas trabalha com você para projetar e construir soluções de software personalizadas, enfrentando desafios operacionais complexos.",
-                                                                             "features":  [
-                                                                                              "Automação de workflow",
-                                                                                              "Integrações de API",
-                                                                                              "Times dedicados"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
-                                                                             "alt":  "Sessão de consultoria com analytics",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         }
-                                                                     ]
-                                                   },
-                               "testimonial":  {
-                                                   "showSection":  true,
-                                                   "eyebrow":  "Resultados dos clientes",
-                                                   "title":  "Confiado por empresas em crescimento",
-                                                   "quote":  "O Linked-Store revolucionou nossas operações em várias unidades. Ao consolidar o estoque, reduzimos os custos de manutenção em 40% e aumentamos as vendas entre lojas em 30% em apenas três meses.",
-                                                   "author":  "Sarah T.",
-                                                   "authorRole":  "COO de um grupo regional de varejo"
-                                               },
-                               "finalCta":  {
-                                                "showSection":  true,
-                                                "title":  "Pronto para modernizar sua operação?",
-                                                "description":  "Junte-se a PMEs inovadoras que usam a Vicinity24 para reduzir custos, simplificar processos e crescer com confiança.",
-                                                "primaryCta":  {
-                                                                   "label":  "Começar teste gratuito",
-                                                                   "href":  "#demo"
-                                                               },
-                                                "secondaryCta":  {
-                                                                     "label":  "Falar com vendas",
-                                                                     "href":  "#contact"
-                                                                 }
-                                            },
-                               "footer":  {
-                                              "showSection":  true,
-                                              "brand":  {
-                                                            "mark":  "V",
-                                                            "name":  "Vicinity24",
-                                                            "ariaLabel":  "Página inicial da Vicinity24"
-                                                        },
-                                              "description":  "Software inteligente para as empresas que movem a economia.",
-                                              "groups":  [
-                                                             {
-                                                                 "id":  "product",
-                                                                 "title":  "Produto",
-                                                                 "links":  [
-                                                                               {
-                                                                                  "label":  "v24Pool",
-                                                                                   "href":  "#solutions"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Linked-Store",
-                                                                                   "href":  "#solutions"
-                                                                               }
-                                                                           ]
-                                                             },
-                                                             {
-                                                                 "id":  "company",
-                                                                 "title":  "Empresa",
-                                                                 "links":  [
-                                                                               {
-                                                                                   "label":  "Sobre nós",
-                                                                                   "href":  "/about"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Privacidade",
-                                                                                   "href":  "#contact"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Termos de uso",
-                                                                                   "href":  "#contact"
-                                                                               }
-                                                                           ]
-                                                             }
-                                                         ],
-                                              "contactTitle":  "Contato",
-                                              "email":  "info@vicinity24.com",
-                                              "phone":  "+1 (555) 123-4567",
-                                              "address":  "Muellerstrasse 45, 10961 Berlin",
-                                              "bottomLeft":  "© 2026 Vicinity24. Impulsionando o crescimento dos negócios.",
-                                              "bottomRight":  ""
-                                          }
-                           },
-                    "fr":  {
-                               "nav":  {
-                                           "brand":  {
-                                                         "mark":  "V",
-                                                         "name":  "Vicinity24",
-                                                         "ariaLabel":  "Accueil Vicinity24"
-                                                     },
-                                           "links":  [
-                                                         {
-                                                             "id":  "solutions",
-                                                             "label":  "Solutions",
-                                                             "href":  "#solutions"
-                                                         },
-                                                         {
-                                                             "id":  "about",
-                                                             "label":  "À propos",
-                                                             "href":  "/about"
-                                                         },
-                                                         {
-                                                             "id":  "contact",
-                                                             "label":  "Contact",
-                                                             "href":  "#contact"
-                                                         }
-                                                     ]
-                                       },
-                               "hero":  {
-                                            "showSection":  true,
-                                            "badge":  "Logiciel sur mesure pour les PME",
-                                            "title":  "Libérez le potentiel du partage,",
-                                            "accent":  "Accélérez votre croissance.",
-                                            "description":  "Nous développons des logiciels intelligents de partage de ressources qui aident les PME à éliminer le gaspillage, optimiser leurs opérations et se développer sans la complexité des systèmes d\u0027entreprise."
-                                        },
-                               "platformSection":  {
-                                                       "showSection":  true,
-                                                       "eyebrow":  "Notre Plateforme",
-                                                       "title":  "Une technologie intelligente pour un écosystème d\u0027affaires connecté",
-                                                       "subtitle":  "Du partage de ressources au sein d\u0027un site unique à l\u0027unification de votre réseau multi-sites.",
-                                                       "ctaLabel":  "Explorer toutes les solutions",
-                                                       "ctaHref":  "#demo",
-                                                       "platforms":  [
-                                                                         {
-                                                                             "id":  "sas",
-                                                                            "label":  "v24Pool",
-                                                                            "title":  "v24Pool: The Hyperlocal Asset Interchange",
-                                                                             "tagline":  "Partagez. Empruntez. Économisez.",
-                                                                            "description":  "Une puissante plateforme peer-to-peer qui aide les entreprises et les particuliers à prêter et emprunter des ressources localement. Qu\u0027il s\u0027agisse d\u0027outils ou d\u0027actifs commerciaux, v24Pool facilite la réduction des coûts de possession, l\u0027optimisation de l\u0027utilisation et la création de confiance grâce à une communauté vérifiée et transparente.",
-                                                                             "features":  [
-                                                                                              "Recherche de ressources par proximité",
-                                                                                              "Profils vérifiés et avis",
-                                                                                              "Suivi sécurisé des transactions",
-                                                                                              "Outils de gestion des économies"
-                                                                                          ],
-                                                                             "image":  "/images/sas-sharing-platform.svg",
-                                                                             "alt":  "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
-                                                                             "link":  "https://v24pool.com",
-                                                                             "visible":  true
-                                                                         },
-                                                                         {
-                                                                             "id":  "onlineStore",
-                                                                             "label":  "Online Store",
-                                                                             "title":  "Boutique en ligne personnalisable",
-                                                                             "tagline":  "Votre marque. Vos règles. Votre marge.",
-                                                                             "description":  "Lancez une boutique e-commerce performante, parfaitement adaptée à votre marque et à vos opérations retail.",
-                                                                             "features":  [
-                                                                                              "Builder drag-and-drop",
-                                                                                              "Livraison locale",
-                                                                                              "Sync temps réel"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
-                                                                             "alt":  "Tableau de bord analytics e-commerce",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         },
-                                                                         {
-                                                                             "id":  "linkedStore",
-                                                                             "label":  "Linked-Store",
-                                                                            "title":  "Ne perdez plus jamais une vente.",
-                                                                            "tagline":  "Le réseau d\u0027inventaire dynamique pour le commerce de détail multi-sites.",
-                                                                            "description":  "Maximisez vos revenus en débloquant les stocks cachés. Accédez instantanément à l\u0027inventaire de tous vos sites et réseaux autorisés pour honorer chaque commande, augmenter vos profits et garder vos clients satisfaits.",
-                                                                             "features":  [
-                                                                                             "Mutualisation des stocks à la demande",
-                                                                                             "Routage instantané vers le profit",
-                                                                                             "Intelligence réseau unifiée",
-                                                                                             "Acquisition client sans friction"
-                                                                                          ],
-                                                                             "image":  "/images/linked-store-network.svg",
-                                                                             "alt":  "Illustration of multiple connected stores sharing inventory through one linked retail network",
-                                                                             "link":  "https://v24mart.com",
-                                                                             "visible":  true,
-                                                                             "ctaLabel":  "Réserver une démo"
-                                                                         },
-                                                                         {
-                                                                             "id":  "consulting",
-                                                                             "label":  "Consulting",
-                                                                             "title":  "Conseil et projets sur demande",
-                                                                             "tagline":  "Des solutions sur mesure pour des opérations complexes.",
-                                                                             "description":  "Lorsque vous avez besoin de plus qu\u0027un produit standard, notre équipe d\u0027experts travaille avec vous pour concevoir et construire des solutions logicielles personnalisées, répondant à des défis opérationnels complexes.",
-                                                                             "features":  [
-                                                                                              "Automatisation",
-                                                                                              "Intégrations API",
-                                                                                              "Équipe dédiée"
-                                                                                          ],
-                                                                             "image":  "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
-                                                                             "alt":  "Session de conseil avec analytics",
-                                                                             "link":  "#contact",
-                                                                             "visible":  false
-                                                                         }
-                                                                     ]
-                                                   },
-                               "testimonial":  {
-                                                   "showSection":  true,
-                                                   "eyebrow":  "Résultats clients",
-                                                   "title":  "Adopté par des entreprises en croissance",
-                                                   "quote":  "Linked-Store a révolutionné nos opérations multi-sites. En mutualisant les stocks, nous avons réduit les coûts de possession de 40 % et augmenté les ventes inter-magasins de 30 % en seulement trois mois.",
-                                                   "author":  "Sarah T.",
-                                                   "authorRole":  "COO d\u0027un groupe régional de retail"
-                                               },
-                               "finalCta":  {
-                                                "showSection":  true,
-                                                "title":  "Prêt à moderniser vos opérations ?",
-                                                "description":  "Rejoignez des PME innovantes qui utilisent Vicinity24 pour réduire les coûts, fluidifier les opérations et accélérer leur croissance.",
-                                                "primaryCta":  {
-                                                                   "label":  "Commencer l\u0027essai gratuit",
-                                                                   "href":  "#demo"
-                                                               },
-                                                "secondaryCta":  {
-                                                                     "label":  "Contacter les ventes",
-                                                                     "href":  "#contact"
-                                                                 }
-                                            },
-                               "footer":  {
-                                              "showSection":  true,
-                                              "brand":  {
-                                                            "mark":  "V",
-                                                            "name":  "Vicinity24",
-                                                            "ariaLabel":  "Accueil Vicinity24"
-                                                        },
-                                              "description":  "Un logiciel intelligent pour les sociétés qui font avancer l\u0027économie.",
-                                              "groups":  [
-                                                             {
-                                                                 "id":  "product",
-                                                                 "title":  "Produit",
-                                                                 "links":  [
-                                                                               {
-                                                                                  "label":  "v24Pool",
-                                                                                   "href":  "#solutions"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Linked-Store",
-                                                                                   "href":  "#solutions"
-                                                                               }
-                                                                           ]
-                                                             },
-                                                             {
-                                                                 "id":  "company",
-                                                                 "title":  "Entreprise",
-                                                                 "links":  [
-                                                                               {
-                                                                                   "label":  "À propos",
-                                                                                   "href":  "/about"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Confidentialité",
-                                                                                   "href":  "#contact"
-                                                                               },
-                                                                               {
-                                                                                   "label":  "Conditions",
-                                                                                   "href":  "#contact"
-                                                                               }
-                                                                           ]
-                                                             }
-                                                         ],
-                                              "contactTitle":  "Contact",
-                                              "email":  "info@vicinity24.com",
-                                              "phone":  "+1 (555) 123-4567",
-                                              "address":  "Muellerstrasse 45, 10961 Berlin",
-                                              "bottomLeft":  "© 2026 Vicinity24. Accélère la croissance des entreprises.",
-                                              "bottomRight":  ""
-                                          }
-                           }
-                }
+  "defaultLanguage": "en",
+  "supportedLanguages": [
+    {
+      "code": "en",
+      "label": "English"
+    },
+    {
+      "code": "de",
+      "label": "Deutsch"
+    },
+    {
+      "code": "pt",
+      "label": "Portugues"
+    },
+    {
+      "code": "fr",
+      "label": "Francais"
+    }
+  ],
+  "section-visiility": {
+    "nav": true,
+    "hero": true,
+    "platformSection": true,
+    "testimonial": false,
+    "finalCta": false,
+    "footer": true
+  },
+  "item-visiility": {
+    "navLinks": {
+      "solutions": true,
+      "contact": true
+    },
+    "platformCards": {
+      "sas": true,
+      "onlineStore": false,
+      "linkedStore": true,
+      "consulting": false
+    },
+    "testimonial": true,
+    "footerGroups": {
+      "product": true,
+      "company": true
+    }
+  },
+  "locales": {
+    "en": {
+      "nav": {
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Vicinity24 home"
+        },
+        "links": [
+          {
+            "id": "solutions",
+            "label": "Solutions",
+            "href": "#solutions"
+          },
+          {
+            "id": "about",
+            "label": "About Us",
+            "href": "/about"
+          },
+          {
+            "id": "contact",
+            "label": "Contact",
+            "href": "#contact"
+          }
+        ]
+      },
+      "hero": {
+        "showSection": true,
+        "badge": "Purpose-Built Software for SMBs",
+        "title": "Unlock Shared Potential,",
+        "accent": "Power Your Growth.",
+        "description": "We build intelligent, resource-sharing software that helps small and medium businesses eliminate waste, streamline operations, and grow without the complexity of enterprise systems."
+      },
+      "platformSection": {
+        "showSection": true,
+        "eyebrow": "Our Platform",
+        "title": "Digital Solutions for Integrated Business Networks",
+        "subtitle": "From sharing resources within a single location to unifying your entire multi-location network.",
+        "ctaLabel": "Explore All Solutions",
+        "ctaHref": "#demo",
+        "platforms": [
+          {
+            "id": "sas",
+            "label": "v24Pool",
+            "title": "v24Pool: The Hyperlocal Asset Interchange",
+            "tagline": "Share. Borrow. Save.",
+            "description": "A powerful peer-to-peer platform designed to help businesses and individuals lend and borrow resources locally. Whether it's equipment, tools, or commercial assets, v24Pool makes it easy to reduce ownership costs, optimize usage, and build trust through a verified, transparent community.",
+            "features": [
+              "Proximity-based resource discovery",
+              "Verified profiles & community reviews",
+              "Secure transaction & usage tracking",
+              "Cost-savings management tools"
+            ],
+            "image": "/images/sas-sharing-platform.svg",
+            "alt": "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+            "link": "https://v24pool.com",
+            "visible": true
+          },
+          {
+            "id": "onlineStore",
+            "label": "Online Store",
+            "title": "Customizable Online Store",
+            "tagline": "Your brand. Your rules. Your margins.",
+            "description": "Launch a high-converting, fully tailored e-commerce storefront built for serious retail operations. Match your brand identity precisely while delivering the frictionless checkout and backend operations your business demands.",
+            "features": [
+              "Drag-and-drop builder",
+              "Local delivery routing",
+              "Real-time inventory sync"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+            "alt": "E-commerce analytics dashboard with sales metrics",
+            "link": "#contact",
+            "visible": false
+          },
+          {
+            "id": "linkedStore",
+            "label": "Linked-Store",
+            "title": "Never Lose a Sale Again.",
+            "tagline": "The Dynamic Inventory Network for Multi-Location Retail.",
+            "description": "Maximize your revenue by unlocking hidden stock. Instantly tap into inventory across all your locations and authorized networks to fulfill every order, boost profits, and keep customers smiling.",
+            "features": [
+              "On-Demand Inventory Pooling",
+              "Instant Profit Routing",
+              "Unified Network Intelligence",
+              "Frictionless Customer Catchment"
+            ],
+            "image": "/images/linked-store-network.svg",
+            "alt": "Illustration of multiple connected stores sharing inventory through one linked retail network",
+            "link": "https://v24mart.com",
+            "visible": true,
+            "ctaLabel": "Book a demo"
+          },
+          {
+            "id": "consulting",
+            "label": "Consulting",
+            "title": "Consulting & On-Demand Projects",
+            "tagline": "Custom solutions for complex operations.",
+            "description": "When you need more than a standard product, our expert team works with you to design and build custom software solutions. We tackle complex operational challenges with strategic consulting and dedicated development teams.",
+            "features": [
+              "Workflow automation",
+              "Custom API integrations",
+              "Dedicated project teams"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+            "alt": "Business strategy consulting session with analytics",
+            "link": "#contact",
+            "visible": false
+          }
+        ]
+      },
+      "testimonial": {
+        "showSection": true,
+        "eyebrow": "Customer Results",
+        "title": "Trusted by growing businesses nationwide",
+        "quote": "Linked-Store revolutionized our multi-location operations. By pooling inventory, we slashed carrying costs by 40% and boosted cross-store sales by 30% in just three months. It's the smart, shared infrastructure we needed.",
+        "author": "Sarah T.",
+        "authorRole": "COO of Regional Retail Group"
+      },
+      "finalCta": {
+        "showSection": true,
+        "title": "Ready to upgrade your business operations?",
+        "description": "Join thousands of forward-thinking SMBs using Vicinity24 to cut costs, streamline operations, and scale with confidence.",
+        "primaryCta": {
+          "label": "Start Your Free Trial",
+          "href": "#demo"
+        },
+        "secondaryCta": {
+          "label": "Contact Sales",
+          "href": "#contact"
+        }
+      },
+      "footer": {
+        "showSection": true,
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Vicinity24 home"
+        },
+        "description": "Intelligent software for the businesses that power the economy.",
+        "groups": [
+          {
+            "id": "product",
+            "title": "Product",
+            "links": [
+              {
+                "label": "v24Pool",
+                "href": "#solutions"
+              },
+              {
+                "label": "Linked-Store",
+                "href": "#solutions"
+              }
+            ]
+          },
+          {
+            "id": "company",
+            "title": "Company",
+            "links": [
+              {
+                "label": "About Us",
+                "href": "/about"
+              },
+              {
+                "label": "Privacy Policy",
+                "href": "#contact"
+              },
+              {
+                "label": "Terms of Service",
+                "href": "#contact"
+              }
+            ]
+          }
+        ],
+        "contactTitle": "Contact",
+        "email": "info@vicinity24.com",
+        "phone": "+1 (555) 123-4567",
+        "address": "Muellerstrasse 45, 10961 Berlin",
+        "bottomLeft": "© 2026 Vicinity24. Empowering business growth.",
+        "bottomRight": ""
+      },
+      "about": {
+        "badge": "About Vicinity24",
+        "title": "Building stronger local networks with",
+        "accent": "shared local networks.",
+        "lead": "Connecting locals, empowering local shops, and building a stronger local sharing network - together.",
+        "intro": [
+          "At Vicinity24, we believe the strongest communities grow when locals, shop owners, and local residents work together. Our goal is simple: no sale lost, no customer left disappointed, and no useful item sitting idle when someone nearby needs it.",
+          "That belief comes to life through two connected platforms: v24mart helps local retailers cooperate around real-time inventory, and v24Pool helps people and businesses borrow and lend useful items nearby."
+        ],
+        "projectsEyebrow": "Two connected platforms",
+        "projectsTitle": "One mission, two practical products",
+        "projectsSubtitle": "Each platform solves a different local coordination challenge, but both strengthen local commerce, reduce waste, and keep value circulating nearby.",
+        "projects": [
+          {
+            "id": "v24mart",
+            "label": "v24mart",
+            "title": "Smarter inventory sharing for local shops",
+            "description": "v24mart lets nearby retailers share real-time stock so an out-of-stock moment does not become a lost customer. A shop can check a partner store, reserve the item, and keep the sale inside the local business network.",
+            "points": [
+              "Check partner stock in real time",
+              "Reserve items across nearby stores",
+              "Keep customers loyal to local shops"
+            ]
+          },
+          {
+            "id": "v24pool",
+            "label": "v24Pool",
+            "title": "Borrow and lend through your local network",
+            "description": "v24Pool is a local borrowing marketplace for people, freelancers, and businesses that want access without unnecessary ownership. Instead of buying rarely used items, nearby peers can share what already exists and extend the life of every useful asset.",
+            "points": [
+              "Borrow seldom-used items close to home",
+              "Earn from idle tools and equipment",
+              "Reduce waste and unnecessary purchases"
+            ]
+          }
+        ],
+        "visionEyebrow": "Our vision",
+        "visionTitle": "A shared local network that works for everyone",
+        "visionDescription": "We do not deny competition; we reject the idea that it must be zero-sum. We are building a model where local businesses cooperate when it matters, households reuse what already exists, and the community becomes stronger with every shared transaction.",
+        "visionPrinciples": [
+          "No sale is lost because shops choose to cooperate instead of competing blindly.",
+          "No customer is left unhappy because the local business community has their back.",
+          "No usable item is thrown away while someone nearby is about to buy the same thing new."
+        ],
+        "benefitsEyebrow": "Why Vicinity24",
+        "benefitsTitle": "Practical value for shops, locals, and the planet",
+        "benefits": [
+          {
+            "title": "For local shops",
+            "description": "v24mart turns competitors into partners, helping businesses keep customers, increase sales, and strengthen the local high street."
+          },
+          {
+            "title": "For everyone",
+            "description": "v24Pool makes borrowing safer and more convenient than buying, helping people save money, save space, and use assets more efficiently."
+          },
+          {
+            "title": "For the planet",
+            "description": "Both platforms reduce overproduction, unnecessary purchases, and avoidable waste while making better use of existing local resources."
+          }
+        ],
+        "closingTitle": "Let's grow stronger local networks. Together.",
+        "closingDescription": "Whether you run a boutique tired of losing customers to out-of-stock moments or you would rather borrow a tent than store one all year, Vicinity24 gives you a better local way to buy, sell, lend, and borrow.",
+        "closingCta": {
+          "label": "Contact us",
+          "href": "/contact"
+        }
+      }
+    },
+    "de": {
+      "nav": {
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Vicinity24 Startseite"
+        },
+        "links": [
+          {
+            "id": "solutions",
+            "label": "Lösungen",
+            "href": "#solutions"
+          },
+          {
+            "id": "about",
+            "label": "Über uns",
+            "href": "/about"
+          },
+          {
+            "id": "contact",
+            "label": "Kontakt",
+            "href": "#contact"
+          }
+        ]
+      },
+      "hero": {
+        "showSection": true,
+        "badge": "Maßgeschneiderte Software für KMU",
+        "title": "Gemeinsames Potenzial freisetzen,",
+        "accent": "Wachstum beschleunigen.",
+        "description": "Wir entwickeln intelligente Software für Ressourcen-Sharing, die kleinen und mittleren Unternehmen hilft, Verschwendung zu vermeiden, Abläufe zu optimieren und ohne die Komplexität von Konzernsystemen zu wachsen."
+      },
+      "platformSection": {
+        "showSection": true,
+        "eyebrow": "Unsere Plattform",
+        "title": "Smarte Technologie für ein vernetztes Geschäftsökosystem",
+        "subtitle": "Vom Teilen von Ressourcen innerhalb eines Standorts bis zur Vereinheitlichung Ihres gesamten Multi-Standort-Netzwerks.",
+        "ctaLabel": "Alle Lösungen entdecken",
+        "ctaHref": "#demo",
+        "platforms": [
+          {
+            "id": "sas",
+            "label": "v24Pool",
+            "title": "v24Pool: The Hyperlocal Asset Interchange",
+            "tagline": "Teilen. Ausleihen. Sparen.",
+            "description": "Eine leistungsstarke Peer-to-Peer-Plattform, die Unternehmen und Privatpersonen hilft, Ressourcen lokal zu verleihen und auszuleihen. Ob Werkzeuge oder Betriebsmittel, v24Pool macht es einfach, Eigentumskosten zu senken, die Nutzung zu optimieren und durch ein verifiziertes, transparentes Ökosystem Vertrauen aufzubauen.",
+            "features": [
+              "Standortbasierte Ressourcensuche",
+              "Verifizierte Profile & Bewertungen",
+              "Sichere Transaktionsverfolgung",
+              "Tools zur Kosteneinsparung"
+            ],
+            "image": "/images/sas-sharing-platform.svg",
+            "alt": "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+            "link": "https://v24pool.com",
+            "visible": true
+          },
+          {
+            "id": "onlineStore",
+            "label": "Online Store",
+            "title": "Anpassbarer Online-Shop",
+            "tagline": "Ihre Marke. Ihre Regeln. Ihre Marge.",
+            "description": "Starten Sie einen leistungsstarken E-Commerce-Shop, der exakt zu Ihrer Marke passt und reibungslose Backend-Prozesse unterstützt.",
+            "features": [
+              "Drag-and-drop Builder",
+              "Lokale Lieferlogik",
+              "Live-Inventarsync"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+            "alt": "Analyse-Dashboard für E-Commerce",
+            "link": "#contact",
+            "visible": false
+          },
+          {
+            "id": "linkedStore",
+            "label": "Linked-Store",
+            "title": "Nie wieder einen Verkauf verpassen.",
+            "tagline": "Das dynamische Bestandsnetzwerk für den Einzelhandel mit mehreren Standorten.",
+            "description": "Maximieren Sie Ihren Umsatz, indem Sie verborgene Bestände freischalten. Greifen Sie sofort auf Inventar an all Ihren Standorten und in autorisierten Netzwerken zu, um jede Bestellung zu erfüllen, Gewinne zu steigern und Ihre Kunden zufriedenzustellen.",
+            "features": [
+              "Bestandspooling auf Abruf",
+              "Sofortige Profit-Routing-Logik",
+              "Einheitliche Netzwerkintelligenz",
+              "Reibungslose Kundenreichweite"
+            ],
+            "image": "/images/linked-store-network.svg",
+            "alt": "Illustration of multiple connected stores sharing inventory through one linked retail network",
+            "link": "https://v24mart.com",
+            "visible": true,
+            "ctaLabel": "Demo buchen"
+          },
+          {
+            "id": "consulting",
+            "label": "Consulting",
+            "title": "Beratung & On-Demand-Projekte",
+            "tagline": "Individuelle Lösungen für komplexe Abläufe.",
+            "description": "Wenn Sie mehr als ein Standardprodukt benötigen, arbeitet unser Expertenteam mit Ihnen zusammen, um maßgeschneiderte Softwarelösungen zu entwickeln. Wir bewältigen komplexe operative Herausforderungen mit strategischer Beratung und engagierten Entwicklungsteams.",
+            "features": [
+              "Workflow-Automatisierung",
+              "API-Integrationen",
+              "Dedizierte Projektteams"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+            "alt": "Beratungssitzung mit Analysen",
+            "link": "#contact",
+            "visible": false
+          }
+        ]
+      },
+      "testimonial": {
+        "showSection": true,
+        "eyebrow": "Kundenergebnisse",
+        "title": "Geschätzt von wachsenden Unternehmen im ganzen Land",
+        "quote": "Linked-Store hat unsere standortübergreifenden Abläufe revolutioniert. Durch die Bündelung der Bestände haben wir die Lagerkosten um 40 % gesenkt und den standortübergreifenden Umsatz innerhalb von drei Monaten um 30 % gesteigert.",
+        "author": "Sarah T.",
+        "authorRole": "COO einer regionalen Handelsgruppe"
+      },
+      "finalCta": {
+        "showSection": true,
+        "title": "Bereit, Ihre Betriebsabläufe zu verbessern?",
+        "description": "Schließen Sie sich zukunftsorientierten KMU an, die mit Vicinity24 Kosten senken, Prozesse vereinfachen und sicher wachsen.",
+        "primaryCta": {
+          "label": "Kostenlos starten",
+          "href": "#demo"
+        },
+        "secondaryCta": {
+          "label": "Vertrieb kontaktieren",
+          "href": "#contact"
+        }
+      },
+      "footer": {
+        "showSection": true,
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Vicinity24 Startseite"
+        },
+        "description": "Intelligente Software für die Unternehmen, die die Wirtschaft antreiben.",
+        "groups": [
+          {
+            "id": "product",
+            "title": "Produkt",
+            "links": [
+              {
+                "label": "v24Pool",
+                "href": "#solutions"
+              },
+              {
+                "label": "Linked-Store",
+                "href": "#solutions"
+              }
+            ]
+          },
+          {
+            "id": "company",
+            "title": "Unternehmen",
+            "links": [
+              {
+                "label": "Über uns",
+                "href": "/about"
+              },
+              {
+                "label": "Datenschutz",
+                "href": "#contact"
+              },
+              {
+                "label": "AGB",
+                "href": "#contact"
+              }
+            ]
+          }
+        ],
+        "contactTitle": "Kontakt",
+        "email": "info@vicinity24.com",
+        "phone": "+1 (555) 123-4567",
+        "address": "Muellerstrasse 45, 10961 Berlin",
+        "bottomLeft": "© 2026 Vicinity24. Wachstum für Unternehmen.",
+        "bottomRight": ""
+      },
+      "about": {
+        "badge": "Uber Vicinity24",
+        "title": "Wir bauen die Nachbarschaftsokonomie mit",
+        "accent": "gemeinsamen lokalen Netzwerken.",
+        "lead": "Wir verbinden Nachbarn, starken lokale Geschafte und bauen gemeinsam eine zirkulare Gemeinschaft auf.",
+        "intro": [
+          "Bei Vicinity24 glauben wir, dass starke Gemeinschaften entstehen, wenn Nachbarn, Ladenbesitzer und Anwohner zusammenarbeiten. Unser Ziel ist einfach: kein verlorener Verkauf, kein enttauschter Kunde und kein nutzlicher Gegenstand, der ungenutzt bleibt, wahrend ihn jemand in der Nahe braucht.",
+          "Diese Idee wird in zwei verbundenen Plattformen konkret: v24mart hilft lokalen Handlern bei der Zusammenarbeit rund um Bestande in Echtzeit, und v24Pool macht das Ausleihen und Verleihen von nutzlichen Dingen in der Nachbarschaft einfach."
+        ],
+        "projectsEyebrow": "Zwei verbundene Plattformen",
+        "projectsTitle": "Eine Mission, zwei praktische Produkte",
+        "projectsSubtitle": "Jede Plattform lost ein anderes Problem in der Nachbarschaft, doch beide starken den lokalen Handel, reduzieren Abfall und halten Wertschopfung in der Region.",
+        "projects": [
+          {
+            "id": "v24mart",
+            "label": "v24mart",
+            "title": "Intelligente Bestandsvernetzung fur lokale Geschafte",
+            "description": "v24mart ermoglicht nahegelegenen Handlern den Austausch von Echtzeitbestanden, damit aus einem nicht verfugbaren Artikel kein verlorener Kunde wird. Ein Geschaft kann den Bestand eines Partnerladens prufen, den Artikel reservieren und den Verkauf im lokalen Netzwerk halten.",
+            "points": [
+              "Partnerbestande in Echtzeit prufen",
+              "Artikel zwischen nahegelegenen Filialen reservieren",
+              "Kunden an lokale Geschafte binden"
+            ]
+          },
+          {
+            "id": "v24pool",
+            "label": "v24Pool",
+            "title": "In der Nachbarschaft leihen und verleihen",
+            "description": "v24Pool ist ein lokaler Leihmarktplatz fur Privatpersonen, Freelancer und Unternehmen, die Zugang ohne unnotigen Besitz wollen. Statt selten genutzte Dinge zu kaufen, konnen Nachbarn Vorhandenes teilen und die Lebensdauer nutzlicher Gegenstande verlangern.",
+            "points": [
+              "Selten benotigte Dinge wohnortnah leihen",
+              "Mit ungenutzten Werkzeugen und Geraten Geld verdienen",
+              "Abfall und unnotige Neuanschaffungen reduzieren"
+            ]
+          }
+        ],
+        "visionEyebrow": "Unsere Vision",
+        "visionTitle": "Eine zirkulare Nachbarschaftsokonomie, die fur alle funktioniert",
+        "visionDescription": "Wir leugnen Wettbewerb nicht, aber wir lehnen die Idee ab, dass er zwangslaufig ein Nullsummenspiel sein muss. Wir bauen ein Modell, in dem lokale Unternehmen im entscheidenden Moment kooperieren, Haushalte Vorhandenes weiterverwenden und die Gemeinschaft durch jede geteilte Transaktion starker wird.",
+        "visionPrinciples": [
+          "Kein Verkauf geht verloren, weil Geschafte sich fur Zusammenarbeit statt blindem Wettbewerb entscheiden.",
+          "Kein Kunde bleibt unzufrieden, weil die lokale Geschaftsgemeinschaft ihn auffangt.",
+          "Kein nutzbarer Gegenstand wird weggeworfen, wahrend jemand in der Nahe genau das Gleiche neu kaufen will."
+        ],
+        "benefitsEyebrow": "Warum Vicinity24",
+        "benefitsTitle": "Praktischer Nutzen fur Geschafte, Nachbarn und den Planeten",
+        "benefits": [
+          {
+            "title": "Fur lokale Geschafte",
+            "description": "v24mart macht aus Wettbewerbern Partner und hilft Unternehmen, Kunden zu halten, Umsatze zu steigern und Einkaufsstrassen zu starken."
+          },
+          {
+            "title": "Fur alle",
+            "description": "v24Pool macht Ausleihen sicherer und bequemer als Kaufen und hilft Menschen dabei, Geld, Platz und Ressourcen zu sparen."
+          },
+          {
+            "title": "Fur den Planeten",
+            "description": "Beide Plattformen starken die Kreislaufwirtschaft, indem sie Uberproduktion, unnotige Kaufe und vermeidbaren Abfall reduzieren."
+          }
+        ],
+        "closingTitle": "Lasst uns die Nachbarschaftsokonomie gemeinsam wachsen lassen.",
+        "closingDescription": "Ob Sie eine Boutique fuhren, die keine Kunden mehr durch Nichtverfugbarkeit verlieren will, oder lieber ein Zelt ausleihen als es das ganze Jahr zu lagern: Vicinity24 bietet Ihnen einen besseren lokalen Weg zum Kaufen, Verkaufen, Leihen und Verleihen.",
+        "closingCta": {
+          "label": "Kontakt aufnehmen",
+          "href": "/contact"
+        }
+      }
+    },
+    "pt": {
+      "nav": {
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Página inicial da Vicinity24"
+        },
+        "links": [
+          {
+            "id": "solutions",
+            "label": "Soluções",
+            "href": "#solutions"
+          },
+          {
+            "id": "about",
+            "label": "Sobre nós",
+            "href": "/about"
+          },
+          {
+            "id": "contact",
+            "label": "Contato",
+            "href": "#contact"
+          }
+        ]
+      },
+      "hero": {
+        "showSection": true,
+        "badge": "Software personalizado para PMEs",
+        "title": "Desbloqueie o potencial compartilhado,",
+        "accent": "Impulsione seu crescimento.",
+        "description": "Desenvolvemos software inteligente para compartilhamento de recursos que ajuda pequenas e médias empresas a eliminar desperdícios, otimizar operações e crescer sem a complexidade dos sistemas empresariais."
+      },
+      "platformSection": {
+        "showSection": true,
+        "eyebrow": "Nossa Plataforma",
+        "title": "Tecnologia inteligente para um ecossistema de negócios conectado",
+        "subtitle": "Do compartilhamento de recursos dentro de uma única unidade à unificação de toda a sua rede multi-local.",
+        "ctaLabel": "Explorar todas as soluções",
+        "ctaHref": "#demo",
+        "platforms": [
+          {
+            "id": "sas",
+            "label": "v24Pool",
+            "title": "v24Pool: The Hyperlocal Asset Interchange",
+            "tagline": "Compartilhe. Pegue emprestado. Economize.",
+            "description": "Uma poderosa plataforma peer-to-peer que ajuda empresas e indivíduos a emprestar e tomar emprestado recursos localmente. Seja ferramentas ou ativos comerciais, o v24Pool facilita a redução de custos de propriedade, otimização de uso e construção de confiança por meio de uma comunidade verificada e transparente.",
+            "features": [
+              "Busca de recursos por proximidade",
+              "Perfis verificados e avaliações",
+              "Rastreamento seguro de transações",
+              "Ferramentas de gestão de economia"
+            ],
+            "image": "/images/sas-sharing-platform.svg",
+            "alt": "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+            "link": "https://v24pool.com",
+            "visible": true
+          },
+          {
+            "id": "onlineStore",
+            "label": "Online Store",
+            "title": "Loja Online Customizável",
+            "tagline": "Sua marca. Suas regras. Sua margem.",
+            "description": "Lance uma loja online de alta conversão, alinhada à sua identidade e preparada para operações de varejo exigentes.",
+            "features": [
+              "Builder drag-and-drop",
+              "Rotas de entrega local",
+              "Sincronização de estoque"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+            "alt": "Painel de analytics para e-commerce",
+            "link": "#contact",
+            "visible": false
+          },
+          {
+            "id": "linkedStore",
+            "label": "Linked-Store",
+            "title": "Nunca perca uma venda novamente.",
+            "tagline": "A rede dinâmica de inventário para o varejo com múltiplas unidades.",
+            "description": "Maximize sua receita desbloqueando estoque oculto. Acesse instantaneamente o inventário em todas as suas unidades e redes autorizadas para atender cada pedido, aumentar os lucros e manter os clientes satisfeitos.",
+            "features": [
+              "Pool de inventário sob demanda",
+              "Roteamento instantâneo de lucro",
+              "Inteligência unificada da rede",
+              "Captação de clientes sem fricção"
+            ],
+            "image": "/images/linked-store-network.svg",
+            "alt": "Illustration of multiple connected stores sharing inventory through one linked retail network",
+            "link": "https://v24mart.com",
+            "visible": true,
+            "ctaLabel": "Agendar demo"
+          },
+          {
+            "id": "consulting",
+            "label": "Consulting",
+            "title": "Consultoria e Projetos Sob Demanda",
+            "tagline": "Soluções personalizadas para operações complexas.",
+            "description": "Quando você precisa de mais do que um produto padrão, nossa equipe de especialistas trabalha com você para projetar e construir soluções de software personalizadas, enfrentando desafios operacionais complexos.",
+            "features": [
+              "Automação de workflow",
+              "Integrações de API",
+              "Times dedicados"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+            "alt": "Sessão de consultoria com analytics",
+            "link": "#contact",
+            "visible": false
+          }
+        ]
+      },
+      "testimonial": {
+        "showSection": true,
+        "eyebrow": "Resultados dos clientes",
+        "title": "Confiado por empresas em crescimento",
+        "quote": "O Linked-Store revolucionou nossas operações em várias unidades. Ao consolidar o estoque, reduzimos os custos de manutenção em 40% e aumentamos as vendas entre lojas em 30% em apenas três meses.",
+        "author": "Sarah T.",
+        "authorRole": "COO de um grupo regional de varejo"
+      },
+      "finalCta": {
+        "showSection": true,
+        "title": "Pronto para modernizar sua operação?",
+        "description": "Junte-se a PMEs inovadoras que usam a Vicinity24 para reduzir custos, simplificar processos e crescer com confiança.",
+        "primaryCta": {
+          "label": "Começar teste gratuito",
+          "href": "#demo"
+        },
+        "secondaryCta": {
+          "label": "Falar com vendas",
+          "href": "#contact"
+        }
+      },
+      "footer": {
+        "showSection": true,
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Página inicial da Vicinity24"
+        },
+        "description": "Software inteligente para as empresas que movem a economia.",
+        "groups": [
+          {
+            "id": "product",
+            "title": "Produto",
+            "links": [
+              {
+                "label": "v24Pool",
+                "href": "#solutions"
+              },
+              {
+                "label": "Linked-Store",
+                "href": "#solutions"
+              }
+            ]
+          },
+          {
+            "id": "company",
+            "title": "Empresa",
+            "links": [
+              {
+                "label": "Sobre nós",
+                "href": "/about"
+              },
+              {
+                "label": "Privacidade",
+                "href": "#contact"
+              },
+              {
+                "label": "Termos de uso",
+                "href": "#contact"
+              }
+            ]
+          }
+        ],
+        "contactTitle": "Contato",
+        "email": "info@vicinity24.com",
+        "phone": "+1 (555) 123-4567",
+        "address": "Muellerstrasse 45, 10961 Berlin",
+        "bottomLeft": "© 2026 Vicinity24. Impulsionando o crescimento dos negócios.",
+        "bottomRight": ""
+      },
+      "about": {
+        "badge": "Sobre a Vicinity24",
+        "title": "Estamos a construir a economia de bairro com",
+        "accent": "redes locais partilhadas.",
+        "lead": "Ligamos vizinhos, fortalecemos o comercio local e construimos uma comunidade circular - juntos.",
+        "intro": [
+          "Na Vicinity24, acreditamos que as comunidades mais fortes nascem quando vizinhos, lojistas e residentes locais colaboram. O nosso objetivo e simples: nenhuma venda perdida, nenhum cliente frustrado e nenhum item util parado quando alguem proximo precisa dele.",
+          "Essa ideia ganha vida em duas plataformas ligadas: a v24mart ajuda retalhistas locais a cooperar com inventario em tempo real, e a v24Pool facilita o emprestimo e a cedencia de itens uteis na vizinhanca."
+        ],
+        "projectsEyebrow": "Duas plataformas conectadas",
+        "projectsTitle": "Uma missao, dois produtos praticos",
+        "projectsSubtitle": "Cada plataforma resolve um problema diferente da vizinhanca, mas ambas reforcam o comercio local, reduzem desperdicio e mantem o valor a circular por perto.",
+        "projects": [
+          {
+            "id": "v24mart",
+            "label": "v24mart",
+            "title": "Partilha inteligente de inventario para lojas locais",
+            "description": "A v24mart permite que retalhistas proximos partilhem stock em tempo real para que uma falta de produto nao se transforme numa venda perdida. A loja pode verificar o stock de um parceiro, reservar o artigo e manter a venda dentro da rede local.",
+            "points": [
+              "Verificar stock de parceiros em tempo real",
+              "Reservar artigos entre lojas proximas",
+              "Manter os clientes fieis ao comercio local"
+            ]
+          },
+          {
+            "id": "v24pool",
+            "label": "v24Pool",
+            "title": "Emprestar e pedir emprestado na sua vizinhanca",
+            "description": "A v24Pool e um mercado local de emprestimo para pessoas, freelancers e empresas que querem acesso sem posse desnecessaria. Em vez de comprar itens de uso raro, os vizinhos podem partilhar o que ja existe e prolongar a vida util de cada recurso.",
+            "points": [
+              "Pedir emprestados itens pouco usados perto de casa",
+              "Ganhar rendimento com ferramentas e equipamentos parados",
+              "Reduzir desperdicio e compras desnecessarias"
+            ]
+          }
+        ],
+        "visionEyebrow": "A nossa visao",
+        "visionTitle": "Uma economia circular de bairro que funciona para todos",
+        "visionDescription": "Nao negamos a concorrencia; rejeitamos a ideia de que ela tenha de ser um jogo de soma zero. Estamos a construir um modelo em que negocios locais cooperam quando mais importa, as familias reutilizam o que ja existe e a comunidade fica mais forte a cada partilha.",
+        "visionPrinciples": [
+          "Nenhuma venda se perde porque as lojas escolhem cooperar em vez de competir cegamente.",
+          "Nenhum cliente fica insatisfeito porque a comunidade empresarial local o apoia.",
+          "Nenhum item utilizavel e descartado enquanto alguem por perto esta prestes a comprar exatamente a mesma coisa nova."
+        ],
+        "benefitsEyebrow": "Porque Vicinity24",
+        "benefitsTitle": "Valor pratico para lojas, vizinhos e para o planeta",
+        "benefits": [
+          {
+            "title": "Para as lojas locais",
+            "description": "A v24mart transforma concorrentes em parceiros, ajudando negocios a reter clientes, aumentar vendas e fortalecer as ruas comerciais locais."
+          },
+          {
+            "title": "Para todos",
+            "description": "A v24Pool torna o emprestimo mais seguro e conveniente do que comprar, ajudando as pessoas a poupar dinheiro, espaco e recursos."
+          },
+          {
+            "title": "Para o planeta",
+            "description": "As duas plataformas promovem a economia circular ao reduzir sobreproducao, compras desnecessarias e desperdicio evitavel."
+          }
+        ],
+        "closingTitle": "Vamos fazer crescer a economia de bairro. Juntos.",
+        "closingDescription": "Quer tenha uma boutique cansada de perder clientes em momentos sem stock, quer prefira pedir emprestada uma tenda em vez de a guardar o ano inteiro, a Vicinity24 oferece uma forma melhor e mais local de comprar, vender, emprestar e pedir emprestado.",
+        "closingCta": {
+          "label": "Fale connosco",
+          "href": "/contact"
+        }
+      }
+    },
+    "fr": {
+      "nav": {
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Accueil Vicinity24"
+        },
+        "links": [
+          {
+            "id": "solutions",
+            "label": "Solutions",
+            "href": "#solutions"
+          },
+          {
+            "id": "about",
+            "label": "À propos",
+            "href": "/about"
+          },
+          {
+            "id": "contact",
+            "label": "Contact",
+            "href": "#contact"
+          }
+        ]
+      },
+      "hero": {
+        "showSection": true,
+        "badge": "Logiciel sur mesure pour les PME",
+        "title": "Libérez le potentiel du partage,",
+        "accent": "Accélérez votre croissance.",
+        "description": "Nous développons des logiciels intelligents de partage de ressources qui aident les PME à éliminer le gaspillage, optimiser leurs opérations et se développer sans la complexité des systèmes d'entreprise."
+      },
+      "platformSection": {
+        "showSection": true,
+        "eyebrow": "Notre Plateforme",
+        "title": "Une technologie intelligente pour un écosystème d'affaires connecté",
+        "subtitle": "Du partage de ressources au sein d'un site unique à l'unification de votre réseau multi-sites.",
+        "ctaLabel": "Explorer toutes les solutions",
+        "ctaHref": "#demo",
+        "platforms": [
+          {
+            "id": "sas",
+            "label": "v24Pool",
+            "title": "v24Pool: The Hyperlocal Asset Interchange",
+            "tagline": "Partagez. Empruntez. Économisez.",
+            "description": "Une puissante plateforme peer-to-peer qui aide les entreprises et les particuliers à prêter et emprunter des ressources localement. Qu'il s'agisse d'outils ou d'actifs commerciaux, v24Pool facilite la réduction des coûts de possession, l'optimisation de l'utilisation et la création de confiance grâce à une communauté vérifiée et transparente.",
+            "features": [
+              "Recherche de ressources par proximité",
+              "Profils vérifiés et avis",
+              "Suivi sécurisé des transactions",
+              "Outils de gestion des économies"
+            ],
+            "image": "/images/sas-sharing-platform.svg",
+            "alt": "Illustration of a local sharing platform with listed equipment, nearby availability, verified access, and secure tracking",
+            "link": "https://v24pool.com",
+            "visible": true
+          },
+          {
+            "id": "onlineStore",
+            "label": "Online Store",
+            "title": "Boutique en ligne personnalisable",
+            "tagline": "Votre marque. Vos règles. Votre marge.",
+            "description": "Lancez une boutique e-commerce performante, parfaitement adaptée à votre marque et à vos opérations retail.",
+            "features": [
+              "Builder drag-and-drop",
+              "Livraison locale",
+              "Sync temps réel"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1f0064c1e-fbc2-4154-86cf-387399c95b3a.png",
+            "alt": "Tableau de bord analytics e-commerce",
+            "link": "#contact",
+            "visible": false
+          },
+          {
+            "id": "linkedStore",
+            "label": "Linked-Store",
+            "title": "Ne perdez plus jamais une vente.",
+            "tagline": "Le réseau d'inventaire dynamique pour le commerce de détail multi-sites.",
+            "description": "Maximisez vos revenus en débloquant les stocks cachés. Accédez instantanément à l'inventaire de tous vos sites et réseaux autorisés pour honorer chaque commande, augmenter vos profits et garder vos clients satisfaits.",
+            "features": [
+              "Mutualisation des stocks à la demande",
+              "Routage instantané vers le profit",
+              "Intelligence réseau unifiée",
+              "Acquisition client sans friction"
+            ],
+            "image": "/images/linked-store-network.svg",
+            "alt": "Illustration of multiple connected stores sharing inventory through one linked retail network",
+            "link": "https://v24mart.com",
+            "visible": true,
+            "ctaLabel": "Réserver une démo"
+          },
+          {
+            "id": "consulting",
+            "label": "Consulting",
+            "title": "Conseil et projets sur demande",
+            "tagline": "Des solutions sur mesure pour des opérations complexes.",
+            "description": "Lorsque vous avez besoin de plus qu'un produit standard, notre équipe d'experts travaille avec vous pour concevoir et construire des solutions logicielles personnalisées, répondant à des défis opérationnels complexes.",
+            "features": [
+              "Automatisation",
+              "Intégrations API",
+              "Équipe dédiée"
+            ],
+            "image": "https://image.qwenlm.ai/public_source/3ec53990-a7b0-4422-8aeb-3b344f400abc/1947cba30-40e9-4909-9457-565cbe89667c.png",
+            "alt": "Session de conseil avec analytics",
+            "link": "#contact",
+            "visible": false
+          }
+        ]
+      },
+      "testimonial": {
+        "showSection": true,
+        "eyebrow": "Résultats clients",
+        "title": "Adopté par des entreprises en croissance",
+        "quote": "Linked-Store a révolutionné nos opérations multi-sites. En mutualisant les stocks, nous avons réduit les coûts de possession de 40 % et augmenté les ventes inter-magasins de 30 % en seulement trois mois.",
+        "author": "Sarah T.",
+        "authorRole": "COO d'un groupe régional de retail"
+      },
+      "finalCta": {
+        "showSection": true,
+        "title": "Prêt à moderniser vos opérations ?",
+        "description": "Rejoignez des PME innovantes qui utilisent Vicinity24 pour réduire les coûts, fluidifier les opérations et accélérer leur croissance.",
+        "primaryCta": {
+          "label": "Commencer l'essai gratuit",
+          "href": "#demo"
+        },
+        "secondaryCta": {
+          "label": "Contacter les ventes",
+          "href": "#contact"
+        }
+      },
+      "footer": {
+        "showSection": true,
+        "brand": {
+          "mark": "V",
+          "name": "Vicinity24",
+          "ariaLabel": "Accueil Vicinity24"
+        },
+        "description": "Un logiciel intelligent pour les sociétés qui font avancer l'économie.",
+        "groups": [
+          {
+            "id": "product",
+            "title": "Produit",
+            "links": [
+              {
+                "label": "v24Pool",
+                "href": "#solutions"
+              },
+              {
+                "label": "Linked-Store",
+                "href": "#solutions"
+              }
+            ]
+          },
+          {
+            "id": "company",
+            "title": "Entreprise",
+            "links": [
+              {
+                "label": "À propos",
+                "href": "/about"
+              },
+              {
+                "label": "Confidentialité",
+                "href": "#contact"
+              },
+              {
+                "label": "Conditions",
+                "href": "#contact"
+              }
+            ]
+          }
+        ],
+        "contactTitle": "Contact",
+        "email": "info@vicinity24.com",
+        "phone": "+1 (555) 123-4567",
+        "address": "Muellerstrasse 45, 10961 Berlin",
+        "bottomLeft": "© 2026 Vicinity24. Accélère la croissance des entreprises.",
+        "bottomRight": ""
+      },
+      "about": {
+        "badge": "A propos de Vicinity24",
+        "title": "Nous construisons l economie de quartier avec",
+        "accent": "des reseaux locaux partages.",
+        "lead": "Nous relions les voisins, renforcons les commerces locaux et construisons ensemble une communaute circulaire.",
+        "intro": [
+          "Chez Vicinity24, nous croyons que les communautes les plus fortes naissent lorsque voisins, commercants et habitants collaborent. Notre objectif est simple : aucune vente perdue, aucun client decu et aucun objet utile laisse inutilise quand quelqu un tout pres en a besoin.",
+          "Cette conviction prend vie a travers deux plateformes complementaires : v24mart aide les commercants locaux a cooperer autour des stocks en temps reel, et v24Pool facilite le pret et l emprunt d objets utiles a proximite."
+        ],
+        "projectsEyebrow": "Deux plateformes connectees",
+        "projectsTitle": "Une mission, deux produits concrets",
+        "projectsSubtitle": "Chaque plateforme resout un probleme different du quartier, mais toutes deux renforcent le commerce local, reduisent le gaspillage et font circuler la valeur a proximite.",
+        "projects": [
+          {
+            "id": "v24mart",
+            "label": "v24mart",
+            "title": "Le partage intelligent des stocks pour les commerces locaux",
+            "description": "v24mart permet a des commercants proches de partager leurs stocks en temps reel afin qu une rupture ne se transforme pas en vente perdue. Un magasin peut verifier le stock d un partenaire, reserver l article et garder la vente dans le reseau local.",
+            "points": [
+              "Verifier le stock des partenaires en temps reel",
+              "Reserver des articles entre magasins proches",
+              "Fideliser les clients au commerce local"
+            ]
+          },
+          {
+            "id": "v24pool",
+            "label": "v24Pool",
+            "title": "Preter et emprunter dans votre quartier",
+            "description": "v24Pool est une place de marche locale de pret pour les particuliers, les independants et les entreprises qui veulent de l acces sans possession inutile. Au lieu d acheter des objets rarement utilises, les voisins peuvent partager ce qui existe deja et prolonger la vie de chaque ressource utile.",
+            "points": [
+              "Emprunter des objets peu utilises pres de chez soi",
+              "Generer un revenu avec des outils et equipements inutilises",
+              "Reduire le gaspillage et les achats inutiles"
+            ]
+          }
+        ],
+        "visionEyebrow": "Notre vision",
+        "visionTitle": "Une economie circulaire de quartier qui fonctionne pour tous",
+        "visionDescription": "Nous ne nions pas la concurrence ; nous refusons simplement l idee qu elle doive etre un jeu a somme nulle. Nous construisons un modele dans lequel les entreprises locales cooperent quand cela compte, les foyers reutilisent ce qui existe deja et la communaute se renforce a chaque partage.",
+        "visionPrinciples": [
+          "Aucune vente n est perdue parce que les commerces choisissent de cooperer plutot que de se concurrencer aveuglement.",
+          "Aucun client n est laisse insatisfait parce que la communaute commerciale locale le soutient.",
+          "Aucun objet utilisable n est jete alors que quelqu un a proximite s apprete a acheter exactement la meme chose neuve."
+        ],
+        "benefitsEyebrow": "Pourquoi Vicinity24",
+        "benefitsTitle": "Une valeur concrete pour les commerces, les voisins et la planete",
+        "benefits": [
+          {
+            "title": "Pour les commerces locaux",
+            "description": "v24mart transforme les concurrents en partenaires et aide les entreprises a conserver leurs clients, augmenter leurs ventes et renforcer les rues commercantes."
+          },
+          {
+            "title": "Pour tous",
+            "description": "v24Pool rend l emprunt plus sur et plus pratique que l achat, en aidant chacun a economiser de l argent, de l espace et des ressources."
+          },
+          {
+            "title": "Pour la planete",
+            "description": "Les deux plateformes soutiennent l economie circulaire en reduisant la surproduction, les achats inutiles et les dechets evitables."
+          }
+        ],
+        "closingTitle": "Faisons grandir l economie de quartier. Ensemble.",
+        "closingDescription": "Que vous dirigiez une boutique fatiguee de perdre des clients lors des ruptures de stock ou que vous preferiez emprunter une tente plutot que de la stocker toute l annee, Vicinity24 vous propose une meilleure facon locale d acheter, vendre, preter et emprunter.",
+        "closingCta": {
+          "label": "Nous contacter",
+          "href": "/contact"
+        }
+      }
+    }
+  }
 }
