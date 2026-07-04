@@ -82,6 +82,27 @@ function createEmptyLocaleContent(): SiteLocaleContent {
       closingDescription: '',
       closingCta: { label: '', href: '' }
     },
+    contact: {
+      badge: '',
+      title: '',
+      description: '',
+      panelTitle: '',
+      panelDescription: '',
+      highlights: [],
+      phoneLabel: '',
+      addressLabel: '',
+      fullName: { label: '', placeholder: '' },
+      email: { label: '', placeholder: '' },
+      company: { label: '', placeholder: '' },
+      solution: { label: '', placeholder: '' },
+      message: { label: '', placeholder: '' },
+      generalInquiryLabel: '',
+      sendingLabel: '',
+      submitLabel: '',
+      backToHomeLabel: '',
+      successMessage: '',
+      errorMessage: ''
+    },
     platformSection: {
       showSection: false,
       eyebrow: '',
@@ -289,6 +310,31 @@ export class PlatformConfigService {
         closingCta: {
           ...empty.about.closingCta,
           ...locale?.about?.closingCta
+        }
+      },
+      contact: {
+        ...empty.contact,
+        ...locale?.contact,
+        highlights: locale?.contact?.highlights ?? empty.contact.highlights,
+        fullName: {
+          ...empty.contact.fullName,
+          ...locale?.contact?.fullName
+        },
+        email: {
+          ...empty.contact.email,
+          ...locale?.contact?.email
+        },
+        company: {
+          ...empty.contact.company,
+          ...locale?.contact?.company
+        },
+        solution: {
+          ...empty.contact.solution,
+          ...locale?.contact?.solution
+        },
+        message: {
+          ...empty.contact.message,
+          ...locale?.contact?.message
         }
       },
       platformSection: {
