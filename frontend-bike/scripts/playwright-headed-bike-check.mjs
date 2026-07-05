@@ -29,15 +29,29 @@ async function run() {
     await page.click('button[type="submit"]');
     await page.waitForURL(/#\/bikes/, { timeout: 15000 });
 
-    await page.goto(baseUrl + '/#/bikes', { waitUntil: 'networkidle' });
-    const cards = page.locator('.card');
-    await cards.first().waitFor({ timeout: 15000 });
+    await page.goto(baseUrl + '/#/fahrad-fuchs', { waitUntil: 'networkidle' });
+    await page.waitForSelector('.storefront-shell', { timeout: 30000 });
+    const cards = page.locator('.bike-card');
+    await cards.first().waitFor({ timeout: 30000 });
     const cardCount = await cards.count();
-    const firstTitle = (await page.locator('.card h2, .card h3').first().textContent())?.trim() || '';
+    const firstTitle = (await page.locator('.bike-card h3').first().textContent())?.trim() || '';
 
-    await cards.first().click();
-    await page.waitForSelector('.bike-detail h1', { timeout: 15000 });
-    const detailTitle = (await page.locator('.bike-detail h1').textContent())?.trim() || '';
+    const detailHref = await page.locator('.bike-card a').first().getAttribute('href');
+    if (!detailHref) {
+      throw new Error('Missing Fahrad-Fuchs detail link.');
+    }
+    await page.goto(baseUrl + detailHref, { waitUntil: 'networkidle' });
+    await page.waitForSelector('.detail-shell h1', { timeout: 30000 });
+    const detailTitle = (await page.locator('.detail-shell h1').textContent())?.trim() || '';
+
+    const checkoutHref = await page.locator('.reserve-button').getAttribute('href');
+    if (!checkoutHref) {
+      throw new Error('Missing Fahrad-Fuchs checkout link.');
+    }
+    await page.locator('.reserve-button').click();
+    await page.waitForURL(/#\/fahrad-fuchs\/checkout\//, { timeout: 30000 });
+    await page.waitForSelector('.checkout-shell', { timeout: 30000 });
+    const checkoutTitle = (await page.locator('.checkout-shell h1').textContent())?.trim() || '';
 
     await page.screenshot({
       path: path.join(artifactsDir, 'frontend-bike-headed-smoke.png'),
@@ -46,10 +60,11 @@ async function run() {
 
     console.log(JSON.stringify({
       login: 'ok',
-      bikesPage: 'ok',
+      fahradFuchsPage: 'ok',
       cardCount,
       firstTitle,
-      detailTitle
+      detailTitle,
+      checkoutTitle
     }, null, 2));
   } finally {
     await context.close();

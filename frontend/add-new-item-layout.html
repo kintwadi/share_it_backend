@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>v24pool — Create a listing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.0/index.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --surface-hover: #fafbfd;
+    --border: #e6eaf0;
+    --border-strong: #d3dae4;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-subtle: #94a3b8;
+    --accent: #0d9488;
+    --accent-hover: #0f766e;
+    --accent-light: #ccfbf1;
+    --accent-bg: #f0fdfa;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: rgba(255,255,255,0.85);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .nav-link:hover { background: var(--bg); color: var(--text); }
+  .nav-link.active { background: var(--accent-light); color: var(--accent); }
+  .nav-link svg { width: 18px; height: 18px; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .lang-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .user-menu:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+  .user-avatar-sm {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .user-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .chevron { color: var(--text-subtle); width: 14px; height: 14px; }
+
+  /* Main */
+  .main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Page header */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .close-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .close-btn:hover { background: var(--bg); color: var(--text); }
+  .close-btn svg { width: 14px; height: 14px; }
+
+  /* Grid layout */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .form-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .step-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .step-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .step-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .step-icon {
+    width: 28px; height: 28px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-icon svg { width: 14px; height: 14px; }
+
+  /* Form elements */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .field-hint {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 4px;
+  }
+  .input, .select, .textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    outline: none;
+  }
+  .input:focus, .select:focus, .textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+  }
+  .input::placeholder, .textarea::placeholder { color: var(--text-subtle); }
+  .textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+  }
+  .select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  /* Type toggle */
+  .type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--bg);
+    padding: 4px;
+    border-radius: 10px;
+  }
+  .type-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .type-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+  .type-btn svg { width: 16px; height: 16px; }
+
+  /* Two col row */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* Hourly + approval */
+  .rate-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .input-with-suffix {
+    position: relative;
+  }
+  .input-with-suffix .input { padding-right: 28px; }
+  .input-suffix {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-subtle);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Toggle switch */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--success-bg);
+    border: 1px solid #d1fae5;
+    border-radius: 8px;
+  }
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--success);
+  }
+  .toggle-label svg { width: 16px; height: 16px; }
+  .toggle-sub {
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-weight: 400;
+  }
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    background: var(--success);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 20px;
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.off { background: var(--border-strong); }
+  .toggle.off::after { left: 2px; }
+
+  /* Location header */
+  .loc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .loc-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .loc-header p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .btn-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .btn-location:hover { background: var(--accent-hover); }
+  .btn-location svg { width: 14px; height: 14px; }
+
+  /* Upload area */
+  .upload-area {
+    border: 2px dashed var(--border-strong);
+    border-radius: 10px;
+    padding: 32px 20px;
+    text-align: center;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .upload-area:hover {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .upload-icon {
+    width: 40px; height: 40px;
+    margin: 0 auto 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .upload-icon svg { width: 20px; height: 20px; }
+  .upload-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .upload-hint {
+    font-size: 12px;
+    color: var(--text-subtle);
+  }
+
+  /* Gallery */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .gallery-add {
+    aspect-ratio: 1;
+    border: 2px dashed var(--border-strong);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+    color: var(--text-subtle);
+  }
+  .gallery-add:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .gallery-add svg { width: 20px; height: 20px; }
+  .gallery-add span { font-size: 11px; font-weight: 600; }
+  .gallery-item {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg);
+  }
+  .gallery-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .gallery-remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .gallery-item:hover .gallery-remove { opacity: 1; }
+  .gallery-remove svg { width: 12px; height: 12px; }
+
+  /* Availability toggle */
+  .avail-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--bg);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+  .avail-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .avail-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+  .avail-btn svg { width: 14px; height: 14px; }
+
+  /* Exchange location */
+  .exchange-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .exchange-opt {
+    padding: 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--surface);
+  }
+  .exchange-opt:hover { border-color: var(--border-strong); }
+  .exchange-opt.active {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .exchange-opt h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .exchange-opt p {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .exchange-opt .tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-light);
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  /* Slider */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .slider-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .slider-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .slider-btn svg { width: 14px; height: 14px; }
+  .slider-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 999px;
+    position: relative;
+    overflow: hidden;
+  }
+  .slider-fill {
+    position: absolute;
+    left: 10%; right: 20%;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  /* Hours input */
+  .hours-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .hours-input input {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    width: 60px;
+    background: transparent;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .bottom-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-cancel {
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-cancel:hover { background: var(--bg); color: var(--text); }
+  .btn-save {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-save:hover { background: #1e293b; transform: translateY(-1px); }
+  .btn-save svg { width: 16px; height: 16px; }
+  .safety-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-subtle);
+  }
+  .safety-note svg { width: 14px; height: 14px; color: var(--accent); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast svg { width: 18px; height: 18px; color: var(--success); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .nav-link span { display: none; }
+  }
+  @media (max-width: 600px) {
+    .header-inner { padding: 0 16px; }
+    .main { padding: 20px 16px 60px; }
+    .page-header h1 { font-size: 22px; }
+    .user-name { display: none; }
+    .row, .rate-row, .exchange-options { grid-template-columns: 1fr; }
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+    .bottom-bar { flex-direction: column; gap: 16px; align-items: stretch; }
+    .bottom-actions { justify-content: stretch; }
+    .bottom-actions > * { flex: 1; }
+    .safety-note { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">v24pool<span class="logo-dot"></span></div>
+    <nav class="nav">
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Discover</span>
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Messages</span>
+      </a>
+    </nav>
+    <div class="header-right">
+      <button class="lang-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        EN
+      </button>
+      <div class="user-menu">
+        <img src="https://image.qwenlm.ai/public_source/26619a1d-b784-4009-9f28-47e192b7ef0c/12730b25d-f9ed-4005-a53c-cd05cd32b3ab.png" alt="Linda Lender" class="user-avatar-sm" />
+        <span class="user-name">Linda Lender</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1>Create a listing</h1>
+      <p>Fill in the details below.</p>
+    </div>
+    <button class="close-btn" onclick="showToast('Listing cancelled')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Cancel
+    </button>
+  </div>
+
+  <div class="form-grid">
+    <!-- LEFT COLUMN -->
+    <div class="form-col">
+      <!-- Step 1: Basic info -->
+      <div class="card">
+        <div class="card-header">
+          <div class="step-label">
+            <span class="step-num">Step 1</span>
+            <span class="step-title">Basic info</span>
+          </div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Type</label>
+          <div class="type-toggle">
+            <button class="type-btn" data-type="give" onclick="setType('give')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              GIVE
+            </button>
+            <button class="type-btn active" data-type="lend" onclick="setType('lend')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              LEND
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Title</label>
+          <input type="text" class="input" placeholder="e.g. Power drill" />
+        </div>
+
+        <div class="field">
+          <label class="field-label">Category</label>
+          <select class="select">
+            <option>Gardening</option>
+            <option>Tools</option>
+            <option>Sports</option>
+            <option>Electronics</option>
+            <option>Vehicles</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Details Settings -->
+      <div class="card">
+        <div class="section-label">Details Settings</div>
+        <div class="field">
+          <label class="field-label">Description</label>
+          <textarea class="textarea" placeholder="Describe the item, its condition, and what's included..." id="descArea"></textarea>
+          <div class="field-hint" style="text-align:right;"><span id="charCount">0</span> / 500</div>
+        </div>
+
+        <div class="rate-row">
+          <div class="field">
+            <label class="field-label">Hourly rate</label>
+            <div class="input-with-suffix">
+              <input type="number" class="input" placeholder="0" min="0" step="0.5" />
+              <span class="input-suffix">€</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Approval settings</label>
+            <div class="toggle-wrap">
+              <div class="toggle-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <div>
+                  <div>Book now</div>
+                  <div class="toggle-sub">Auto-approve</div>
+                </div>
+              </div>
+              <div class="toggle" id="bookToggle" onclick="this.classList.toggle('off')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Location -->
+      <div class="card">
+        <div class="section-label">Item Location</div>
+        <div class="loc-header">
+          <div>
+            <h3>Where is the item located?</h3>
+            <p>Used to show the item to potential nearby.</p>
+          </div>
+          <button class="btn-location" onclick="showToast('📍 Location detected: Paris, FR')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Use My Current Location
+          </button>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Street address</label>
+          <input type="text" class="input" placeholder="12 Rue de la Paix" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="field-label">City / Town</label>
+            <input type="text" class="input" placeholder="Paris" />
+          </div>
+          <div class="field">
+            <label class="field-label">Postal code</label>
+            <input type="text" class="input" placeholder="75002" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Country</label>
+          <select class="select">
+            <option>Portugal</option>
+            <option>France</option>
+            <option>Germany</option>
+            <option>Spain</option>
+            <option>Italy</option>
+          </select>
+          <div class="field-hint">Data © OpenStreetMap contributors</div>
+        </div>
+      </div>
+
+      <!-- Step 5: Exchange location -->
+      <div class="card">
+        <div class="card-header">
+          <div class="step-label">
+            <span class="step-num">Step 5</span>
+            <span class="step-title">Exchange location</span>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Choose where the exchange happens.</p>
+        <p style="font-size:11px;color:var(--text-subtle);margin-bottom:14px;">Pick a location or enter a custom location (shown after approval).</p>
+
+        <div class="exchange-options">
+          <div class="exchange-opt active" onclick="selectExchange(this)">
+            <h4>Concierge (building front desk)</h4>
+            <p>Rue du Commerce 145, 75015 Paris</p>
+            <span class="tag">Selected</span>
+          </div>
+          <div class="exchange-opt" onclick="selectExchange(this)">
+            <h4>Local bakery partner</h4>
+            <p>Levignacq 60, Frankfurt</p>
+          </div>
+        </div>
+
+        <div class="slider-wrap">
+          <button class="slider-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="slider-track">
+            <div class="slider-fill"></div>
+          </div>
+          <button class="slider-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <div class="field" style="margin-top:12px;">
+          <label class="field-label">Operating hours</label>
+          <div class="hours-input">
+            <input type="text" value="08:00" />
+            <span style="color:var(--text-subtle);">–</span>
+            <input type="text" value="20:00" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="form-col">
+      <!-- Step 2: Photos -->
+      <div class="card">
+        <div class="card-header">
+          <div class="step-label">
+            <span class="step-num">Step 2</span>
+            <span class="step-title">Photos</span>
+          </div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Cover image</label>
+          <div class="upload-area" onclick="document.getElementById('coverInput').click()">
+            <input type="file" id="coverInput" accept="image/*" hidden onchange="handleCoverUpload(event)" />
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-title" id="coverTitle">Upload</div>
+            <div class="upload-hint">Recommended: cover photo, landscape</div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <label class="field-label">Gallery (<span id="galleryCount">0</span>)</label>
+          <div class="gallery-grid" id="galleryGrid">
+            <div class="gallery-add" onclick="document.getElementById('galleryInput').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Add</span>
+            </div>
+          </div>
+          <input type="file" id="galleryInput" accept="image/*" multiple hidden onchange="handleGalleryUpload(event)" />
+        </div>
+      </div>
+
+      <!-- Step 3: Availability -->
+      <div class="card">
+        <div class="card-header">
+          <div class="step-label">
+            <span class="step-num">Step 3</span>
+            <span class="step-title">Availability</span>
+          </div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+        </div>
+
+        <div class="avail-toggle">
+          <button class="avail-btn active" onclick="setAvail(this, 'fixed')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Fixed dates
+          </button>
+          <button class="avail-btn" onclick="setAvail(this, 'flex')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Indefinitely
+          </button>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label class="field-label">Available from</label>
+            <input type="date" class="input" />
+          </div>
+          <div class="field">
+            <label class="field-label" style="visibility:hidden;">Time</label>
+            <select class="select">
+              <option>10:00</option>
+              <option>11:00</option>
+              <option>12:00</option>
+              <option>14:00</option>
+              <option>16:00</option>
+              <option>18:00</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <div class="bottom-actions">
+      <button class="btn-cancel" onclick="showToast('Draft saved')">Cancel</button>
+      <button class="btn-save" onclick="showToast('✓ Listing published successfully!')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+    </div>
+    <div class="safety-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Trusted payments & safety
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Done</span>
+</div>
+
+<script>
+  function setType(type) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.type-btn[data-type="${type}"]`).classList.add('active');
+  }
+
+  function setAvail(btn, mode) {
+    btn.parentElement.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function selectExchange(el) {
+    document.querySelectorAll('.exchange-opt').forEach(o => {
+      o.classList.remove('active');
+      const tag = o.querySelector('.tag');
+      if (tag) tag.remove();
+    });
+    el.classList.add('active');
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = 'Selected';
+    el.appendChild(tag);
+  }
+
+  const descArea = document.getElementById('descArea');
+  const charCount = document.getElementById('charCount');
+  descArea.addEventListener('input', () => {
+    const len = descArea.value.length;
+    charCount.textContent = Math.min(len, 500);
+    if (len > 500) descArea.value = descArea.value.substring(0, 500);
+  });
+
+  function handleCoverUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('coverTitle').textContent = file.name.length > 28 ? file.name.substring(0, 28) + '…' : file.name;
+      showToast('Cover image uploaded');
+    }
+  }
+
+  const galleryImages = [];
+  function handleGalleryUpload(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        galleryImages.push(ev.target.result);
+        renderGallery();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderGallery() {
+    const grid = document.getElementById('galleryGrid');
+    const addBtn = grid.querySelector('.gallery-add');
+    grid.querySelectorAll('.gallery-item').forEach(n => n.remove());
+    galleryImages.forEach((src, i) => {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.innerHTML = `
+        <img src="${src}" alt="Gallery ${i+1}" />
+        <button class="gallery-remove" onclick="removeGallery(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+      grid.insertBefore(item, addBtn);
+    });
+    document.getElementById('galleryCount').textContent = galleryImages.length;
+  }
+
+  function removeGallery(i) {
+    galleryImages.splice(i, 1);
+    renderGallery();
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+</script>
+
+</body>
+</html>
+

@@ -1,456 +1,512 @@
-<div class="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 relative">
+<div class="new-item-page">
   <ng-container *ngIf="loading; else formTpl">
-    <div class="min-h-screen flex items-center justify-center text-slate-500">
-      <lucide-icon [img]="Loader2" size="40" class="animate-spin"></lucide-icon>
+    <div class="loading-state">
+      <lucide-icon [img]="Loader2" size="40" class="spin"></lucide-icon>
     </div>
   </ng-container>
 
   <ng-template #formTpl>
-    <div class="w-full mx-auto px-4 lg:px-10 py-8 space-y-6">
-      <div class="flex items-center justify-between">
+    <main class="main">
+      <div class="page-header">
         <div>
-          <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-400" *ngIf="editId">
-            {{ i18n.t('new_item.edit_listing') }}
-          </div>
-          <h1 class="text-2xl font-bold text-slate-900">{{ i18n.t('new_item.title') }}</h1>
-          <p class="text-sm text-slate-500 mt-1">{{ i18n.t('new_item.subtitle') }}</p>
+          <div *ngIf="editId" class="page-eyebrow">{{ i18n.t('new_item.edit_listing') }}</div>
+          <h1>{{ i18n.t('new_item.title') }}</h1>
+          <p>{{ i18n.t('new_item.subtitle') }}</p>
         </div>
-        <app-button (onClick)="goBack()" variant="tertiary" size="sm">
-          <lucide-icon [img]="X" size="16" class="mr-2"></lucide-icon>
-          {{ i18n.t('common.cancel') }}
-        </app-button>
+        <button type="button" class="close-btn" (click)="goBack()">
+          <lucide-icon [img]="X" size="14"></lucide-icon>
+          <span>{{ i18n.t('common.cancel') }}</span>
+        </button>
       </div>
 
-      <div *ngIf="error" class="p-3 rounded-lg bg-red-50 text-red-700 text-sm border border-red-200">
+      <div *ngIf="error" class="notice notice-error">
         {{ error }}
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div class="space-y-4">
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.step1_label') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.basic_info') }}</h2>
+      <div class="form-grid">
+        <div class="form-col">
+          <section class="card">
+            <div class="card-header">
+              <div class="step-label">
+                <span class="step-num">{{ i18n.t('new_item.step1_label') }}</span>
+                <span class="step-title">{{ i18n.t('new_item.basic_info') }}</span>
               </div>
-              <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <lucide-icon [img]="Package" size="18"></lucide-icon>
+              <div class="step-icon">
+                <lucide-icon [img]="Package" size="14"></lucide-icon>
               </div>
             </div>
 
-            <div class="space-y-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.type_label') }}</label>
-                <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
-                  <button type="button" (click)="onTypeSelect(ListingType.GIVE)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.GIVE ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
-                    <span class="text-base">🎁</span>
-                    {{ i18n.t('new_item.type.give') }}
-                  </button>
-                  <button *ngIf="sellEnabled && subscriptionConfig.pro" type="button" (click)="onTypeSelect(ListingType.SELL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SELL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
-                    <span class="text-base">💰</span>
-                    {{ i18n.t('new_item.type.sell') }}
-                  </button>
-                  <button type="button" (click)="onTypeSelect(ListingType.LEND)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.LEND ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
-                    <span class="text-base">🔄</span>
-                    {{ i18n.t('new_item.type.lend') }}
-                  </button>
-                  <button *ngIf="showTypeGoods" type="button" (click)="onTypeSelect(ListingType.GOODS)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.GOODS ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
-                    <span class="text-base">📦</span>
-                    {{ i18n.t('new_item.type.goods') }}
-                  </button>
-                  <button *ngIf="showTypeSkill" type="button" (click)="onTypeSelect(ListingType.SKILL)" class="flex-1 flex items-center justify-center gap-2 text-xs font-semibold py-3 rounded-lg transition-all" [ngClass]="type === ListingType.SKILL ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'">
-                    <span class="text-base">✨</span>
-                    {{ i18n.t('new_item.type.skill') }}
-                  </button>
-                </div>
+            <div class="field">
+              <label class="field-label">{{ i18n.t('new_item.type_label') }}</label>
+              <div class="type-toggle" [class.has-three]="sellEnabled && subscriptionConfig.pro">
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.active]="type === ListingType.GIVE"
+                  (click)="onTypeSelect(ListingType.GIVE)"
+                >
+                  <span>♡</span>
+                  <span>{{ i18n.t('new_item.type.give') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="type-btn"
+                  [class.active]="type === ListingType.LEND"
+                  (click)="onTypeSelect(ListingType.LEND)"
+                >
+                  <span>▦</span>
+                  <span>{{ i18n.t('new_item.type.lend') }}</span>
+                </button>
+                <button
+                  *ngIf="sellEnabled && subscriptionConfig.pro"
+                  type="button"
+                  class="type-btn"
+                  [class.active]="type === ListingType.SELL"
+                  (click)="onTypeSelect(ListingType.SELL)"
+                >
+                  <span>¤</span>
+                  <span>{{ i18n.t('new_item.type.sell') }}</span>
+                </button>
+                <button
+                  *ngIf="showTypeGoods"
+                  type="button"
+                  class="type-btn"
+                  [class.active]="type === ListingType.GOODS"
+                  (click)="onTypeSelect(ListingType.GOODS)"
+                >
+                  <span>□</span>
+                  <span>{{ i18n.t('new_item.type.goods') }}</span>
+                </button>
+                <button
+                  *ngIf="showTypeSkill"
+                  type="button"
+                  class="type-btn"
+                  [class.active]="type === ListingType.SKILL"
+                  (click)="onTypeSelect(ListingType.SKILL)"
+                >
+                  <span>✦</span>
+                  <span>{{ i18n.t('new_item.type.skill') }}</span>
+                </button>
+              </div>
+            </div>
 
-                <div *ngIf="showLendPayoutNotice" class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-                  <div class="flex items-start gap-3">
-                    <div class="p-2 rounded-full bg-amber-100 text-amber-700">
-                      <lucide-icon [img]="CreditCard" size="16"></lucide-icon>
+            <div *ngIf="showLendPayoutNotice" class="notice notice-warning">
+              <div class="notice-icon">
+                <lucide-icon [img]="CreditCard" size="16"></lucide-icon>
+              </div>
+              <div class="notice-content">
+                <div class="notice-title">{{ i18n.t('new_item.lend_setup.title') }}</div>
+                <div class="notice-text">{{ i18n.t('new_item.lend_setup.desc') }}</div>
+                <button type="button" class="inline-action" (click)="goToPaymentsManage()">
+                  {{ i18n.t('payments.payouts.manage') }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="type === ListingType.GIVE && (recommendationLoading || (recommendation && recommendation.recommendedAction !== 'GIVE'))" class="notice notice-info">
+              <div class="notice-icon">
+                <lucide-icon [img]="Zap" size="16"></lucide-icon>
+              </div>
+              <div class="notice-content">
+                <div class="notice-title">{{ i18n.t('new_item.recommendation_title') }}</div>
+                <div *ngIf="recommendationLoading" class="notice-text">{{ i18n.t('new_item.loading') }}</div>
+                <ng-container *ngIf="!recommendationLoading">
+                  <div class="notice-text">
+                    {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
+                    <span *ngIf="recommendation?.reasoning"> - {{ recommendation?.reasoning }}</span>
+                  </div>
+                  <div class="tag-list">
+                    <div *ngIf="recommendation?.suggestedPrice != null" class="info-tag">
+                      {{ i18n.t('new_item.recommendation_price') }}: {{ i18n.formatPrice(recommendation?.suggestedPrice || 0) }}
                     </div>
-                    <div class="flex-1">
-                      <h4 class="text-xs font-bold text-amber-900">{{ i18n.t('new_item.lend_setup.title') }}</h4>
-                      <p class="text-[11px] text-amber-800 mt-1 leading-relaxed">{{ i18n.t('new_item.lend_setup.desc') }}</p>
-                      <button type="button" (click)="goToPaymentsManage()" class="mt-3 inline-flex items-center rounded-lg bg-amber-600 px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-amber-700">
-                        {{ i18n.t('payments.payouts.manage') }}
-                      </button>
+                    <div class="info-tag">
+                      {{ i18n.t('new_item.recommendation_confidence') }}: {{ (recommendation?.confidenceScore || 0) * 100 | number:'1.0-0' }}%
                     </div>
                   </div>
-                </div>
+                  <div class="action-row">
+                    <button
+                      type="button"
+                      class="inline-action inline-action-primary"
+                      (click)="onTypeSelect((recommendation?.recommendedAction === 'SELL' && sellEnabled) ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
+                    >
+                      {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
+                    </button>
+                    <button type="button" class="inline-action inline-action-secondary">
+                      {{ i18n.t('new_item.keep_as_gift') }}
+                    </button>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
 
-                <div *ngIf="type === ListingType.GIVE && (recommendationLoading || (recommendation && recommendation.recommendedAction !== 'GIVE'))" class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl animate-in fade-in slide-in-from-top-1">
-                  <div class="flex items-start gap-3">
-                    <div class="p-2 bg-blue-100 rounded-full text-blue-600">
-                      <lucide-icon [img]="Zap" size="16"></lucide-icon>
+            <div class="field">
+              <label class="field-label">{{ i18n.t('new_item.field.title') }}</label>
+              <input
+                [(ngModel)]="title"
+                (ngModelChange)="triggerRecommendation()"
+                class="input"
+                [placeholder]="i18n.t('new_item.placeholder.title')"
+              />
+            </div>
+
+            <div class="field">
+              <label class="field-label">{{ i18n.t('new_item.field.category') }}</label>
+              <select
+                [(ngModel)]="category"
+                (ngModelChange)="triggerRecommendation()"
+                class="select"
+              >
+                <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
+                <option *ngIf="categories.length === 0" [value]="i18n.t('new_item.tools')">{{ i18n.t('new_item.tools') }}</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="section-label">{{ i18n.t('new_item.details_settings') }}</div>
+
+            <div class="field">
+              <label class="field-label">{{ i18n.t('new_item.field.description') }}</label>
+              <textarea
+                [(ngModel)]="description"
+                (ngModelChange)="triggerRecommendation()"
+                class="textarea"
+                [placeholder]="i18n.t('new_item.placeholder.description')"
+              ></textarea>
+              <div class="field-hint field-hint-right">{{ description.length }} / 500</div>
+            </div>
+
+            <div class="rate-row">
+              <div class="field">
+                <label class="field-label">{{ i18n.t('new_item.hourly_rate_label') }}</label>
+                <div class="input-with-suffix">
+                  <input
+                    type="number"
+                    [(ngModel)]="hourlyRate"
+                    (ngModelChange)="triggerRecommendation()"
+                    [disabled]="type === ListingType.GIVE"
+                    class="input"
+                    [placeholder]="i18n.t('new_item.hourly_rate_placeholder')"
+                  />
+                  <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }}</span>
+                </div>
+              </div>
+
+              <div *ngIf="isPremiumLender" class="field">
+                <label class="field-label">{{ i18n.t('new_item.approval_settings') }}</label>
+                <div class="toggle-wrap">
+                  <div class="toggle-label">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    <div>
+                      <div>{{ i18n.t('new_item.instant_book') }}</div>
+                      <div class="toggle-sub">{{ i18n.t('new_item.instant_book_hint') }}</div>
                     </div>
-                    <div class="flex-1">
-                      <h4 class="text-xs font-bold text-blue-900">{{ i18n.t('new_item.recommendation_title') }}</h4>
-                      <p class="text-[11px] text-blue-700 mt-1 leading-relaxed" *ngIf="recommendationLoading">{{ i18n.t('new_item.loading') }}</p>
-                      <ng-container *ngIf="!recommendationLoading">
-                        <p class="text-[11px] text-blue-700 mt-1 leading-relaxed">
-                          {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.recommendation_sell') : i18n.t('new_item.recommendation_lend') }}
-                          <span *ngIf="recommendation?.reasoning"> — {{ recommendation?.reasoning }}</span>
-                        </p>
-                        <div class="mt-2 flex flex-wrap gap-2 text-[10px] font-semibold text-blue-800">
-                          <div *ngIf="recommendation?.suggestedPrice != null" class="px-2 py-1 bg-white/70 border border-blue-100 rounded-lg">
-                            {{ i18n.t('new_item.recommendation_price') }}: {{ i18n.formatPrice(recommendation?.suggestedPrice || 0) }}
-                          </div>
-                          <div class="px-2 py-1 bg-white/70 border border-blue-100 rounded-lg">
-                            {{ i18n.t('new_item.recommendation_confidence') }}: {{ (recommendation?.confidenceScore || 0) * 100 | number:'1.0-0' }}%
-                          </div>
-                        </div>
-                        <div class="mt-2 flex gap-2">
-                          <button 
-                            type="button" 
-                            (click)="onTypeSelect((recommendation?.recommendedAction === 'SELL' && sellEnabled) ? ListingType.SELL : ListingType.LEND, recommendation?.suggestedPrice)"
-                            class="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                          >
-                            {{ recommendation?.recommendedAction === 'SELL' && sellEnabled ? i18n.t('new_item.switch_to_selling') : i18n.t('new_item.switch_to_lending') }}
-                          </button>
-                          <button type="button" class="px-3 py-1.5 bg-white border border-blue-200 text-blue-600 text-[10px] font-bold rounded-lg hover:bg-blue-50 transition-colors">
-                            {{ i18n.t('new_item.keep_as_gift') }}
-                          </button>
-                        </div>
-                      </ng-container>
-                    </div>
                   </div>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.field.title') }}</label>
-                <input [(ngModel)]="title" (ngModelChange)="triggerRecommendation()" class="w-full pl-4 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white font-medium text-sm transition-all" [placeholder]="i18n.t('new_item.placeholder.title')" />
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.field.category') }}</label>
-                <div class="relative">
-                  <select [(ngModel)]="category" (ngModelChange)="triggerRecommendation()" class="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none bg-white cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm transition-all appearance-none">
-                    <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
-                    <option *ngIf="categories.length === 0" [value]="i18n.t('new_item.tools')">{{ i18n.t('new_item.tools') }}</option>
-                  </select>
-                  <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <lucide-icon [img]="ChevronDown" size="16"></lucide-icon>
-                  </div>
+                  <label class="toggle-control">
+                    <input type="checkbox" [(ngModel)]="autoApprove" />
+                    <span class="toggle" [class.off]="!autoApprove"></span>
+                  </label>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div class="flex items-center justify-between">
+            <div *ngIf="type === ListingType.LEND || type === ListingType.SELL" class="toggle-panel">
               <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.details_settings') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.description_header') }}</h2>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.field.description') }}</label>
-                <textarea [(ngModel)]="description" (ngModelChange)="triggerRecommendation()" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-sm transition-all min-h-[96px]" [placeholder]="i18n.t('new_item.placeholder.description')"></textarea>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.hourly_rate_label') }}</label>
-                  <div class="flex items-center gap-2">
-                    <input type="number" [(ngModel)]="hourlyRate" (ngModelChange)="triggerRecommendation()" [disabled]="type === ListingType.GIVE" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-sm" [ngClass]="type === ListingType.GIVE ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'" [placeholder]="i18n.t('new_item.hourly_rate_placeholder')" />
-                    <span class="text-xs text-slate-500 whitespace-nowrap">
-                      {{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }}
-                    </span>
-                  </div>
+                <div class="toggle-panel-title">
+                  <lucide-icon [img]="ShieldCheck" size="16"></lucide-icon>
+                  <span>{{ i18n.t('new_item.insurance_required_title') }}</span>
                 </div>
+                <div class="toggle-panel-sub">{{ i18n.t('new_item.insurance_required_desc') }}</div>
+              </div>
+              <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="insuranceRequired" />
+                <span class="toggle" [class.off]="!insuranceRequired"></span>
+              </label>
+            </div>
+          </section>
 
-                <div *ngIf="isPremiumLender">
-                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.approval_settings') }}</label>
-                  <button type="button" disabled class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-xs transition-all" [ngClass]="autoApprove ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600'">
-                    <span class="flex items-center gap-2">
-                      <lucide-icon [img]="CheckCircle2" size="14" [ngClass]="autoApprove ? 'text-emerald-600' : 'text-slate-400'"></lucide-icon>
-                      {{ i18n.t('new_item.instant_book') }}
-                    </span>
-                    <span class="text-[10px] text-slate-400">{{ i18n.t('new_item.instant_book_hint') }}</span>
-                  </button>
+          <section class="card">
+            <div class="section-label">{{ i18n.t('new_item.location.section_label') }}</div>
+            <div class="loc-header">
+              <div>
+                <h3>{{ i18n.t('new_item.location.title') }}</h3>
+                <p>{{ i18n.t('new_item.location.desc') }}</p>
+              </div>
+              <button type="button" class="btn-location" (click)="useMyCurrentLocation()" [disabled]="locationLookupLoading">
+                <lucide-icon *ngIf="locationLookupLoading" [img]="Loader2" size="14" class="spin"></lucide-icon>
+                <span>{{ i18n.t('new_item.location.use_current') }}</span>
+              </button>
+            </div>
+
+            <div *ngIf="locationPermissionHintVisible" class="notice notice-soft">
+              <div class="notice-icon">
+                <lucide-icon [img]="Info" size="16"></lucide-icon>
+              </div>
+              <div class="notice-content">
+                <div class="notice-text">{{ i18n.t('new_item.location.permission_hint') }}</div>
+              </div>
+            </div>
+
+            <div *ngIf="locationLookupError" class="notice notice-warning">
+              <div class="notice-content">
+                <div class="notice-text">{{ locationLookupError }}</div>
+              </div>
+            </div>
+
+            <form [formGroup]="addressForm">
+              <div class="field">
+                <label class="field-label">{{ i18n.t('new_item.location.street_label') }}</label>
+                <input formControlName="streetAddress" class="input" [placeholder]="i18n.t('new_item.location.street_placeholder')" />
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.location.city_label') }}</label>
+                  <input formControlName="city" class="input" [placeholder]="i18n.t('new_item.location.city_placeholder')" />
+                </div>
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.location.postal_label') }}</label>
+                  <input formControlName="postalCode" class="input" [placeholder]="i18n.t('new_item.location.postal_placeholder')" />
                 </div>
               </div>
 
-              <div *ngIf="type === ListingType.LEND || type === ListingType.SELL" class="rounded-xl border border-slate-200 bg-white p-3 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <lucide-icon [img]="ShieldCheck" size="16" class="text-slate-500"></lucide-icon>
-                  <div>
-                    <div class="text-xs font-semibold text-slate-900">{{ i18n.t('new_item.insurance_required_title') }}</div>
-                    <div class="text-[11px] text-slate-500">{{ i18n.t('new_item.insurance_required_desc') }}</div>
-                  </div>
-                </div>
-                <label class="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" class="sr-only peer" [(ngModel)]="insuranceRequired" />
-                  <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-600 relative transition-colors">
-                    <div class="absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full transition-all peer-checked:translate-x-5"></div>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.location.section_label') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.location.title') }}</h2>
-                <p class="text-[11px] text-slate-500 mt-1">{{ i18n.t('new_item.location.desc') }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <app-button (onClick)="useMyCurrentLocation()" [disabled]="locationLookupLoading" variant="primary" size="sm" className="shadow-glow ring-2 ring-teal-200 ring-offset-2 ring-offset-white">
-                  <lucide-icon [img]="Loader2" size="14" class="mr-2 animate-spin" *ngIf="locationLookupLoading"></lucide-icon>
-                  {{ i18n.t('new_item.location.use_current') }}
-                </app-button>
-              </div>
-            </div>
-
-            <div *ngIf="locationPermissionHintVisible" class="p-3 rounded-xl bg-slate-50 text-slate-700 text-xs border border-slate-200 flex items-start gap-2">
-              <lucide-icon [img]="Info" size="16" class="text-slate-500 mt-0.5"></lucide-icon>
-              <div class="leading-5">{{ i18n.t('new_item.location.permission_hint') }}</div>
-            </div>
-
-            <div *ngIf="locationLookupError" class="p-3 rounded-lg bg-amber-50 text-amber-800 text-xs border border-amber-200">
-              {{ locationLookupError }}
-            </div>
-
-            <form [formGroup]="addressForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.location.street_label') }}</label>
-                <input formControlName="streetAddress" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('new_item.location.street_placeholder')" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.location.city_label') }}</label>
-                <input formControlName="city" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('new_item.location.city_placeholder')" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.location.postal_label') }}</label>
-                <input formControlName="postalCode" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('new_item.location.postal_placeholder')" />
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.location.country_label') }}</label>
-                <select formControlName="country" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+              <div class="field">
+                <label class="field-label">{{ i18n.t('new_item.location.country_label') }}</label>
+                <select formControlName="country" class="select">
                   <option *ngFor="let c of countryOptions" [value]="c.code">{{ c.label }}</option>
                 </select>
+                <div class="field-hint">{{ i18n.t('home.location.osm_attrib') }}</div>
               </div>
             </form>
+          </section>
 
-            <div class="text-[10px] text-slate-400">{{ i18n.t('home.location.osm_attrib') }}</div>
-          </div>
-
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.step5_label') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.pickup_header') }}</h2>
-                <p class="text-[11px] text-slate-500 mt-1">{{ i18n.t('new_item.pickup_subheader') }}</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">{{ i18n.t('new_item.pickup_subline') }}</p>
+          <section class="card">
+            <div class="card-header">
+              <div class="step-label">
+                <span class="step-num">{{ i18n.t('new_item.step5_label') }}</span>
+                <span class="step-title">{{ i18n.t('new_item.pickup_header') }}</span>
               </div>
             </div>
 
-            <div class="space-y-4">
-              <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                <button *ngFor="let loc of pickupLocations" type="button" (click)="selectExchangeLocation(loc)" class="flex-shrink-0 min-w-[220px] sm:min-w-[260px] text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'exchange' && pickupLocationId === loc.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
-                  <div>
-                    <div class="text-[11px] font-semibold text-slate-900">{{ loc.name }}</div>
-                    <div class="mt-1 text-[11px] text-slate-600">{{ loc.address }}</div>
-                    <span *ngIf="pickupOption === 'exchange' && pickupLocationId === loc.id" class="mt-1 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold">{{ i18n.t('new_item.selected') }}</span>
-                  </div>
-                </button>
+            <p class="section-copy">{{ i18n.t('new_item.pickup_subheader') }}</p>
+            <p class="section-copy section-copy-subtle">{{ i18n.t('new_item.pickup_subline') }}</p>
 
-                <button type="button" (click)="selectCustomPickup()" class="flex-shrink-0 min-w-[220px] sm:min-w-[260px] text-left rounded-xl border p-3.5 text-xs transition-all shadow-sm hover:shadow-md" [ngClass]="pickupOption === 'custom' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-emerald-300'">
-                  <div>
-                    <div class="text-[11px] font-semibold text-slate-900">{{ i18n.t('new_item.pickup_other_title') }}</div>
-                    <div class="mt-1 text-[11px] text-slate-600">{{ i18n.t('new_item.pickup_other_desc') }}</div>
-                    <span *ngIf="pickupOption === 'custom'" class="mt-1 inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[10px] font-semibold">{{ i18n.t('new_item.selected') }}</span>
-                  </div>
-                </button>
-              </div>
+            <div class="exchange-options">
+              <button
+                *ngFor="let loc of pickupLocations"
+                type="button"
+                class="exchange-opt"
+                [class.active]="pickupOption === 'exchange' && pickupLocationId === loc.id"
+                (click)="selectExchangeLocation(loc)"
+              >
+                <h4>{{ loc.name }}</h4>
+                <p>{{ loc.address }}</p>
+                <span *ngIf="pickupOption === 'exchange' && pickupLocationId === loc.id" class="tag">{{ i18n.t('new_item.selected') }}</span>
+              </button>
 
-              <div *ngIf="pickupOption === 'exchange' && selectedExchangeLocation" class="p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-700">
-                <div class="font-semibold text-slate-900">{{ i18n.t('new_item.pickup_operating_hours') }}</div>
-                <div class="mt-1">
-                  <ng-container *ngIf="(selectedExchangeLocation.operatingTimeFrom || selectedExchangeLocation.operatingTimeTo); else noHours">
-                    {{ selectedExchangeLocation.operatingTimeFrom || '' }}{{ (selectedExchangeLocation.operatingTimeFrom && selectedExchangeLocation.operatingTimeTo) ? ' - ' : '' }}{{ selectedExchangeLocation.operatingTimeTo || '' }}
-                  </ng-container>
-                  <ng-template #noHours>{{ i18n.t('new_item.pickup_operating_hours_unknown') }}</ng-template>
-                </div>
-              </div>
+              <button
+                type="button"
+                class="exchange-opt"
+                [class.active]="pickupOption === 'custom'"
+                (click)="selectCustomPickup()"
+              >
+                <h4>{{ i18n.t('new_item.pickup_other_title') }}</h4>
+                <p>{{ i18n.t('new_item.pickup_other_desc') }}</p>
+                <span *ngIf="pickupOption === 'custom'" class="tag">{{ i18n.t('new_item.selected') }}</span>
+              </button>
+            </div>
 
-              <div *ngIf="pickupOption === 'custom'" class="rounded-xl border border-slate-200 bg-white p-3">
-                <div class="relative">
-                  <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.pickup_custom_search') }}</label>
-                  <div class="relative">
-                    <lucide-icon [img]="Search" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></lucide-icon>
-                    <input [ngModel]="pickupCustomQuery" (ngModelChange)="onPickupCustomQueryChange($event)" class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent" [placeholder]="i18n.t('new_item.pickup_custom_search_ph')" />
-                  </div>
-                  <div *ngIf="pickupCustomError" class="mt-2 text-xs text-red-600">{{ pickupCustomError }}</div>
-                  <div *ngIf="pickupCustomSuggestions.length > 0" class="absolute z-10 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden">
-                    <button type="button" *ngFor="let s of pickupCustomSuggestions" (click)="selectPickupCustomSuggestion(s)" class="w-full text-left px-4 py-3 text-sm hover:bg-slate-50">
-                      <div class="font-semibold text-slate-900">{{ s.displayName || (s.streetAddress + ', ' + s.city) }}</div>
-                      <div class="text-xs text-slate-500 mt-0.5">{{ s.streetAddress }} · {{ s.postalCode }} {{ s.city }} · {{ s.country }}</div>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.pickup_custom_street') }}</label>
-                    <input [(ngModel)]="pickupLocationStreet" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="Main St" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.pickup_custom_house_number') }}</label>
-                    <input [(ngModel)]="pickupLocationHouseNumber" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="12" />
-                  </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.pickup_custom_city') }}</label>
-                    <input [(ngModel)]="pickupLocationCity" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="Berlin" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1.5">{{ i18n.t('new_item.pickup_custom_zip') }}</label>
-                    <input [(ngModel)]="pickupLocationZip" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl outline-none bg-white text-xs focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="10115" />
-                  </div>
-                </div>
-                <div class="mt-2 text-[10px] text-slate-400">{{ i18n.t('new_item.pickup_custom_hint') }}</div>
+            <div *ngIf="pickupOption === 'exchange' && selectedExchangeLocation" class="hours-card">
+              <label class="field-label">{{ i18n.t('new_item.pickup_operating_hours') }}</label>
+              <div class="hours-input">
+                <ng-container *ngIf="(selectedExchangeLocation.operatingTimeFrom || selectedExchangeLocation.operatingTimeTo); else noHours">
+                  <span>{{ selectedExchangeLocation.operatingTimeFrom || '' }}</span>
+                  <span class="hours-sep" *ngIf="selectedExchangeLocation.operatingTimeFrom && selectedExchangeLocation.operatingTimeTo">-</span>
+                  <span>{{ selectedExchangeLocation.operatingTimeTo || '' }}</span>
+                </ng-container>
+                <ng-template #noHours>{{ i18n.t('new_item.pickup_operating_hours_unknown') }}</ng-template>
               </div>
             </div>
-          </div>
+
+            <div *ngIf="pickupOption === 'custom'" class="custom-pickup">
+              <div class="field field-no-margin pickup-search-wrap">
+                <label class="field-label">{{ i18n.t('new_item.pickup_custom_search') }}</label>
+                <div class="input-icon-wrap">
+                  <lucide-icon [img]="Search" size="16"></lucide-icon>
+                  <input
+                    [ngModel]="pickupCustomQuery"
+                    (ngModelChange)="onPickupCustomQueryChange($event)"
+                    class="input input-with-icon"
+                    [placeholder]="i18n.t('new_item.pickup_custom_search_ph')"
+                  />
+                </div>
+                <div *ngIf="pickupCustomError" class="field-error">{{ pickupCustomError }}</div>
+                <div *ngIf="pickupCustomSuggestions.length > 0" class="pickup-suggestions">
+                  <button
+                    type="button"
+                    *ngFor="let s of pickupCustomSuggestions"
+                    class="pickup-suggestion"
+                    (click)="selectPickupCustomSuggestion(s)"
+                  >
+                    <div class="pickup-suggestion-title">{{ s.displayName || (s.streetAddress + ', ' + s.city) }}</div>
+                    <div class="pickup-suggestion-subtitle">{{ s.streetAddress }} · {{ s.postalCode }} {{ s.city }} · {{ s.country }}</div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.pickup_custom_street') }}</label>
+                  <input [(ngModel)]="pickupLocationStreet" class="input" placeholder="Main St" />
+                </div>
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.pickup_custom_house_number') }}</label>
+                  <input [(ngModel)]="pickupLocationHouseNumber" class="input" placeholder="12" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.pickup_custom_city') }}</label>
+                  <input [(ngModel)]="pickupLocationCity" class="input" placeholder="Berlin" />
+                </div>
+                <div class="field">
+                  <label class="field-label">{{ i18n.t('new_item.pickup_custom_zip') }}</label>
+                  <input [(ngModel)]="pickupLocationZip" class="input" placeholder="10115" />
+                </div>
+              </div>
+
+              <div class="field-hint">{{ i18n.t('new_item.pickup_custom_hint') }}</div>
+            </div>
+          </section>
         </div>
 
-        <div class="space-y-4">
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.step2_label') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.photos') }}</h2>
+        <div class="form-col">
+          <section class="card">
+            <div class="card-header">
+              <div class="step-label">
+                <span class="step-num">{{ i18n.t('new_item.step2_label') }}</span>
+                <span class="step-title">{{ i18n.t('new_item.photos') }}</span>
               </div>
-              <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <lucide-icon [img]="ImageIcon" size="18"></lucide-icon>
+              <div class="step-icon">
+                <lucide-icon [img]="ImageIcon" size="14"></lucide-icon>
               </div>
             </div>
 
-            <div class="space-y-4">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-2">{{ i18n.t('new_item.cover_image') }}</label>
-                <div class="relative w-full aspect-video bg-slate-50 rounded-xl overflow-hidden border-2 border-dashed border-slate-200 hover:border-emerald-400 group transition-all">
-                  <ng-container *ngIf="imageUrl; else emptyCover">
-                    <img [src]="imageUrl" class="w-full h-full object-cover" />
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <div class="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-medium flex items-center gap-2 border border-white/30">
-                        <lucide-icon [img]="Camera" size="14"></lucide-icon>
-                        {{ i18n.t('new_item.cover_change') }}
-                      </div>
+            <div class="field">
+              <label class="field-label">{{ i18n.t('new_item.cover_image') }}</label>
+              <div class="upload-area" [class.has-image]="!!imageUrl">
+                <ng-container *ngIf="imageUrl; else emptyCover">
+                  <img [src]="imageUrl" class="upload-preview" />
+                  <div class="upload-overlay">
+                    <div class="upload-chip">
+                      <lucide-icon [img]="Camera" size="14"></lucide-icon>
+                      <span>{{ i18n.t('new_item.cover_change') }}</span>
                     </div>
-                  </ng-container>
-                  <ng-template #emptyCover>
-                    <div class="flex flex-col items-center justify-center h-full text-slate-400 gap-3">
-                      <div class="p-4 bg-white rounded-full shadow-sm">
-                        <lucide-icon [img]="Upload" size="24" class="text-emerald-500"></lucide-icon>
-                      </div>
-                      <div class="text-center">
-                        <span class="text-sm font-semibold text-slate-700 block">{{ i18n.t('new_item.upload') }}</span>
-                        <span class="text-[10px] text-slate-400">{{ i18n.t('new_item.cover_help') }}</span>
-                      </div>
-                    </div>
-                  </ng-template>
-                  <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" (change)="onCoverSelected($event)" />
-                </div>
-                <div *ngIf="uploadingCover" class="text-xs text-slate-400 mt-2">{{ i18n.t('new_item.uploading') }}</div>
-              </div>
-
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-2">
-                  {{ i18n.t('new_item.gallery_label') }}
-                  <span class="text-slate-400 font-normal">({{ gallery.length }})</span>
-                </label>
-                <div class="grid grid-cols-4 gap-2">
-                  <div *ngFor="let img of gallery; let i = index" class="relative aspect-square rounded-xl overflow-hidden group bg-white border border-slate-200 shadow-sm">
-                    <img [src]="img" class="w-full h-full object-cover" />
-                    <button type="button" (click)="removeGalleryImage(i)" class="absolute top-1 right-1 bg-white/90 text-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-white">
-                      <lucide-icon [img]="X" size="12"></lucide-icon>
-                    </button>
                   </div>
-                  <div class="relative aspect-square bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 hover:border-emerald-400 flex flex-col items-center justify-center text-slate-400 cursor-pointer hover:bg-emerald-50 hover:text-emerald-600 transition-colors group">
-                    <lucide-icon [img]="Plus" size="20" class="group-hover:scale-110 transition-transform"></lucide-icon>
-                    <span class="text-[9px] font-bold mt-1">{{ i18n.t('new_item.add') }}</span>
-                    <input type="file" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer" (change)="onGallerySelected($event)" />
+                </ng-container>
+                <ng-template #emptyCover>
+                  <div class="upload-icon">
+                    <lucide-icon [img]="Upload" size="20"></lucide-icon>
                   </div>
-                </div>
-                <div *ngIf="uploadingGallery" class="text-xs text-slate-400 mt-2">{{ i18n.t('new_item.uploading') }}</div>
+                  <div class="upload-title">{{ i18n.t('new_item.upload') }}</div>
+                  <div class="upload-hint">{{ i18n.t('new_item.cover_help') }}</div>
+                </ng-template>
+                <input type="file" accept="image/*" class="file-input-overlay" (change)="onCoverSelected($event)" />
               </div>
-            </div>
-          </div>
-
-          <div class="bg-white/90 backdrop-blur-sm rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-            <div class="flex items-start justify-between">
-              <div>
-                <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{{ i18n.t('new_item.step3_label') }}</div>
-                <h2 class="text-sm font-semibold text-slate-900">{{ i18n.t('new_item.availability_hint') }}</h2>
-              </div>
-              <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <lucide-icon [img]="CalendarDays" size="18"></lucide-icon>
-              </div>
+              <div *ngIf="uploadingCover" class="field-hint">{{ i18n.t('new_item.uploading') }}</div>
             </div>
 
-            <div class="flex p-1 bg-slate-100 rounded-xl">
-              <button type="button" (click)="setUnlimited(false)" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2" [ngClass]="!availableUnlimited ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'">
+            <div class="field field-photo-gallery">
+              <label class="field-label">{{ i18n.t('new_item.gallery_label') }} ({{ gallery.length }})</label>
+              <div class="gallery-grid">
+                <div *ngFor="let img of gallery; let i = index" class="gallery-item">
+                  <img [src]="img" />
+                  <button type="button" class="gallery-remove" (click)="removeGalleryImage(i)">
+                    <lucide-icon [img]="X" size="12"></lucide-icon>
+                  </button>
+                </div>
+                <div class="gallery-add">
+                  <lucide-icon [img]="Plus" size="20"></lucide-icon>
+                  <span>{{ i18n.t('new_item.add') }}</span>
+                  <input type="file" accept="image/*" multiple class="file-input-overlay" (change)="onGallerySelected($event)" />
+                </div>
+              </div>
+              <div *ngIf="uploadingGallery" class="field-hint">{{ i18n.t('new_item.uploading') }}</div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-header">
+              <div class="step-label">
+                <span class="step-num">{{ i18n.t('new_item.step3_label') }}</span>
+                <span class="step-title">{{ i18n.t('new_item.availability_hint') }}</span>
+              </div>
+              <div class="step-icon">
                 <lucide-icon [img]="CalendarDays" size="14"></lucide-icon>
-                {{ i18n.t('new_item.fixed_dates') }}
+              </div>
+            </div>
+
+            <div class="avail-toggle">
+              <button type="button" class="avail-btn" [class.active]="!availableUnlimited" (click)="setUnlimited(false)">
+                <lucide-icon [img]="CalendarDays" size="14"></lucide-icon>
+                <span>{{ i18n.t('new_item.fixed_dates') }}</span>
               </button>
-              <button type="button" (click)="setUnlimited(true)" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2" [ngClass]="availableUnlimited ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'">
+              <button type="button" class="avail-btn" [class.active]="availableUnlimited" (click)="setUnlimited(true)">
                 <lucide-icon [img]="Infinity" size="14"></lucide-icon>
-                {{ i18n.t('new_item.indefinitely') }}
+                <span>{{ i18n.t('new_item.indefinitely') }}</span>
               </button>
             </div>
 
-            <div class="space-y-4">
-              <div class="relative group">
-                <label class="absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{{ i18n.t('new_item.available_from') }}</label>
-                <div class="flex border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 transition-all">
-                  <input type="date" [(ngModel)]="availableFromDate" class="flex-1 px-3 py-3 text-sm bg-transparent outline-none border-r border-slate-100" />
-                  <select [(ngModel)]="availableFromTime" class="px-3 py-3 text-sm bg-slate-50 outline-none w-24 text-center font-medium text-slate-700">
-                    <option *ngFor="let tVal of timeOptions" [value]="tVal">{{ tVal }}</option>
-                  </select>
-                </div>
+            <div class="row">
+              <div class="field">
+                <label class="field-label">{{ i18n.t('new_item.available_from') }}</label>
+                <input type="date" [(ngModel)]="availableFromDate" class="input" />
               </div>
-
-              <div *ngIf="availableUnlimited" class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3 text-emerald-800">
-                <div class="p-1.5 bg-emerald-100 rounded-full">
-                  <lucide-icon [img]="Infinity" size="14"></lucide-icon>
-                </div>
-                <div class="text-xs">
-                  <span class="font-semibold block">{{ i18n.t('new_item.no_end_date') }}</span>
-                  <span class="opacity-80">{{ i18n.t('new_item.no_end_date_desc') }}</span>
-                </div>
-              </div>
-
-              <div *ngIf="availabilityError" class="text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-100 flex items-center gap-2">
-                <span>⚠️</span> {{ availabilityError }}
+              <div class="field">
+                <label class="field-label visually-hidden">Time</label>
+                <select [(ngModel)]="availableFromTime" class="select">
+                  <option *ngFor="let tVal of timeOptions" [value]="tVal">{{ tVal }}</option>
+                </select>
               </div>
             </div>
-          </div>
+
+            <div *ngIf="availableUnlimited" class="notice notice-success">
+              <div class="notice-icon">
+                <lucide-icon [img]="Infinity" size="16"></lucide-icon>
+              </div>
+              <div class="notice-content">
+                <div class="notice-title">{{ i18n.t('new_item.no_end_date') }}</div>
+                <div class="notice-text">{{ i18n.t('new_item.no_end_date_desc') }}</div>
+              </div>
+            </div>
+
+            <div *ngIf="availabilityError" class="notice notice-error">
+              <div class="notice-content">
+                <div class="notice-text">{{ availabilityError }}</div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
-      <div class="bg-transparent pt-2 flex flex-col sm:flex-row-reverse gap-3 items-stretch sm:items-center justify-between">
-        <div class="flex items-center gap-2 text-[11px] text-slate-500">
-          <lucide-icon [img]="ShieldCheck" size="14" class="text-emerald-600"></lucide-icon>
+      <div class="bottom-bar">
+        <div class="safety-note">
+          <lucide-icon [img]="ShieldCheck" size="14"></lucide-icon>
           <span>{{ i18n.t('new_item.footer_trust') }}</span>
         </div>
-        <div class="flex gap-3">
-          <app-button variant="secondary" (onClick)="goBack()" class="flex-1 sm:flex-none">
+        <div class="bottom-actions">
+          <button type="button" class="btn-cancel" (click)="goBack()">
             {{ i18n.t('common.cancel') }}
-          </app-button>
-          <app-button (onClick)="handleSave()" variant="dark" [isLoading]="saving" [disabled]="saving || uploadingCover || uploadingGallery" class="flex-1 sm:flex-none">
-            <lucide-icon [img]="ShieldCheck" size="16" class="mr-2"></lucide-icon>
-            {{ i18n.t('new_item.save') }}
-          </app-button>
+          </button>
+          <button type="button" class="btn-save" (click)="handleSave()" [disabled]="saving || uploadingCover || uploadingGallery">
+            <lucide-icon *ngIf="saving" [img]="Loader2" size="16" class="spin"></lucide-icon>
+            <lucide-icon *ngIf="!saving" [img]="ShieldCheck" size="16"></lucide-icon>
+            <span>{{ i18n.t('new_item.save') }}</span>
+          </button>
         </div>
       </div>
-    </div>
+    </main>
   </ng-template>
 </div>
 

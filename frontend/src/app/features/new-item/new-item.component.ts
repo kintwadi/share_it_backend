@@ -9,14 +9,13 @@ import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
-import { ButtonComponent } from '../../shared/components/button/button';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
 
 @Component({
   selector: 'app-new-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './new-item.component.html',
   styleUrl: './new-item.component.css'
 })
