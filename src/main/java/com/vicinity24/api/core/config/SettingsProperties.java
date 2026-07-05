@@ -67,6 +67,16 @@ public class SettingsProperties {
     }
 
     @Data
+    public static class PayConfig {
+        @Data
+        public static class WithConfig {
+            private boolean cash = true;
+        }
+
+        private WithConfig with = new WithConfig();
+    }
+
+    @Data
     public static class SupportConfig {
         private ContactConfig contact = new ContactConfig();
         private TabConfig faq = new TabConfig();
@@ -113,6 +123,7 @@ public class SettingsProperties {
     private ConnectConfig connect = new ConnectConfig();
     private HomeConfig home = new HomeConfig();
     private BorrowingConfig borrowing = new BorrowingConfig();
+    private PayConfig pay = new PayConfig();
     private ReturnsConfig returns = new ReturnsConfig();
     private Map<String, TabConfig> header = new HashMap<>();
     private Map<String, TabConfig> footer = new HashMap<>();
