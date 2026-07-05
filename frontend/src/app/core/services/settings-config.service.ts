@@ -83,4 +83,12 @@ export class SettingsConfigService {
     if (!Number.isNaN(n)) return n;
     return defaultValue;
   }
+
+  getBoolean(section: string, key: string, defaultValue: boolean): boolean {
+    const cfg = this.configSignal();
+    const root = cfg?.[section];
+    const v = getByPath(root, key);
+    if (v == null) return defaultValue;
+    return isEnabledValue(v);
+  }
 }
