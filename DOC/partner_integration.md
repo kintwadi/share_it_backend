@@ -1,4 +1,4 @@
-
+﻿
 ## Context
 
 You are helping implement a **partner listing feature** for an existing peer-to-peer lending platform. The backend uses **Spring Boot (JPA/Hibernate)**, frontend uses **Angular**. The current database has two core entities:
@@ -6,7 +6,7 @@ You are helping implement a **partner listing feature** for an existing peer-to-
 - `User` (with fields: UUID id, name, email, password, location, trustScore, etc.)
 - `Listing` (with fields: UUID id, title, description, type, category, hourlyRate, status, location, owner (ManyToOne to User), borrower, pickupLocation, etc.)
 
-**Goal:** Allow partner organizations (e.g., libraries, tool banks) to add lendable items without becoming regular users. Partner items should appear in the main listing feed alongside user items, but be managed separately by partner admins. The solution must be **decoupled** – i.e., avoid breaking existing user listing flows, keep partner logic in its own package/module, and ideally minimise changes to existing entities.
+**Goal:** Allow partner organizations (e.g., libraries, tool banks) to add lendable items without becoming regular users. Partner items should appear in the main listing feed alongside user items, but be managed separately by partner admins. The solution must be **decoupled** â€“ i.e., avoid breaking existing user listing flows, keep partner logic in its own package/module, and ideally minimise changes to existing entities.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ You are helping implement a **partner listing feature** for an existing peer-to-
 1. **New Entities** (in a dedicated `partner` package):
    - `Partner`: id, name, email, phone, address, city, contactPerson, status (ACTIVE/PENDING/SUSPENDED), timestamps.
    - `PartnerAdmin`: many-to-many (or one-to-many) linking `User` (existing) to `Partner` with a role (ADMIN/VIEWER). A user can be admin for multiple partners.
-   - Optionally `PartnerListing` – but we prefer to **reuse the existing `Listing` entity** to avoid duplication of search/booking logic. Therefore, add a nullable `partner` relationship to `Listing` and make `owner` nullable. (Existing `Listing.owner` is currently non-null? Assume we modify it to `@ManyToOne(optional = true)`. This is a small, controlled change.)
+   - Optionally `PartnerListing` â€“ but we prefer to **reuse the existing `Listing` entity** to avoid duplication of search/booking logic. Therefore, add a nullable `partner` relationship to `Listing` and make `owner` nullable. (Existing `Listing.owner` is currently non-null? Assume we modify it to `@ManyToOne(optional = true)`. This is a small, controlled change.)
 
 2. **Database changes**:
    - Create `partner` table.
@@ -23,19 +23,19 @@ You are helping implement a **partner listing feature** for an existing peer-to-
    - Alter `listings` table: add `partner_id` BIGINT NULL, add foreign key to `partner`. Also make `owner_id` nullable (if not already). Add a check constraint that either `owner_id` or `partner_id` is not null.
 
 3. **REST Controllers** under `/api/partner` (secured with `ROLE_PARTNER_ADMIN` or custom permission checks):
-   - `GET /api/partner/my-partners` – returns partners where current user is admin.
-   - `POST /api/partner/listings` – create a new listing owned by partner (validates admin rights). Request body contains standard `Listing` fields (title, description, category, location, etc.) plus `partnerId`. The backend sets `owner = null` and `partner = partner`.
-   - `GET /api/partner/listings` – list all partner listings for the admin's partner(s).
-   - `PUT /api/partner/listings/{listingId}` – update partner listing (only certain fields).
-   - `DELETE /api/partner/listings/{listingId}` – delete partner listing.
-   - `GET /api/partner/requests` – list borrowing requests (from `Lending` entity – assume exists) for partner items.
-   - `POST /api/partner/requests/{requestId}/approve` and `/reject` – handle lending requests.
-   - `GET /api/partner/settings` and `PUT /api/partner/settings` – partner‑specific policies (e.g., max lending days, deposit required).
+   - `GET /api/partner/my-partners` â€“ returns partners where current user is admin.
+   - `POST /api/partner/listings` â€“ create a new listing owned by partner (validates admin rights). Request body contains standard `Listing` fields (title, description, category, location, etc.) plus `partnerId`. The backend sets `owner = null` and `partner = partner`.
+   - `GET /api/partner/listings` â€“ list all partner listings for the admin's partner(s).
+   - `PUT /api/partner/listings/{listingId}` â€“ update partner listing (only certain fields).
+   - `DELETE /api/partner/listings/{listingId}` â€“ delete partner listing.
+   - `GET /api/partner/requests` â€“ list borrowing requests (from `Lending` entity â€“ assume exists) for partner items.
+   - `POST /api/partner/requests/{requestId}/approve` and `/reject` â€“ handle lending requests.
+   - `GET /api/partner/settings` and `PUT /api/partner/settings` â€“ partnerâ€‘specific policies (e.g., max lending days, deposit required).
 
 4. **Service Layer**:
    - `PartnerService`: logic for partner registration (admin creation), listing management.
    - Ensure that existing queries for user listings (e.g., `findByOwnerId`) are unchanged; partner listings will have `owner = null` and thus are ignored automatically.
-   - Modify the global listing search to include both `owner`‑owned and `partner`‑owned items. Use a JPQL or specification that filters `WHERE (owner.id = :userId OR partner.id IS NOT NULL)` when showing all listings, but with appropriate visibility rules.
+   - Modify the global listing search to include both `owner`â€‘owned and `partner`â€‘owned items. Use a JPQL or specification that filters `WHERE (owner.id = :userId OR partner.id IS NOT NULL)` when showing all listings, but with appropriate visibility rules.
 
 5. **Security**:
    - Create a new authority `PARTNER_ADMIN` that can be assigned to users via `User.role` (or via a separate `PartnerAdmin` entity check). Use the existing security mechanisms to verify that the current user is admin of the partner that owns the listing being modified.
@@ -43,38 +43,38 @@ You are helping implement a **partner listing feature** for an existing peer-to-
 ### Frontend (Angular)
 
 1. **New Routes** (lazy loaded `PartnerModule`):
-   - `/partner/dashboard` – main partner admin dashboard.
-   - `/partner/listings/add` – form to add new partner listing.
-   - `/partner/listings/edit/:id` – edit existing partner listing.
-   - `/partner/requests` – manage borrowing requests.
+   - `/partner/dashboard` â€“ main partner admin dashboard.
+   - `/partner/listings/add` â€“ form to add new partner listing.
+   - `/partner/listings/edit/:id` â€“ edit existing partner listing.
+   - `/partner/requests` â€“ manage borrowing requests.
 
 2. **Components**:
    - `PartnerDashboardComponent`: tabs for "My Listings", "Borrow Requests", "Lending History", "Settings".
    - `PartnerAddListingComponent`: form with fields: title, description, category, location (address + city), condition (optional), image upload, requires approval checkbox. Submits to `POST /api/partner/listings`.
    - `PartnerRequestsComponent`: table showing pending requests with approve/reject buttons.
-   - `PartnerSettingsComponent`: form for partner policies (max lending days, deposit amount, auto‑approval flag).
+   - `PartnerSettingsComponent`: form for partner policies (max lending days, deposit amount, autoâ€‘approval flag).
 
 3. **Services**:
    - `PartnerService` with methods: `getMyPartners()`, `addListing(listingData)`, `getListings()`, `getRequests()`, `approveRequest(id)`, `rejectRequest(id)`, `getSettings()`, `updateSettings()`.
 
 4. **Integration with existing listing feed**:
-   - Modify the existing `ListingService` in Angular to also fetch partner listings. The backend will return a unified list; no frontend change needed except possibly adding a badge "Partner" next to partner‑owned listings.
+   - Modify the existing `ListingService` in Angular to also fetch partner listings. The backend will return a unified list; no frontend change needed except possibly adding a badge "Partner" next to partnerâ€‘owned listings.
 
 ## Decoupling Principles
 
 - Do **not** modify existing `User` entity for partner-specific fields. Use a separate `PartnerAdmin` join table.
-- Do **not** change existing `Listing` endpoints (e.g., `/api/listings/{id}`) – partner listings will be readable via the same endpoint (since they are `Listing` records), but write operations are only allowed via `/api/partner/listings` for partners.
-- Keep all partner-related Java packages under `com.yourapp.partner` – separate from `com.yourapp.user` and `com.yourapp.listing`.
+- Do **not** change existing `Listing` endpoints (e.g., `/api/listings/{id}`) â€“ partner listings will be readable via the same endpoint (since they are `Listing` records), but write operations are only allowed via `/api/partner/listings` for partners.
+- Keep all partner-related Java packages under `com.yourapp.partner` â€“ separate from `com.yourapp.user` and `com.yourapp.listing`.
 - In the Angular app, create a `partner` folder with its own modules, routed lazily.
 
 
 ## Additional Notes
 
 - the `Lending` entity already exists in the application with fields: `id`, `listingId`, `borrowerId`, `startDate`, `endDate`, `status`. Adjust accordingly.
-- The existing `Listing` uses `UUID` as primary key – partner listing IDs will also be UUIDs.
+- The existing `Listing` uses `UUID` as primary key â€“ partner listing IDs will also be UUIDs.
 - Use `@Builder` and Lombok consistently.
 - Frontend should use Angular Reactive Forms, HttpClient, and follow the existing project's style .
-- The solution must be production‑ready, secure (prevent partner admins from modifying other partners' listings), and maintainable.
+- The solution must be productionâ€‘ready, secure (prevent partner admins from modifying other partners' listings), and maintainable.
 
 ## Example of Modified Listing Entity (skeleton)
 
@@ -94,3 +94,17 @@ public class Listing {
     private Partner partner;
     // ... rest
 }
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
+

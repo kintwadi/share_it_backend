@@ -1,0 +1,125 @@
+<section
+  class="checkout-shell"
+  *ngIf="!loading && bike as current; else stateTpl"
+  [style.--brand-accent]="theme.accent"
+  [style.--brand-soft]="theme.soft"
+  [style.--brand-deep]="theme.deep"
+  [style.--brand-muted]="theme.muted">
+  <div class="checkout-layout">
+    <section class="checkout-form">
+      <div class="checkout-intro">
+        <p class="eyebrow">{{ 'checkout.eyebrow' | t }}</p>
+        <h1>{{ 'checkout.title' | t }}</h1>
+        <p class="intro">{{ 'checkout.intro' | t }}</p>
+      </div>
+
+      <div class="checkout-panel">
+        <div class="signed-in">
+          <span>{{ 'checkout.signedInAs' | t }}</span>
+          <strong>{{ signedInUser()?.email }}</strong>
+        </div>
+
+        <div class="field-section">
+          <div class="section-title">
+            <strong>{{ 'checkout.planTrial' | t }}</strong>
+            <span>{{ 'checkout.planTrialLead' | t }}</span>
+          </div>
+
+          <div class="field-grid">
+            <label>
+              <span>{{ 'checkout.pickupDate' | t }}</span>
+              <input type="date" [(ngModel)]="startDate" />
+            </label>
+            <label>
+              <span>{{ 'checkout.returnDate' | t }}</span>
+              <input type="date" [(ngModel)]="endDate" />
+            </label>
+          </div>
+
+          <label>
+            <span>{{ 'checkout.frameSize' | t }}</span>
+            <select [(ngModel)]="frameSizeOption">
+              <option *ngFor="let option of current.frameOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="sandbox-note">
+          <strong>{{ 'checkout.depositCheckout' | t }}</strong>
+          <p>{{ 'checkout.depositCheckoutLead' | t }}</p>
+        </div>
+
+        <button type="button" (click)="reserve()" [disabled]="submitting">
+          {{ submitting ? ('checkout.reserving' | t) : ('checkout.payDeposit' | t) }}
+        </button>
+
+        <p class="error" *ngIf="errorKey">{{ errorKey | t }}</p>
+      </div>
+
+      <section class="confirmation" *ngIf="confirmation as booking">
+        <p class="eyebrow">{{ 'checkout.confirmed' | t }}</p>
+        <h2>{{ booking.bookingReference }}</h2>
+        <span class="status-pill">{{ confirmationStatusKey | t }}</span>
+        <p>{{ 'checkout.confirmedLead' | t:{ address: booking.store.addressLine1, city: booking.store.cityLine } }}</p>
+        <a routerLink="/fahrad-fuchs/bookings">{{ 'checkout.viewBookings' | t }}</a>
+      </section>
+    </section>
+
+    <aside class="summary-card">
+      <div class="summary-media">
+        <img [src]="current.imageUrl" [alt]="current.title" />
+      </div>
+
+      <div class="summary-copy">
+        <div class="summary-badges">
+          <span class="manufacturer">{{ manufacturer }}</span>
+          <span class="badge">{{ current.availabilityBadge }}</span>
+          <span class="readiness">{{ readinessKey | t }}</span>
+        </div>
+        <h2>{{ current.title }}</h2>
+        <p>{{ current.description }}</p>
+      </div>
+
+      <div class="price-breakdown">
+        <div class="price-breakdown-head">
+          <span>{{ 'checkout.tryBeforeBuy' | t }}</span>
+          <strong>{{ 'checkout.depositAmount' | t:{ amount: (trialDepositAmount | currency:'EUR') } }}</strong>
+        </div>
+
+        <div class="price-breakdown-grid">
+          <div>
+            <span>{{ 'checkout.retailPrice' | t }}</span>
+            <strong>{{ current.retailPrice | currency:'EUR' }}</strong>
+          </div>
+          <div>
+            <span>{{ 'checkout.depositToday' | t }}</span>
+            <strong>{{ trialDepositAmount | currency:'EUR' }}</strong>
+          </div>
+          <div>
+            <span>{{ 'checkout.buyLater' | t }}</span>
+            <strong>{{ 'common.remaining' | t:{ amount: (remainingPurchaseBalance | currency:'EUR') } }}</strong>
+          </div>
+          <div>
+            <span>{{ 'checkout.trialWindow' | t }}</span>
+            <strong>{{ 'common.daysIncluded' | t:{ count: trialWindowDays } }}</strong>
+          </div>
+        </div>
+
+        <p class="price-breakdown-note">{{ 'checkout.breakdownBuyNote' | t }}</p>
+        <p class="price-breakdown-note">{{ 'checkout.breakdownLeaseNote' | t:{ count: trialWindowDays } }}</p>
+      </div>
+
+      <div class="showroom-note">
+        <span>{{ 'checkout.rideStatus' | t }}</span>
+        <strong>{{ readinessKey | t }}</strong>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">{{ 'checkout.loading' | t }}</p>
+    <p *ngIf="!loading && errorKey">{{ errorKey | t }}</p>
+  </section>
+</ng-template>

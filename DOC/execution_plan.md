@@ -1,4 +1,4 @@
-# Execution Plan: NeighborShare / Circula Implementation
+﻿# Execution Plan: NeighborShare / Circula Implementation
 
 ## 1. Backend Implementation
 
@@ -9,7 +9,7 @@
 
 ### 1.2 Service Layer Logic
 - **TrustScoreService**: Implement `calculateTrustScoreChange` logic based on `project.md` (Bonuses/Penalties).
-- **SubscriptionService**: Implement `upgradeSubscription` with proration logic (German compliance §312g BGB).
+- **SubscriptionService**: Implement `upgradeSubscription` with proration logic (German compliance Â§312g BGB).
     - Calculate credit for unused days.
     - Calculate charge for new tier.
     - Return net immediate charge.
@@ -32,8 +32,8 @@
 
 ### 2.2 Listing Detail (Borrow Flow)
 - Implement "Path Selection Modal" in `ListingDetail.tsx` when clicking "Rent" or "Borrow".
-    - **Path 1**: Deposit (€50 refundable).
-    - **Path 2**: Verified Subscription (Free Trial / €2.99).
+    - **Path 1**: Deposit (â‚¬50 refundable).
+    - **Path 2**: Verified Subscription (Free Trial / â‚¬2.99).
     - **Path 3**: One-time Fee (8%).
 - Default to **Path 2** (Recommended).
 
@@ -53,3 +53,17 @@
 - Verify Trust Score updates.
 - Verify Prorated Calculation.
 - Verify Path Selection records correctly in backend.
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
+

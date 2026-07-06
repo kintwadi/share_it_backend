@@ -1,3 +1,792 @@
 .shadow-soft {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
+
+.listing-payment-step {
+  --payment-bg: #f7f9fc;
+  --payment-surface: #ffffff;
+  --payment-border: #e6eaf0;
+  --payment-border-strong: #d3dae4;
+  --payment-text: #0f172a;
+  --payment-text-muted: #64748b;
+  --payment-text-subtle: #94a3b8;
+  --payment-accent: #0d9488;
+  --payment-accent-hover: #0f766e;
+  --payment-accent-light: #ccfbf1;
+  --payment-accent-bg: #f0fdfa;
+  --payment-danger-bg: #fef2f2;
+  --payment-danger-border: #fecaca;
+  --payment-danger-text: #b91c1c;
+  --payment-success: #10b981;
+}
+
+.payment-selection-card {
+  background: var(--payment-surface);
+  border: 1px solid var(--payment-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.payment-selection-card--checkout {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.payment-selection-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--payment-border);
+  background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
+}
+
+.payment-selection-card__header h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--payment-text);
+}
+
+.payment-selection-card__meta {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--payment-text-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-selection-card__body {
+  padding: 28px 24px 24px;
+}
+
+.payment-selection-card__body--compact {
+  padding-top: 24px;
+}
+
+.payment-selection-card__body--checkout {
+  padding-top: 22px;
+}
+
+.payment-selection-card__title {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--payment-text);
+}
+
+.payment-selection-card__eyebrow {
+  margin-bottom: 8px;
+  color: var(--payment-text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.payment-selection-card__free-note {
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--payment-border);
+  background: #f8fafc;
+  color: var(--payment-text-muted);
+  font-size: 14px;
+}
+
+.payment-selection-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.payment-selection-options--tight {
+  gap: 12px;
+}
+
+.payment-option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 22px;
+  border: 1.5px solid var(--payment-border);
+  border-radius: 12px;
+  background: var(--payment-surface);
+  color: var(--payment-text);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.payment-option:hover {
+  border-color: var(--payment-border-strong);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.payment-option--selected {
+  border-color: var(--payment-accent);
+  background: var(--payment-accent-bg);
+  box-shadow: 0 0 0 3px rgba(204, 251, 241, 1);
+}
+
+.payment-option--feature {
+  align-items: flex-start;
+}
+
+.payment-option--saved {
+  align-items: center;
+}
+
+.payment-option__badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 6px 12px;
+  border-radius: 0 12px 0 12px;
+  background: var(--payment-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.payment-option__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--payment-bg);
+  color: var(--payment-text-muted);
+  transition: all 0.25s ease;
+}
+
+.payment-option--selected .payment-option__icon {
+  background: var(--payment-accent-light);
+  color: var(--payment-accent);
+}
+
+.payment-option__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-option__title {
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--payment-text);
+}
+
+.payment-option__subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--payment-text-muted);
+}
+
+.payment-option__radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1px solid var(--payment-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: #ffffff;
+}
+
+.payment-option__radio--selected {
+  border-color: var(--payment-accent);
+}
+
+.payment-option__radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--payment-accent);
+}
+
+.payment-selection-card__switch {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: var(--payment-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.payment-selection-card__switch:hover {
+  color: var(--payment-text);
+}
+
+.payment-selection-card__new-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.payment-selection-card__mount {
+  padding: 14px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.payment-selection-card__error {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--payment-danger-border);
+  background: var(--payment-danger-bg);
+  color: var(--payment-danger-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.payment-selection-card__error--inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.payment-selection-card__cta {
+  width: 100%;
+  min-height: 52px;
+  padding: 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--payment-accent);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+}
+
+.payment-selection-card__cta:hover:not(:disabled) {
+  background: var(--payment-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.35);
+}
+
+.payment-selection-card__cta--dark {
+  background: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+}
+
+.payment-selection-card__cta--dark:hover:not(:disabled) {
+  background: #020617;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.28);
+}
+
+.payment-selection-card__cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.payment-selection-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--payment-border);
+  color: var(--payment-text-subtle);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.payment-selection-card__footer lucide-icon {
+  color: var(--payment-success);
+}
+
+.booking-summary-card {
+  padding: 20px 24px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #f7f9fc;
+  color: var(--payment-text-muted);
+  font-size: 14px;
+}
+
+.booking-summary-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.booking-summary-card__row + .booking-summary-card__row {
+  margin-top: 0;
+  border-top: 1px solid var(--payment-border);
+}
+
+.booking-summary-card__value {
+  color: var(--payment-text);
+  font-weight: 700;
+}
+
+.booking-summary-card__divider {
+  display: none;
+}
+
+.booking-summary-card__row--total {
+  color: var(--payment-text);
+  font-size: 16px;
+  font-weight: 800;
+  padding-top: 14px;
+}
+
+.booking-step-back {
+  border: 0;
+  background: transparent;
+  color: var(--payment-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.booking-step-back:hover {
+  color: var(--payment-text);
+}
+
+.booking-feature-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booking-feature-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--payment-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.booking-feature-list__item lucide-icon {
+  flex-shrink: 0;
+  color: var(--payment-success);
+}
+
+.booking-step-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--payment-border);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.checkout-inline-back {
+  border: 0;
+  background: transparent;
+  color: var(--payment-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.checkout-inline-back:hover {
+  color: var(--payment-text);
+}
+
+.checkout-item-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #f7f9fc;
+}
+
+.checkout-item-card__image {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--payment-border);
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.checkout-item-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.checkout-item-card__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--payment-text);
+}
+
+.checkout-item-card__subtitle {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--payment-text-muted);
+}
+
+.checkout-item-card__price {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--payment-accent);
+}
+
+.checkout-duration-section {
+  margin-bottom: 24px;
+}
+
+.checkout-duration-section__label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--payment-text);
+}
+
+.checkout-duration-section__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #f7f9fc;
+}
+
+.checkout-duration-section__btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--payment-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--payment-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.checkout-duration-section__btn:hover:not(:disabled) {
+  border-color: var(--payment-accent);
+  color: var(--payment-accent);
+  background: var(--payment-accent-bg);
+}
+
+.checkout-duration-section__btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.checkout-duration-section__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.checkout-duration-section__value {
+  flex: 1;
+  text-align: center;
+}
+
+.checkout-duration-section__amount {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--payment-text);
+}
+
+.checkout-duration-section__unit {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--payment-text-muted);
+}
+
+.checkout-submit {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.booking-step-preview__image {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.booking-step-preview__content {
+  min-width: 0;
+}
+
+.booking-step-preview__title {
+  margin: 0;
+  color: var(--payment-text);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.booking-step-preview__subtitle {
+  margin: 4px 0 0;
+  color: var(--payment-text-muted);
+  font-size: 14px;
+}
+
+.booking-step-preview__price {
+  margin: 8px 0 0;
+  color: var(--payment-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.booking-duration-panel {
+  margin-bottom: 24px;
+}
+
+.booking-duration-panel__label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--payment-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.booking-duration-panel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--payment-border);
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.booking-duration-panel__btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--payment-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.booking-duration-panel__btn:hover:not(:disabled) {
+  border-color: var(--payment-accent);
+  color: var(--payment-accent);
+}
+
+.booking-duration-panel__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.booking-duration-panel__value {
+  flex: 1;
+  text-align: center;
+}
+
+.booking-duration-panel__amount {
+  color: var(--payment-text);
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.booking-duration-panel__unit {
+  margin-top: 6px;
+  color: var(--payment-text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.booking-step-copy {
+  margin: -10px 0 20px;
+  text-align: center;
+  color: var(--payment-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.booking-form-field {
+  margin-bottom: 20px;
+}
+
+.booking-form-field__label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--payment-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.booking-form-field__input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--payment-text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-form-field__input:focus {
+  border-color: var(--payment-accent);
+  box-shadow: 0 0 0 3px rgba(204, 251, 241, 1);
+}
+
+.booking-loading-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--payment-border);
+  border-radius: 12px;
+  background: #f8fafc;
+  color: var(--payment-text-muted);
+  font-size: 14px;
+}
+
+.booking-option-price {
+  color: var(--payment-text);
+  font-size: 14px;
+  font-weight: 800;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .payment-selection-card__header {
+    padding: 16px 18px;
+  }
+
+  .payment-selection-card__body,
+  .payment-selection-card__body--compact {
+    padding: 22px 18px 18px;
+  }
+
+  .payment-selection-card__title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .payment-option {
+    padding: 18px 16px;
+    gap: 12px;
+  }
+
+  .payment-option__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .payment-selection-card__meta {
+    display: none;
+  }
+
+  .booking-step-preview {
+    align-items: flex-start;
+  }
+
+  .booking-step-preview__image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .checkout-item-card {
+    padding: 14px;
+  }
+
+  .checkout-item-card__image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .checkout-duration-section__controls {
+    padding: 14px 16px;
+  }
+
+  .checkout-duration-section__amount {
+    font-size: 24px;
+  }
+
+  .booking-duration-panel__controls {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .booking-duration-panel__amount {
+    font-size: 28px;
+  }
+
+  .booking-option-price {
+    font-size: 13px;
+  }
+}

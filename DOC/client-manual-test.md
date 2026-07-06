@@ -1,19 +1,19 @@
-# Vicinity24 Frontend Application - Manual Test Plan
+﻿# Vicinity24 Frontend Application - Manual Test Plan
 
-## 📋 Test Overview
+## ðŸ“‹ Test Overview
 This document provides a comprehensive manual testing guide for the Vicinity24 frontend application. Testers should follow this plan to verify all functionalities work correctly.
 
-## 🎯 Application URL
+## ðŸŽ¯ Application URL
 **Production**: https://vicinity-client.onrender.com
 **Local**: http://localhost:3001 (if testing locally)
 
-## 🧪 Test Environment Setup
+## ðŸ§ª Test Environment Setup
 1. Use Chrome/Firefox/Safari browsers
 2. Clear browser cache before testing
 3. Use incognito/private mode for isolated testing
 4. Have a valid email address ready for registration
 
-## 📊 Test Report Template
+## ðŸ“Š Test Report Template
 ```markdown
 # Test Report - [Date]
 **Tester**: [Name]
@@ -30,9 +30,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 
 | Test ID | Feature | Status | Notes |
 |---------|---------|--------|-------|
-| AUTH-01 | User Registration | ✅ PASS | Registration successful, verification email received |
-| AUTH-02 | User Login | ✅ PASS | Login works with correct credentials |
-| AUTH-03 | Invalid Login | ✅ PASS | Proper error message displayed |
+| AUTH-01 | User Registration | âœ… PASS | Registration successful, verification email received |
+| AUTH-02 | User Login | âœ… PASS | Login works with correct credentials |
+| AUTH-03 | Invalid Login | âœ… PASS | Proper error message displayed |
 | ... | ... | ... | ... |
 
 ## Issues Found
@@ -45,7 +45,7 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 - [Areas needing additional testing]
 ```
 
-## 🔐 AUTHENTICATION TESTS
+## ðŸ” AUTHENTICATION TESTS
 
 ### AUTH-01: User Registration
 **Objective**: Verify new users can create accounts
@@ -61,10 +61,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 5. Click "Create Account"
 
 **Expected Results**:
-- ✅ Registration successful message
-- ✅ Redirect to dashboard or verification page
-- ✅ Verification email received (if applicable)
-- ✅ User session established
+- âœ… Registration successful message
+- âœ… Redirect to dashboard or verification page
+- âœ… Verification email received (if applicable)
+- âœ… User session established
 
 ### AUTH-02: User Login
 **Objective**: Verify existing users can log in
@@ -74,10 +74,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Click "Sign In"
 
 **Expected Results**:
-- ✅ Successful login
-- ✅ Redirect to dashboard
-- ✅ User menu shows logged-in state
-- ✅ Session persists across page refreshes
+- âœ… Successful login
+- âœ… Redirect to dashboard
+- âœ… User menu shows logged-in state
+- âœ… Session persists across page refreshes
 
 ### AUTH-03: Invalid Login Attempts
 **Objective**: Verify error handling for invalid credentials
@@ -87,9 +87,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Leave fields blank
 
 **Expected Results**:
-- ✅ Appropriate error messages displayed
-- ✅ No redirect on failed login
-- ✅ Form validation highlights errors
+- âœ… Appropriate error messages displayed
+- âœ… No redirect on failed login
+- âœ… Form validation highlights errors
 
 ### AUTH-04: Logout Functionality
 **Objective**: Verify users can log out securely
@@ -99,9 +99,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Select "Log Out"
 
 **Expected Results**:
-- ✅ Session terminated
-- ✅ Redirect to homepage
-- ✅ All user data cleared from client storage
+- âœ… Session terminated
+- âœ… Redirect to homepage
+- âœ… All user data cleared from client storage
 
 ### AUTH-05: Password Recovery
 **Objective**: Verify the forgot password and reset password workflow
@@ -115,14 +115,14 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 7. Attempt to login with the new password
 
 **Expected Results**:
-- ✅ "Forgot Password" link is accessible
-- ✅ Email verification code received
-- ✅ Verification code accepted
-- ✅ Password reset successful message
-- ✅ Login successful with new password
-- ✅ Login fails with old password
+- âœ… "Forgot Password" link is accessible
+- âœ… Email verification code received
+- âœ… Verification code accepted
+- âœ… Password reset successful message
+- âœ… Login successful with new password
+- âœ… Login fails with old password
 
-## 🏠 HOME PAGE TESTS
+## ðŸ  HOME PAGE TESTS
 
 ### HOME-01: Page Load
 **Objective**: Verify homepage loads correctly
@@ -131,10 +131,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Check page elements
 
 **Expected Results**:
-- ✅ Page loads without errors
-- ✅ All images display properly
-- ✅ Navigation menu functional
-- ✅ No console errors
+- âœ… Page loads without errors
+- âœ… All images display properly
+- âœ… Navigation menu functional
+- âœ… No console errors
 
 ### HOME-02: Guest Navigation
 **Objective**: Verify unauthenticated user experience
@@ -143,11 +143,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Try to access protected pages
 
 **Expected Results**:
-- ✅ Public content visible
-- ✅ Protected routes redirect to login
-- ✅ Call-to-action buttons work
+- âœ… Public content visible
+- âœ… Protected routes redirect to login
+- âœ… Call-to-action buttons work
 
-## 📊 DASHBOARD TESTS
+## ðŸ“Š DASHBOARD TESTS
 
 ### DASH-01: Dashboard Access
 **Objective**: Verify dashboard loads for authenticated users
@@ -156,10 +156,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Navigate to dashboard
 
 **Expected Results**:
-- ✅ Dashboard loads user-specific data
-- ✅ Personal statistics displayed
-- ✅ Quick actions available
-- ✅ Responsive design works
+- âœ… Dashboard loads user-specific data
+- âœ… Personal statistics displayed
+- âœ… Quick actions available
+- âœ… Responsive design works
 
 ### DASH-02: User Profile
 **Objective**: Verify profile information displays correctly
@@ -168,12 +168,12 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Check all profile sections
 
 **Expected Results**:
-- ✅ Personal information correct
-- ✅ Trust score displayed
-- ✅ Profile picture visible
-- ✅ Edit functionality works
+- âœ… Personal information correct
+- âœ… Trust score displayed
+- âœ… Profile picture visible
+- âœ… Edit functionality works
 
-## 💬 MESSAGING TESTS
+## ðŸ’¬ MESSAGING TESTS
 
 ### MSG-01: Message Interface
 **Objective**: Verify messaging functionality
@@ -183,10 +183,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Check message history
 
 **Expected Results**:
-- ✅ Message interface loads
-- ✅ Send/receive functionality works
-- ✅ Timestamps correct
-- ✅ Read receipts (if implemented)
+- âœ… Message interface loads
+- âœ… Send/receive functionality works
+- âœ… Timestamps correct
+- âœ… Read receipts (if implemented)
 
 ### MSG-02: Real-time Updates
 **Objective**: Verify real-time messaging features
@@ -195,11 +195,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Check for real-time updates
 
 **Expected Results**:
-- ✅ Messages appear without refresh
-- ✅ Notification indicators work
-- ✅ Online/offline status visible
+- âœ… Messages appear without refresh
+- âœ… Notification indicators work
+- âœ… Online/offline status visible
 
-## 🔗 CONNECT FUNCTIONALITY
+## ðŸ”— CONNECT FUNCTIONALITY
 
 ### CON-01: Connection Features
 **Objective**: Verify social connection features
@@ -209,11 +209,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Manage connections
 
 **Expected Results**:
-- ✅ Search functionality works
-- ✅ Connection requests send/receive
-- ✅ Connection management intuitive
+- âœ… Search functionality works
+- âœ… Connection requests send/receive
+- âœ… Connection management intuitive
 
-## 🛠️ LISTING MANAGEMENT
+## ðŸ› ï¸ LISTING MANAGEMENT
 
 ### LIST-01: Create Listing
 **Objective**: Verify item listing creation
@@ -224,10 +224,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 4. Set availability
 
 **Expected Results**:
-- ✅ Listing creation successful
-- ✅ All fields saved correctly
-- ✅ Images upload properly
-- ✅ Listing appears in search
+- âœ… Listing creation successful
+- âœ… All fields saved correctly
+- âœ… Images upload properly
+- âœ… Listing appears in search
 
 ### LIST-02: Edit Listing
 **Objective**: Verify listing editing works
@@ -237,9 +237,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Save changes
 
 **Expected Results**:
-- ✅ Changes saved successfully
-- ✅ No data loss during edit
-- ✅ Version history maintained
+- âœ… Changes saved successfully
+- âœ… No data loss during edit
+- âœ… Version history maintained
 
 ### LIST-03: Delete Listing
 **Objective**: Verify listing deletion
@@ -248,11 +248,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Confirm deletion
 
 **Expected Results**:
-- ✅ Listing removed from system
-- ✅ Confirmation dialog works
-- ✅ No accidental deletions
+- âœ… Listing removed from system
+- âœ… Confirmation dialog works
+- âœ… No accidental deletions
 
-## 🔍 SEARCH & DISCOVERY
+## ðŸ” SEARCH & DISCOVERY
 
 ### SRCH-01: Basic Search
 **Objective**: Verify search functionality
@@ -262,10 +262,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Apply filters
 
 **Expected Results**:
-- ✅ Relevant results returned
-- ✅ Filters work correctly
-- ✅ Pagination functional
-- ✅ No search timeouts
+- âœ… Relevant results returned
+- âœ… Filters work correctly
+- âœ… Pagination functional
+- âœ… No search timeouts
 
 ### SRCH-02: Advanced Filters
 **Objective**: Verify advanced search options
@@ -275,11 +275,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Use price range filters
 
 **Expected Results**:
-- ✅ Filtering works accurately
-- ✅ Combined filters function
-- ✅ Reset filters option works
+- âœ… Filtering works accurately
+- âœ… Combined filters function
+- âœ… Reset filters option works
 
-## 💰 PAYMENT TESTS
+## ðŸ’° PAYMENT TESTS
 
 ### PAY-01: Payment Setup
 **Objective**: Verify payment configuration
@@ -288,11 +288,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Test payment processing
 
 **Expected Results**:
-- ✅ Payment methods save securely
-- ✅ Transaction processing works
-- ✅ Receipts generated
+- âœ… Payment methods save securely
+- âœ… Transaction processing works
+- âœ… Receipts generated
 
-## 📱 RESPONSIVE DESIGN TESTS
+## ðŸ“± RESPONSIVE DESIGN TESTS
 
 ### RESP-01: Mobile Responsiveness
 **Objective**: Verify mobile compatibility
@@ -302,10 +302,10 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Test touch interactions
 
 **Expected Results**:
-- ✅ Layout adapts to screen size
-- ✅ Touch targets appropriate size
-- ✅ No horizontal scrolling
-- ✅ Mobile navigation works
+- âœ… Layout adapts to screen size
+- âœ… Touch targets appropriate size
+- âœ… No horizontal scrolling
+- âœ… Mobile navigation works
 
 ### RESP-02: Tablet Responsiveness
 **Objective**: Verify tablet compatibility
@@ -314,11 +314,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Check landscape/portrait modes
 
 **Expected Results**:
-- ✅ Layout optimized for tablets
-- ✅ Orientation changes handled
-- ✅ Touch interactions work
+- âœ… Layout optimized for tablets
+- âœ… Orientation changes handled
+- âœ… Touch interactions work
 
-## 🔒 SECURITY TESTS
+## ðŸ”’ SECURITY TESTS
 
 ### SEC-01: Session Security
 **Objective**: Verify session management
@@ -328,9 +328,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Test forced logout scenarios
 
 **Expected Results**:
-- ✅ Sessions timeout appropriately
-- ✅ Tokens validated properly
-- ✅ Secure logout on token expiry
+- âœ… Sessions timeout appropriately
+- âœ… Tokens validated properly
+- âœ… Secure logout on token expiry
 
 ### SEC-02: Data Protection
 **Objective**: Verify data security
@@ -340,11 +340,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Test XSS protection
 
 **Expected Results**:
-- ✅ No sensitive data in URLs
-- ✅ HTTPS enforced everywhere
-- ✅ XSS protection implemented
+- âœ… No sensitive data in URLs
+- âœ… HTTPS enforced everywhere
+- âœ… XSS protection implemented
 
-## 🌐 PERFORMANCE TESTS
+## ðŸŒ PERFORMANCE TESTS
 
 ### PERF-01: Page Load Times
 **Objective**: Verify acceptable performance
@@ -353,9 +353,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Test with slow network conditions
 
 **Expected Results**:
-- ✅ Pages load under 3 seconds
-- ✅ Graceful degradation on slow networks
-- ✅ Loading indicators present
+- âœ… Pages load under 3 seconds
+- âœ… Graceful degradation on slow networks
+- âœ… Loading indicators present
 
 ### PERF-02: Image Optimization
 **Objective**: Verify image performance
@@ -364,11 +364,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Test lazy loading
 
 **Expected Results**:
-- ✅ Images optimized for web
-- ✅ Lazy loading implemented
-- ✅ No layout shifts during loading
+- âœ… Images optimized for web
+- âœ… Lazy loading implemented
+- âœ… No layout shifts during loading
 
-## 🧭 NAVIGATION TESTS
+## ðŸ§­ NAVIGATION TESTS
 
 ### NAV-01: Breadcrumb Navigation
 **Objective**: Verify navigation consistency
@@ -378,9 +378,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Test back/forward buttons
 
 **Expected Results**:
-- ✅ Consistent navigation experience
-- ✅ Browser history maintained
-- ✅ No broken links
+- âœ… Consistent navigation experience
+- âœ… Browser history maintained
+- âœ… No broken links
 
 ### NAV-02: Deep Linking
 **Objective**: Verify direct URL access
@@ -389,11 +389,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Test bookmark functionality
 
 **Expected Results**:
-- ✅ Direct URL access works
-- ✅ Bookmarked pages load correctly
-- ✅ Authentication handled properly
+- âœ… Direct URL access works
+- âœ… Bookmarked pages load correctly
+- âœ… Authentication handled properly
 
-## 📝 ACCESSIBILITY TESTS
+## ðŸ“ ACCESSIBILITY TESTS
 
 ### ACC-01: Screen Reader Compatibility
 **Objective**: Verify accessibility support
@@ -403,9 +403,9 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Verify ARIA labels
 
 **Expected Results**:
-- ✅ Screen reader friendly
-- ✅ Keyboard navigation complete
-- ✅ ARIA labels implemented
+- âœ… Screen reader friendly
+- âœ… Keyboard navigation complete
+- âœ… ARIA labels implemented
 
 ### ACC-02: Color Contrast
 **Objective**: Verify visual accessibility
@@ -414,11 +414,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 2. Test colorblind compatibility
 
 **Expected Results**:
-- ✅ Sufficient color contrast
-- ✅ Colorblind-friendly palette
-- ✅ Text readable without color
+- âœ… Sufficient color contrast
+- âœ… Colorblind-friendly palette
+- âœ… Text readable without color
 
-## 🔄 BROWSER COMPATIBILITY
+## ðŸ”„ BROWSER COMPATIBILITY
 
 ### COMP-01: Cross-Browser Testing
 **Objective**: Verify browser compatibility
@@ -429,11 +429,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 4. Test on Edge
 
 **Expected Results**:
-- ✅ Consistent experience across browsers
-- ✅ No browser-specific bugs
-- ✅ Feature compatibility maintained
+- âœ… Consistent experience across browsers
+- âœ… No browser-specific bugs
+- âœ… Feature compatibility maintained
 
-## 🚨 ERROR HANDLING
+## ðŸš¨ ERROR HANDLING
 
 ### ERR-01: Graceful Error Handling
 **Objective**: Verify error scenarios handled properly
@@ -443,11 +443,11 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 3. Test invalid data scenarios
 
 **Expected Results**:
-- ✅ User-friendly error messages
-- ✅ No application crashes
-- ✅ Recovery options provided
+- âœ… User-friendly error messages
+- âœ… No application crashes
+- âœ… Recovery options provided
 
-## 📋 TEST COMPLETION CHECKLIST
+## ðŸ“‹ TEST COMPLETION CHECKLIST
 
 - [ ] All authentication tests completed
 - [ ] All dashboard tests completed
@@ -464,7 +464,7 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 - [ ] All error handling tests completed
 - [ ] Test report completed and submitted
 
-## ⚠️ TESTING NOTES
+## âš ï¸ TESTING NOTES
 
 1. **Test Data**: Use test data that can be easily identified and cleaned up
 2. **Environment**: Note which environment (production/staging) is being tested
@@ -472,7 +472,7 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 4. **Performance**: Note any performance issues with specific metrics
 5. **Suggestions**: Include suggestions for improvements
 
-## 📞 SUPPORT
+## ðŸ“ž SUPPORT
 
 For issues during testing, contact:
 - Development Team: [Contact Information]
@@ -483,3 +483,17 @@ For issues during testing, contact:
 *Document Version: 1.0*
 *Last Updated: [Date]*
 *Test Plan Owner: [Name]*
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
+

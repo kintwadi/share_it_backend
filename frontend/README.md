@@ -9,6 +9,45 @@ Run `npm start` for a dev server. Navigate to `http://localhost:4200/`.
 Notes:
 - The app uses relative API paths (`/api/v1`, `/ws`) in dev.
 - The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` via `proxy.conf.json`.
+- If the backend is running in multi-tenant mode, direct API tools or custom clients should send `X-Tenant-ID` unless the backend is configured with `SETTING_USE_DEFAULT_DATABASE=true` and the request should fall back only when the header is missing.
+- The Angular app can send the tenant header automatically when runtime env includes values that match a backend tenant id configured on the backend:
+  - `TENANT_ID=<tenant-id>`
+  - optional `TENANT_HEADER_NAME=X-Tenant-ID`
+
+## Runtime config
+
+- Web uses the tracked file `frontend/public/env.js`.
+- Android uses `frontend/.env.android`.
+
+### Web
+
+Edit `frontend/public/env.js` directly:
+
+```js
+window.__env = window.__env || {};
+window.__env.API_URL = "/api/v1";
+window.__env.TENANT_HEADER_NAME = "X-Tenant-ID";
+window.__env.TENANT_ID = "";
+```
+
+### Android
+
+Create `frontend/.env.android` by copying [`.env.android.template`](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/.env.android.template):
+
+```bash
+cd frontend
+cp .env.android.template .env.android
+```
+
+Example values:
+
+```bash
+ANDROID_API_URL=http://192.168.178.114:8081/api/v1
+ANDROID_TENANT_HEADER_NAME=X-Tenant-ID
+ANDROID_TENANT_ID=vicinity24_tenant_a
+```
+
+`npm start` and `npm run build` no longer rewrite `frontend/public/env.js`.
 
 ## Code scaffolding
 

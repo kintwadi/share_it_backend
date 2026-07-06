@@ -1,4 +1,4 @@
-# Escrow Flow (Borrow → Return → Release)
+﻿# Escrow Flow (Borrow â†’ Return â†’ Release)
 
 This document explains the current escrow-like implementation for borrow checkout payments.
 
@@ -19,7 +19,7 @@ The implementation uses Stripe Connect transfers to pay lenders after return.
    - `serviceFeeAmount` (platform fee if applicable)
    - `depositAmount` (refundable deposit if applicable)
 3. On successful return (no dispute), the backend:
-   - creates a Stripe `Transfer` for `rentalAmount` to the lender’s connected account
+   - creates a Stripe `Transfer` for `rentalAmount` to the lenderâ€™s connected account
    - creates a Stripe `Refund` for `depositAmount` back to the borrower (if deposit was used)
    - marks the transaction `RELEASED`
 4. On dispute (manual or automatic), the backend marks the transaction `DISPUTED` and does not transfer/refund.
@@ -311,13 +311,26 @@ Code:
 
 Transaction statuses:
 
-- `ESCROWED` → `RELEASED`
-- If payout/refund fails (e.g. lender not onboarded): `ESCROWED` → `RELEASE_FAILED`
+- `ESCROWED` â†’ `RELEASED`
+- If payout/refund fails (e.g. lender not onboarded): `ESCROWED` â†’ `RELEASE_FAILED`
 
 ## Notes and current limitations
 
-- PaymentIntents are captured immediately; this is not a card “authorization hold”. The “escrow” is implemented by delaying the payout transfer to the lender.
+- PaymentIntents are captured immediately; this is not a card â€œauthorization holdâ€. The â€œescrowâ€ is implemented by delaying the payout transfer to the lender.
 - `serviceFeeAmount` is currently kept by the platform by simply transferring only `rentalAmount` to the lender.
 - There is no admin dispute resolution workflow yet (e.g., partial payout, partial refund, evidence upload, deadlines).
 - Database schema migrations are handled via `spring.jpa.hibernate.ddl-auto=update`. New fields will be added automatically by Hibernate in dev environments.
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
 

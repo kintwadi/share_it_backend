@@ -1,435 +1,484 @@
 <div class="space-y-8" *ngIf="user">
-      
-  <!-- Error Alert -->
-  <div *ngIf="error" class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in mb-4">
-    <lucide-icon [img]="AlertTriangle" class="text-red-600 mt-0.5 shrink-0" size="20"></lucide-icon>
-    <div>
-      <h3 class="text-red-800 font-bold text-sm">{{ i18n.t('common.error') }}</h3>
-      <p class="text-red-700 text-xs mt-1">{{ error }}</p>
+  <div *ngIf="error" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 shadow-sm">
+    <div class="flex items-start gap-3">
+      <lucide-icon [img]="AlertTriangle" class="mt-0.5 shrink-0 text-red-600" size="20"></lucide-icon>
+      <div>
+        <h3 class="text-sm font-bold text-red-800">{{ i18n.t('common.error') }}</h3>
+        <p class="mt-1 text-xs text-red-700">{{ error }}</p>
+      </div>
     </div>
   </div>
 
-  <!-- Payment Success Alert -->
-  <div *ngIf="paymentSuccess" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in">
-    <lucide-icon [img]="CheckCircle2" class="text-emerald-600 mt-0.5 shrink-0" size="20"></lucide-icon>
-    <div>
-      <h3 class="text-emerald-800 font-bold text-sm">{{ i18n.t('dashboard.subscription_active') }}</h3>
-      <p class="text-emerald-700 text-xs mt-1">{{ i18n.t('dashboard.subscription_active_help') }}</p>
+  <div *ngIf="paymentSuccess" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 shadow-sm">
+    <div class="flex items-start gap-3">
+      <lucide-icon [img]="CheckCircle2" class="mt-0.5 shrink-0 text-emerald-600" size="20"></lucide-icon>
+      <div>
+        <h3 class="text-sm font-bold text-emerald-800">{{ i18n.t('dashboard.subscription_active') }}</h3>
+        <p class="mt-1 text-xs text-emerald-700">{{ i18n.t('dashboard.subscription_active_help') }}</p>
+      </div>
     </div>
   </div>
 
-  <div *ngIf="upgradeSuccess" class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 shadow-sm animate-fade-in">
-    <lucide-icon [img]="CheckCircle2" class="text-blue-600 mt-0.5 shrink-0" size="20"></lucide-icon>
-    <div>
-      <h3 class="text-blue-800 font-bold text-sm">{{ i18n.t('dashboard.upgrade_success') }}</h3>
-      <p class="text-blue-700 text-xs mt-1">{{ i18n.t('dashboard.upgrade_success_help') }}</p>
+  <div *ngIf="upgradeSuccess" class="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-4 shadow-sm">
+    <div class="flex items-start gap-3">
+      <lucide-icon [img]="CheckCircle2" class="mt-0.5 shrink-0 text-blue-600" size="20"></lucide-icon>
+      <div>
+        <h3 class="text-sm font-bold text-blue-800">{{ i18n.t('dashboard.upgrade_success') }}</h3>
+        <p class="mt-1 text-xs text-blue-700">{{ i18n.t('dashboard.upgrade_success_help') }}</p>
+      </div>
     </div>
   </div>
 
-  <!-- Profile Header -->
-  <div class="relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-    <div class="absolute inset-0 bg-gradient-to-br from-brand-50/60 via-white to-indigo-50/60"></div>
-    <div class="relative p-6 md:p-8 flex flex-col lg:flex-row gap-6 lg:items-center">
-      <div class="flex items-center gap-5">
-        <div class="relative">
-          <div class="absolute inset-0 rounded-full bg-gradient-to-br from-brand-500/30 to-indigo-500/30 blur-md"></div>
+  <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div class="h-1.5 bg-gradient-to-r from-brand-500 via-teal-400 to-emerald-400"></div>
+    <div class="flex flex-col gap-6 px-6 py-6 md:px-8 md:py-7 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-4 md:gap-5">
+        <div class="relative shrink-0">
           <img
             [src]="user.avatarUrl || 'https://picsum.photos/seed/' + user.id + '/120/120'"
             [alt]="user.name"
-            class="relative w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-4 ring-white shadow-md"
+            class="h-20 w-20 rounded-full object-cover ring-4 ring-slate-100 md:h-24 md:w-24"
           />
-          <div class="absolute -bottom-2 -right-2 bg-brand-600 text-white p-1.5 rounded-full ring-2 ring-white shadow">
-            <lucide-icon [img]="Shield" size="16"></lucide-icon>
-          </div>
-          <div *ngIf="currentSub && currentSub.planType === 'premium'" class="absolute -top-2 -right-2 bg-amber-500 text-white p-1 rounded-full ring-2 ring-white shadow">
-            <lucide-icon [img]="Zap" size="12"></lucide-icon>
+          <div class="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-teal-500 text-white ring-4 ring-white">
+            <lucide-icon [img]="CheckCircle2" size="14"></lucide-icon>
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 class="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
-              {{user.name}}
-            </h2>
-            <lucide-icon *ngIf="user.verificationStatus === VerificationStatus.VERIFIED" [img]="BadgeCheck" class="text-blue-600" size="22"></lucide-icon>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-black tracking-tight text-slate-900 md:text-4xl">{{ user.name }}</h1>
+            <lucide-icon *ngIf="user.verificationStatus === VerificationStatus.VERIFIED" [img]="BadgeCheck" class="text-brand-600" size="22"></lucide-icon>
           </div>
-          <div class="mt-1 flex items-center text-sm text-gray-500">
-            <lucide-icon [img]="Calendar" size="16" class="mr-2 text-gray-400"></lucide-icon>
+          <div class="mt-2 flex items-center gap-2 text-sm text-slate-500">
+            <lucide-icon [img]="Calendar" size="15" class="text-slate-400"></lucide-icon>
             <span>{{ i18n.t('dashboard.joined') }} {{ user.joinedDate | date }}</span>
           </div>
         </div>
       </div>
 
-      <div class="flex-1"></div>
+      <div class="flex flex-wrap items-center gap-3 lg:justify-end">
+        <span class="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-slate-600">
+          {{ user.role }}
+        </span>
+        <span class="inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-700">
+          {{ i18n.t('dash.score') }} {{ user.trustScore }}
+        </span>
+        <span *ngIf="subscriptionEnabled && currentSub" class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-blue-700">
+          {{ i18n.t('dash.plan') }} {{ currentSub.status === 'canceled' ? i18n.t('dash.plan_standard_lender') : (currentSub.planType + ' • ' + currentSub.status) }}
+        </span>
+        <span *ngIf="subscriptionEnabled && currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-amber-800">
+          <lucide-icon [img]="Zap" size="12"></lucide-icon>
+          {{ i18n.t('dash.premium') }}
+        </span>
+      </div>
+    </div>
+  </section>
 
-      <div class="flex flex-col gap-3 w-full lg:w-auto">
-        <div class="flex flex-wrap gap-2">
-          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-white/70 backdrop-blur text-xs font-bold text-gray-700">
-            <span class="uppercase">{{user.role}}</span>
-          </span>
-
-          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-xs font-bold text-blue-700">
-            <span class="uppercase">{{ i18n.t('dash.score') }}</span>
-            <span class="text-blue-900">{{user.trustScore}}</span>
-          </span>
-
-          <span *ngIf="subscriptionEnabled && currentSub" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700">
-            <span class="uppercase">{{ i18n.t('dash.plan') }}</span>
-            <span class="text-emerald-900 normal-case">
-              {{ currentSub.status === 'canceled' ? i18n.t('dash.plan_standard_lender') : (currentSub.planType + ' • ' + currentSub.status) }}
-            </span>
-          </span>
-
-          <span *ngIf="subscriptionEnabled && currentSub && currentSub.planType === 'premium'" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800">
-            <lucide-icon [img]="Shield" size="12" class="text-amber-700"></lucide-icon>
-            <span class="uppercase">{{ i18n.t('dash.premium') }}</span>
-          </span>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ i18n.t('dash.my_listings') }}</p>
+          <p class="mt-2 text-3xl font-black text-slate-900">{{ myListings.length }}</p>
         </div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-brand-600">
+          <lucide-icon [img]="Package" size="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
 
-        <button
-          *ngIf="subscriptionEnabled && !currentSub"
-          type="button"
-          (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
-          class="w-full lg:w-[320px] p-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 transition-colors text-left shadow-sm"
-        >
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <div class="text-[10px] font-black text-amber-700 uppercase tracking-wider">
-                {{ i18n.t('dash.subscription_cta') }}
-              </div>
-              <div class="text-sm font-bold text-amber-900 mt-1">
-                {{ i18n.t('dash.subscription_desc') }}
-              </div>
-            </div>
-            <div class="w-10 h-10 rounded-full bg-white border border-amber-200 flex items-center justify-center text-amber-700">
-              <lucide-icon [img]="ChevronRight" size="18"></lucide-icon>
-            </div>
-          </div>
-        </button>
+    <div class="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ i18n.t('dash.incoming_requests') }}</p>
+          <p class="mt-2 text-3xl font-black text-slate-900">{{ pendingRequests.length }}</p>
+        </div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+          <lucide-icon [img]="BellRing" size="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ i18n.t('dash.active_borrows') }}</p>
+          <p class="mt-2 text-3xl font-black text-slate-900">{{ activeBorrows.length }}</p>
+        </div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+          <lucide-icon [img]="Clock" size="20"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ i18n.t('dash.borrowing_history') }}</p>
+          <p class="mt-2 text-3xl font-black text-slate-900">{{ history.length }}</p>
+        </div>
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+          <lucide-icon [img]="History" size="20"></lucide-icon>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    
-    <!-- Left Column: Listings & Requests -->
-    <div class="space-y-6">
+  <button
+    *ngIf="subscriptionEnabled && !currentSub"
+    type="button"
+    (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
+    class="w-full rounded-[28px] border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-5 py-5 text-left shadow-sm transition-colors hover:from-amber-100 hover:to-yellow-100"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700">{{ i18n.t('dash.subscription_cta') }}</div>
+        <div class="mt-1 text-sm font-bold text-amber-900">{{ i18n.t('dash.subscription_desc') }}</div>
+      </div>
+      <div class="flex h-11 w-11 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-700">
+        <lucide-icon [img]="ChevronRight" size="18"></lucide-icon>
+      </div>
+    </div>
+  </button>
 
-      <!-- Incoming Requests Section -->
-      <div *ngIf="pendingRequests.length > 0" class="space-y-4 animate-fade-in">
-          <h3 class="text-lg font-bold text-gray-900 flex items-center">
-            <lucide-icon [img]="BellRing" class="mr-2 text-brand-600" size="20"></lucide-icon>
-            {{ i18n.t('dash.incoming_requests') }}
-            <span class="ml-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{pendingRequests.length}}</span>
-          </h3>
-          
-          <div class="bg-white rounded-xl border border-blue-200 shadow-md overflow-hidden divide-y divide-gray-100 ring-4 ring-blue-50/50">
-            <div *ngFor="let req of pendingRequests" class="p-4 flex gap-4 bg-blue-50/30">
-              <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/40'" class="w-12 h-12 rounded-full border-2 border-white shadow-sm object-cover" />
-              <div class="flex-1">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="text-sm text-gray-900 font-bold">
-                      <span class="text-brand-700">{{req.borrower?.name}}</span>
-                      {{ req.type === ListingType.GIVE ? 'wants to claim:' : (req.type === ListingType.SELL ? 'wants to buy:' : 'wants to borrow:') }}
-                    </p>
-                    <p class="text-xs text-gray-600 mt-1 font-medium bg-white border border-gray-200 rounded px-2 py-1 inline-block">{{req.title}}</p>
-                  </div>
-                  <span class="text-[10px] font-bold text-brand-600 bg-white px-2 py-1 rounded-full border border-brand-100 uppercase tracking-wide">
-                    {{req.borrower?.trustScore}}% Trust
-                  </span>
-                </div>
-                <div class="flex gap-2 mt-3">
-                  <button
-                    type="button"
-                    (click)="handleApprove(req.id)"
-                    [disabled]="actionLoading === req.id"
-                    class="flex-1 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors shadow-sm"
-                  >
-                    <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="animate-spin mr-1"></lucide-icon>
-                    <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="14" class="mr-1"></lucide-icon>
-                    Approve
-                  </button>
+  <section *ngIf="pendingRequests.length > 0" class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <lucide-icon [img]="BellRing" size="18"></lucide-icon>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.incoming_requests') }}</h2>
+        <p class="text-sm text-slate-500">{{ pendingRequests.length }} pending</p>
+      </div>
+    </div>
 
-                  <button
-                    type="button"
-                    (click)="openUserPreview(req.borrower)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-300 transition-colors"
-                    title="Preview User"
-                  >
-                    <lucide-icon [img]="Eye" size="16"></lucide-icon>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="handleMessageUser(req.borrower)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-brand-600 hover:border-brand-200 transition-colors"
-                    title="Message Borrower"
-                  >
-                    <lucide-icon [img]="MessageSquare" size="16"></lucide-icon>
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="handleDeny(req.id)"
-                    [disabled]="actionLoading === req.id"
-                    class="flex-1 bg-white hover:bg-red-50 text-red-600 border border-gray-200 hover:border-red-200 text-xs font-bold py-2 rounded-lg flex items-center justify-center transition-colors"
-                  >
-                    <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="animate-spin mr-1"></lucide-icon>
-                    <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="14" class="mr-1"></lucide-icon>
-                    Deny
-                  </button>
-                </div>
+    <div class="space-y-4">
+      <article *ngFor="let req of pendingRequests" class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div class="flex min-w-0 items-start gap-4">
+            <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/48'" class="h-12 w-12 rounded-full object-cover ring-2 ring-slate-100" />
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-base font-black text-slate-900">{{ req.borrower?.name }}</h3>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+                  {{ req.borrower?.trustScore }}% Trust
+                </span>
               </div>
+              <p class="mt-1 text-sm text-slate-600">
+                {{ req.type === ListingType.GIVE ? 'wants to claim' : (req.type === ListingType.SELL ? 'wants to buy' : 'wants to borrow') }}
+              </p>
+              <p class="mt-2 inline-flex rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">
+                {{ req.title }}
+              </p>
             </div>
           </div>
+
+          <div class="flex flex-wrap items-center gap-2 md:justify-end">
+            <button
+              type="button"
+              (click)="openUserPreview(req.borrower)"
+              class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900"
+              title="Preview User"
+            >
+              <lucide-icon [img]="Eye" size="16"></lucide-icon>
+            </button>
+            <button
+              type="button"
+              (click)="handleMessageUser(req.borrower)"
+              class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-brand-200 hover:text-brand-700"
+              title="Message Borrower"
+            >
+              <lucide-icon [img]="MessageSquare" size="16"></lucide-icon>
+            </button>
+            <button
+              type="button"
+              (click)="handleDeny(req.id)"
+              [disabled]="actionLoading === req.id"
+              class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
+            >
+              <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="14" class="mr-2"></lucide-icon>
+              Deny
+            </button>
+            <button
+              type="button"
+              (click)="handleApprove(req.id)"
+              [disabled]="actionLoading === req.id"
+              class="inline-flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+            >
+              <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="mr-2 animate-spin"></lucide-icon>
+              <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="14" class="mr-2"></lucide-icon>
+              Approve
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="space-y-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-brand-600">
+          <lucide-icon [img]="Package" size="18"></lucide-icon>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.my_listings') }}</h2>
+          <p class="text-sm text-slate-500">{{ myListings.length }} total</p>
+        </div>
       </div>
 
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-lg font-bold text-gray-900 flex items-center">
-            <lucide-icon [img]="Package" class="mr-2 text-brand-600" size="20"></lucide-icon>
-            {{ i18n.t('dash.my_listings') }}
-          </h3>
-          <button 
-            (click)="handleAddNew()"
-            [disabled]="actionLoading === 'add_new'"
-            class="text-sm text-brand-600 font-medium hover:text-brand-700 flex items-center bg-brand-50 px-3 py-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <lucide-icon *ngIf="actionLoading !== 'add_new'" [img]="Plus" size="16" class="mr-1"></lucide-icon>
-            <lucide-icon *ngIf="actionLoading === 'add_new'" [img]="Loader2" size="16" class="mr-1 animate-spin"></lucide-icon>
-            {{ i18n.t('dash.add_new') }}
-          </button>
-        </div>
+      <button
+        (click)="handleAddNew()"
+        [disabled]="actionLoading === 'add_new'"
+        class="inline-flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <lucide-icon *ngIf="actionLoading !== 'add_new'" [img]="Plus" size="16" class="mr-2"></lucide-icon>
+        <lucide-icon *ngIf="actionLoading === 'add_new'" [img]="Loader2" size="16" class="mr-2 animate-spin"></lucide-icon>
+        {{ i18n.t('dash.add_new') }}
+      </button>
+    </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div *ngIf="isLoadingListings" class="p-8 text-center text-gray-400">
-            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
-            <p class="text-sm">{{ i18n.t('dash.loading_listings') }}</p>
-          </div>
-          
-          <div *ngIf="!isLoadingListings && myListings.length > 0" class="divide-y divide-gray-100">
-            <div *ngFor="let item of myListings" class="p-4 flex gap-4 transition-colors" [ngClass]="listingRowClass(item)">
-              <div class="relative group">
-                <img
-                  [src]="item.imageUrl"
-                  [alt]="item.title"
-                  class="w-16 h-16 rounded-lg object-cover bg-gray-100"
-                  [ngClass]="listingImageClass(item)"
-                />
-                <div *ngIf="listingIsHidden(item)" class="absolute inset-0 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
-                  <lucide-icon [img]="EyeOff" size="24" class="text-white drop-shadow-md"></lucide-icon>
-                </div>
-                <div *ngIf="listingIsBlocked(item)" class="absolute inset-0 bg-red-900/20 rounded-lg flex items-center justify-center backdrop-blur-[1px]">
-                  <lucide-icon [img]="Ban" size="24" class="text-white drop-shadow-md"></lucide-icon>
-                </div>
-                <div *ngIf="item.autoApprove" class="absolute -top-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border-2 border-white" [title]="i18n.t('dash.instant_book_enabled')">
-                  <lucide-icon [img]="Zap" size="10"></lucide-icon>
-                </div>
+    <div class="space-y-4">
+      <div *ngIf="isLoadingListings" class="rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
+        <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
+        <p class="text-sm">{{ i18n.t('dash.loading_listings') }}</p>
+      </div>
+
+      <article *ngFor="let item of myListings" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm transition-colors" [ngClass]="listingRowClass(item)">
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div class="flex min-w-0 flex-1 gap-4">
+            <div class="relative shrink-0">
+              <img
+                [src]="item.imageUrl"
+                [alt]="item.title"
+                class="h-20 w-20 rounded-2xl object-cover bg-slate-100 md:h-24 md:w-24"
+                [ngClass]="listingImageClass(item)"
+              />
+              <div *ngIf="listingIsHidden(item)" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/10">
+                <lucide-icon [img]="EyeOff" size="22" class="text-white"></lucide-icon>
               </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                  <h4 class="font-bold truncate" [ngClass]="listingTitleClass(item)">{{item.title}}</h4>
-                  <span class="flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide border border-transparent" [ngClass]="listingBadgeClass(item)">
+              <div *ngIf="listingIsBlocked(item)" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-red-900/20">
+                <lucide-icon [img]="Ban" size="22" class="text-white"></lucide-icon>
+              </div>
+              <div *ngIf="item.autoApprove" class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white ring-2 ring-white" [title]="i18n.t('dash.instant_book_enabled')">
+                <lucide-icon [img]="Zap" size="10"></lucide-icon>
+              </div>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-xl font-black tracking-tight" [ngClass]="listingTitleClass(item)">{{ item.title }}</h3>
+                  </div>
+                  <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                    <span>{{ item.category }}</span>
+                    <span class="text-slate-300">•</span>
+                    <span *ngIf="item.hourlyRate; else freePrice" class="font-bold text-brand-600">{{ i18n.formatPrice(item.hourlyRate) }}/hr</span>
+                    <ng-template #freePrice>
+                      <span class="inline-flex items-center gap-1 font-bold text-pink-600">
+                        <lucide-icon [img]="Gift" size="12"></lucide-icon>
+                        Free
+                      </span>
+                    </ng-template>
+                  </div>
+                  <p *ngIf="item.itemReference" class="mt-2 text-xs font-mono text-slate-400">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
+                  <p *ngIf="listingIsBlocked(item)" class="mt-2 flex items-center text-xs font-bold text-red-500">
+                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
+                    Flagged by Admin
+                  </p>
+                </div>
+
+                <div class="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
+                  <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em]" [ngClass]="listingBadgeClass(item)">
                     <lucide-icon [img]="listingStatusIcon(item)" size="12"></lucide-icon>
                     {{ listingStatusLabel(item) }}
                   </span>
                 </div>
-                <div class="flex items-center gap-2 mt-1 mb-2">
-                  <p class="text-xs text-gray-500 truncate">{{item.category}}</p>
-                  <span class="text-gray-300">•</span>
-                  <p *ngIf="item.hourlyRate; else freePrice" class="text-xs font-semibold text-brand-600">{{ i18n.formatPrice(item.hourlyRate) }}/hr</p>
-                  <ng-template #freePrice>
-                    <p class="text-xs font-bold text-pink-600 flex items-center gap-1">
-                      <lucide-icon [img]="Gift" size="12"></lucide-icon>
-                      Free
-                    </p>
-                  </ng-template>
-                </div>
-                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
+              </div>
 
-                <div class="flex flex-col items-stretch gap-2 mt-2 sm:flex-row sm:flex-wrap sm:items-center" [ngClass]="listingActionsClass(item)">
-                  <p *ngIf="listingIsBlocked(item)" class="text-xs text-red-500 font-bold flex items-center">
-                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
-                    Flagged by Admin
-                  </p>
+              <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" [ngClass]="listingActionsClass(item)">
+                <ng-container *ngIf="!listingIsBlocked(item)">
+                  <button
+                    *ngIf="listingShowOverview(item)"
+                    type="button"
+                    (click)="setOverviewItem(item)"
+                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                    title="View Overview"
+                  >
+                    <lucide-icon [img]="FileCheck" size="12" class="mr-1.5"></lucide-icon>
+                    Overview
+                  </button>
 
-                  <ng-container *ngIf="!listingIsBlocked(item)">
+                  <button
+                    *ngIf="!listingShowOverview(item)"
+                    type="button"
+                    (click)="handleEdit(item)"
+                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                    title="Edit Listing"
+                  >
+                    <lucide-icon [img]="Edit2" size="12" class="mr-1.5"></lucide-icon>
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="handleToggleStatus(item)"
+                    [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
+                    class="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-xs font-bold transition-colors"
+                    [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
+                    [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
+                  >
+                    <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12" class="mr-1.5"></lucide-icon>
+                    {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
+                  </button>
+
+                  <button
+                    *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
+                    type="button"
+                    (click)="handleReturnClick(item)"
+                    [disabled]="!ownerCanStartReturn(item)"
+                    class="inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    [ngClass]="ownerCanStartReturn(item) ? 'bg-slate-900 text-white hover:bg-black' : 'bg-slate-100 text-slate-500'"
+                  >
+                    {{ ownerReturnLabel(item) }}
+                  </button>
+
+                  <button
+                    *ngIf="ownerCanRequestAdminReturn(item)"
+                    type="button"
+                    (click)="handleRequestAdminReturn(item)"
+                    [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
+                    class="inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'border border-amber-200 bg-white text-amber-700 hover:bg-amber-50'"
+                  >
+                    <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
+                    {{ ownerAdminReturnLabel(item) }}
+                  </button>
+
+                  <button
+                    *ngIf="item.status === AvailabilityStatus.APPROVED && item.borrowerId"
+                    type="button"
+                    (click)="handleMarkReadyForPickup(item.id)"
+                    [disabled]="actionLoading === item.id"
+                    class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
+                    {{ i18n.t('dash.mark_ready_for_pickup') }}
+                  </button>
+
+                  <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
                     <button
-                      *ngIf="listingShowOverview(item)"
                       type="button"
-                      (click)="setOverviewItem(item)"
-                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-brand-50 rounded transition-colors"
-                      title="View Overview"
-                    >
-                      <lucide-icon [img]="FileCheck" size="12" class="mr-1"></lucide-icon>
-                      Overview
-                    </button>
-
-                    <button
-                      *ngIf="!listingShowOverview(item)"
-                      type="button"
-                      (click)="handleEdit(item)"
-                      class="text-xs text-brand-600 font-medium hover:text-brand-800 flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-brand-50 rounded transition-colors"
-                      title="Edit Listing"
-                    >
-                      <lucide-icon [img]="Edit2" size="12" class="mr-1"></lucide-icon>
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      (click)="handleToggleStatus(item)"
-                      [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
-                      class="text-xs font-medium flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 rounded transition-colors"
-                      [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'text-gray-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'"
-                      [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
-                    >
-                      <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12" class="mr-1"></lucide-icon>
-                      {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
-                    </button>
-
-                    <button
-                      *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
-                      type="button"
-                      (click)="handleReturnClick(item)"
-                      [disabled]="!ownerCanStartReturn(item)"
-                      class="text-xs font-semibold w-full sm:w-auto px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      [ngClass]="ownerCanStartReturn(item) ? 'bg-gray-900 text-white hover:bg-black' : 'bg-gray-100 text-gray-500'"
-                      [title]="ownerCanStartReturn(item) ? 'View return request' : 'Waiting for borrower to submit return'"
-                    >
-                      {{ ownerReturnLabel(item) }}
-                    </button>
-
-                    <button
-                      *ngIf="ownerCanRequestAdminReturn(item)"
-                      type="button"
-                      (click)="handleRequestAdminReturn(item)"
-                      [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
-                      class="text-xs font-semibold w-full sm:w-auto px-2 py-1 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'"
-                    >
-                      <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
-                      {{ ownerAdminReturnLabel(item) }}
-                    </button>
-
-                    <button
-                      *ngIf="item.status === AvailabilityStatus.APPROVED && item.borrowerId"
-                      type="button"
-                      (click)="handleMarkReadyForPickup(item.id)"
+                      (click)="handleApprove(item.id)"
                       [disabled]="actionLoading === item.id"
-                      class="text-xs bg-emerald-600 text-white font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-emerald-700 transition-colors"
+                      class="inline-flex items-center justify-center rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
-                      {{ i18n.t('dash.mark_ready_for_pickup') }}
+                      <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
+                      Approve
                     </button>
-
-                    <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
-                      <button
-                        type="button"
-                        (click)="handleApprove(item.id)"
-                        [disabled]="actionLoading === item.id"
-                        class="text-xs bg-indigo-600 text-white font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-indigo-700 transition-colors"
-                        title="Approve Request"
-                      >
-                        <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin inline mr-1"></lucide-icon>
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        (click)="handleDeny(item.id)"
-                        [disabled]="actionLoading === item.id"
-                        class="text-xs bg-white text-red-600 border border-red-200 font-semibold w-full sm:w-auto px-2 py-1 rounded hover:bg-red-50 transition-colors"
-                        title="Deny Request"
-                      >
-                        Deny
-                      </button>
-                    </ng-container>
-
                     <button
                       type="button"
-                      (click)="handleDeleteClick(item)"
-                      class="text-xs text-red-500 font-medium hover:text-red-700 inline-flex items-center justify-center sm:justify-start w-full sm:w-auto px-2 py-1 hover:bg-red-50 rounded transition-colors sm:ml-auto"
-                      title="Delete Listing"
+                      (click)="handleDeny(item.id)"
+                      [disabled]="actionLoading === item.id"
+                      class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <lucide-icon [img]="Trash2" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('common.delete') }}
+                      Deny
                     </button>
                   </ng-container>
-                </div>
+
+                  <button
+                    type="button"
+                    (click)="handleDeleteClick(item)"
+                    class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 sm:ml-auto"
+                    title="Delete Listing"
+                  >
+                    <lucide-icon [img]="Trash2" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('common.delete') }}
+                  </button>
+                </ng-container>
               </div>
             </div>
           </div>
-
-          <div *ngIf="!isLoadingListings && myListings.length === 0" class="p-8 text-center text-gray-400">
-            <lucide-icon [img]="Package" size="32" class="mx-auto mb-2 opacity-20"></lucide-icon>
-            <p class="text-sm">{{ i18n.t('dash.no_listings') }}</p>
-          </div>
         </div>
+      </article>
+
+      <div *ngIf="!isLoadingListings && myListings.length === 0" class="rounded-[28px] border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
+        <lucide-icon [img]="Package" size="32" class="mx-auto mb-3 opacity-20"></lucide-icon>
+        <p class="text-sm">{{ i18n.t('dash.no_listings') }}</p>
       </div>
     </div>
+  </section>
 
-    <!-- Right Column: Borrowing & History -->
+  <div class="grid grid-cols-1 gap-8 xl:grid-cols-[1.15fr_0.85fr]">
     <div class="space-y-8">
-      <div *ngIf="activeBorrows.length > 0" class="space-y-4">
-        <h3 class="text-lg font-bold text-gray-900 flex items-center">
-          <lucide-icon [img]="Clock" class="mr-2 text-brand-600" size="20"></lucide-icon>
-          {{ i18n.t('dash.active_borrows') }}
-        </h3>
+      <section *ngIf="activeBorrows.length > 0" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <lucide-icon [img]="Clock" size="18"></lucide-icon>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.active_borrows') }}</h2>
+            <p class="text-sm text-slate-500">{{ activeBorrows.length }} active</p>
+          </div>
+        </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div *ngIf="isLoadingBorrows" class="p-8 text-center text-gray-400">
-            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
+        <div class="space-y-4">
+          <div *ngIf="isLoadingBorrows" class="rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
+            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
             <p class="text-sm">{{ i18n.t('dash.loading_active_borrows') }}</p>
           </div>
 
-          <div *ngIf="!isLoadingBorrows" class="divide-y divide-gray-100">
-            <div
-              *ngFor="let item of activeBorrows"
-              (click)="navigateToListing(item.id)"
-              class="p-4 flex gap-4 hover:bg-gray-50 transition-colors cursor-pointer group"
-            >
-              <img [src]="item.imageUrl" [alt]="item.title" class="w-16 h-16 rounded-lg object-cover bg-gray-100 group-hover:scale-105 transition-transform" />
-              <div class="flex-1 min-w-0">
-                <h4 class="font-bold text-gray-900 truncate group-hover:text-brand-600 transition-colors">{{item.title}}</h4>
-                <p class="text-xs text-gray-500 mb-1">{{ i18n.t('dash.owner_prefix') }} {{item.owner?.name}}</p>
-                <p *ngIf="item.itemReference" class="text-xs text-gray-500 mb-2 font-mono">{{ i18n.t('dash.item_ref_prefix') }} {{item.itemReference}}</p>
+          <article
+            *ngFor="let item of activeBorrows"
+            (click)="navigateToListing(item.id)"
+            class="cursor-pointer rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:bg-slate-50"
+          >
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.imageUrl" [alt]="item.title" class="h-20 w-20 rounded-2xl object-cover bg-slate-100" />
+                <div class="min-w-0 flex-1">
+                  <h3 class="truncate text-lg font-black tracking-tight text-slate-900">{{ item.title }}</h3>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.owner_prefix') }} {{ item.owner?.name }}</p>
+                  <p *ngIf="item.itemReference" class="mt-2 text-xs font-mono text-slate-400">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
 
-                <div *ngIf="item.status === AvailabilityStatus.PENDING" class="flex items-center text-xs text-indigo-600 bg-indigo-50 w-fit px-2 py-1 rounded animate-pulse">
-                  <lucide-icon [img]="BellRing" size="12" class="mr-1"></lucide-icon>
-                  {{ i18n.t('dash.request_pending') }}
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.DISPUTED" class="flex items-center text-xs text-red-600 bg-red-50 w-fit px-2 py-1 rounded">
-                  <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
-                  {{ i18n.t('dash.disputed') }}
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="flex items-center text-xs text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded">
-                  <lucide-icon [img]="CheckCircle2" size="12" class="mr-1"></lucide-icon>
-                  {{ i18n.t('dash.approved') }}
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-gray-500 mt-1">
-                  {{ i18n.t('dash.borrower_wait_pickup_notice') }}
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="flex items-center text-xs text-amber-700 bg-amber-50 w-fit px-2 py-1 rounded">
-                  <lucide-icon [img]="MapPin" size="12" class="mr-1"></lucide-icon>
-                  Ready for you to pick up
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="text-xs text-gray-600 mt-1">
-                  {{ i18n.t('dash.pickup_location_prefix') }} {{ pickupLocationText(item) }}
-                </div>
-                <div *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED" class="flex items-center text-xs text-amber-600 bg-amber-50 w-fit px-2 py-1 rounded">
-                  <lucide-icon [img]="Clock" size="12" class="mr-1"></lucide-icon>
-                  {{ i18n.t('dash.waiting_for_return') }}
+                  <div *ngIf="item.status === AvailabilityStatus.PENDING" class="mt-3 inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
+                    <lucide-icon [img]="BellRing" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('dash.request_pending') }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.DISPUTED" class="mt-3 inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
+                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('dash.disputed') }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="mt-3 inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
+                    <lucide-icon [img]="CheckCircle2" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('dash.approved') }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="mt-2 text-xs text-slate-500">
+                    {{ i18n.t('dash.borrower_wait_pickup_notice') }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
+                    <lucide-icon [img]="MapPin" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('dash.ready_for_pickup') }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="mt-2 text-xs text-slate-600">
+                    {{ i18n.t('dash.pickup_location_prefix') }} {{ pickupLocationText(item) }}
+                  </div>
+                  <div *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED" class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-600">
+                    <lucide-icon [img]="Clock" size="12" class="mr-1.5"></lucide-icon>
+                    {{ i18n.t('dash.waiting_for_return') }}
+                  </div>
                 </div>
               </div>
 
-              <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="flex flex-col justify-center gap-2">
+              <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="flex shrink-0 flex-col gap-2 md:w-52">
                 <button
                   *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED"
                   type="button"
                   (click)="$event.stopPropagation(); handleReturnClick(item)"
                   [disabled]="borrowerHasSubmittedReturn(item)"
-                  class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 transition-colors w-full disabled:opacity-60 disabled:cursor-not-allowed"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {{ borrowerReturnLabel(item) }}
                 </button>
@@ -438,223 +487,261 @@
                   type="button"
                   (click)="$event.stopPropagation(); handleMarkPickedUp(item.id)"
                   [disabled]="actionLoading === item.id"
-                  class="text-xs px-3 py-1.5 bg-amber-600 text-white font-medium rounded hover:bg-amber-700 transition-colors w-full disabled:opacity-60"
+                  class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin mr-1"></lucide-icon>
+                  <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 inline animate-spin"></lucide-icon>
                   {{ i18n.t('dash.mark_as_picked_up') }}
                 </button>
                 <button
                   type="button"
                   (click)="$event.stopPropagation(); setOverviewItem(item)"
-                  class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors w-full"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
                 >
                   {{ i18n.t('dash.overview') }}
                 </button>
                 <button
                   type="button"
                   (click)="$event.stopPropagation(); openReportModal(item)"
-                  class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors w-full"
+                  class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
                 >
-                  <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
                   {{ i18n.t('listing.report.title') }}
                 </button>
               </div>
             </div>
+          </article>
+        </div>
+      </section>
+
+      <section *ngIf="borrowedHistory.length > 0" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+            <lucide-icon [img]="History" size="18"></lucide-icon>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.borrowing_history') }}</h2>
+            <p class="text-sm text-slate-500">{{ borrowedHistory.length }} records</p>
           </div>
         </div>
-      </div>
 
-      <div class="space-y-8">
-        <div *ngIf="borrowedHistory.length > 0" class="space-y-4">
-          <h3 class="text-lg font-bold text-gray-900 flex items-center">
-            <lucide-icon [img]="History" class="mr-2 text-brand-600" size="20"></lucide-icon>
-            {{ i18n.t('dash.borrowing_history') }}
-          </h3>
+        <div class="space-y-4">
+          <div *ngIf="isLoadingHistory" class="rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
+            <lucide-icon [img]="Loader2" size="28" class="mx-auto mb-2 animate-spin"></lucide-icon>
+            <p class="text-sm">{{ i18n.t('dash.loading_history') }}</p>
+          </div>
 
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div *ngIf="isLoadingHistory" class="p-6 text-center text-gray-400">
-              <lucide-icon [img]="Loader2" size="28" class="mx-auto mb-2 animate-spin"></lucide-icon>
-              <p class="text-sm">{{ i18n.t('dash.loading_history') }}</p>
-            </div>
-            <div *ngIf="!isLoadingHistory" class="divide-y divide-gray-100">
-              <div *ngFor="let item of borrowedHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between">
-                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.returned') }}</span>
+          <article *ngFor="let item of borrowedHistory" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="h-16 w-16 rounded-2xl object-cover bg-slate-100 grayscale opacity-80" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-base font-black text-slate-900">{{ item.listing!.title }}</h3>
+                    <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+                      {{ i18n.t('dash.returned') }}
+                    </span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.owner_prefix') }} {{item.listing!.owner?.name}}</p>
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
-                    <span>{{item.borrowedDate | date}} — {{item.returnedDate | date}}</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    {{ i18n.t('dash.overview') }}
-                  </button>
-                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('listing.report.title') }}
-                  </button>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.owner_prefix') }} {{ item.listing!.owner?.name }}</p>
+                  <p class="mt-2 text-xs text-slate-400">{{ item.borrowedDate | date }} — {{ item.returnedDate | date }}</p>
                 </div>
               </div>
+
+              <div class="flex flex-wrap gap-2 md:justify-end">
+                <button type="button" (click)="setOverviewItem(item)" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">
+                  {{ i18n.t('dash.overview') }}
+                </button>
+                <button type="button" (click)="openReportModal(item.listing!)" class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
+              </div>
             </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <div class="space-y-8">
+      <section *ngIf="giftActive.length > 0 || giftHistory.length > 0" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-pink-50 text-pink-600">
+            <lucide-icon [img]="Gift" size="18"></lucide-icon>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.my_gifts') }}</h2>
           </div>
         </div>
 
-        <div *ngIf="giftActive.length > 0 || giftHistory.length > 0" class="space-y-4">
-          <h3 class="text-lg font-bold text-gray-900 flex items-center">
-            <lucide-icon [img]="Gift" class="mr-2 text-pink-500" size="20"></lucide-icon>
-            {{ i18n.t('dash.my_gifts') }}
-          </h3>
-
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="divide-y divide-gray-100">
-              <div *ngFor="let item of giftActive" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                <img [src]="item.imageUrl" [alt]="item.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between">
-                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
-                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">{{ i18n.t('dash.claim_pending') }}</span>
-                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.claim_approved') }}</span>
-                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-pink-600 font-medium bg-pink-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.gifted') }}</span>
+        <div class="space-y-4">
+          <article *ngFor="let item of giftActive" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.imageUrl" [alt]="item.title" class="h-16 w-16 rounded-2xl object-cover bg-slate-100" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-base font-black text-slate-900">{{ item.title }}</h3>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-600">{{ i18n.t('dash.claim_pending') }}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">{{ i18n.t('dash.claim_approved') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="rounded-full bg-pink-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-pink-600">{{ i18n.t('dash.gifted') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.from_prefix') }} {{item.owner?.name}}</p>
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.from_prefix') }} {{ item.owner?.name }}</p>
+                  <p class="mt-2 text-xs text-slate-400">
                     <span *ngIf="item.status === AvailabilityStatus.PENDING">{{ i18n.t('dash.requested_today') }}</span>
                     <span *ngIf="item.status !== AvailabilityStatus.PENDING">{{ i18n.t('dash.received_on') }} {{ today | date:'shortDate' }}</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    {{ i18n.t('dash.overview') }}
-                  </button>
-                  <button type="button" (click)="openReportModal(item)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('listing.report.title') }}
-                  </button>
+                  </p>
                 </div>
               </div>
-              <div *ngFor="let item of giftHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between">
-                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.received') }}</span>
-                  </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.from_prefix') }} {{item.listing!.owner?.name}}</p>
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
-                    <span>{{item.borrowedDate | date}}</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" (click)="setOverviewItem(item)" class="text-xs px-3 py-1.5 bg-white border border-gray-200 text-gray-600 font-medium rounded hover:bg-gray-50 transition-colors">
-                    {{ i18n.t('dash.overview') }}
-                  </button>
-                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('listing.report.title') }}
-                  </button>
-                </div>
+
+              <div class="flex flex-wrap gap-2 md:justify-end">
+                <button type="button" (click)="setOverviewItem(item)" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">
+                  {{ i18n.t('dash.overview') }}
+                </button>
+                <button type="button" (click)="openReportModal(item)" class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
               </div>
             </div>
+          </article>
+
+          <article *ngFor="let item of giftHistory" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="h-16 w-16 rounded-2xl object-cover bg-slate-100 grayscale opacity-80" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-base font-black text-slate-900">{{ item.listing!.title }}</h3>
+                    <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{{ i18n.t('dash.received') }}</span>
+                  </div>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.from_prefix') }} {{ item.listing!.owner?.name }}</p>
+                  <p class="mt-2 text-xs text-slate-400">{{ item.borrowedDate | date }}</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2 md:justify-end">
+                <button type="button" (click)="setOverviewItem(item)" class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50">
+                  {{ i18n.t('dash.overview') }}
+                </button>
+                <button type="button" (click)="openReportModal(item.listing!)" class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section *ngIf="purchaseActive.length > 0 || purchaseHistory.length > 0" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <lucide-icon [img]="DollarSign" size="18"></lucide-icon>
+          </div>
+          <div>
+            <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.purchase_history') }}</h2>
           </div>
         </div>
 
-        <div *ngIf="purchaseActive.length > 0 || purchaseHistory.length > 0" class="space-y-4">
-          <h3 class="text-lg font-bold text-gray-900 flex items-center">
-            <lucide-icon [img]="DollarSign" class="mr-2 text-emerald-600" size="20"></lucide-icon>
-            {{ i18n.t('dash.purchase_history') }}
-          </h3>
-
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="divide-y divide-gray-100">
-              <div *ngFor="let item of purchaseActive" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                <img [src]="item.imageUrl" [alt]="item.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between">
-                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.title}}</h4>
-                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full animate-pulse">{{ i18n.t('dash.request_pending') }}</span>
-                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.approved') }}</span>
-                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{{ i18n.t('dash.purchased') }}</span>
+        <div class="space-y-4">
+          <article *ngFor="let item of purchaseActive" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.imageUrl" [alt]="item.title" class="h-16 w-16 rounded-2xl object-cover bg-slate-100" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-base font-black text-slate-900">{{ item.title }}</h3>
+                    <span *ngIf="item.status === AvailabilityStatus.PENDING" class="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-600">{{ i18n.t('dash.request_pending') }}</span>
+                    <span *ngIf="item.status === AvailabilityStatus.APPROVED" class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">{{ i18n.t('dash.approved') }}</span>
+                    <span *ngIf="item.status !== AvailabilityStatus.PENDING && item.status !== AvailabilityStatus.APPROVED" class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-600">{{ i18n.t('dash.purchased') }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.seller_prefix') }} {{item.owner?.name}}</p>
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.seller_prefix') }} {{ item.owner?.name }}</p>
+                  <p class="mt-2 text-xs text-slate-400">
                     <span *ngIf="item.status === AvailabilityStatus.PENDING">{{ i18n.t('dash.requested_today') }}</span>
                     <span *ngIf="item.status !== AvailabilityStatus.PENDING">{{ i18n.t('dash.bought_on') }} {{ today | date:'shortDate' }}</span>
-                  </div>
-                </div>
-                <div class="flex items-center">
-                  <button type="button" (click)="openReportModal(item)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('listing.report.title') }}
-                  </button>
+                  </p>
                 </div>
               </div>
-              <div *ngFor="let item of purchaseHistory" class="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
-                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="w-12 h-12 rounded-lg object-cover bg-gray-100 grayscale opacity-80" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex justify-between">
-                    <h4 class="font-bold text-gray-900 truncate text-sm">{{item.listing!.title}}</h4>
-                    <span class="text-xs text-gray-400 font-medium border border-gray-200 rounded px-1.5 bg-gray-50">{{ i18n.t('dash.purchased') }}</span>
-                  </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ i18n.t('dash.seller_prefix') }} {{item.listing!.owner?.name}}</p>
-                  <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
-                    <lucide-icon [img]="Calendar" size="10" class="mr-0.5"></lucide-icon>
-                    <span>{{item.borrowedDate | date}}</span>
-                  </div>
-                </div>
-                <div class="flex items-center">
-                  <button type="button" (click)="openReportModal(item.listing!)" class="text-xs px-3 py-1.5 bg-white border border-red-200 text-red-600 font-medium rounded hover:bg-red-50 transition-colors">
-                    <lucide-icon [img]="Flag" size="12" class="mr-1"></lucide-icon>
-                    {{ i18n.t('listing.report.title') }}
-                  </button>
-                </div>
+
+              <div class="flex flex-wrap gap-2 md:justify-end">
+                <button type="button" (click)="openReportModal(item)" class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
               </div>
             </div>
-          </div>
+          </article>
+
+          <article *ngFor="let item of purchaseHistory" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex min-w-0 flex-1 gap-4">
+                <img [src]="item.listing!.imageUrl" [alt]="item.listing!.title" class="h-16 w-16 rounded-2xl object-cover bg-slate-100 grayscale opacity-80" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="truncate text-base font-black text-slate-900">{{ item.listing!.title }}</h3>
+                    <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{{ i18n.t('dash.purchased') }}</span>
+                  </div>
+                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.seller_prefix') }} {{ item.listing!.owner?.name }}</p>
+                  <p class="mt-2 text-xs text-slate-400">{{ item.borrowedDate | date }}</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2 md:justify-end">
+                <button type="button" (click)="openReportModal(item.listing!)" class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50">
+                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
+                  {{ i18n.t('listing.report.title') }}
+                </button>
+              </div>
+            </div>
+          </article>
         </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="space-y-4 border-t border-slate-200 pt-4">
+    <div class="flex items-center gap-3">
+      <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+        <lucide-icon [img]="ChevronRight" size="18"></lucide-icon>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.recommendations') }}</h2>
+        <p class="text-sm text-slate-500">Suggested nearby items and skills</p>
       </div>
     </div>
 
-  </div>
-
-  <div class="pt-4 border-t border-gray-200">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">{{ i18n.t('dash.recommendations') }}</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div *ngIf="isLoadingRecs" class="col-span-full text-center text-gray-400 py-6">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+      <div *ngIf="isLoadingRecs" class="col-span-full rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
         <lucide-icon [img]="Loader2" [size]="32" class="mx-auto mb-2 animate-spin"></lucide-icon>
         <p class="text-sm">{{ i18n.t('dash.loading_recommendations') }}</p>
       </div>
+
       <ng-container *ngIf="!isLoadingRecs && recommendations.length > 0">
-        <div
+        <article
           *ngFor="let rec of recommendations"
           (click)="navigateToListing(rec.id)"
-          class="w-full bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-center gap-4 group"
+          class="cursor-pointer rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
         >
-          <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-xl group-hover:bg-indigo-100 transition-colors flex-none">
-            {{ rec.type === ListingType.SKILL ? '🎓' : '🔧' }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-bold text-gray-900 truncate text-sm">{{rec.title}}</h4>
-            <div class="flex items-center text-xs text-gray-500 mt-0.5">
-              <lucide-icon [img]="MapPin" [size]="10" class="mr-1"></lucide-icon>
-              {{ (rec.distanceMiles || 0) | number:'1.0-0' }} {{ i18n.t('common.mi') }}
+          <div class="flex items-center gap-4">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-xl text-indigo-600">
+              {{ rec.type === ListingType.SKILL ? '🎓' : '🔧' }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="truncate text-sm font-black text-slate-900">{{ rec.title }}</h3>
+              <div class="mt-1 flex items-center text-xs text-slate-500">
+                <lucide-icon [img]="MapPin" [size]="10" class="mr-1"></lucide-icon>
+                {{ (rec.distanceMiles || 0) | number:'1.0-0' }} {{ i18n.t('common.mi') }}
+              </div>
+            </div>
+            <div class="shrink-0 text-slate-300">
+              <lucide-icon [img]="ChevronRight" [size]="16"></lucide-icon>
             </div>
           </div>
-          <div class="text-gray-300 group-hover:text-brand-600 flex-none">
-            <lucide-icon [img]="ChevronRight" [size]="16"></lucide-icon>
-          </div>
-        </div>
+        </article>
       </ng-container>
-      <div *ngIf="!isLoadingRecs && recommendations.length === 0" class="col-span-full text-center text-gray-400 py-4 text-sm bg-gray-50 rounded-xl border border-dashed border-gray-200">
+
+      <div *ngIf="!isLoadingRecs && recommendations.length === 0" class="col-span-full rounded-[28px] border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-400 shadow-sm">
         {{ i18n.t('dash.no_recommendations') }}
       </div>
     </div>
-  </div>
+  </section>
 </div>

@@ -1,0 +1,103 @@
+<section class="storefront-shell" *ngIf="!loading && storefront as vm; else stateTpl">
+  <section class="hero">
+    <ng-container *ngIf="activeHeroBike as featuredBike">
+      <div class="hero-stage">
+        <div class="hero-carousel">
+          <div class="carousel-controls" *ngIf="heroBikes.length > 1">
+            <button type="button" (click)="previousHeroBike()" [attr.aria-label]="'home.previousBike' | t">‹</button>
+            <button type="button" (click)="nextHeroBike()" [attr.aria-label]="'home.nextBike' | t">›</button>
+          </div>
+
+          <a class="carousel-image-link" [routerLink]="['/fahrad-fuchs/bikes', featuredBike.slug]">
+            <img [src]="featuredBike.imageUrl" [alt]="featuredBike.title" />
+          </a>
+
+          <div class="carousel-dots" *ngIf="heroBikes.length > 1">
+            <a
+              *ngFor="let bike of heroBikes; let i = index"
+              class="carousel-dot"
+              [class.active]="i === activeHeroBikeIndex"
+              [routerLink]="['/fahrad-fuchs/bikes', bike.slug]"
+              [attr.aria-label]="'home.openBike' | t:{ title: bike.title }">
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="hero-copy">
+            <p class="eyebrow">{{ 'home.heroEyebrow' | t }}</p>
+            <h1>{{ 'home.heroTitle' | t }}</h1>
+            <p class="hero-lead">{{ 'home.heroLead' | t }}</p>
+
+            <div class="hero-stats">
+              <article>
+                <span>{{ 'home.deposit' | t }}</span>
+                <strong>{{ trialDepositAmount | currency:'EUR' }}</strong>
+              </article>
+              <article>
+                <span>{{ 'home.trial' | t }}</span>
+                <strong>{{ 'common.days' | t:{ count: trialWindowDays } }}</strong>
+              </article>
+              <article>
+                <span>{{ 'home.showroom' | t }}</span>
+                <strong>{{ vm.store.cityLine }}</strong>
+              </article>
+            </div>
+
+            <div class="showroom-card">
+              <span class="showroom-label">{{ 'home.handoff' | t }}</span>
+              <strong>{{ vm.store.storeName }}</strong>
+              <p>{{ vm.store.addressLine1 }} · {{ vm.store.phone }}</p>
+            </div>
+          </div>
+
+          <aside class="hero-info">
+            <span class="carousel-category">{{ featuredBike.category }}</span>
+            <strong>{{ featuredBike.title }}</strong>
+            <p>{{ featuredBike.teaser }}</p>
+            <div class="hero-meta">
+              <span>{{ featuredBike.retailPrice | currency:'EUR' }}</span>
+              <span>{{ featuredBike.availabilityBadge }}</span>
+            </div>
+            <div class="hero-actions">
+              <a
+                class="carousel-cta"
+                [routerLink]="['/fahrad-fuchs/bikes', featuredBike.slug]">
+                {{ 'home.explore' | t }}
+              </a>
+              <a
+                class="hero-secondary-cta"
+                [routerLink]="heroReservationLink(featuredBike.slug)"
+                [queryParams]="heroReservationQueryParams(featuredBike.slug)">
+                {{ 'home.reserveTrial' | t }}
+              </a>
+            </div>
+            <p class="hero-auth-note" *ngIf="requiresLoginForReservation">{{ 'home.loginRequired' | t }}</p>
+          </aside>
+        </div>
+      </div>
+    </ng-container>
+  </section>
+
+  <section class="catalog" id="demo-bikes">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">{{ 'home.featuredEyebrow' | t }}</p>
+        <h2>{{ 'home.featuredTitle' | t }}</h2>
+      </div>
+      <span>{{ (vm.bikes.length === 1 ? 'common.model' : 'common.models') | t:{ count: vm.bikes.length } }}</span>
+    </div>
+
+    <div class="bike-grid">
+      <app-fahrrad-fuchs-to-go-bike-card *ngFor="let bike of vm.bikes" [bike]="bike" />
+    </div>
+  </section>
+
+</section>
+
+<ng-template #stateTpl>
+  <section class="state">
+    <p *ngIf="loading">{{ 'home.loading' | t }}</p>
+    <p *ngIf="!loading && errorKey">{{ errorKey | t }}</p>
+  </section>
+</ng-template>

@@ -173,7 +173,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
     this.selectedPath = this.borrowTierEnabled.verified ? 'VERIFIED' : (this.borrowTierEnabled.deposit ? 'DEPOSIT' : 'FEE');
     this.bookingDuration = 1;
-    this.paymentMethod = this.paymentOptions.card ? 'CARD' : (this.paymentOptions.paypal ? 'PAYPAL' : 'CASH');
+    this.paymentMethod = this.resolvePreferredPaymentMethod();
     this.selectedSavedPaymentMethodId = null;
     this.cardError = null;
     this.insuranceError = null;
@@ -208,11 +208,33 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
   get paymentOptions() {
     if (this.isPartnerListing) return { card: false, paypal: false, cash: false };
+    const cashEnabledBySettings = this.settingsConfig.isSectionEnabled('borrowing', 'payments.cash');
+    const cashEnabledByBackendProperty = this.settingsConfig.getBoolean('pay', 'with.cash', false);
     return {
       card: this.settingsConfig.isSectionEnabled('borrowing', 'payments.card'),
       paypal: this.settingsConfig.isSectionEnabled('borrowing', 'payments.paypal'),
-      cash: this.settingsConfig.isSectionEnabled('borrowing', 'payments.cash')
+      // Verified borrowing is the subscription path, so cash should not be offered there.
+      cash: cashEnabledBySettings && cashEnabledByBackendProperty && this.selectedPath !== 'VERIFIED'
     };
+  }
+
+  private resolvePreferredPaymentMethod(): 'CARD' | 'PAYPAL' | 'CASH' {
+    if (this.paymentOptions.card) return 'CARD';
+    if (this.paymentOptions.paypal) return 'PAYPAL';
+    if (this.paymentOptions.cash) return 'CASH';
+    return 'CARD';
+  }
+
+  private ensureValidPaymentMethod() {
+    const options = this.paymentOptions;
+    const currentIsAllowed =
+      (this.paymentMethod === 'CARD' && options.card) ||
+      (this.paymentMethod === 'PAYPAL' && options.paypal) ||
+      (this.paymentMethod === 'CASH' && options.cash);
+
+    if (!currentIsAllowed) {
+      this.paymentMethod = this.resolvePreferredPaymentMethod();
+    }
   }
 
   get baseTotal() {
@@ -304,6 +326,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   continueFromPath() {
+    this.ensureValidPaymentMethod();
     this.bookingStep = 'DURATION';
     this.render();
   }
@@ -338,6 +361,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   async proceedFromPayment() {
+    this.ensureValidPaymentMethod();
     if (this.paymentMethod === 'CARD' && this.finalTotalWithInsurance > 0) {
       this.bookingStep = 'CARD_FORM';
       this.render();
@@ -481,6 +505,10 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
       } else if (this.paymentMethod === 'PAYPAL') {
         await this.api.borrowListing(listing.id, { paymentMethod: 'PAYPAL', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CASH') {
+        if (this.selectedPath === 'VERIFIED') {
+          this.actionError = this.i18n.t('listing.error.process_failed');
+          return;
+        }
         await this.api.borrowListing(listing.id, { paymentMethod: 'CASH', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CARD') {
         await this.submitCardPayment();

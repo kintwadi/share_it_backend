@@ -1,0 +1,25 @@
+﻿<a class="card" [routerLink]="['/bikes', bike.id]">
+  <div class="image-shell">
+    <img *ngIf="bike.imageUrl" [src]="bike.imageUrl" [alt]="bike.title" />
+    <div class="top-row">
+      <span class="pill type">{{ bike.bikeType || 'Bike' }}</span>
+      <span class="pill status">{{ bike.inventoryStatus || 'Ready' }}</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="title-row">
+      <div>
+        <h3>{{ bike.title }}</h3>
+        <p class="description">{{ bike.description }}</p>
+      </div>
+      <strong class="price">{{ (bike.hourlyRate ?? 0) | currency:'EUR' }}</strong>
+    </div>
+
+    <div class="details">
+      <span>{{ bike.city || 'Germany' }}</span>
+      <span>{{ bike.frameSize || 'Universal fit' }}</span>
+      <span *ngIf="bike.rentToOwnEligible">Rent to own</span>
+    </div>
+  </div>
+</a>

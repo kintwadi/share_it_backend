@@ -3,15 +3,24 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthStorageService } from '../services/auth-storage.service';
 import { Router } from '@angular/router';
+import { getTenantHeaderName, getTenantId } from '../config/runtime-env';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authStorage = inject(AuthStorageService);
   const router = inject(Router);
   const token = authStorage.getToken();
+  const tenantId = getTenantId();
 
   let modifiedReq = req;
+  if (tenantId) {
+    modifiedReq = modifiedReq.clone({
+      setHeaders: {
+        [getTenantHeaderName()]: tenantId
+      }
+    });
+  }
   if (token) {
-    modifiedReq = req.clone({
+    modifiedReq = modifiedReq.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }

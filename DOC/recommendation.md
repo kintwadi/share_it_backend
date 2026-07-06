@@ -1,4 +1,4 @@
-# Recommendation System (Mahout)
+﻿# Recommendation System (Mahout)
 
 This document explains the recommendation feature implemented in the Vicinity24 backend and how the frontend consumes it.
 
@@ -67,14 +67,14 @@ flowchart LR
 
 Notes:
 - The current implementation uses implicit feedback (`preference = 1.0`) for each (payer, listing) interaction.
-- Similarity is computed with Mahout’s `LogLikelihoodSimilarity`, appropriate for boolean/implicit signals.
+- Similarity is computed with Mahoutâ€™s `LogLikelihoodSimilarity`, appropriate for boolean/implicit signals.
 
 ### 2) Evaluation Flow (`POST /api/listings/evaluate`)
 
 Evaluation is a **hybrid** pipeline:
 
 1. **Candidate retrieval (content-based)**: query listings by category + title keyword.
-2. **Expansion (collaborative filtering)**: for top candidate listings, fetch “most similar items” using Mahout.
+2. **Expansion (collaborative filtering)**: for top candidate listings, fetch â€œmost similar itemsâ€ using Mahout.
 3. **Decision**: aggregate the expanded set and decide SELL vs LEND vs GIVE, plus price estimate.
 
 ```mermaid
@@ -142,7 +142,7 @@ Example response:
   "confidenceScore": 1.0,
   "reasoning": "High demand for buying this type of item.",
   "similarItems": [
-    { "id": "…", "title": "Drill 1", "transactionType": "SELL", "price": 50.0 }
+    { "id": "â€¦", "title": "Drill 1", "transactionType": "SELL", "price": 50.0 }
   ]
 }
 ```
@@ -165,7 +165,7 @@ Evaluation is intended to be usable during listing creation UX. The security con
 
 ### Where it appears
 
-The recommendation prompt is shown on the “New Item” page when:
+The recommendation prompt is shown on the â€œNew Itemâ€ page when:
 
 - the user selects `ListingType.GIVE`
 - the user has entered a non-trivial title + category
@@ -203,3 +203,17 @@ There is an integration test that boots Spring with an in-memory H2 database and
 - **Transaction typing**: current decision uses `Listing.type` as the primary SELL/LEND/GIVE signal; a more accurate approach is to persist a transaction outcome type on `Transaction`.
 - **Better candidate search**: replace the title keyword heuristic with a proper search strategy (tokenization, trigram similarity, or full-text search).
 - **Batch model refresh**: use scheduled rebuilds or incremental updates instead of rebuilding on-demand.
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
+

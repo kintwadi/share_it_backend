@@ -1,4 +1,4 @@
-# User Guide (Frontend Usage)
+﻿# User Guide (Frontend Usage)
 
 This guide describes how to use the Vicinity24 frontend, including the dedicated admin and partner connect flows.
 
@@ -75,7 +75,7 @@ Partner signup (creates a partner + partner admin user):
    - Pricing (for standard listings)
    - Borrow action
 
-Partner-owned listings are displayed like standard listings but are treated as “offline payment” listings in the borrow flow.
+Partner-owned listings are displayed like standard listings but are treated as â€œoffline paymentâ€ listings in the borrow flow.
 
 ## Creating and Managing Listings (Regular Users)
 
@@ -106,15 +106,15 @@ Standard listings go through the checkout/escrow-aware flow.
    - Cash
    - Free (only if total is 0)
 5. Confirm request / payment.
-6. The listing moves to a pending/approved state depending on the listing’s auto-approve setting:
+6. The listing moves to a pending/approved state depending on the listingâ€™s auto-approve setting:
    - `PENDING`: waiting for the lender to approve
-   - `APPROVED`: approved, but not yet ready for pickup (you will be notified once it’s ready)
+   - `APPROVED`: approved, but not yet ready for pickup (you will be notified once itâ€™s ready)
 7. When the lender marks the item as ready, the listing becomes `READY_FOR_PICKUP` and the borrower is notified (in-app + email).
 8. Once the borrower picks up the item, either party can confirm pickup. The listing becomes `WAITING_FOR_RETURN` and the return flow can start.
 
 If card payments are used, the app creates a Stripe payment intent and completes the transaction when the Stripe webhook confirms success.
 
-## Borrowing Flow (Partner Listings — Offline Payment)
+## Borrowing Flow (Partner Listings â€” Offline Payment)
 
 Partner listings bypass payment checkout and escrow deposit. The borrower pays/deals directly with the partner at pickup/return time.
 
@@ -135,7 +135,7 @@ When someone requests to borrow your listing:
 1. Open your dashboard.
 2. Open the listing/request details.
 3. Approve or deny the request.
-4. After approval, mark the item as ready for pickup when it’s available.
+4. After approval, mark the item as ready for pickup when itâ€™s available.
 5. Once the borrower picks up the item, either you or the borrower can confirm pickup (this enables the return flow).
 
 Auto-approve listings may skip manual approval.
@@ -151,7 +151,7 @@ Auto-approve listings may skip manual approval.
 
 The return mechanism applies to both regular and partner listings.
 
-From the listing’s return flow (available once pickup is confirmed and the listing is `WAITING_FOR_RETURN`):
+From the listingâ€™s return flow (available once pickup is confirmed and the listing is `WAITING_FOR_RETURN`):
 1. Initiate a return session.
 2. Complete return confirmation via:
    - QR scan (borrower/lender scans codes), or
@@ -210,4 +210,18 @@ Capabilities (depending on enabled UI):
 - View subscriptions and disputes
 - Manage return disputes (accept/reopen)
 - View reported listings/users via reports
-- Edit runtime app settings (Admin → Settings)
+- Edit runtime app settings (Admin â†’ Settings)
+
+## Multi-Tenant Environment Note
+
+This project supports static database-per-tenant routing in the backend configuration layer.
+
+- Main env vars: `SETTING_USE_DEFAULT_DATABASE`, `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_URL`, `TENANT_DEFAULT_DB_USERNAME`, `TENANT_DEFAULT_DB_PASSWORD`, `TENANT_DEFAULT_DB_DRIVER`
+- Optional extra tenant examples: `TENANT_A_*`, `TENANT_B_*`
+- Legacy `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_DRIVER` variables are not required in the multi-tenant setup
+- Active tenant ids are defined by the keys under `tenants.config.*` in `src/main/resources/application.properties`; the current sample configuration uses `default`, `vicinity24_tenant_a`, and `vicinity24_tenant_b`
+- `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
+- Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
+- Full setup details live in `DOC/configuration-guide.md` and `.env.template`
+
+

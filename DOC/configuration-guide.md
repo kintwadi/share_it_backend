@@ -135,13 +135,29 @@ For a real usable environment, these are the main values the team should define.
 - `SETTINGS_HTTP_ENABLED`
 - `FRONTEND_BASE_URL`
 
-### Database
+### Database type hint
 
 - `DB_TYPE`
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `DB_DRIVER` when needed
+- Active database connections are configured through the tenant-scoped `TENANT_*_DB_*` variables below
+
+### Multi-tenant routing
+
+- `SETTING_USE_DEFAULT_DATABASE`
+- `TENANT_HEADER_NAME`
+- `TENANT_DEFAULT_ID`
+- `TENANT_DEFAULT_DB_URL`
+- `TENANT_DEFAULT_DB_USERNAME`
+- `TENANT_DEFAULT_DB_PASSWORD`
+- `TENANT_DEFAULT_DB_DRIVER`
+- optional static tenant examples such as:
+  - `TENANT_A_DB_URL`
+  - `TENANT_A_DB_USERNAME`
+  - `TENANT_A_DB_PASSWORD`
+  - `TENANT_A_DB_DRIVER`
+  - `TENANT_B_DB_URL`
+  - `TENANT_B_DB_USERNAME`
+  - `TENANT_B_DB_PASSWORD`
+  - `TENANT_B_DB_DRIVER`
 
 ### Security
 
@@ -201,11 +217,13 @@ If using the provided Postgres script, the expected credentials are:
 - user: `postgres`
 - password: `postgres`
 
-The script forces:
+The script expects the default tenant env values to point at the local database:
 
 - `DB_TYPE=postgres`
-- `DB_URL=jdbc:postgresql://localhost:5432/Vicinity24`
-- `DB_DRIVER=org.postgresql.Driver`
+- `TENANT_DEFAULT_DB_URL=jdbc:postgresql://localhost:5432/Vicinity24`
+- `TENANT_DEFAULT_DB_USERNAME=postgres`
+- `TENANT_DEFAULT_DB_PASSWORD=postgres`
+- `TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver`
 
 Reference:
 
@@ -217,9 +235,10 @@ For hosted deployments, configure:
 
 ```text
 DB_TYPE=postgres
-DB_URL=jdbc:postgresql://<host>:5432/<database>?sslmode=require
-DB_USERNAME=<username>
-DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://<host>:5432/<default_database>?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=<username>
+TENANT_DEFAULT_DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
 ```
 
 If the DB provider has IPv6-only connectivity issues, set:
@@ -227,6 +246,46 @@ If the DB provider has IPv6-only connectivity issues, set:
 ```text
 JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false
 ```
+
+### Multi-tenant database-per-tenant setup
+
+The application can now route requests to a tenant-specific physical database using the request header configured by `TENANT_HEADER_NAME`.
+
+Recommended default-preserving setup (legacy `DB_*` variables are not required):
+
+```text
+SETTING_USE_DEFAULT_DATABASE=true
+TENANT_HEADER_NAME=X-Tenant-ID
+TENANT_DEFAULT_ID=default
+TENANT_DEFAULT_DB_URL=jdbc:postgresql://<host>:5432/<default_database>?sslmode=require
+TENANT_DEFAULT_DB_USERNAME=<username>
+TENANT_DEFAULT_DB_PASSWORD=<password>
+TENANT_DEFAULT_DB_DRIVER=org.postgresql.Driver
+```
+
+Optional additional tenants:
+
+```text
+TENANT_A_DB_URL=jdbc:postgresql://<host>:5432/<tenant_a_database>?sslmode=require
+TENANT_A_DB_USERNAME=<username>
+TENANT_A_DB_PASSWORD=<password>
+TENANT_A_DB_DRIVER=org.postgresql.Driver
+
+TENANT_B_DB_URL=jdbc:postgresql://<host>:5432/<tenant_b_database>?sslmode=require
+TENANT_B_DB_USERNAME=<username>
+TENANT_B_DB_PASSWORD=<password>
+TENANT_B_DB_DRIVER=org.postgresql.Driver
+```
+
+In the current sample configuration, those environment blocks are mapped to tenant ids `vicinity24_tenant_a` and `vicinity24_tenant_b` via `tenants.config.*` keys in `application.properties`.
+
+Behavior:
+
+- if `X-Tenant-ID` is present and valid, the matching tenant database is used
+- if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=true`, the default tenant database is used
+- if the tenant header is missing and `SETTING_USE_DEFAULT_DATABASE=false`, the request is rejected cleanly
+- if the tenant header is unknown, the request is rejected cleanly
+- startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 
 ## 7. Security and JWT Setup
 
@@ -579,6 +638,10 @@ For the fastest successful local setup:
    - `JWT_SECRET`
    - `ENCRYPTION_KEY`
    - `FRONTEND_BASE_URL`
+   - `SETTING_USE_DEFAULT_DATABASE`
+   - `TENANT_HEADER_NAME`
+   - `TENANT_DEFAULT_ID`
+   - `TENANT_DEFAULT_DB_*`
    - Stripe keys if payments must work
    - `LOCATION_IQ_API_KEY` if address search must work
 5. Start backend with:
@@ -600,6 +663,7 @@ For the fastest successful local setup:
 1. Provision PostgreSQL
 2. Configure all required environment variables
 3. Set `FRONTEND_BASE_URL` to the real frontend URL
+4. Configure `TENANT_HEADER_NAME`, `TENANT_DEFAULT_ID`, `TENANT_DEFAULT_DB_*`, and any extra `TENANT_A_*` / `TENANT_B_*` values
 4. Set real Stripe live keys
 5. Enable Stripe Connect
 6. Configure Stripe webhook endpoint
@@ -629,6 +693,7 @@ Check:
 - backend is running on `8081`
 - frontend proxy is active
 - browser console/network for CORS or TLS issues
+- if multi-tenant routing is enabled, confirm the request carries a valid `X-Tenant-ID` when you are not relying on the default database
 
 ### Stripe payments fail
 

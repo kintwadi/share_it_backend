@@ -1,0 +1,29 @@
+<article
+  class="bike-card"
+  [style.--brand-accent]="theme.accent"
+  [style.--brand-soft]="theme.soft"
+  [style.--brand-deep]="theme.deep"
+  [style.--brand-muted]="theme.muted">
+  <div class="card-media">
+    <img [src]="bike.imageUrl" [alt]="bike.title" />
+  </div>
+
+  <div class="card-copy">
+    <div class="card-topline">
+      <span class="manufacturer">{{ manufacturer }}</span>
+      <span class="badge">{{ bike.availabilityBadge }}</span>
+    </div>
+    <p class="category">{{ bike.category }}</p>
+    <h3>{{ modelLine }}</h3>
+    <p class="teaser">{{ bike.teaser }}</p>
+
+    <div class="card-meta">
+      <div>
+        <span>{{ 'card.retailPrice' | t }}</span>
+        <strong>{{ bike.retailPrice | currency:'EUR' }}</strong>
+      </div>
+    </div>
+
+    <a [routerLink]="['/fahrad-fuchs/bikes', bike.slug]">{{ 'card.exploreBike' | t }}</a>
+  </div>
+</article>

@@ -24,10 +24,10 @@
            </p>
            </ng-container>
 
-           <div *ngIf="locationDenied && borrowerLat == null && borrowerLng == null" class="mb-3 text-xs text-white/90">
-             {{ i18n.t('home.location.denied_prompt') }}
+          <div *ngIf="locationDenied && !isLocationEnabled" class="mb-3 text-xs text-white/90">
+            {{ i18n.t('home.location.permission_failed') }}
            </div>
-           <div *ngIf="borrowerLat != null && borrowerLng != null" class="mb-3 text-xs text-white/90">
+          <div *ngIf="isLocationEnabled" class="mb-3 text-xs text-white/90">
              {{ i18n.t('home.location.searching_near_prefix') }} {{ locationSelectedLabel || i18n.t('home.location.placeholder_default') }}
            </div>
          
@@ -52,10 +52,10 @@
                </div>
                <input 
                  type="text" 
-                 [placeholder]="locationDenied && borrowerLat == null && borrowerLng == null ? i18n.t('home.location.placeholder_fallback') : i18n.t('home.location.placeholder_default')"
+                 [placeholder]="i18n.t('home.location.placeholder_default')"
                  class="w-full px-4 py-2.5 text-gray-800 placeholder-gray-400 bg-transparent focus:outline-none"
                  [(ngModel)]="locationQuery"
-                 (ngModelChange)="onSearchChange()"
+                 (ngModelChange)="onLocationInputChange($event)"
                />
             </div>
 
@@ -63,14 +63,61 @@
               class="rounded-full px-8"
               variant="primary"
               size="lg"
+              (onClick)="fetchData()"
             >
-              Search
+              {{ i18n.t('home.filters_apply') }}
             </app-button>
+         </div>
+
+         <div class="mt-4 flex flex-col md:flex-row md:items-center gap-3 text-sm">
+           <div class="flex items-center gap-2">
+             <button
+               type="button"
+               (click)="requestCurrentLocation()"
+               class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white/15 hover:bg-white/20 border border-white/20 text-white font-semibold transition-colors"
+             >
+               {{ locationLoading ? i18n.t('home.loading') : i18n.t('home.location.use_current') }}
+             </button>
+             <button
+               *ngIf="locationQuery || isLocationEnabled"
+               type="button"
+               (click)="clearLocationFilter()"
+               class="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 text-white/90 font-medium transition-colors"
+             >
+               {{ i18n.t('home.location.clear') }}
+             </button>
+           </div>
+
+           <label class="inline-flex items-center gap-2 text-white/90">
+             <span>{{ i18n.t('home.location.radius_label') }}</span>
+             <select
+               [ngModel]="searchRadiusKm"
+               (ngModelChange)="onRadiusChange($event)"
+               class="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-white focus:outline-none"
+             >
+               <option *ngFor="let radius of radiusOptions" [ngValue]="radius" class="text-gray-900">
+                 {{ radius }} km
+               </option>
+             </select>
+           </label>
+
+           <label class="inline-flex items-center gap-2 text-white/90">
+             <span>{{ i18n.t('home.filters_sort_label') }}</span>
+             <select
+               [ngModel]="sortMode"
+               (ngModelChange)="onSortChange($event)"
+               class="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-white focus:outline-none"
+             >
+               <option value="best_match" class="text-gray-900">{{ i18n.t('home.sort_best_match') }}</option>
+               <option value="nearest" class="text-gray-900">{{ i18n.t('home.sort_nearest') }}</option>
+               <option value="newest" class="text-gray-900">{{ i18n.t('home.sort_newest') }}</option>
+             </select>
+           </label>
          </div>
 
          <div class="mt-2 text-[10px] text-white/80">{{ i18n.t('home.location.osm_attrib') }}</div>
 
-         <div *ngIf="locationDenied && borrowerLat == null && borrowerLng == null && locationResults.length > 0" class="mt-3 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-3xl">
+         <div *ngIf="locationResults.length > 0" class="mt-3 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden max-w-3xl">
            <button type="button" *ngFor="let r of locationResults" (click)="onLocationSelect(r)" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-800 border-b border-gray-100 last:border-b-0">
              {{ r.displayName || (r.city + ', ' + (r.country || '')) }}
            </button>
@@ -133,6 +180,19 @@
           <lucide-icon [img]="ChevronDown" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" [size]="16"></lucide-icon>
         </div>
 
+        <div *ngIf="viewMode === 'modern'" class="relative flex-1 md:w-56">
+          <select
+            [ngModel]="sortMode"
+            (ngModelChange)="onSortChange($event)"
+            class="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm cursor-pointer hover:border-gray-300 transition-colors"
+          >
+            <option value="best_match">{{ i18n.t('home.sort_best_match') }}</option>
+            <option value="nearest">{{ i18n.t('home.sort_nearest') }}</option>
+            <option value="newest">{{ i18n.t('home.sort_newest') }}</option>
+          </select>
+          <lucide-icon [img]="ChevronDown" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" [size]="16"></lucide-icon>
+        </div>
+
         <div class="shrink-0 inline-flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm">
           <button
             type="button"
@@ -160,8 +220,11 @@
     </div>
     
     <!-- Result Count -->
-    <div *ngIf="!loading && listings.length > 0" class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-       {{ i18n.t('home.showing') }} {{ (currentPage - 1) * ITEMS_PER_PAGE + 1 }}-{{ (currentPage * ITEMS_PER_PAGE) > listings.length ? listings.length : (currentPage * ITEMS_PER_PAGE) }} {{ i18n.t('home.of') }} {{ listings.length }} {{ i18n.t('home.results') }}
+    <div *ngIf="!loading && listings.length > 0" class="flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+       <span>{{ i18n.t('home.showing') }} {{ (currentPage - 1) * ITEMS_PER_PAGE + 1 }}-{{ (currentPage * ITEMS_PER_PAGE) > listings.length ? listings.length : (currentPage * ITEMS_PER_PAGE) }} {{ i18n.t('home.of') }} {{ listings.length }} {{ i18n.t('home.results') }}</span>
+       <span *ngIf="showNearbyFirstBadge" class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] text-emerald-700">
+         {{ i18n.t('home.location.nearby_first_badge') }}
+       </span>
     </div>
   </div>
 
@@ -241,11 +304,44 @@
                 <input
                   type="text"
                   [(ngModel)]="locationQuery"
-                  (ngModelChange)="onSearchChange()"
+                  (ngModelChange)="onLocationInputChange($event)"
                   [placeholder]="i18n.t('home.location_placeholder')"
                   class="w-full pl-10 pr-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-gray-700">{{ i18n.t('home.location.radius_label') }}</label>
+              <select
+                [ngModel]="searchRadiusKm"
+                (ngModelChange)="onRadiusChange($event)"
+                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                <option *ngFor="let radius of radiusOptions" [ngValue]="radius">{{ radius }} km</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-gray-700">{{ i18n.t('home.filters_sort_label') }}</label>
+              <select
+                [ngModel]="sortMode"
+                (ngModelChange)="onSortChange($event)"
+                class="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                <option value="best_match">{{ i18n.t('home.sort_best_match') }}</option>
+                <option value="nearest">{{ i18n.t('home.sort_nearest') }}</option>
+                <option value="newest">{{ i18n.t('home.sort_newest') }}</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button type="button" (click)="requestCurrentLocation()" class="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50">
+                {{ locationLoading ? i18n.t('home.loading') : i18n.t('home.location.use_current') }}
+              </button>
+              <button type="button" (click)="clearLocationFilter()" class="px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50">
+                {{ i18n.t('home.location.clear') }}
+              </button>
             </div>
 
             <div class="space-y-2">

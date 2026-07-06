@@ -1,0 +1,305 @@
+:host {
+  display: block;
+}
+
+:host * {
+  box-sizing: border-box;
+}
+
+:host {
+  --settings-bg: #f7f9fc;
+  --settings-surface: #ffffff;
+  --settings-border: #e6eaf0;
+  --settings-border-strong: #d3dae4;
+  --settings-text: #0f172a;
+  --settings-text-muted: #64748b;
+  --settings-text-subtle: #94a3b8;
+  --settings-accent: #0d9488;
+  --settings-accent-light: #ccfbf1;
+  --settings-accent-bg: #f0fdfa;
+  --settings-success: #10b981;
+  --settings-success-bg: #ecfdf5;
+  --settings-success-border: #d1fae5;
+  --settings-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --settings-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --settings-radius-md: 12px;
+}
+
+.settings-page {
+  min-height: 100vh;
+  background: var(--settings-bg);
+  padding: 32px 16px;
+}
+
+.settings-main {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.settings-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border: none;
+  background: transparent;
+  color: var(--settings-text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.settings-back-link:hover {
+  color: var(--settings-text);
+}
+
+.settings-back-link__icon {
+  transform: rotate(180deg);
+}
+
+.settings-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.settings-page-header__kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--settings-accent);
+  margin-bottom: 6px;
+}
+
+.settings-page-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--settings-text);
+}
+
+.settings-page-header p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--settings-text-muted);
+}
+
+.settings-mobile-toggle {
+  display: none;
+  padding: 8px 14px;
+  border: 1px solid var(--settings-border);
+  border-radius: 8px;
+  background: var(--settings-surface);
+  color: var(--settings-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--settings-shadow-sm);
+}
+
+.settings-page-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.settings-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--settings-text-muted);
+}
+
+.settings-breadcrumb__sep {
+  color: var(--settings-text-subtle);
+}
+
+.settings-breadcrumb__current {
+  color: var(--settings-text);
+  font-weight: 600;
+}
+
+.settings-private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--settings-success-border);
+  background: var(--settings-success-bg);
+  color: var(--settings-success);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-private-badge__note {
+  color: var(--settings-text-muted);
+  font-weight: 400;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.settings-sidebar {
+  position: sticky;
+  top: 24px;
+  background: var(--settings-surface);
+  border: 1px solid var(--settings-border);
+  border-radius: var(--settings-radius-md);
+  padding: 12px;
+  box-shadow: var(--settings-shadow-sm);
+}
+
+.settings-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settings-sidebar__link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 2px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--settings-text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-sidebar__link:hover {
+  background: var(--settings-bg);
+  color: var(--settings-text);
+}
+
+.settings-sidebar__link.is-active {
+  background: var(--settings-accent-bg);
+  color: var(--settings-accent);
+  box-shadow: inset 3px 0 0 var(--settings-accent);
+}
+
+.settings-content-card {
+  background: var(--settings-surface);
+  border: 1px solid var(--settings-border);
+  border-radius: var(--settings-radius-md);
+  box-shadow: var(--settings-shadow-sm);
+  overflow: hidden;
+}
+
+.settings-content-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--settings-border);
+}
+
+.settings-content-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--settings-text);
+}
+
+.settings-content-header p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--settings-text-muted);
+}
+
+.settings-content-body {
+  padding: 24px 28px;
+}
+
+.settings-footer-note {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--settings-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--settings-text-muted);
+}
+
+.settings-footer-note__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--settings-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.settings-footer-note__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-sidebar {
+    position: static;
+    display: none;
+  }
+
+  .settings-sidebar.is-open {
+    display: block;
+  }
+
+  .settings-mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    padding: 20px 12px 40px;
+  }
+
+  .settings-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-page-header h1 {
+    font-size: 26px;
+  }
+
+  .settings-content-header,
+  .settings-content-body {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .settings-page-meta {
+    align-items: flex-start;
+  }
+}
