@@ -1,4 +1,4 @@
-﻿# Vicinity24 Frontend Application - Manual Test Plan
+# Vicinity24 Frontend Application - Manual Test Plan
 
 ## ðŸ“‹ Test Overview
 This document provides a comprehensive manual testing guide for the Vicinity24 frontend application. Testers should follow this plan to verify all functionalities work correctly.
@@ -292,6 +292,31 @@ This document provides a comprehensive manual testing guide for the Vicinity24 f
 - âœ… Transaction processing works
 - âœ… Receipts generated
 
+### PAY-02: Borrower Subscription Checkout
+**Objective**: Verify the active borrower subscription flow
+**Steps**:
+1. Open a lend listing as a borrower without an active borrowing subscription
+2. Choose the verified/subscription borrowing path
+3. Request the verification code and complete email verification
+4. Complete borrower subscription checkout
+5. Return to the listing booking flow and continue the borrow
+
+**Expected Results**:
+- âœ… Verification email is sent successfully
+- âœ… Stripe borrower subscription checkout opens successfully
+- âœ… User returns to the listing booking flow after checkout
+- âœ… Service fee is shown as waived for an active borrowing subscriber
+
+### PAY-03: Platform Subscription Checkout Disabled
+**Objective**: Verify the legacy platform subscription checkout cannot trigger a real Stripe session
+**Steps**:
+1. Open the legacy platform subscription flow
+2. Attempt to start paid platform checkout
+
+**Expected Results**:
+- âœ… No real Stripe checkout session is created
+- âœ… The API responds that platform subscription checkout is disabled
+
 ## ðŸ“± RESPONSIVE DESIGN TESTS
 
 ### RESP-01: Mobile Responsiveness
@@ -495,5 +520,4 @@ This project supports static database-per-tenant routing in the backend configur
 - `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
 - Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
-
 

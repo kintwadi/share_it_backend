@@ -13,6 +13,8 @@ import { I18nService } from '../../core/services/i18n.service';
   styleUrl: './subscription-upgrade.component.css'
 })
 export class SubscriptionUpgradeComponent implements OnInit {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // This upgrade screen belongs to the legacy platform/lender plan model.
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);

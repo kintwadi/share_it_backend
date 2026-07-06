@@ -37,18 +37,30 @@
       <aside class="settings-sidebar" [class.is-open]="sidebarOpen">
         <nav [attr.aria-label]="i18n.t('settings.sidebar_aria')">
           <ul class="settings-sidebar__list">
-            <li *ngFor="let tab of visibleTabs">
-              <button
-                type="button"
-                (click)="handleTabClick(tab.id)"
-                class="settings-sidebar__link"
-                [class.is-active]="activeTab === tab.id"
-                [attr.aria-current]="activeTab === tab.id ? 'page' : null"
-              >
-                <lucide-icon [img]="getTabIcon(tab.id)" [size]="18"></lucide-icon>
-                <span>{{ i18n.t(tab.labelKey) }}</span>
-              </button>
-            </li>
+            <ng-container *ngFor="let tab of visibleTabs">
+              <li>
+                <button
+                  type="button"
+                  (click)="handleTabClick(tab.id)"
+                  class="settings-sidebar__link"
+                  [class.is-active]="activeTab === tab.id"
+                  [attr.aria-current]="activeTab === tab.id ? 'page' : null"
+                >
+                  <lucide-icon [img]="getTabIcon(tab.id)" [size]="18"></lucide-icon>
+                  <span>{{ i18n.t(tab.labelKey) }}</span>
+                </button>
+              </li>
+              <li *ngIf="tab.id === 'payments' && showBorrowingSubscriptionUnsubscribe">
+                <button
+                  type="button"
+                  (click)="openBorrowingSubscriptionUnsubscribe()"
+                  class="settings-sidebar__link settings-sidebar__link--danger"
+                >
+                  <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
+                  <span>{{ i18n.t('settings.borrowing_subscription.unsubscribe_sidebar') }}</span>
+                </button>
+              </li>
+            </ng-container>
           </ul>
         </nav>
       </aside>

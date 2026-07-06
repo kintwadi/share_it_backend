@@ -16,6 +16,7 @@ import java.util.UUID;
 public class ReviewDTO {
     private UUID id;
     private UUID authorId;
+    private String reviewerName;
     private UUID targetUserId;
     private UUID listingId;
     private int rating;

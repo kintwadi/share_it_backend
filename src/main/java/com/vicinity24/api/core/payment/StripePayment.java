@@ -5,24 +5,27 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Account;
 import com.stripe.model.AccountLink;
+import com.stripe.model.Customer;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
-import com.stripe.model.Customer;
 import com.stripe.model.PaymentMethod;
 import com.stripe.model.Price;
 import com.stripe.model.Product;
 import com.stripe.model.Refund;
+import com.stripe.model.SubscriptionCollection;
 import com.stripe.model.Transfer;
 import com.stripe.net.Webhook;
 import com.stripe.param.AccountCreateParams;
 import com.stripe.param.AccountLinkCreateParams;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.CustomerListParams;
 import com.stripe.param.PriceCreateParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.ProductCreateParams;
 import com.stripe.param.RefundCreateParams;
+import com.stripe.param.SubscriptionListParams;
 import com.stripe.param.TransferCreateParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -440,6 +443,18 @@ public class StripePayment implements PaymentStrategy {
             String customerEmail,
             String userId
     ) {
+        return createSubscriptionCheckoutSession(priceId, trialDays, successUrl, cancelUrl, customerEmail, userId, java.util.Map.of());
+    }
+
+    public Session createSubscriptionCheckoutSession(
+            String priceId,
+            int trialDays,
+            String successUrl,
+            String cancelUrl,
+            String customerEmail,
+            String userId,
+            java.util.Map<String, String> metadata
+    ) {
         if (priceId == null || priceId.isEmpty()) {
             throw new IllegalArgumentException("priceId must be configured");
         }
@@ -452,18 +467,26 @@ public class StripePayment implements PaymentStrategy {
 
             SessionCreateParams.SubscriptionData.Builder subscriptionDataBuilder = SessionCreateParams.SubscriptionData.builder()
                     .putMetadata("app_user_id", userId);
+            if (metadata != null) {
+                metadata.forEach(subscriptionDataBuilder::putMetadata);
+            }
 
             if (trialDays > 0) {
                 subscriptionDataBuilder.setTrialPeriodDays((long) trialDays);
             }
 
+            String successSeparator = successUrl != null && successUrl.contains("?") ? "&" : "?";
+
             SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                    .setSuccessUrl(successUrl + "?session_id={CHECKOUT_SESSION_ID}")
+                    .setSuccessUrl(successUrl + successSeparator + "session_id={CHECKOUT_SESSION_ID}")
                     .setCancelUrl(cancelUrl)
                     .addLineItem(lineItem)
                     .setSubscriptionData(subscriptionDataBuilder.build())
                     .putMetadata("app_user_id", userId);  // Also set on session for webhook access during checkout
+            if (metadata != null) {
+                metadata.forEach(paramsBuilder::putMetadata);
+            }
 
             if (customerEmail != null && !customerEmail.isEmpty()) {
                 paramsBuilder.setCustomerEmail(customerEmail);
@@ -482,6 +505,55 @@ public class StripePayment implements PaymentStrategy {
         } catch (com.stripe.exception.StripeException e) {
             String msg = e.getUserMessage() != null && !e.getUserMessage().isBlank() ? e.getUserMessage() : e.getMessage();
             throw new RuntimeException("Failed to retrieve Stripe session: " + msg, e);
+        }
+    }
+
+    public com.stripe.model.Subscription findLatestSubscriptionByCustomerEmail(String customerEmail, List<String> allowedPriceIds) {
+        if (customerEmail == null || customerEmail.isBlank()) return null;
+        List<String> normalizedPriceIds = allowedPriceIds == null
+                ? List.of()
+                : allowedPriceIds.stream().filter(this::isConfigured).distinct().toList();
+        if (normalizedPriceIds.isEmpty()) return null;
+
+        Stripe.apiKey = secretKey;
+        try {
+            CustomerListParams customerParams = CustomerListParams.builder()
+                    .setEmail(customerEmail)
+                    .setLimit(10L)
+                    .build();
+            List<Customer> customers = Customer.list(customerParams).getData();
+            com.stripe.model.Subscription latest = null;
+            long latestCreated = Long.MIN_VALUE;
+
+            for (Customer customer : customers) {
+                if (customer == null || !isConfigured(customer.getId())) continue;
+                SubscriptionListParams subscriptionParams = SubscriptionListParams.builder()
+                        .setCustomer(customer.getId())
+                        .setLimit(20L)
+                        .build();
+                SubscriptionCollection subscriptions = com.stripe.model.Subscription.list(subscriptionParams);
+                for (com.stripe.model.Subscription subscription : subscriptions.getData()) {
+                    if (subscription == null
+                            || subscription.getItems() == null
+                            || subscription.getItems().getData() == null
+                            || subscription.getItems().getData().isEmpty()) {
+                        continue;
+                    }
+                    String priceId = subscription.getItems().getData().get(0).getPrice() != null
+                            ? subscription.getItems().getData().get(0).getPrice().getId()
+                            : null;
+                    if (!normalizedPriceIds.contains(priceId)) continue;
+                    long created = subscription.getCreated() != null ? subscription.getCreated() : Long.MIN_VALUE;
+                    if (latest == null || created > latestCreated) {
+                        latest = subscription;
+                        latestCreated = created;
+                    }
+                }
+            }
+            return latest;
+        } catch (StripeException e) {
+            String msg = e.getUserMessage() != null && !e.getUserMessage().isBlank() ? e.getUserMessage() : e.getMessage();
+            throw new RuntimeException("Failed to find Stripe subscription by email: " + msg, e);
         }
     }
 

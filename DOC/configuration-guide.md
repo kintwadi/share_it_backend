@@ -504,17 +504,23 @@ If no connected account exists, release may fail with:
 
 ## 14. Subscription Stripe Configuration
 
-If subscription features are used, configure:
+If subscription-related Stripe features are used, configure:
 
 - `STRIPE_PUBLIC_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 
-Then provision the recurring subscription catalog from the admin API:
+Current state:
+
+- Borrower subscription checkout is active and uses Stripe.
+- Legacy platform/lender subscription checkout under `/api/subscriptions/create-checkout-session` is intentionally disabled in the API to prevent accidental live billing.
+- The platform subscription code remains in place, but the real checkout-session creation call is commented out on purpose.
+
+Then provision the recurring subscription catalog from the admin API if borrower subscription checkout needs a Stripe price:
 
 - `POST /api/admin/stripe/provision-subscriptions`
 
-The application can also auto-provision the missing Stripe subscription price during the first paid subscription checkout if no price ID is stored yet.
+The application can also auto-provision the missing Stripe subscription price during borrower subscription checkout if no price ID is stored yet.
 
 Optional request body:
 
@@ -533,7 +539,7 @@ What this does:
 - creates the Stripe `Product` and recurring monthly `Price` for `plus`
 - creates the Stripe `Product` and recurring monthly `Price` for `pro`
 - stores the generated price IDs in the runtime settings database
-- allows the checkout flow to use those stored values immediately
+- allows the borrower subscription checkout flow to use those stored values immediately
 
 Diagnostics endpoint:
 
@@ -544,8 +550,10 @@ Important notes:
 - the provisioning endpoint is admin-only
 - it reuses the currently stored Stripe price ID when it already matches the requested amount, currency, and interval
 - it creates a new Stripe price only when the stored one is missing or no longer matches
-- the subscription checkout flow can trigger the same provisioning logic automatically when a paid user starts checkout and no price ID exists yet
+- the borrower subscription checkout flow can trigger the same provisioning logic automatically when a user starts checkout and no price ID exists yet
 - Stripe Connect onboarding is separate from subscription catalog provisioning
+- borrower subscription currently reuses the `subscription.plus.*` runtime settings and Stripe price configuration
+- do not expect `/api/subscriptions/create-checkout-session` to open a real Stripe checkout session while platform subscription remains disabled
 
 ## 15. Storage Configuration
 

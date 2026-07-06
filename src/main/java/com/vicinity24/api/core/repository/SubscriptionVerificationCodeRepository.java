@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,12 @@ public interface SubscriptionVerificationCodeRepository extends JpaRepository<Su
     @Query("SELECT c FROM SubscriptionVerificationCode c WHERE c.user = :user AND c.used = false AND c.expiryDate > :now")
     Optional<SubscriptionVerificationCode> findActiveCodeForUser(@Param("user") User user, @Param("now") LocalDateTime now);
 
+    @Query("SELECT c FROM SubscriptionVerificationCode c WHERE c.user = :user AND c.code = :code ORDER BY c.expiryDate DESC")
+    List<SubscriptionVerificationCode> findAllByUserAndCodeOrderByExpiryDateDesc(@Param("user") User user, @Param("code") String code);
+
+    @Query("SELECT c FROM SubscriptionVerificationCode c WHERE c.user = :user AND c.used = false AND c.expiryDate > :now ORDER BY c.expiryDate DESC")
+    List<SubscriptionVerificationCode> findActiveCodesForUser(@Param("user") User user, @Param("now") LocalDateTime now);
+
     @Modifying
     @Query("DELETE FROM SubscriptionVerificationCode c WHERE c.user = :user")
     void deleteAllForUser(@Param("user") User user);
@@ -29,4 +36,3 @@ public interface SubscriptionVerificationCodeRepository extends JpaRepository<Su
     @Query("DELETE FROM SubscriptionVerificationCode c WHERE c.expiryDate < :now")
     void deleteExpired(@Param("now") LocalDateTime now);
 }
-

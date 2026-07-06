@@ -12,6 +12,8 @@ import { I18nService } from '../../core/services/i18n.service';
   styleUrl: './subscription-required.component.css'
 })
 export class SubscriptionRequiredComponent {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // This guard screen is shown for the legacy platform/lender subscription rules.
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   i18n = inject(I18nService);

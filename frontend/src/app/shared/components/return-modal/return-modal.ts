@@ -222,7 +222,24 @@ export class ReturnModalComponent implements OnInit, OnDestroy {
           this.complete.emit();
         }
         return;
-      } catch { }
+      } catch {
+        try {
+          const refreshed = await this.api.getListingById(item.id);
+          this.item = refreshed;
+          if (refreshed?.status === AvailabilityStatus.AVAILABLE) {
+            await this.setSession(null);
+            this.error = null;
+            this.notice = null;
+            this.complete.emit();
+            return;
+          }
+          if (refreshed?.status === AvailabilityStatus.DISPUTED) {
+            await this.setSession(null);
+            this.error = this.i18n.t('return.error.disputed');
+            return;
+          }
+        } catch { }
+      }
 
       const created = await this.api.initiateReturnSession(item.id);
       await this.setSession(created);

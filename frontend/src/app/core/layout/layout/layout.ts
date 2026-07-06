@@ -119,7 +119,9 @@ export class Layout {
   });
 
   constructor() {
-    this.session.refresh();
+    if (!this.shouldSkipSessionRefresh(this.router.url || '')) {
+      this.session.refresh();
+    }
     this.settingsConfig.ensureLoaded();
     effect(() => {
       if (!this.showNotificationsBell()) {
@@ -146,9 +148,16 @@ export class Layout {
         this.isProfileDropdownOpen.set(false);
         this.isNotifDropdownOpen.set(false);
         if (!this.currentUser() && !!this.session.user()) return;
-        this.session.refresh();
+        if (!this.shouldSkipSessionRefresh(url)) {
+          this.session.refresh();
+        }
       }, 0);
     });
+  }
+
+  private shouldSkipSessionRefresh(url: string): boolean {
+    const normalizedUrl = String(url || '');
+    return normalizedUrl.startsWith('/verification/email');
   }
 
   toggleMenu() {

@@ -1,4 +1,4 @@
-﻿# User Guide (Frontend Usage)
+# User Guide (Frontend Usage)
 
 This guide describes how to use the Vicinity24 frontend, including the dedicated admin and partner connect flows.
 
@@ -173,16 +173,30 @@ Partner listings do not use these payment steps for borrower checkout.
 
 Subscription availability is controlled by runtime settings (`settings.enable.subscription`).
 
-When subscriptions are enabled:
-1. Go to `/subscription`.
-2. Choose a plan (starter/plus/pro depending on configuration).
-3. Verify email code if prompted.
-4. Complete checkout (Stripe) for paid plans.
-5. Return to `/dashboard`.
+Current app behavior:
 
-When subscriptions are disabled:
-- The app does not require a subscription to use protected flows.
-- A service fee can be applied to every `LEND` checkout using `settings.service.fee` (configured by admins).
+- The active paid subscription flow for borrowers lives inside the borrowing journey.
+- The legacy platform subscription pages still exist, but real paid platform checkout is intentionally disabled.
+
+### Borrowing subscription
+
+1. Open a lend listing.
+2. Choose the verified/subscription borrowing option when shown.
+3. Request and enter the email verification code.
+4. Complete borrower subscription checkout in Stripe.
+5. Return to the listing booking flow and finish the borrow request.
+
+What changes after activation:
+
+- The borrower can use the verified path directly.
+- The service fee is waived for subscribed borrowing and is not included in the total.
+- The waived fee is still shown in the UI with a strike-through for clarity.
+
+### Platform subscription (currently disabled)
+
+- The `/subscription` flow is the legacy platform/lender subscription area.
+- Paid platform checkout is disabled on purpose, so it should not start a real Stripe subscription session.
+- If platform subscription is disabled globally, admins can still apply the configured fixed lend service fee for non-subscribed borrowers.
 
 ## Messaging
 
@@ -223,5 +237,4 @@ This project supports static database-per-tenant routing in the backend configur
 - `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
 - Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
-
 

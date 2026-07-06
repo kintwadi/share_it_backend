@@ -12,9 +12,15 @@ import lombok.Data;
 public class SettingsProperties {
     @Data
     public static class EnableConfig {
+        @Data
+        public static class BorrowingEnableConfig {
+            private boolean subscription = true;
+        }
+
         private boolean enterprise = false;
         private boolean subscription = true;
         private boolean sell = false;
+        private BorrowingEnableConfig borrowing = new BorrowingEnableConfig();
     }
 
     @Data
