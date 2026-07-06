@@ -51,6 +51,7 @@ public class ListingService {
     private final ReturnSessionRepository returnSessionRepository;
     private final ReportRepository reportRepository;
     private final ReviewRepository reviewRepository;
+    private final BorrowerSubscriptionService borrowerSubscriptionService;
     private final SubscriptionService subscriptionService;
     private final TrustScoreService trustScoreService;
     private final RuntimeSettingsService runtimeSettingsService;
@@ -70,6 +71,7 @@ public class ListingService {
             ReturnSessionRepository returnSessionRepository,
             ReportRepository reportRepository,
             ReviewRepository reviewRepository,
+            BorrowerSubscriptionService borrowerSubscriptionService,
             SubscriptionService subscriptionService,
             TrustScoreService trustScoreService,
             RuntimeSettingsService runtimeSettingsService,
@@ -86,6 +88,7 @@ public class ListingService {
         this.returnSessionRepository = returnSessionRepository;
         this.reportRepository = reportRepository;
         this.reviewRepository = reviewRepository;
+        this.borrowerSubscriptionService = borrowerSubscriptionService;
         this.subscriptionService = subscriptionService;
         this.trustScoreService = trustScoreService;
         this.runtimeSettingsService = runtimeSettingsService;
@@ -598,8 +601,14 @@ public class ListingService {
         totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
 
         String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
+        boolean borrowerCanBorrowDirectly = borrowerSubscriptionService != null && borrowerSubscriptionService.canBorrowDirectly(borrower);
+        if (borrowerCanBorrowDirectly) {
+            borrowerPath = "VERIFIED";
+        }
         boolean subscriptionEnabled = subscriptionService == null || subscriptionService.isSubscriptionEnabled();
-        if (l.getType() == ListingType.LEND && !subscriptionEnabled) {
+        if (borrowerCanBorrowDirectly) {
+            serviceFee = BigDecimal.ZERO.setScale(2, java.math.RoundingMode.HALF_UP);
+        } else if (l.getType() == ListingType.LEND && !subscriptionEnabled) {
             BigDecimal fixed = BigDecimal.valueOf(runtimeSettingsService != null ? runtimeSettingsService.getDouble("settings.service.fee", 2.99) : 2.99);
             if (fixed.compareTo(BigDecimal.ZERO) > 0) {
                 serviceFee = fixed.setScale(2, java.math.RoundingMode.HALF_UP);
@@ -645,7 +654,7 @@ public class ListingService {
                  .currency("USD")
                  .paymentMethod(normalizedMethod)
                  .paymentToken(request.getPaymentToken())
-                 .borrowerPath(request.getBorrowerPath())
+                 .borrowerPath(borrowerPath)
                  .timestamp(java.time.LocalDateTime.now())
                  .status("ESCROWED")
                  .build();
@@ -663,7 +672,7 @@ public class ListingService {
                  .depositAmount(depositAmount)
                  .currency("USD")
                  .paymentMethod("CASH")
-                 .borrowerPath(request.getBorrowerPath())
+                 .borrowerPath(borrowerPath)
                  .timestamp(java.time.LocalDateTime.now())
                  .status("PENDING")
                  .build();

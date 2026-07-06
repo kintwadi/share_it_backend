@@ -124,23 +124,6 @@
     </div>
   </div>
 
-  <button
-    *ngIf="subscriptionEnabled && !currentSub"
-    type="button"
-    (click)="router.navigate(['/subscription'], { queryParams: { fromUpgrade: true } })"
-    class="w-full rounded-[28px] border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-5 py-5 text-left shadow-sm transition-colors hover:from-amber-100 hover:to-yellow-100"
-  >
-    <div class="flex items-center justify-between gap-4">
-      <div>
-        <div class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700">{{ i18n.t('dash.subscription_cta') }}</div>
-        <div class="mt-1 text-sm font-bold text-amber-900">{{ i18n.t('dash.subscription_desc') }}</div>
-      </div>
-      <div class="flex h-11 w-11 items-center justify-center rounded-full border border-amber-200 bg-white text-amber-700">
-        <lucide-icon [img]="ChevronRight" size="18"></lucide-icon>
-      </div>
-    </div>
-  </button>
-
   <section *ngIf="pendingRequests.length > 0" class="space-y-4">
     <div class="flex items-center gap-3">
       <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
@@ -490,7 +473,7 @@
                   class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 inline animate-spin"></lucide-icon>
-                  {{ i18n.t('dash.mark_as_picked_up') }}
+                  {{ i18n.t('dash.start_return_process') }}
                 </button>
                 <button
                   type="button"

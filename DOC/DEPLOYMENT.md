@@ -1,6 +1,11 @@
-﻿# Docker Hub Deployment Guide
+# Docker Hub Deployment Guide
 
 This guide explains how to deploy the Vicinity24 backend application to Docker Hub.
+
+Current subscription/payment note:
+
+- Borrower subscription checkout is active and still requires valid Stripe configuration in deployed environments.
+- Legacy platform/lender subscription checkout is intentionally disabled in the API, so deployment should not rely on `/api/subscriptions/create-checkout-session` for real billing.
 
 ## Prerequisites
 
@@ -153,6 +158,7 @@ AWS_SECRET_ACCESS_KEY=your-secret-key
 # Stripe Payments
 STRIPE_PUBLIC_KEY=test_public_key
 STRIPE_SECRET_KEY=test_secret_key
+STRIPE_WEBHOOK_SECRET=test_webhook_secret
 ```
 
 ## Render (Supabase Postgres) notes
@@ -212,4 +218,3 @@ For issues with deployment, check:
 1. Docker logs: `docker logs container-name`
 2. Build logs: `docker build .`
 3. Network connectivity: `docker pull hello-world`
-

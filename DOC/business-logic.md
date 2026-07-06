@@ -1,4 +1,4 @@
-﻿# Vicinity24 Business Logic Documentation
+# Vicinity24 Business Logic Documentation
 
 This document outlines the core business logic and rules implemented in the Vicinity24 backend application.
 
@@ -55,16 +55,22 @@ When a user wants to borrow an item:
 1. **Cost Calculation**:
    - `Base Cost` = `Hourly Rate` * `Duration (hours)` (time-based listings)
    - Borrowing paths can add extra amounts:
-     - `VERIFIED`: no extra amount
+     - `VERIFIED`: no extra amount when the borrower already has an active borrowing subscription
      - `DEPOSIT`: adds a fixed deposit (currently `50.00`)
      - `FEE`: adds a service fee (currently `8%` of base cost)
-   - Subscription-disabled rule (runtime setting):
-     - If `settings.enable.subscription=false` and the listing type is `LEND`, a fixed service fee is added:
+   - Borrower subscription rule:
+     - If the borrower has an active borrowing subscription, the borrow path is forced to `VERIFIED`
+     - In that case the service fee is waived in the UI and enforced as `0.00` in the backend
+   - Platform-subscription-disabled rule (runtime setting):
+     - If `settings.enable.subscription=false` and the listing type is `LEND`, a fixed service fee can be added for non-subscribed borrowers:
        - `settings.service.fee` (default `2.99`)
    - `Total Amount` = `Base Cost` + `Service Fee` + `Deposit`
 2. **Payment Processing**:
    - If `Total Amount > 0` and method is not "CASH", a payment is processed via `PaymentManager`.
    - Supported methods: Card, etc.
+   - Borrower subscription Stripe checkout is separate from listing checkout:
+     - it activates the borrowing subscription
+     - it then returns the user to finish the actual borrow flow for the selected listing
 3. **Approval**:
    - If `autoApprove` is true, the request is automatically accepted.
    - Otherwise, the owner must manually approve (logic implicit in status flow).
@@ -126,5 +132,4 @@ This project supports static database-per-tenant routing in the backend configur
 - `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
 - Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
-
 

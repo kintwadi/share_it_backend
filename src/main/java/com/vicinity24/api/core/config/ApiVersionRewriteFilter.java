@@ -7,12 +7,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiVersionRewriteFilter extends OncePerRequestFilter {
+    private static final Logger log = LoggerFactory.getLogger(ApiVersionRewriteFilter.class);
 
     @Value("${api.version:v1}")
     private String apiVersion;
@@ -32,6 +35,9 @@ public class ApiVersionRewriteFilter extends OncePerRequestFilter {
         String versionedPrefix = "/api/" + v;
         if (path.equals(versionedPrefix) || path.startsWith(versionedPrefix + "/")) {
             String newPath = "/api" + path.substring(versionedPrefix.length());
+            if (path.contains("/borrower-subscription/")) {
+                log.info("Rewriting versioned borrower path: original={}, rewritten={}", path, newPath);
+            }
             HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
                 @Override
                 public String getRequestURI() {
@@ -55,4 +61,3 @@ public class ApiVersionRewriteFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
-

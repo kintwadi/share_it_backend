@@ -18,9 +18,10 @@ public class SubscriptionDTO {
     private UUID id;
     private String planType;
     private String status;
+    private Boolean active;
+    private Boolean borrowDirectly;
     private LocalDateTime trialStart;
     private LocalDateTime trialEnd;
     private Integer autoChargeAmountCents;
     private LocalDateTime autoChargeDate;
 }
-

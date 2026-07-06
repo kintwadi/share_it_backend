@@ -1,4 +1,4 @@
-﻿# API Contract (Vicinity24)
+# API Contract (Vicinity24)
 
 This document describes the REST API exposed by the Vicinity24 backend.
 
@@ -454,13 +454,22 @@ Base path: `/api/payments`
     - `payment_intent.succeeded` (finalizes listing transaction)
     - `checkout.session.completed` + subscription events
     - `invoice.payment_succeeded`
+  - Notes:
+    - Borrower subscription Stripe returns are active and use the borrower subscription endpoints below.
+    - Legacy platform subscription checkout is intentionally disabled, so `/api/subscriptions/create-checkout-session` should not be used to trigger a real Stripe session.
 
 ## Subscriptions
 
 Base path: `/api/subscriptions`
 
+Notes:
+
+- This is the legacy platform/lender subscription API surface.
+- Platform subscription checkout is currently disabled on purpose to avoid accidental real Stripe billing.
+- Borrower subscription uses a separate API namespace: `/api/borrower-subscription`.
+
 - `GET /api/subscriptions/config`
-  - Response: `{ "starter": true, "plus": true, "pro": true }`
+  - Response: `{ "enabled": true, "starter": true, "plus": true, "pro": true }`
 
 - `POST /api/subscriptions/send-code`
   - Body: `SendSubscriptionCodeRequest` (optional)
@@ -475,7 +484,11 @@ Base path: `/api/subscriptions`
 
 - `POST /api/subscriptions/create-checkout-session`
   - Body: `{ "planType": "plus|pro", "returnPath": "/dashboard" }` (optional)
-  - Response: `{ "sessionId": "cs_...", "url": "https://checkout.stripe.com/..." }`
+  - Current behavior: returns `503 Service Unavailable`
+  - Error: `{ "error": "platform_subscription_checkout_disabled" }`
+  - Notes:
+    - The real Stripe checkout creation code is intentionally commented/disabled in the API.
+    - Keep this endpoint documented because the rest of the platform subscription flow still exists in code.
 
 - `POST /api/subscriptions/sync-session`
   - Body: `{ "sessionId": "cs_..." }`
@@ -500,6 +513,41 @@ Base path: `/api/subscriptions`
 - `POST /api/subscriptions/upgrade/confirm`
   - Body: `{ "newPlan": "plus|pro" }`
   - Response: `SubscriptionDTO`
+
+## Borrower Subscription
+
+Base path: `/api/borrower-subscription`
+
+Notes:
+
+- This is the active subscription flow used during borrowing.
+- It is separate from the legacy platform/lender subscription flow under `/api/subscriptions`.
+- The borrower flow can send the user through email verification and Stripe checkout, then return to the listing booking flow.
+
+- `GET /api/borrower-subscription/me`
+  - Response: borrower subscription status object or `204 No Content`
+
+- `POST /api/borrower-subscription/send-code`
+  - Body: `{ "language": "en|pt|de" }` (optional)
+  - Response: `{ "status": "ok" }`
+
+- `POST /api/borrower-subscription/verify-code`
+  - Body: `{ "code": "string" }`
+  - Response: `{ "status": "verified" }`
+
+- `POST /api/borrower-subscription/create-checkout-session`
+  - Body: `{ "returnPath": "/listing/{id}?borrower_subscription=1" }` (optional)
+  - Response: `{ "sessionId": "cs_...", "url": "https://checkout.stripe.com/..." }`
+  - Notes:
+    - This checkout path is active.
+    - Success/cancel URLs return into the Angular hash-routed app.
+
+- `POST /api/borrower-subscription/sync-session`
+  - Body: `{ "sessionId": "cs_..." }`
+  - Response: `{ "status": "synced", "stripeSubscriptionId": "...", "stripeStatus": "..." }`
+
+- `POST /api/borrower-subscription/unsubscribe`
+  - Response: `{ "status": "canceled" }`
 
 ## Messaging
 
@@ -705,5 +753,4 @@ This project supports static database-per-tenant routing in the backend configur
 - `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
 - Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
-
 

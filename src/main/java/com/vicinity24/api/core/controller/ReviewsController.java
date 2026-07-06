@@ -25,7 +25,16 @@ public class ReviewsController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ReviewDTO>> getForUser(@PathVariable("userId") UUID userId) {
-        return ResponseEntity.ok(reviewService.getForUser(userId).stream().map(r -> ReviewDTO.builder().id(r.getId()).authorId(r.getAuthor().getId()).targetUserId(r.getTargetUser().getId()).listingId(r.getListing().getId()).rating(r.getRating()).comment(r.getComment()).timestamp(r.getTimestamp().toString()).build()).toList());
+        return ResponseEntity.ok(reviewService.getForUser(userId).stream().map(r -> ReviewDTO.builder()
+                .id(r.getId())
+                .authorId(r.getAuthor().getId())
+                .reviewerName(resolveReviewerName(r.getAuthor()))
+                .targetUserId(r.getTargetUser().getId())
+                .listingId(r.getListing().getId())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .timestamp(r.getTimestamp().toString())
+                .build()).toList());
     }
 
     @PostMapping("/")
@@ -36,6 +45,24 @@ public class ReviewsController {
         int rating = (int) payload.get("rating");
         String comment = (String) payload.get("comment");
         var r = reviewService.create(targetUserId, listingId, author, rating, comment);
-        return ResponseEntity.ok(ReviewDTO.builder().id(r.getId()).authorId(r.getAuthor().getId()).targetUserId(r.getTargetUser().getId()).listingId(r.getListing().getId()).rating(r.getRating()).comment(r.getComment()).timestamp(r.getTimestamp().toString()).build());
+        return ResponseEntity.ok(ReviewDTO.builder()
+                .id(r.getId())
+                .authorId(r.getAuthor().getId())
+                .reviewerName(resolveReviewerName(r.getAuthor()))
+                .targetUserId(r.getTargetUser().getId())
+                .listingId(r.getListing().getId())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .timestamp(r.getTimestamp().toString())
+                .build());
+    }
+
+    private String resolveReviewerName(User author) {
+        if (author == null) return "Member";
+        String displayName = author.getDisplayName();
+        if (displayName != null && !displayName.isBlank()) return displayName;
+        String name = author.getName();
+        if (name != null && !name.isBlank()) return name;
+        return "Member";
     }
 }

@@ -43,6 +43,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   digits: string[] = ['', '', '', ''];
   userEmail = '';
   flow: 'subscription' | 'signup' = 'subscription';
+  subscriptionScope: 'platform' | 'borrower' = 'platform';
+  bookingListingId = '';
+  bookingFrom = '';
   verificationToken = '';
   subscriptionCodeAlreadySent = false;
   loading = true;
@@ -71,6 +74,8 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       case 'verification_code_already_used':
         return this.i18n.t('verification.email.invalid_code');
       case 'subscription_disabled':
+      case 'borrower_subscription_disabled':
+      case 'borrower_subscription_plan_disabled':
         return this.i18n.t('subscription.disabled');
       default:
         return raw || this.i18n.t('verification.email.invalid_code');
@@ -83,6 +88,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.plan = initParams['plan'] || 'plus';
     const initFlow = String(initParams['flow'] || '').toLowerCase();
     this.flow = initFlow === 'signup' ? 'signup' : 'subscription';
+    this.subscriptionScope = String(initParams['scope'] || '').toLowerCase() === 'borrower' ? 'borrower' : 'platform';
+    this.bookingListingId = String(initParams['listingId'] || '');
+    this.bookingFrom = String(initParams['from'] || '');
     this.verificationToken = String(initParams['token'] || '');
     this.subscriptionCodeAlreadySent = String(initParams['sent'] || '').toLowerCase() === '1' || String(initParams['sent'] || '').toLowerCase() === 'true';
     const initEmail = String(initParams['email'] || '');
@@ -96,6 +104,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       this.plan = params['plan'] || this.plan;
       const flow = String(params['flow'] || '').toLowerCase();
       this.flow = flow === 'signup' ? 'signup' : 'subscription';
+      this.subscriptionScope = String(params['scope'] || '').toLowerCase() === 'borrower' ? 'borrower' : 'platform';
+      this.bookingListingId = String(params['listingId'] || this.bookingListingId || '');
+      this.bookingFrom = String(params['from'] || this.bookingFrom || '');
       this.verificationToken = String(params['token'] || this.verificationToken);
       this.subscriptionCodeAlreadySent = String(params['sent'] || '').toLowerCase() === '1' || String(params['sent'] || '').toLowerCase() === 'true';
       const email = String(params['email'] || '');
@@ -121,8 +132,13 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.subscriptionFeature.enabled()) {
+    if (!this.subscriptionFlowEnabled) {
       this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    if (this.subscriptionScope === 'borrower' && this.userEmail) {
+      await this.bootstrap();
       return;
     }
 
@@ -183,7 +199,11 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         if (!this.verificationToken) throw new Error('Missing token');
         await this.api.resendEmailVerification(this.verificationToken, this.i18n.language());
       } else {
-        await this.api.sendSubscriptionVerificationCode(this.plan, this.i18n.language());
+        if (this.subscriptionScope === 'borrower') {
+          await this.api.sendBorrowingSubscriptionVerificationCode(this.i18n.language());
+        } else {
+          await this.api.sendSubscriptionVerificationCode(this.plan, this.i18n.language());
+        }
       }
       this.sent = true;
       this.startResendCooldown(30);
@@ -244,7 +264,11 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         return;
       }
 
-      await this.api.verifySubscriptionVerificationCode(this.codeValue);
+      if (this.subscriptionScope === 'borrower') {
+        await this.api.verifyBorrowingSubscriptionVerificationCode(this.codeValue);
+      } else {
+        await this.api.verifySubscriptionVerificationCode(this.codeValue);
+      }
 
       if (this.plan === 'starter') {
         await this.api.subscribeStarter();
@@ -252,7 +276,9 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const { url, sessionId } = await this.api.createSubscriptionCheckoutSession(this.plan, '/dashboard');
+      const { url, sessionId } = this.subscriptionScope === 'borrower'
+        ? await this.api.createBorrowingSubscriptionCheckoutSession(this.borrowerBookingReturnPath)
+        : await this.api.createSubscriptionCheckoutSession(this.plan, '/dashboard');
       if (url) {
         window.location.href = url;
         return;
@@ -277,6 +303,31 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       this.router.navigate(['/connect']);
       return;
     }
+    if (this.subscriptionScope === 'borrower' && this.bookingListingId) {
+      this.router.navigate([`/listing/${encodeURIComponent(this.bookingListingId)}/book`], {
+        queryParams: this.bookingFrom ? { from: this.bookingFrom } : undefined
+      });
+      return;
+    }
     this.router.navigate(['/subscription/confirm'], { queryParams: { plan: this.plan } });
+  }
+
+  private get borrowerBookingReturnPath(): string {
+    const listingId = String(this.bookingListingId || '').trim();
+    if (!listingId) {
+      return '/dashboard?borrower_subscription=1';
+    }
+    let path = `/listing/${encodeURIComponent(listingId)}/book?borrower_subscription=1`;
+    if (this.bookingFrom) {
+      path += `&from=${encodeURIComponent(this.bookingFrom)}`;
+    }
+    return path;
+  }
+
+  private get subscriptionFlowEnabled(): boolean {
+    if (this.subscriptionScope === 'borrower') {
+      return this.settingsConfig.getBoolean('enable', 'borrowing.subscription', true);
+    }
+    return this.subscriptionFeature.enabled();
   }
 }

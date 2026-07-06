@@ -1,4 +1,4 @@
-﻿# Local Run Guide (Default HTTP)
+# Local Run Guide (Default HTTP)
 
 This guide explains how to run the Vicinity24 backend + Angular frontend locally.
 
@@ -9,6 +9,11 @@ This guide explains how to run the Vicinity24 backend + Angular frontend locally
 - Backend API base: `http://localhost:8081/api/v1`
 
 The default local port is `8081` (can be overridden via `PORT`).
+
+Subscription note:
+
+- Borrower subscription checkout is active and can be tested locally.
+- Legacy platform/lender subscription checkout is intentionally disabled in the API, so do not expect `/api/subscriptions/create-checkout-session` to open a real Stripe session.
 
 ## Backend (Local)
 
@@ -173,4 +178,3 @@ Check DevTools -> Network:
 - If you see `ERR_CERT_AUTHORITY_INVALID`, fix the certificate trust (section above).
 - If you see `CORS` errors, confirm backend is running and your frontend origin is allowed.
 - If you see `400 missing_tenant` or `400 invalid_tenant`, confirm the tenant env vars are loaded and the request header matches `TENANT_HEADER_NAME`.
-

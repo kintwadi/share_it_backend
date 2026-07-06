@@ -10,6 +10,12 @@ import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, Availa
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
 
+type PendingBorrowerBookingState = {
+  listingId: string;
+  from: string;
+  createdAt: number;
+};
+
 @Component({
   selector: 'app-listing-booking',
   standalone: true,
@@ -18,6 +24,7 @@ import { StripeClientService } from '../../core/services/stripe-client.service';
   styleUrl: './listing-booking.component.css'
 })
 export class ListingBookingComponent implements OnInit, OnDestroy {
+  private readonly pendingBorrowerBookingStorageKey = 'borrower-subscription-pending-booking';
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
@@ -45,6 +52,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   listing: Listing | null = null;
   loading = true;
   error: string | null = null;
+  currentUserEmail = '';
 
   private backTo = '/';
 
@@ -55,6 +63,8 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
   borrowing = false;
   actionError: string | null = null;
+  actionNotice: string | null = null;
+  sendingBorrowerVerification = false;
 
   stripe: Stripe | null = null;
   elements: StripeElements | null = null;
@@ -75,6 +85,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   plusTrialDays = 14;
   plusMonthlyAmountCents = 499;
   subscriptionCurrency = 'EUR';
+  borrowerCanBorrowDirectly = false;
 
   private render() {
     try {
@@ -91,6 +102,10 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
     const id = String(this.route.snapshot.paramMap.get('id') || '').trim();
     const from = String(this.route.snapshot.queryParamMap.get('from') || '').trim();
+    const sessionId = String(this.route.snapshot.queryParamMap.get('session_id') || '').trim();
+    const borrowerSubscription = String(this.route.snapshot.queryParamMap.get('borrower_subscription') || '').trim().toLowerCase();
+    const shouldResumeBorrowing = !!sessionId && (borrowerSubscription === '1' || borrowerSubscription === 'true');
+    const pendingBorrowerBooking = this.readPendingBorrowerBookingState();
     this.backTo = from.startsWith('/') ? from : `/listing/${encodeURIComponent(id)}`;
 
     if (!id) {
@@ -113,9 +128,19 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         this.router.navigate(['/connect']);
         return;
       }
+      this.currentUserEmail = String(me.email || '');
+
+      if (shouldResumeBorrowing) {
+        try {
+          await this.api.syncBorrowingSubscriptionFromSession(sessionId);
+        } catch { }
+      }
 
       try {
-        const cfg = await this.api.getPublicConfig();
+        const [cfg, subscription] = await Promise.all([
+          this.api.getPublicConfig(),
+          this.api.getCurrentBorrowingSubscription().catch(() => null)
+        ]);
         const sub = cfg?.subscription || {};
         const td = Number(sub?.plusTrialDays);
         const cents = Number(sub?.plusMonthlyAmountCents);
@@ -123,7 +148,22 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         if (!Number.isNaN(td) && td > 0) this.plusTrialDays = td;
         if (!Number.isNaN(cents) && cents >= 0) this.plusMonthlyAmountCents = cents;
         if (curr) this.subscriptionCurrency = curr;
+        this.borrowerCanBorrowDirectly = this.resolveBorrowDirectly(subscription);
+        if (shouldResumeBorrowing && this.borrowerCanBorrowDirectly && this.matchesPendingBorrowerBooking(pendingBorrowerBooking, id)) {
+          this.actionNotice = this.i18n.t('listing.booking.subscription_activated_resume_borrow');
+        }
       } catch { }
+
+      if (shouldResumeBorrowing) {
+        try {
+          await this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { session_id: null, borrower_subscription: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        } catch { }
+      }
 
       await this.initStripe();
       this.initDefaultFlow();
@@ -180,6 +220,12 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     this.selectedInsuranceType = null;
     this.insuranceZipCode = '';
     this.insuranceQuote = null;
+    if (this.shouldSkipBorrowingOptions) {
+      this.selectedPath = 'VERIFIED';
+      this.bookingStep = 'DURATION';
+      this.render();
+      return;
+    }
     this.bookingStep = 'PATH_SELECTION';
     this.render();
   }
@@ -201,9 +247,13 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     if (this.isPartnerListing) return { deposit: false, verified: false, fee: false };
     return {
       deposit: this.settingsConfig.isSectionEnabled('borrowing', 'deposit'),
-      verified: this.settingsConfig.isSectionEnabled('borrowing', 'verified'),
+      verified: this.borrowingSubscriptionEnabled && this.settingsConfig.isSectionEnabled('borrowing', 'verified'),
       fee: this.settingsConfig.isSectionEnabled('borrowing', 'fee')
     };
+  }
+
+  get borrowingSubscriptionEnabled(): boolean {
+    return this.settingsConfig.getBoolean('enable', 'borrowing.subscription', true);
   }
 
   get paymentOptions() {
@@ -225,6 +275,11 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     return 'CARD';
   }
 
+  get shouldSkipBorrowingOptions(): boolean {
+    if (this.isPartnerListing) return false;
+    return this.listing?.type === ListingType.LEND && this.borrowingSubscriptionEnabled && this.borrowerCanBorrowDirectly;
+  }
+
   private ensureValidPaymentMethod() {
     const options = this.paymentOptions;
     const currentIsAllowed =
@@ -237,6 +292,18 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     }
   }
 
+  private resolveBorrowDirectly(subscription: any): boolean {
+    if (!subscription) return false;
+    if (typeof subscription?.borrowDirectly === 'boolean') return subscription.borrowDirectly;
+    const active = typeof subscription?.active === 'boolean' ? subscription.active : false;
+    const planType = String(subscription?.planType || '').trim().toLowerCase();
+    if (active) {
+      return !!planType && planType !== 'starter';
+    }
+    const status = String(subscription?.status || '').trim().toLowerCase();
+    return !!planType && planType !== 'starter' && (status === 'active' || status === 'trialing' || status === 'trial_active');
+  }
+
   get baseTotal() {
     if (!this.listing) return 0;
     const rate = this.listing.hourlyRate || 0;
@@ -246,8 +313,17 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
   get serviceFee() {
     if (this.isPartnerListing) return 0;
+    if (this.borrowerCanBorrowDirectly) return 0;
     if (this.subscriptionDisabledLendFee > 0) return this.subscriptionDisabledLendFee;
     if (this.selectedPath !== 'FEE') return 0;
+    return Math.round(this.baseTotal * this.serviceFeeRate * 100) / 100;
+  }
+
+  get waivedServiceFee() {
+    if (this.isPartnerListing) return 0;
+    if (!this.borrowerCanBorrowDirectly) return 0;
+    if (!this.listing || this.listing.type !== ListingType.LEND) return 0;
+    if (this.subscriptionDisabledLendFee > 0) return this.subscriptionDisabledLendFee;
     return Math.round(this.baseTotal * this.serviceFeeRate * 100) / 100;
   }
 
@@ -325,13 +401,58 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     this.render();
   }
 
-  continueFromPath() {
+  async continueFromPath() {
+    if (this.sendingBorrowerVerification) {
+      return;
+    }
+    if (this.selectedPath === 'VERIFIED' && !this.borrowerCanBorrowDirectly) {
+      console.log('[borrower-flow] continueFromPath:start', {
+        listingId: this.listing?.id,
+        selectedPath: this.selectedPath,
+        borrowerCanBorrowDirectly: this.borrowerCanBorrowDirectly,
+        currentUserEmail: this.currentUserEmail,
+        backTo: this.backTo
+      });
+      this.persistPendingBorrowerBookingState();
+      this.actionError = null;
+      this.actionNotice = null;
+      this.sendingBorrowerVerification = true;
+      this.render();
+      try {
+        await this.api.sendBorrowingSubscriptionVerificationCode(this.i18n.language());
+        console.log('[borrower-flow] continueFromPath:send-code:ok');
+        console.log('[borrower-flow] continueFromPath:navigate-verification');
+        await this.router.navigate(['/verification/email'], {
+          queryParams: {
+            plan: 'verified',
+            scope: 'borrower',
+            listingId: this.listing?.id,
+            from: this.backTo,
+            email: this.currentUserEmail,
+            sent: '1'
+          }
+        });
+        return;
+      } catch (e: any) {
+        console.error('[borrower-flow] continueFromPath:send-code:error', e);
+        this.actionError = e?.message || this.i18n.t('verification.email.send_failed');
+        this.render();
+        return;
+      } finally {
+        this.sendingBorrowerVerification = false;
+      }
+    }
     this.ensureValidPaymentMethod();
     this.bookingStep = 'DURATION';
     this.render();
   }
 
   backToPath() {
+    if (this.shouldSkipBorrowingOptions) {
+      this.bookingStep = 'DURATION';
+      this.render();
+      return;
+    }
     this.bookingStep = 'PATH_SELECTION';
     this.render();
   }
@@ -472,7 +593,52 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   private navigateBackWithNotice(message: string) {
+    this.clearPendingBorrowerBookingState();
     this.router.navigateByUrl(this.backTo || '/', { state: { noticeSuccess: message } as any });
+  }
+
+  private persistPendingBorrowerBookingState() {
+    const listingId = String(this.listing?.id || '').trim();
+    if (!listingId) return;
+    const payload: PendingBorrowerBookingState = {
+      listingId,
+      from: this.backTo || '/',
+      createdAt: Date.now()
+    };
+    try {
+      localStorage.setItem(this.pendingBorrowerBookingStorageKey, JSON.stringify(payload));
+    } catch { }
+  }
+
+  private clearPendingBorrowerBookingState() {
+    try {
+      localStorage.removeItem(this.pendingBorrowerBookingStorageKey);
+    } catch { }
+  }
+
+  private readPendingBorrowerBookingState(): PendingBorrowerBookingState | null {
+    try {
+      const raw = String(localStorage.getItem(this.pendingBorrowerBookingStorageKey) || '').trim();
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as PendingBorrowerBookingState | null;
+      if (!parsed?.listingId) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private matchesPendingBorrowerBooking(state: PendingBorrowerBookingState | null, listingId: string): boolean {
+    if (!state) return false;
+    if (String(state.listingId || '').trim() !== String(listingId || '').trim()) {
+      return false;
+    }
+    const createdAt = Number(state.createdAt || 0);
+    if (!Number.isFinite(createdAt) || createdAt <= 0) {
+      return false;
+    }
+    const ageMs = Date.now() - createdAt;
+    return ageMs >= 0 && ageMs <= 1000 * 60 * 60 * 6;
   }
 
   private async confirmRequest() {

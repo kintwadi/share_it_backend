@@ -178,11 +178,33 @@ export class AcceptReturnComponent implements OnInit, OnDestroy {
         this.error = this.i18n.t('return.lender_only_accept');
         return;
       }
+      if (item.status === 'AVAILABLE') {
+        this.session = null;
+        this.success = this.i18n.t('return.accept_success');
+        this.redirectTimer = setTimeout(() => {
+          this.router.navigateByUrl(this.backTo);
+        }, 900);
+        return;
+      }
+      if (item.status !== 'WAITING_FOR_RETURN' && item.status !== 'DISPUTED') {
+        this.session = null;
+        return;
+      }
       try {
         const session = await this.api.getReturnSession(id);
         this.session = String((session as any)?.status || '').toUpperCase() === 'PENDING' ? session : null;
       } catch {
         this.session = null;
+        try {
+          const refreshed = await this.api.getListingById(id);
+          this.item = refreshed;
+          if (refreshed?.status === 'AVAILABLE') {
+            this.success = this.i18n.t('return.accept_success');
+            this.redirectTimer = setTimeout(() => {
+              this.router.navigateByUrl(this.backTo);
+            }, 900);
+          }
+        } catch { }
       }
     } catch (e: any) {
       this.error = e?.message || this.i18n.t('return.error.load_failed');

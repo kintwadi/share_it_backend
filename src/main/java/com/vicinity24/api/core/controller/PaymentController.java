@@ -9,6 +9,7 @@ import com.vicinity24.api.core.model.Listing;
 import com.vicinity24.api.core.dto.PaymentTransactionDTO;
 import com.vicinity24.api.core.service.EscrowService;
 import com.vicinity24.api.core.service.ListingService;
+import com.vicinity24.api.core.service.BorrowerSubscriptionService;
 import com.vicinity24.api.core.service.SubscriptionService;
 import com.vicinity24.api.core.service.UserService;
 import com.vicinity24.api.core.model.User;
@@ -46,6 +47,7 @@ public class PaymentController {
     private final ListingService listingService;
     private final ListingRepository listingRepository;
     private final UserService userService;
+    private final BorrowerSubscriptionService borrowerSubscriptionService;
     private final SubscriptionService subscriptionService;
     private final RuntimeSettingsService runtimeSettingsService;
     private final EscrowService escrowService;
@@ -64,11 +66,12 @@ public class PaymentController {
     @org.springframework.beans.factory.annotation.Value("${settings.service.fee_percent:0.08}")
     private double configuredServiceFeePercent;
 
-    public PaymentController(StripePayment stripePayment, ListingService listingService, ListingRepository listingRepository, UserService userService, SubscriptionService subscriptionService, RuntimeSettingsService runtimeSettingsService, EscrowService escrowService, TransactionRepository transactionRepository, ObjectMapper objectMapper) {
+    public PaymentController(StripePayment stripePayment, ListingService listingService, ListingRepository listingRepository, UserService userService, BorrowerSubscriptionService borrowerSubscriptionService, SubscriptionService subscriptionService, RuntimeSettingsService runtimeSettingsService, EscrowService escrowService, TransactionRepository transactionRepository, ObjectMapper objectMapper) {
         this.stripePayment = stripePayment;
         this.listingService = listingService;
         this.listingRepository = listingRepository;
         this.userService = userService;
+        this.borrowerSubscriptionService = borrowerSubscriptionService;
         this.subscriptionService = subscriptionService;
         this.runtimeSettingsService = runtimeSettingsService; 
         this.escrowService = escrowService;
@@ -353,6 +356,9 @@ public class PaymentController {
             throw new RuntimeException("free_listing_no_payment_required");
         }
 
+        boolean borrowerCanBorrowDirectly = borrowerSubscriptionService != null && borrowerSubscriptionService.canBorrowDirectly(user);
+        String effectiveBorrowerPath = borrowerCanBorrowDirectly ? "VERIFIED" : (borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED");
+
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal hourlyRate = listing.getHourlyRate() != null ? listing.getHourlyRate() : BigDecimal.ZERO;
         boolean isTimeBased = listing.getType() != ListingType.GIVE && listing.getType() != ListingType.SELL;
@@ -360,7 +366,7 @@ public class PaymentController {
         BigDecimal totalCost = hourlyRate.multiply(BigDecimal.valueOf(effectiveDuration));
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
-        String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";
+        String bp = effectiveBorrowerPath;
         if ("FEE".equals(bp)) {
             serviceFee = totalCost.multiply(resolveServiceFeeRate()).setScale(2, java.math.RoundingMode.HALF_UP);
         } else if ("DEPOSIT".equals(bp)) {
@@ -375,7 +381,7 @@ public class PaymentController {
         metadata.put("listingId", listingId);
         metadata.put("borrowerId", user.getId().toString());
         metadata.put("durationHours", durationHours);
-        metadata.put("borrowerPath", borrowerPath);
+        metadata.put("borrowerPath", effectiveBorrowerPath);
         metadata.put("borrowerEmail", user.getEmail());
         metadata.put("borrowerName", user.getName());
 
@@ -474,7 +480,12 @@ public class PaymentController {
                             
                             log.info("Syncing subscription from checkout.session.completed: subId={}, status={}, userId={}, plan={}",
                                     subscriptionId, status, user.getId(), planType);
-                            subscriptionService.syncProSubscriptionFromStripe(user, subscriptionId, status, planType);
+                            String subscriptionScope = metadata.get("subscription_scope");
+                            if ("borrower".equalsIgnoreCase(subscriptionScope)) {
+                                borrowerSubscriptionService.syncBorrowerSubscriptionFromStripe(user, subscriptionId, status);
+                            } else {
+                                subscriptionService.syncProSubscriptionFromStripe(user, subscriptionId, status, planType);
+                            }
                         } catch (IllegalArgumentException e) {
                             log.warn("Invalid app_user_id format in session metadata: {}", uid);
                         } catch (Exception e) {
@@ -531,7 +542,12 @@ public class PaymentController {
                             String priceId = subNode.path("items").path("data").get(0).path("price").path("id").asText(null);
                             String planType = resolveSubscriptionPlanType(priceId);
                             
-                            subscriptionService.syncProSubscriptionFromStripe(user, stripeId, effectiveStatus, planType);
+                            String subscriptionScope = subNode.path("metadata").path("subscription_scope").asText(null);
+                            if ("borrower".equalsIgnoreCase(subscriptionScope)) {
+                                borrowerSubscriptionService.syncBorrowerSubscriptionFromStripe(user, stripeId, effectiveStatus);
+                            } else {
+                                subscriptionService.syncProSubscriptionFromStripe(user, stripeId, effectiveStatus, planType);
+                            }
                         } catch (IllegalArgumentException e) {
                             log.warn("Invalid app_user_id format in subscription JSON: {}", uid);
                         }

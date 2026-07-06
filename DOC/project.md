@@ -1,4 +1,4 @@
-﻿
+
 
 ### ASSISTANT
 # NEIGHBORSHARE: COMPLETE PROJECT DOCUMENTATION  
@@ -44,7 +44,8 @@
 - âœ… **Solves Cold Start**: "Free Giving" attracts users; AI nudges convert to paid activities
 - âœ… **German Privacy-First**: Zero home address sharing; neutral handoff locations only
 - âœ… **Dynamic Role Support**: Single account handles Giver/Seller/Lender/Buyer fluidly
-- âœ… **Unified Subscription**: One price covers all activities (no confusing multi-subscriptions)
+- âœ… **Borrowing Subscription Live**: The current implemented paid flow is the borrower subscription used during borrowing
+- âœ… **Platform Subscription Parked**: Legacy platform/lender subscription checkout remains in code but real Stripe checkout is intentionally disabled
 - âœ… **Prorated Upgrades**: Legally compliant billing (Â§312g BGB) with transparent credits
 
 ---
@@ -106,6 +107,12 @@ flowchart LR
 **Critical UX Rule:** Path 2 (Verified) is **pre-selected by default** with "EMPFOHLEN" badge to drive subscription adoption.
 
 ### 3.3 Unified Subscription Model for Dynamic Roles
+
+Implementation note (current codebase state):
+
+- The live paid Stripe path is the borrower subscription used from the borrowing flow.
+- The legacy platform/lender subscription model still exists in code and docs, but real checkout-session creation is intentionally disabled for safety.
+- Because of that, the current product behavior is not yet a fully unified single-subscription implementation.
 
 | Subscription Tier | Price | Benefits Across ALL Roles | Activation Trigger |
 |-------------------|-------|---------------------------|-------------------|
@@ -770,5 +777,4 @@ This project supports static database-per-tenant routing in the backend configur
 - `SETTING_USE_DEFAULT_DATABASE=true` uses the default database only when the tenant header is missing; a valid tenant header still routes to the matching tenant database
 - Startup bootstrap initializes or upgrades schema and seed data for the default database and every configured tenant database
 - Full setup details live in `DOC/configuration-guide.md` and `.env.template`
-
 

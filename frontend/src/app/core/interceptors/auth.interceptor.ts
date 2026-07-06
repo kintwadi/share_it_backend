@@ -30,8 +30,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(modifiedReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 || error.status === 403) {
-        authStorage.clear();
+        const requestUrl = String(req.url || '');
         const currentUrl = String(router.url || '');
+        const isBorrowerFlowUrl = currentUrl.startsWith('/verification/email') || currentUrl.startsWith('/listing/');
+        const isNonCriticalProbe =
+          requestUrl.includes('/borrower-subscription/') ||
+          requestUrl.includes('/subscriptions/') ||
+          requestUrl.includes('/payments/methods') ||
+          requestUrl.includes('/notifications') ||
+          requestUrl.includes('/users/me');
+        const shouldSuppressForcedLogout = isBorrowerFlowUrl || isNonCriticalProbe;
+        console.warn('[auth-interceptor] auth error', {
+          status: error.status,
+          requestUrl,
+          currentUrl,
+          isBorrowerFlowUrl,
+          isNonCriticalProbe,
+          shouldSuppressForcedLogout
+        });
+        if (shouldSuppressForcedLogout) {
+          return throwError(() => error);
+        }
+        authStorage.clear();
         if (!currentUrl.startsWith('/connect')) {
           router.navigate(['/connect']);
         }
