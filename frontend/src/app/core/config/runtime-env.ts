@@ -7,8 +7,44 @@ function normalize(value: unknown): string | null {
   return trimmed ? trimmed : null;
 }
 
+function normalizeApiUrl(value: string): string {
+  const trimmed = value.trim().replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  try {
+    const url = new URL(trimmed);
+    const path = url.pathname.replace(/\/+$/, '');
+    if (!path || path === '/') {
+      url.pathname = '/api/v1';
+      return url.toString().replace(/\/+$/, '');
+    }
+    return url.toString().replace(/\/+$/, '');
+  } catch {
+    return trimmed;
+  }
+}
+
 export function getRuntimeApiUrl(): string | null {
-  return normalize(readRuntimeEnv()['API_URL']);
+  const configured = normalize(readRuntimeEnv()['API_URL']);
+  const host = String(globalThis?.location?.host || '').trim().toLowerCase();
+  if (configured) {
+    // Production safety: when the SPA runs on v24pool.com, a relative `/api/v1`
+    // runtime value incorrectly targets the frontend host. Force the dedicated API host.
+    if ((host === 'v24pool.com' || host === 'www.v24pool.com') && configured === '/api/v1') {
+      return 'https://vicinity24api.com/api/v1';
+    }
+    return normalizeApiUrl(configured);
+  }
+
+  // Production safety fallback: if the SPA is served from the public frontend
+  // domain without a runtime API override, call the dedicated API host instead
+  // of incorrectly using the frontend origin as `/api/v1`.
+  if (host === 'v24pool.com' || host === 'www.v24pool.com') {
+    return 'https://vicinity24api.com/api/v1';
+  }
+
+  return null;
 }
 
 export function getTenantHeaderName(): string {
