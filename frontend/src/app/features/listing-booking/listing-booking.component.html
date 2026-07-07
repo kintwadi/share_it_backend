@@ -213,7 +213,7 @@
                   <h4 class="checkout-item-card__title line-clamp-1">{{ listing.title }}</h4>
                   <p class="checkout-item-card__subtitle">{{ listing.category }}</p>
                   <p class="checkout-item-card__price">
-                    {{ isFree ? i18n.t('listing.booking.free') : (i18n.formatPrice(listing.hourlyRate || 0) + i18n.t('listing.booking.per_hour_short')) }}
+                    {{ isFree ? i18n.t('listing.booking.free') : bookingRateLabel }}
                   </p>
                 </div>
               </div>
@@ -235,13 +235,13 @@
                   </button>
                   <div class="checkout-duration-section__value">
                     <div class="checkout-duration-section__amount">{{ bookingDuration }}</div>
-                    <div class="checkout-duration-section__unit">{{ i18n.t('listing.booking.hours') }}</div>
+                    <div class="checkout-duration-section__unit">{{ bookingDurationUnitLabel }}</div>
                   </div>
                   <button
                     type="button"
                     (click)="incBookingDuration()"
                     class="checkout-duration-section__btn"
-                    [disabled]="bookingDuration >= 24"
+                    [disabled]="bookingDuration >= bookingDurationMax"
                   >
                     <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
                   </button>

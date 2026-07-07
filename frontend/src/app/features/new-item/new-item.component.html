@@ -178,17 +178,113 @@
 
             <div class="rate-row">
               <div class="field">
-                <label class="field-label">{{ i18n.t('new_item.hourly_rate_label') }}</label>
+                <label class="field-label">Lending format</label>
+                <div class="pricing-format-toggle" [class.is-disabled]="!canConfigurePricing">
+                  <button
+                    type="button"
+                    class="format-btn"
+                    [class.active]="pricingUnit === ListingPricingUnit.HOURLY"
+                    [disabled]="!canConfigurePricing"
+                    (click)="setPricingUnit(ListingPricingUnit.HOURLY)"
+                  >
+                    Hourly
+                  </button>
+                  <button
+                    type="button"
+                    class="format-btn"
+                    [class.active]="pricingUnit === ListingPricingUnit.DAILY"
+                    [disabled]="!canConfigurePricing"
+                    (click)="setPricingUnit(ListingPricingUnit.DAILY)"
+                  >
+                    Daily
+                  </button>
+                  <button
+                    type="button"
+                    class="format-btn"
+                    [class.active]="pricingUnit === ListingPricingUnit.MONTHLY"
+                    [disabled]="!canConfigurePricing"
+                    (click)="setPricingUnit(ListingPricingUnit.MONTHLY)"
+                  >
+                    Monthly
+                  </button>
+                </div>
+                <div class="field-hint">Choose the main period renters should book for this listing.</div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">{{ pricingInputLabel }}</label>
                 <div class="input-with-suffix">
                   <input
                     type="number"
-                    [(ngModel)]="hourlyRate"
-                    (ngModelChange)="triggerRecommendation()"
+                    [ngModel]="selectedPricingRate"
+                    (ngModelChange)="onPrimaryRateChange($event)"
                     [disabled]="type === ListingType.GIVE"
                     class="input"
                     [placeholder]="i18n.t('new_item.hourly_rate_placeholder')"
+                    min="0"
+                    step="0.01"
                   />
-                  <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }}</span>
+                  <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }} {{ pricingUnitSuffix }}</span>
+                </div>
+                <div class="rate-preview">
+                  Renters will see {{ i18n.formatPrice(selectedPricingRate || 0) }}<span *ngIf="pricingPreviewLabel"> {{ pricingPreviewLabel }}</span>
+                </div>
+
+                <div *ngIf="canConfigurePricing" class="advanced-toggle" [class.open]="showAdvancedRates" (click)="toggleAdvancedRates()">
+                  <div class="advanced-toggle-label">
+                    <lucide-icon [img]="Plus" size="14"></lucide-icon>
+                    <span>Set rates for all periods</span>
+                  </div>
+                  <span class="advanced-toggle-arrow">⌄</span>
+                </div>
+
+                <div *ngIf="canConfigurePricing && showAdvancedRates" class="advanced-rates">
+                  <div class="advanced-rate-row">
+                    <div class="advanced-rate-label">Hourly rate</div>
+                    <div class="advanced-rate-input">
+                      <input
+                        type="number"
+                        class="input"
+                        [ngModel]="hourlyRate"
+                        (ngModelChange)="onAdvancedRateChange(ListingPricingUnit.HOURLY, $event)"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                      />
+                      <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }} /hr</span>
+                    </div>
+                  </div>
+                  <div class="advanced-rate-row">
+                    <div class="advanced-rate-label">Daily rate</div>
+                    <div class="advanced-rate-input">
+                      <input
+                        type="number"
+                        class="input"
+                        [ngModel]="dailyRate"
+                        (ngModelChange)="onAdvancedRateChange(ListingPricingUnit.DAILY, $event)"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                      />
+                      <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }} /day</span>
+                    </div>
+                  </div>
+                  <div class="advanced-rate-row">
+                    <div class="advanced-rate-label">Monthly rate</div>
+                    <div class="advanced-rate-input">
+                      <input
+                        type="number"
+                        class="input"
+                        [ngModel]="monthlyRate"
+                        (ngModelChange)="onAdvancedRateChange(ListingPricingUnit.MONTHLY, $event)"
+                        placeholder="0.00"
+                        min="0"
+                        step="0.01"
+                      />
+                      <span class="input-suffix">{{ i18n.currency() === 'EUR' ? '€' : i18n.currency() }} /mo</span>
+                    </div>
+                  </div>
+                  <div class="field-hint">Add extra periods to make the listing more flexible for renters.</div>
                 </div>
               </div>
 
@@ -487,6 +583,35 @@
               </div>
             </div>
           </section>
+
+          <section *ngIf="canConfigurePricing" class="card pricing-summary-card">
+            <div class="card-header">
+              <div class="step-label">
+                <span class="step-num">Preview</span>
+                <span class="step-title">How renters see your price</span>
+              </div>
+            </div>
+
+            <div class="pricing-summary-row">
+              <span>Primary rate</span>
+              <strong>{{ pricingSummaryPrimary }}</strong>
+            </div>
+            <div *ngIf="showPricingSummaryExtras" class="pricing-summary-extras">
+              <div class="pricing-summary-subrow">
+                <span>Hourly</span>
+                <strong>{{ hourlyRate > 0 ? (i18n.formatPrice(hourlyRate) + '/hr') : '—' }}</strong>
+              </div>
+              <div class="pricing-summary-subrow">
+                <span>Daily</span>
+                <strong>{{ pricingSummaryDaily }}</strong>
+              </div>
+              <div class="pricing-summary-subrow">
+                <span>Monthly</span>
+                <strong>{{ pricingSummaryMonthly }}</strong>
+              </div>
+            </div>
+            <div class="field-hint">Set multiple rates to give renters more booking options.</div>
+          </section>
         </div>
       </div>
 
@@ -509,4 +634,3 @@
     </main>
   </ng-template>
 </div>
-

@@ -6,6 +6,7 @@ import { LucideAngularModule, MapPin, ShieldCheck, ArrowLeft, Calendar, CheckCir
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { User, Listing, AvailabilityStatus, ListingType, ReturnSessionResponse } from '../../core/models/types';
+import { getListingAdditionalRates, getListingPrimaryRate, getListingPricingUnit, getPricingUnitShort, isListingFree } from '../../core/utils/listing-pricing';
 
 @Component({
   selector: 'app-listing-detail',
@@ -395,10 +396,26 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   }
 
   get isFree() {
-    const l = this.listing;
-    if (!l) return false;
-    if (l.type === ListingType.GIVE) return true;
-    return (l.hourlyRate || 0) <= 0;
+    return isListingFree(this.listing);
+  }
+
+  get priceAmountLabel(): string {
+    return this.i18n.formatPrice(getListingPrimaryRate(this.listing));
+  }
+
+  get priceUnitLabel(): string {
+    if (this.listing?.type === ListingType.SELL) return '';
+    const unit = getPricingUnitShort(getListingPricingUnit(this.listing));
+    if (unit === '/day') return '/day';
+    if (unit === '/mo') return '/month';
+    return '/hour';
+  }
+
+  get additionalPriceOptions(): Array<{ label: string; value: string }> {
+    return getListingAdditionalRates(this.listing).map(item => ({
+      label: item.unit === 'DAILY' ? 'Daily' : item.unit === 'MONTHLY' ? 'Monthly' : 'Hourly',
+      value: `${this.i18n.formatPrice(item.rate)}${getPricingUnitShort(item.unit)}`
+    }));
   }
 
   handleInitialRequestClick() {

@@ -1,6 +1,7 @@
 package com.vicinity24.api.core.dto;
 
 import com.vicinity24.api.core.model.enums.ListingType;
+import com.vicinity24.api.core.model.enums.PricingUnit;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +16,9 @@ public class CreateListingRequest {
     private String category;
     private ListingType type;
     private BigDecimal hourlyRate;
+    private BigDecimal dailyRate;
+    private BigDecimal monthlyRate;
+    private PricingUnit pricingUnit;
     private String imageUrl;
     private List<String> gallery;
     private boolean autoApprove;

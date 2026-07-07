@@ -6,6 +6,12 @@ export enum ListingType {
   LEND = 'LEND'
 }
 
+export enum ListingPricingUnit {
+  HOURLY = 'HOURLY',
+  DAILY = 'DAILY',
+  MONTHLY = 'MONTHLY'
+}
+
 export interface SubscriptionUpgradePreview {
   currentPlan: string;
   newPlan: string;
@@ -131,6 +137,9 @@ export interface Listing {
   distanceMiles: number;
   status: AvailabilityStatus;
   hourlyRate?: number;
+  dailyRate?: number;
+  monthlyRate?: number;
+  pricingUnit?: ListingPricingUnit | string;
   autoApprove?: boolean;
   insuranceRequired?: boolean;
   location: {

@@ -2,6 +2,7 @@ package com.vicinity24.api.core.controller;
 
 import com.vicinity24.api.core.model.Transaction;
 import com.vicinity24.api.core.model.enums.ListingType;
+import com.vicinity24.api.core.model.enums.PricingUnit;
 import com.vicinity24.api.core.payment.StripePayment;
 import com.vicinity24.api.core.config.RuntimeSettingsService;
 import com.vicinity24.api.core.repository.ListingRepository;
@@ -100,6 +101,45 @@ public class PaymentController {
             rate = configuredServiceFeePercent;
         }
         return BigDecimal.valueOf(rate);
+    }
+
+    private BigDecimal sanitizeRate(BigDecimal rate) {
+        if (rate == null || rate.compareTo(BigDecimal.ZERO) < 0) {
+            return BigDecimal.ZERO;
+        }
+        return rate;
+    }
+
+    private BigDecimal getRateForUnit(Listing listing, PricingUnit unit) {
+        if (listing == null) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.GIVE) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.SELL) return sanitizeRate(listing.getHourlyRate());
+
+        BigDecimal hourly = sanitizeRate(listing.getHourlyRate());
+        BigDecimal daily = sanitizeRate(listing.getDailyRate());
+        BigDecimal monthly = sanitizeRate(listing.getMonthlyRate());
+        PricingUnit pricingUnit = listing.getPricingUnit() != null ? listing.getPricingUnit() : PricingUnit.HOURLY;
+
+        if (unit == PricingUnit.DAILY) {
+            if (daily.compareTo(BigDecimal.ZERO) > 0) return daily;
+            if (pricingUnit == PricingUnit.DAILY && hourly.compareTo(BigDecimal.ZERO) > 0) return hourly;
+            return BigDecimal.ZERO;
+        }
+        if (unit == PricingUnit.MONTHLY) {
+            if (monthly.compareTo(BigDecimal.ZERO) > 0) return monthly;
+            if (pricingUnit == PricingUnit.MONTHLY && hourly.compareTo(BigDecimal.ZERO) > 0) return hourly;
+            return BigDecimal.ZERO;
+        }
+        return hourly;
+    }
+
+    private BigDecimal getPrimaryRate(Listing listing) {
+        if (listing == null) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.GIVE || listing.getType() == ListingType.SELL) {
+            return sanitizeRate(listing.getHourlyRate());
+        }
+        PricingUnit unit = listing.getPricingUnit() != null ? listing.getPricingUnit() : PricingUnit.HOURLY;
+        return getRateForUnit(listing, unit);
     }
 
     @GetMapping("/methods")
@@ -336,11 +376,19 @@ public class PaymentController {
         
         // Optional duration
         String durationHours = payload.containsKey("durationHours") ? payload.get("durationHours").toString() : "0";
+        String durationValueRaw = payload.containsKey("durationValue") ? payload.get("durationValue").toString() : durationHours;
+        String durationUnitRaw = payload.containsKey("durationUnit") ? String.valueOf(payload.get("durationUnit")) : null;
         int duration = 0;
         try {
-            duration = Integer.parseInt(durationHours);
+            duration = Integer.parseInt(durationValueRaw);
         } catch (Exception ignored) {
             duration = 0;
+        }
+        PricingUnit durationUnit = null;
+        try {
+            durationUnit = durationUnitRaw != null && !durationUnitRaw.isBlank() ? PricingUnit.valueOf(durationUnitRaw.trim().toUpperCase()) : null;
+        } catch (Exception ignored) {
+            durationUnit = null;
         }
 
         User user = userService.getByEmail(principal.getUsername());
@@ -360,10 +408,10 @@ public class PaymentController {
         String effectiveBorrowerPath = borrowerCanBorrowDirectly ? "VERIFIED" : (borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED");
 
         BigDecimal amount = BigDecimal.ZERO;
-        BigDecimal hourlyRate = listing.getHourlyRate() != null ? listing.getHourlyRate() : BigDecimal.ZERO;
+        BigDecimal primaryRate = getPrimaryRate(listing);
         boolean isTimeBased = listing.getType() != ListingType.GIVE && listing.getType() != ListingType.SELL;
         int effectiveDuration = isTimeBased ? (duration > 0 ? duration : 1) : 1;
-        BigDecimal totalCost = hourlyRate.multiply(BigDecimal.valueOf(effectiveDuration));
+        BigDecimal totalCost = primaryRate.multiply(BigDecimal.valueOf(effectiveDuration));
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
         String bp = effectiveBorrowerPath;
@@ -380,7 +428,9 @@ public class PaymentController {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("listingId", listingId);
         metadata.put("borrowerId", user.getId().toString());
-        metadata.put("durationHours", durationHours);
+        metadata.put("durationHours", String.valueOf(effectiveDuration));
+        metadata.put("durationValue", String.valueOf(effectiveDuration));
+        metadata.put("durationUnit", String.valueOf(durationUnit != null ? durationUnit : (listing.getPricingUnit() != null ? listing.getPricingUnit() : PricingUnit.HOURLY)));
         metadata.put("borrowerPath", effectiveBorrowerPath);
         metadata.put("borrowerEmail", user.getEmail());
         metadata.put("borrowerName", user.getName());
@@ -445,7 +495,7 @@ public class PaymentController {
                     if (metadata != null && metadata.containsKey("listingId") && metadata.containsKey("borrowerId")) {
                         String listingId = metadata.get("listingId");
                         String borrowerId = metadata.get("borrowerId");
-                        String durationStr = metadata.getOrDefault("durationHours", "0");
+                        String durationStr = metadata.getOrDefault("durationValue", metadata.getOrDefault("durationHours", "0"));
                         String borrowerPath = metadata.getOrDefault("borrowerPath", "VERIFIED");
                         int duration = Integer.parseInt(durationStr);
                         BigDecimal amount = BigDecimal.valueOf(intent.getAmount()).divide(new BigDecimal(100));
