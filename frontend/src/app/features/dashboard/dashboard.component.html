@@ -258,7 +258,7 @@
                   <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
                     <span>{{ item.category }}</span>
                     <span class="text-slate-300">•</span>
-                    <span *ngIf="item.hourlyRate; else freePrice" class="font-bold text-brand-600">{{ i18n.formatPrice(item.hourlyRate) }}/hr</span>
+                    <span *ngIf="listingHasVisiblePrice(item); else freePrice" class="font-bold text-brand-600">{{ listingPriceLabel(item) }}</span>
                     <ng-template #freePrice>
                       <span class="inline-flex items-center gap-1 font-bold text-pink-600">
                         <lucide-icon [img]="Gift" size="12"></lucide-icon>

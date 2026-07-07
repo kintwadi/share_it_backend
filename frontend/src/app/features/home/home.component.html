@@ -429,9 +429,9 @@
                       </div>
 
                       <div class="shrink-0 text-right">
-                        <ng-container *ngIf="listing.hourlyRate; else traditionalPriceAlt">
-                          <div class="text-xl font-extrabold text-gray-900">{{ i18n.formatPrice(listing.hourlyRate) }}</div>
-                          <div class="text-[11px] text-gray-500 -mt-0.5">{{ i18n.t('home.price_per_hour') }}</div>
+                        <ng-container *ngIf="listingHasVisiblePrice(listing); else traditionalPriceAlt">
+                          <div class="text-xl font-extrabold text-gray-900">{{ listingPriceValue(listing) }}</div>
+                          <div class="text-[11px] text-gray-500 -mt-0.5">{{ listingPricePeriodLabel(listing) }}</div>
                         </ng-container>
                         <ng-template #traditionalPriceAlt>
                           <div *ngIf="listing.type === ListingType.GIVE" class="text-xl font-extrabold text-gray-900">{{ i18n.t('home.free') }}</div>
@@ -573,9 +573,9 @@
               </div>
 
               <div class="shrink-0 text-right">
-                <ng-container *ngIf="listing.hourlyRate; else recPriceAlt">
-                  <div class="text-xl font-extrabold text-gray-900">{{ i18n.formatPrice(listing.hourlyRate) }}</div>
-                  <div class="text-[11px] text-gray-500 -mt-0.5">{{ i18n.t('home.price_per_hour') }}</div>
+                <ng-container *ngIf="listingHasVisiblePrice(listing); else recPriceAlt">
+                  <div class="text-xl font-extrabold text-gray-900">{{ listingPriceValue(listing) }}</div>
+                  <div class="text-[11px] text-gray-500 -mt-0.5">{{ listingPricePeriodLabel(listing) }}</div>
                 </ng-container>
                 <ng-template #recPriceAlt>
                   <div *ngIf="listing.type === ListingType.GIVE" class="text-xl font-extrabold text-gray-900">{{ i18n.t('home.free') }}</div>

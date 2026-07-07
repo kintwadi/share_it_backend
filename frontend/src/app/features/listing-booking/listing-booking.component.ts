@@ -9,6 +9,7 @@ import { I18nService } from '../../core/services/i18n.service';
 import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, AvailabilityStatus } from '../../core/models/types';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
+import { getListingPrimaryRate, getListingPricingUnit, getPricingUnitLong, getPricingUnitPlural, getPricingUnitShort } from '../../core/utils/listing-pricing';
 
 type PendingBorrowerBookingState = {
   listingId: string;
@@ -306,9 +307,30 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
 
   get baseTotal() {
     if (!this.listing) return 0;
-    const rate = this.listing.hourlyRate || 0;
+    const rate = getListingPrimaryRate(this.listing);
     const duration = this.isTimeBased ? this.bookingDuration : 1;
     return rate * duration;
+  }
+
+  get bookingRateSuffix() {
+    return getPricingUnitShort(getListingPricingUnit(this.listing));
+  }
+
+  get bookingRateLabel() {
+    return `${this.i18n.formatPrice(getListingPrimaryRate(this.listing))}${this.bookingRateSuffix}`;
+  }
+
+  get bookingDurationUnitLabel() {
+    return this.bookingDuration === 1
+      ? getPricingUnitLong(getListingPricingUnit(this.listing))
+      : getPricingUnitPlural(getListingPricingUnit(this.listing));
+  }
+
+  get bookingDurationMax() {
+    const unit = getListingPricingUnit(this.listing);
+    if (unit === 'MONTHLY') return 12;
+    if (unit === 'DAILY') return 30;
+    return 24;
   }
 
   get serviceFee() {
@@ -454,7 +476,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   incBookingDuration() {
-    this.bookingDuration = Math.min(24, this.bookingDuration + 1);
+    this.bookingDuration = Math.min(this.bookingDurationMax, this.bookingDuration + 1);
     this.render();
   }
 
@@ -611,6 +633,8 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         currency: 'usd',
         listingId: listing.id,
         durationHours: this.isTimeBased ? this.bookingDuration : 0,
+        durationValue: this.isTimeBased ? this.bookingDuration : 0,
+        durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined,
         borrowerPath: this.selectedPath,
         paymentMethodId: this.selectedSavedPaymentMethodId || undefined
       });
@@ -638,6 +662,8 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         paymentMethod: 'STRIPE',
         paymentToken: pi.id,
         durationHours: this.isTimeBased ? this.bookingDuration : 0,
+        durationValue: this.isTimeBased ? this.bookingDuration : 0,
+        durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined,
         borrowerPath: this.selectedPath
       });
       await this.purchaseInsuranceIfSelected();
@@ -709,7 +735,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     this.render();
     try {
       if (listing.type === ListingType.GIVE) {
-        await this.api.borrowListing(listing.id, { paymentMethod: 'GIFT', durationHours: 0 });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'GIFT', durationHours: 0, durationValue: 0 });
         this.navigateBackWithNotice(listing.autoApprove ? this.i18n.t('listing.success.gift_claimed') : this.i18n.t('listing.success.gift_request'));
         return;
       }
@@ -718,6 +744,8 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         await this.api.borrowListing(listing.id, {
           paymentMethod: 'PARTNER',
           durationHours: this.isTimeBased ? this.bookingDuration : 0,
+          durationValue: this.isTimeBased ? this.bookingDuration : 0,
+          durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined,
           borrowerPath: 'PARTNER'
         });
         this.navigateBackWithNotice(this.i18n.t('listing.success.request_sent'));
@@ -725,15 +753,15 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
       }
 
       if (this.finalTotalWithInsurance <= 0) {
-        await this.api.borrowListing(listing.id, { paymentMethod: 'FREE', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'FREE', durationHours: this.isTimeBased ? this.bookingDuration : 0, durationValue: this.isTimeBased ? this.bookingDuration : 0, durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'PAYPAL') {
-        await this.api.borrowListing(listing.id, { paymentMethod: 'PAYPAL', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'PAYPAL', durationHours: this.isTimeBased ? this.bookingDuration : 0, durationValue: this.isTimeBased ? this.bookingDuration : 0, durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CASH') {
         if (this.selectedPath === 'VERIFIED') {
           this.actionError = this.i18n.t('listing.error.process_failed');
           return;
         }
-        await this.api.borrowListing(listing.id, { paymentMethod: 'CASH', durationHours: this.isTimeBased ? this.bookingDuration : 0, borrowerPath: this.selectedPath });
+        await this.api.borrowListing(listing.id, { paymentMethod: 'CASH', durationHours: this.isTimeBased ? this.bookingDuration : 0, durationValue: this.isTimeBased ? this.bookingDuration : 0, durationUnit: this.isTimeBased ? getListingPricingUnit(this.listing) : undefined, borrowerPath: this.selectedPath });
       } else if (this.paymentMethod === 'CARD') {
         await this.submitCardPayment();
         return;

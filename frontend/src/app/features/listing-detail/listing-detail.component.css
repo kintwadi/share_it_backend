@@ -1,4 +1,4 @@
-﻿:host {
+:host {
   display: block;
   background: #f7f9fc;
   color: #0f172a;
@@ -418,6 +418,25 @@
   margin-top: 3px;
   color: #94a3b8;
   font-size: 12px;
+}
+
+.price-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.price-option-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .status-group {

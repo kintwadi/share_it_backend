@@ -4,6 +4,7 @@ import { LucideAngularModule, Heart, BadgeCheck, ShieldCheck, MapPin, Gift } fro
 import { Listing, ListingType, AvailabilityStatus } from '../../../core/models/types';
 import { I18nService } from '../../../core/services/i18n.service';
 import { UserPreferencesService } from '../../../core/services/user-preferences.service';
+import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../../core/utils/listing-pricing';
 
 @Component({
   selector: 'app-resource-card',
@@ -38,7 +39,12 @@ export class ResourceCardComponent {
   }
 
   get isFree(): boolean {
-    return !this.listing?.hourlyRate || this.listing.hourlyRate === 0;
+    return isListingFree(this.listing);
+  }
+
+  get priceLabel(): string {
+    if (this.isFree) return this.i18n.t('listing.free');
+    return `${this.i18n.formatPrice(getListingPrimaryRate(this.listing))}${getListingPriceSuffix(this.listing)}`;
   }
 
   get isPartner(): boolean {

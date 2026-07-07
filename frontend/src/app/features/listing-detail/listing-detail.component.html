@@ -113,11 +113,16 @@
                 <span class="price-unit">/ {{ listing.type === ListingType.SKILL ? 'session' : 'use' }}</span>
               </ng-container>
               <ng-template #paidPrice>
-                <span class="price-amount">{{ i18n.formatPrice(listing.hourlyRate || 0) }}</span>
-                <span class="price-unit">/hour</span>
+                <span class="price-amount">{{ priceAmountLabel }}</span>
+                <span class="price-unit">{{ priceUnitLabel }}</span>
               </ng-template>
             </div>
             <div class="price-label">Suggested Rate</div>
+            <div *ngIf="additionalPriceOptions.length > 0" class="price-options-row">
+              <span *ngFor="let option of additionalPriceOptions" class="price-option-chip">
+                {{ option.label }}: {{ option.value }}
+              </span>
+            </div>
           </div>
 
           <div class="status-group">

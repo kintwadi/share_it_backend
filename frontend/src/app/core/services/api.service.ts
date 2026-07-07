@@ -203,11 +203,13 @@ export class ApiService {
     return true;
   }
 
-  async borrowListing(id: string, payload: { paymentMethod?: string; paymentToken?: string; durationHours?: number; borrowerPath?: string }): Promise<Listing> {
+  async borrowListing(id: string, payload: { paymentMethod?: string; paymentToken?: string; durationHours?: number; durationValue?: number; durationUnit?: string; borrowerPath?: string }): Promise<Listing> {
     return firstValueFrom(this.api.post<Listing>(`/listings/${encodeURIComponent(id)}/borrow`, {
       paymentMethod: payload.paymentMethod ?? 'CASH',
       paymentToken: payload.paymentToken ?? null,
       durationHours: typeof payload.durationHours === 'number' ? payload.durationHours : 1,
+      durationValue: typeof payload.durationValue === 'number' ? payload.durationValue : (typeof payload.durationHours === 'number' ? payload.durationHours : 1),
+      durationUnit: payload.durationUnit ?? null,
       borrowerPath: payload.borrowerPath ?? 'VERIFIED'
     }));
   }
@@ -412,6 +414,9 @@ export class ApiService {
     category: string;
     type: any;
     hourlyRate?: number;
+    dailyRate?: number;
+    monthlyRate?: number;
+    pricingUnit?: string;
     imageUrl: string;
     gallery?: string[];
     autoApprove?: boolean;
@@ -438,6 +443,9 @@ export class ApiService {
       category: payload.category,
       type: payload.type,
       hourlyRate: payload.hourlyRate ?? 0,
+      dailyRate: payload.dailyRate ?? 0,
+      monthlyRate: payload.monthlyRate ?? 0,
+      pricingUnit: payload.pricingUnit ?? 'HOURLY',
       imageUrl: payload.imageUrl,
       gallery: payload.gallery ?? [],
       autoApprove: !!payload.autoApprove,
@@ -471,6 +479,9 @@ export class ApiService {
     category: string;
     type: any;
     hourlyRate?: number;
+    dailyRate?: number;
+    monthlyRate?: number;
+    pricingUnit?: string;
     imageUrl: string;
     gallery?: string[];
     autoApprove?: boolean;
@@ -497,6 +508,9 @@ export class ApiService {
       category: payload.category,
       type: payload.type,
       hourlyRate: payload.hourlyRate ?? 0,
+      dailyRate: payload.dailyRate ?? 0,
+      monthlyRate: payload.monthlyRate ?? 0,
+      pricingUnit: payload.pricingUnit ?? 'HOURLY',
       imageUrl: payload.imageUrl,
       gallery: payload.gallery ?? [],
       autoApprove: !!payload.autoApprove,
@@ -703,12 +717,14 @@ export class ApiService {
     return firstValueFrom(this.api.post<any>('/payments/release/retry', {}));
   }
 
-  async createPaymentIntent(payload: { amount: number; currency: string; listingId: string; durationHours?: number; borrowerPath?: string; paymentMethodId?: string }): Promise<{ clientSecret: string; amount?: number; currency?: string }> {
+  async createPaymentIntent(payload: { amount: number; currency: string; listingId: string; durationHours?: number; durationValue?: number; durationUnit?: string; borrowerPath?: string; paymentMethodId?: string }): Promise<{ clientSecret: string; amount?: number; currency?: string }> {
     return firstValueFrom(this.api.post<any>('/payments/create-payment-intent', {
       amount: payload.amount,
       currency: payload.currency,
       listingId: payload.listingId,
       durationHours: typeof payload.durationHours === 'number' ? payload.durationHours : 0,
+      durationValue: typeof payload.durationValue === 'number' ? payload.durationValue : (typeof payload.durationHours === 'number' ? payload.durationHours : 0),
+      durationUnit: payload.durationUnit ?? null,
       borrowerPath: payload.borrowerPath ?? 'VERIFIED',
       paymentMethodId: payload.paymentMethodId ?? null,
     }));
