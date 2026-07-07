@@ -25,12 +25,16 @@
           <lucide-icon [img]="Mail" size="18" class="text-brand-600"></lucide-icon>
           <h2 class="text-lg md:text-xl font-extrabold text-gray-900">{{ i18n.t('verification.email.title') }}</h2>
         </div>
-        <p class="text-sm text-gray-700">{{ i18n.t('verification.email.help') }}</p>
+        <p class="text-sm text-gray-700">{{ verificationHelpText }}</p>
+      </div>
+
+      <div *ngIf="borrowerTrialNoticeText" class="mb-5 rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm text-emerald-900">
+        {{ borrowerTrialNoticeText }}
       </div>
 
       <div *ngIf="loading" class="py-8 text-center text-gray-500">
         <lucide-icon [img]="Loader2" [size]="28" class="mx-auto mb-2 animate-spin"></lucide-icon>
-        {{ i18n.t('common.loading') }}
+        {{ verificationLoadingText }}
       </div>
 
       <ng-container *ngIf="!loading">
@@ -134,13 +138,13 @@
           >
             <lucide-icon *ngIf="submitting" [img]="Loader2" [size]="16" class="mr-2 animate-spin"></lucide-icon>
             <lucide-icon *ngIf="!submitting" [img]="CheckCircle2" [size]="16" class="mr-2"></lucide-icon>
-            {{ submitting ? i18n.t('verification.email.confirm_loading') : i18n.t('verification.email.confirm_cta') }}
+            {{ submitting ? confirmLoadingText : i18n.t('verification.email.confirm_cta') }}
           </button>
         </div>
 
         <div class="mt-4 text-[11px] text-gray-500 flex items-start gap-2">
           <lucide-icon [img]="Info" size="12" class="mt-0.5 text-gray-400"></lucide-icon>
-          <span>{{ i18n.t('verification.email.footer_hint') }}</span>
+          <span>{{ verificationFooterHintText }}</span>
         </div>
       </ng-container>
     </div>
