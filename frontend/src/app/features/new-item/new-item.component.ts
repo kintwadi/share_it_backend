@@ -8,7 +8,7 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
-import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing } from '../../core/models/types';
+import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing, ListingPricingUnit } from '../../core/models/types';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
 
@@ -50,6 +50,7 @@ export class NewItemComponent implements OnInit {
   readonly Search = Search;
 
   readonly ListingType = ListingType;
+  readonly ListingPricingUnit = ListingPricingUnit;
 
   loading = true;
   saving = false;
@@ -68,6 +69,10 @@ export class NewItemComponent implements OnInit {
   type: ListingType = ListingType.GIVE;
   description = '';
   hourlyRate: number = 0;
+  dailyRate: number = 0;
+  monthlyRate: number = 0;
+  pricingUnit: ListingPricingUnit = ListingPricingUnit.HOURLY;
+  showAdvancedRates = false;
   imageUrl = '';
   gallery: string[] = [];
   x: number | null = null;
@@ -158,6 +163,66 @@ export class NewItemComponent implements OnInit {
 
   get showTypeSkill(): boolean {
     return this.type === ListingType.SKILL;
+  }
+
+  get canConfigurePricing(): boolean {
+    return this.type === ListingType.LEND;
+  }
+
+  get pricingUnitLabel(): string {
+    if (this.pricingUnit === ListingPricingUnit.DAILY) return 'Daily';
+    if (this.pricingUnit === ListingPricingUnit.MONTHLY) return 'Monthly';
+    return 'Hourly';
+  }
+
+  get pricingUnitSuffix(): string {
+    if (this.type === ListingType.SELL || this.type === ListingType.GIVE) return '';
+    if (this.pricingUnit === ListingPricingUnit.DAILY) return '/day';
+    if (this.pricingUnit === ListingPricingUnit.MONTHLY) return '/mo';
+    return '/hr';
+  }
+
+  get pricingPreviewLabel(): string {
+    if (this.type === ListingType.SELL) return 'total';
+    if (this.type === ListingType.GIVE) return '';
+    if (this.pricingUnit === ListingPricingUnit.DAILY) return 'per day';
+    if (this.pricingUnit === ListingPricingUnit.MONTHLY) return 'per month';
+    return 'per hour';
+  }
+
+  get pricingInputLabel(): string {
+    if (this.type === ListingType.SELL) return 'Price';
+    if (this.type === ListingType.GIVE) return 'Value';
+    if (this.pricingUnit === ListingPricingUnit.DAILY) return 'Daily rate';
+    if (this.pricingUnit === ListingPricingUnit.MONTHLY) return 'Monthly rate';
+    return 'Hourly rate';
+  }
+
+  get selectedPricingRate(): number {
+    if (this.type !== ListingType.LEND) return this.hourlyRate || 0;
+    if (this.pricingUnit === ListingPricingUnit.DAILY) return this.dailyRate || 0;
+    if (this.pricingUnit === ListingPricingUnit.MONTHLY) return this.monthlyRate || 0;
+    return this.hourlyRate || 0;
+  }
+
+  get pricingSummaryPrimary(): string {
+    return `${this.i18n.formatPrice(this.selectedPricingRate)}${this.pricingUnitSuffix}`;
+  }
+
+  get pricingSummaryDaily(): string {
+    return this.dailyRate > 0 ? `${this.i18n.formatPrice(this.dailyRate)}/day` : '—';
+  }
+
+  get pricingSummaryMonthly(): string {
+    return this.monthlyRate > 0 ? `${this.i18n.formatPrice(this.monthlyRate)}/mo` : '—';
+  }
+
+  get showPricingSummaryExtras(): boolean {
+    if (!this.canConfigurePricing) return false;
+    if (this.pricingUnit !== ListingPricingUnit.HOURLY && this.hourlyRate > 0) return true;
+    if (this.pricingUnit !== ListingPricingUnit.DAILY && this.dailyRate > 0) return true;
+    if (this.pricingUnit !== ListingPricingUnit.MONTHLY && this.monthlyRate > 0) return true;
+    return false;
   }
 
   get sellEnabled(): boolean {
@@ -333,7 +398,21 @@ export class NewItemComponent implements OnInit {
     this.category = listing.category ?? this.category;
     this.type = listing.type ?? ListingType.GOODS;
     this.description = listing.description ?? '';
-    this.hourlyRate = typeof listing.hourlyRate === 'number' ? listing.hourlyRate : Number(listing.hourlyRate ?? 0);
+    const parsedPricingUnit = (() => {
+      const raw = String((listing as any).pricingUnit || '').trim().toUpperCase();
+      if (raw === ListingPricingUnit.DAILY) return ListingPricingUnit.DAILY;
+      if (raw === ListingPricingUnit.MONTHLY) return ListingPricingUnit.MONTHLY;
+      return ListingPricingUnit.HOURLY;
+    })();
+    const rawHourly = typeof listing.hourlyRate === 'number' ? listing.hourlyRate : Number(listing.hourlyRate ?? 0);
+    const rawDaily = typeof (listing as any).dailyRate === 'number' ? (listing as any).dailyRate : Number((listing as any).dailyRate ?? 0);
+    const rawMonthly = typeof (listing as any).monthlyRate === 'number' ? (listing as any).monthlyRate : Number((listing as any).monthlyRate ?? 0);
+    this.pricingUnit = parsedPricingUnit;
+    this.hourlyRate = parsedPricingUnit === ListingPricingUnit.DAILY || parsedPricingUnit === ListingPricingUnit.MONTHLY
+      ? (rawDaily > 0 || rawMonthly > 0 ? rawHourly : 0)
+      : rawHourly;
+    this.dailyRate = rawDaily > 0 ? rawDaily : (parsedPricingUnit === ListingPricingUnit.DAILY ? rawHourly : 0);
+    this.monthlyRate = rawMonthly > 0 ? rawMonthly : (parsedPricingUnit === ListingPricingUnit.MONTHLY ? rawHourly : 0);
     this.imageUrl = listing.imageUrl ?? '';
     this.gallery = Array.isArray(listing.gallery) ? listing.gallery : [];
     this.autoApprove = !!listing.autoApprove;
@@ -393,10 +472,56 @@ export class NewItemComponent implements OnInit {
       this.hourlyRate = rate;
     } else if (type === ListingType.GIVE) {
       this.hourlyRate = 0;
+      this.pricingUnit = ListingPricingUnit.HOURLY;
+    }
+    if (type !== ListingType.LEND) {
+      this.pricingUnit = ListingPricingUnit.HOURLY;
     }
     if (this.isPremiumLender) this.autoApprove = true;
     this.triggerRecommendation();
     this.render();
+  }
+
+  setPricingUnit(unit: ListingPricingUnit) {
+    if (!this.canConfigurePricing) return;
+    this.pricingUnit = unit;
+    this.render();
+  }
+
+  toggleAdvancedRates() {
+    if (!this.canConfigurePricing) return;
+    this.showAdvancedRates = !this.showAdvancedRates;
+    this.render();
+  }
+
+  onPrimaryRateChange(value: number | string) {
+    const rate = this.normalizeRateValue(value);
+    if (!this.canConfigurePricing) {
+      this.hourlyRate = rate;
+    } else if (this.pricingUnit === ListingPricingUnit.DAILY) {
+      this.dailyRate = rate;
+    } else if (this.pricingUnit === ListingPricingUnit.MONTHLY) {
+      this.monthlyRate = rate;
+    } else {
+      this.hourlyRate = rate;
+    }
+    this.triggerRecommendation();
+    this.render();
+  }
+
+  onAdvancedRateChange(unit: ListingPricingUnit, value: number | string) {
+    const rate = this.normalizeRateValue(value);
+    if (unit === ListingPricingUnit.DAILY) this.dailyRate = rate;
+    else if (unit === ListingPricingUnit.MONTHLY) this.monthlyRate = rate;
+    else this.hourlyRate = rate;
+    this.triggerRecommendation();
+    this.render();
+  }
+
+  private normalizeRateValue(value: number | string): number {
+    const parsed = Number(value ?? 0);
+    if (!Number.isFinite(parsed) || parsed < 0) return 0;
+    return parsed;
   }
 
   private async ensurePayoutsReadyForLending(): Promise<boolean> {
@@ -450,7 +575,7 @@ export class NewItemComponent implements OnInit {
         title,
         category,
         description: String(this.description || ''),
-        estimatedValue: typeof this.hourlyRate === 'number' ? this.hourlyRate : undefined,
+        estimatedValue: typeof this.selectedPricingRate === 'number' ? this.selectedPricingRate : undefined,
       });
       this.recommendation = res;
     } catch (e: any) {
@@ -706,6 +831,9 @@ export class NewItemComponent implements OnInit {
         category: this.category,
         type: this.type,
         hourlyRate: this.type === ListingType.GIVE ? 0 : (this.hourlyRate ?? 0),
+        dailyRate: this.type === ListingType.LEND ? (this.dailyRate ?? 0) : 0,
+        monthlyRate: this.type === ListingType.LEND ? (this.monthlyRate ?? 0) : 0,
+        pricingUnit: this.type === ListingType.LEND ? this.pricingUnit : ListingPricingUnit.HOURLY,
         imageUrl: this.imageUrl,
         gallery: this.gallery,
         autoApprove: this.isPremiumLender ? true : !!this.autoApprove,

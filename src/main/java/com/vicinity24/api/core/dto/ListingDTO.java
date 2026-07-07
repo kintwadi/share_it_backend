@@ -2,6 +2,7 @@ package com.vicinity24.api.core.dto;
 
 import com.vicinity24.api.core.model.enums.AvailabilityStatus;
 import com.vicinity24.api.core.model.enums.ListingType;
+import com.vicinity24.api.core.model.enums.PricingUnit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,6 +36,9 @@ public class ListingDTO {
     private double distanceMiles;
     private AvailabilityStatus status;
     private BigDecimal hourlyRate;
+    private BigDecimal dailyRate;
+    private BigDecimal monthlyRate;
+    private PricingUnit pricingUnit;
     private LocationDTO location;
     private UserSummaryDTO owner;
     private UserSummaryDTO borrower;

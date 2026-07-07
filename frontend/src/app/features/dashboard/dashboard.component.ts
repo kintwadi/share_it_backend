@@ -7,6 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
+import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../core/utils/listing-pricing';
 
 @Component({
   selector: 'app-dashboard',
@@ -89,6 +90,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.settingsConfig.isSectionEnabled('returns', 'qr') ||
       this.settingsConfig.isSectionEnabled('returns', 'manual') ||
       this.settingsConfig.isSectionEnabled('returns', 'dispute');
+  }
+
+  listingPriceLabel(item: Listing): string {
+    if (isListingFree(item)) return 'Free';
+    return `${this.i18n.formatPrice(getListingPrimaryRate(item))}${getListingPriceSuffix(item)}`;
+  }
+
+  listingHasVisiblePrice(item: Listing): boolean {
+    return !isListingFree(item) && getListingPrimaryRate(item) > 0;
   }
 
   get subscriptionEnabled(): boolean {
@@ -520,6 +530,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       category: item.category || '',
       type: item.type,
       hourlyRate: (item as any).hourlyRate ?? 0,
+      dailyRate: (item as any).dailyRate ?? 0,
+      monthlyRate: (item as any).monthlyRate ?? 0,
+      pricingUnit: String((item as any).pricingUnit || 'HOURLY'),
       imageUrl: item.imageUrl,
       gallery: (item as any).gallery ?? [],
       autoApprove: !!(item as any).autoApprove,

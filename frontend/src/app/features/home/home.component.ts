@@ -8,6 +8,7 @@ import { I18nService } from '../../core/services/i18n.service';
 import { Listing, ListingType, AvailabilityStatus, User } from '../../core/models/types';
 import { ResourceCardComponent } from '../../shared/components/resource-card/resource-card';
 import { ButtonComponent } from '../../shared/components/button/button';
+import { getListingPrimaryRate, getListingPricingUnit, getPricingUnitLong, isListingFree } from '../../core/utils/listing-pricing';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
@@ -106,6 +107,21 @@ export class HomeComponent implements OnInit {
 
   get showNearbyFirstBadge(): boolean {
     return this.isLocationEnabled && this.sortMode !== 'newest';
+  }
+
+  listingPricePeriodLabel(listing: Listing): string {
+    if (isListingFree(listing)) return '';
+    if (listing.type === ListingType.SELL) return '';
+    const unit = getPricingUnitLong(getListingPricingUnit(listing));
+    return `per ${unit}`;
+  }
+
+  listingPriceValue(listing: Listing): string {
+    return this.i18n.formatPrice(getListingPrimaryRate(listing));
+  }
+
+  listingHasVisiblePrice(listing: Listing): boolean {
+    return !isListingFree(listing) && getListingPrimaryRate(listing) > 0;
   }
 
   setViewMode(mode: 'modern' | 'list') {
