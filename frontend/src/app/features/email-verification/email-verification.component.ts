@@ -46,6 +46,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   subscriptionScope: 'platform' | 'borrower' = 'platform';
   bookingListingId = '';
   bookingFrom = '';
+  borrowerTrialDays = 14;
   verificationToken = '';
   subscriptionCodeAlreadySent = false;
   loading = true;
@@ -82,6 +83,81 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     }
   }
 
+  private get languageKey(): string {
+    return String(this.i18n.language() || 'en').toLowerCase();
+  }
+
+  get isBorrowerSubscriptionFlow(): boolean {
+    return this.flow === 'subscription' && this.subscriptionScope === 'borrower';
+  }
+
+  get verificationHelpText(): string {
+    if (!this.isBorrowerSubscriptionFlow) {
+      return this.i18n.t('verification.email.help');
+    }
+    const days = this.borrowerTrialDays;
+    if (this.languageKey.startsWith('pt')) {
+      return `Introduza o codigo de 4 digitos para ativar a sua subscricao de emprestimo. O seu teste dura ${days} dias e o cartao nao sera cobrado pela subscricao ate ao fim desse periodo.`;
+    }
+    if (this.languageKey.startsWith('de')) {
+      return `Gib den 4-stelligen Code ein, um dein Ausleih-Abo zu aktivieren. Dein Testzeitraum dauert ${days} Tage und deine Karte wird fuer das Abo erst nach diesem Zeitraum belastet.`;
+    }
+    return `Enter the 4-digit code to activate your borrowing subscription. Your trial lasts ${days} days, and your card will not be charged for the subscription until that trial ends.`;
+  }
+
+  get borrowerTrialNoticeText(): string | null {
+    if (!this.isBorrowerSubscriptionFlow) return null;
+    const days = this.borrowerTrialDays;
+    if (this.languageKey.startsWith('pt')) {
+      return `Vai ver o checkout depois da verificacao, mas esse checkout cria a subscricao com ${days} dias de teste. Hoje nao paga a subscricao nesse mesmo momento.`;
+    }
+    if (this.languageKey.startsWith('de')) {
+      return `Nach der Bestaetigung wirst du zum Checkout weitergeleitet, aber dort wird dein Abo mit ${days} Testtagen gestartet. Heute wird das Abo nicht sofort belastet.`;
+    }
+    return `After verification you will continue to checkout, but that checkout starts your subscription with ${days} free days. The subscription itself is not charged today.`;
+  }
+
+  get verificationLoadingText(): string {
+    if (!this.isBorrowerSubscriptionFlow) {
+      return this.i18n.t('common.loading');
+    }
+    const days = this.borrowerTrialDays;
+    if (this.languageKey.startsWith('pt')) {
+      return `A preparar o seu teste de ${days} dias...`;
+    }
+    if (this.languageKey.startsWith('de')) {
+      return `Dein ${days}-Tage-Test wird vorbereitet...`;
+    }
+    return `Preparing your ${days}-day trial...`;
+  }
+
+  get confirmLoadingText(): string {
+    if (!this.isBorrowerSubscriptionFlow) {
+      return this.i18n.t('verification.email.confirm_loading');
+    }
+    if (this.languageKey.startsWith('pt')) {
+      return 'A confirmar e a iniciar o seu teste...';
+    }
+    if (this.languageKey.startsWith('de')) {
+      return 'Wird bestaetigt und dein Test gestartet...';
+    }
+    return 'Confirming and starting your trial...';
+  }
+
+  get verificationFooterHintText(): string {
+    if (!this.isBorrowerSubscriptionFlow) {
+      return this.i18n.t('verification.email.footer_hint');
+    }
+    const days = this.borrowerTrialDays;
+    if (this.languageKey.startsWith('pt')) {
+      return `Depois da verificacao segue para o checkout da Stripe para iniciar a subscricao. O cartao fica autorizado agora, mas a cobranca da subscricao so acontece apos ${days} dias de teste.`;
+    }
+    if (this.languageKey.startsWith('de')) {
+      return `Nach der Bestaetigung geht es zum Stripe-Checkout, um das Abo zu starten. Die Karte wird jetzt hinterlegt, aber das Abo wird erst nach ${days} Testtagen belastet.`;
+    }
+    return `After verification you continue to Stripe checkout to start the subscription. Your card is saved there, but the subscription is not charged until the ${days}-day trial ends.`;
+  }
+
   async ngOnInit() {
     await this.settingsConfig.ensureLoaded();
     const initParams = this.route.snapshot.queryParams || {};
@@ -91,6 +167,8 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
     this.subscriptionScope = String(initParams['scope'] || '').toLowerCase() === 'borrower' ? 'borrower' : 'platform';
     this.bookingListingId = String(initParams['listingId'] || '');
     this.bookingFrom = String(initParams['from'] || '');
+    const initTrialDays = Number(initParams['trialDays']);
+    if (!Number.isNaN(initTrialDays) && initTrialDays > 0) this.borrowerTrialDays = initTrialDays;
     this.verificationToken = String(initParams['token'] || '');
     this.subscriptionCodeAlreadySent = String(initParams['sent'] || '').toLowerCase() === '1' || String(initParams['sent'] || '').toLowerCase() === 'true';
     const initEmail = String(initParams['email'] || '');
@@ -107,6 +185,8 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
       this.subscriptionScope = String(params['scope'] || '').toLowerCase() === 'borrower' ? 'borrower' : 'platform';
       this.bookingListingId = String(params['listingId'] || this.bookingListingId || '');
       this.bookingFrom = String(params['from'] || this.bookingFrom || '');
+      const trialDays = Number(params['trialDays']);
+      if (!Number.isNaN(trialDays) && trialDays > 0) this.borrowerTrialDays = trialDays;
       this.verificationToken = String(params['token'] || this.verificationToken);
       this.subscriptionCodeAlreadySent = String(params['sent'] || '').toLowerCase() === '1' || String(params['sent'] || '').toLowerCase() === 'true';
       const email = String(params['email'] || '');
