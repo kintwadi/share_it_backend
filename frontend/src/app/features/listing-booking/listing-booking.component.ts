@@ -150,7 +150,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         if (curr) this.subscriptionCurrency = curr;
         this.borrowerCanBorrowDirectly = this.resolveBorrowDirectly(subscription);
         if (shouldResumeBorrowing && this.borrowerCanBorrowDirectly && this.matchesPendingBorrowerBooking(pendingBorrowerBooking, id)) {
-          this.actionNotice = this.i18n.t('listing.booking.subscription_activated_resume_borrow');
+          this.actionNotice = this.borrowerSubscriptionResumeNotice;
         }
       } catch { }
 
@@ -388,7 +388,64 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   get verifiedTrialCaption() {
-    return `Free for ${this.plusTrialDays} days, then ${this.plusMonthlyLabel} / month`;
+    const days = this.plusTrialDays;
+    const price = `${this.plusMonthlyLabel} / month`;
+    const lang = String(this.i18n.language() || 'en').toLowerCase();
+    if (lang.startsWith('pt')) {
+      return `Comeca com ${days} dias gratis. O cartao fica guardado agora, mas a subscricao so e cobrada em ${price} no fim do periodo de teste.`;
+    }
+    if (lang.startsWith('de')) {
+      return `Starte mit ${days} Tagen gratis. Deine Karte wird jetzt gespeichert, aber das Abo wird erst nach dem Testzeitraum mit ${price} belastet.`;
+    }
+    return `Start with ${days} free days. Your card is saved now, but the subscription is only charged at ${price} after the trial ends.`;
+  }
+
+  get borrowerSubscriptionLoadingNotice() {
+    const days = this.plusTrialDays;
+    const lang = String(this.i18n.language() || 'en').toLowerCase();
+    if (lang.startsWith('pt')) {
+      return `A preparar a verificacao do seu teste de ${days} dias. Depois de confirmar o codigo, a sua subscricao fica ativa e o cartao nao sera cobrado antes do fim do periodo de teste.`;
+    }
+    if (lang.startsWith('de')) {
+      return `Die Verifizierung fuer deinen ${days}-Tage-Test wird vorbereitet. Nach der Code-Bestaetigung wird dein Abo aktiviert und deine Karte erst nach dem Testzeitraum belastet.`;
+    }
+    return `Preparing your ${days}-day trial verification. After you confirm the code, your subscription starts and your card will not be charged until the trial ends.`;
+  }
+
+  get borrowerSubscriptionResumeNotice() {
+    const days = this.plusTrialDays;
+    const lang = String(this.i18n.language() || 'en').toLowerCase();
+    if (lang.startsWith('pt')) {
+      return `A subscricao verificada esta ativa. Hoje paga apenas este emprestimo. Se acabou de aderir, o cartao da subscricao so sera cobrado apos os ${days} dias de teste.`;
+    }
+    if (lang.startsWith('de')) {
+      return `Dein verifiziertes Abo ist aktiv. Heute zahlst du nur fuer diese Ausleihe. Wenn du das Abo gerade gestartet hast, wird deine Karte fuer das Abo erst nach ${days} Testtagen belastet.`;
+    }
+    return `Your verified subscription is active. Today you only pay for this borrowing. If you just subscribed, your card will not be charged for the subscription until the ${days}-day trial ends.`;
+  }
+
+  get waivedServiceFeeNotice() {
+    const days = this.plusTrialDays;
+    const lang = String(this.i18n.language() || 'en').toLowerCase();
+    if (lang.startsWith('pt')) {
+      return `A taxa de servico foi removida pela sua subscricao. Hoje paga apenas o item e extras opcionais. Novas subscricoes comecam com ${days} dias de teste antes de qualquer cobranca.`;
+    }
+    if (lang.startsWith('de')) {
+      return `Die Servicegebuehr entfaellt durch dein Abo. Heute zahlst du nur fuer den Artikel und optionale Extras. Neue Abos starten mit ${days} Testtagen vor der ersten Belastung.`;
+    }
+    return `The service fee is removed by your subscription. Today you only pay for the item and optional extras. New subscriptions start with ${days} free days before any subscription charge.`;
+  }
+
+  get borrowerSubscriptionCheckoutNotice() {
+    const days = this.plusTrialDays;
+    const lang = String(this.i18n.language() || 'en').toLowerCase();
+    if (lang.startsWith('pt')) {
+      return `Este pagamento e apenas para o emprestimo. A subscricao e separada: novas adesoes recebem ${days} dias de teste e o cartao nao e cobrado pela subscricao ate ao fim desse periodo.`;
+    }
+    if (lang.startsWith('de')) {
+      return `Diese Zahlung gilt nur fuer die Ausleihe. Das Abo ist getrennt: Neue Abos erhalten ${days} Testtage und die Karte wird fuer das Abo erst nach diesem Zeitraum belastet.`;
+    }
+    return `This payment is only for the borrowing. The subscription is separate: new subscriptions get ${days} free days, and the card is not charged for the subscription until that trial ends.`;
   }
 
   decBookingDuration() {
@@ -429,6 +486,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
             listingId: this.listing?.id,
             from: this.backTo,
             email: this.currentUserEmail,
+            trialDays: this.plusTrialDays,
             sent: '1'
           }
         });
