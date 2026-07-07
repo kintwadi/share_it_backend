@@ -17,6 +17,7 @@ import com.stripe.model.PaymentIntent;
 import com.vicinity24.api.core.model.embeddable.Location;
 import com.vicinity24.api.core.model.enums.AvailabilityStatus;
 import com.vicinity24.api.core.model.enums.ListingType;
+import com.vicinity24.api.core.model.enums.PricingUnit;
 import com.vicinity24.api.core.model.enums.UserRole;
 import com.vicinity24.api.core.repository.ReturnSessionRepository;
 import com.vicinity24.api.core.repository.UserRepository;
@@ -109,6 +110,98 @@ public class ListingService {
             rate = DEFAULT_SERVICE_FEE_PERCENT;
         }
         return BigDecimal.valueOf(rate);
+    }
+
+    private PricingUnit normalizePricingUnit(PricingUnit pricingUnit) {
+        return pricingUnit != null ? pricingUnit : PricingUnit.HOURLY;
+    }
+
+    private BigDecimal sanitizeRate(BigDecimal rate) {
+        if (rate == null || rate.compareTo(BigDecimal.ZERO) < 0) {
+            return BigDecimal.ZERO;
+        }
+        return rate;
+    }
+
+    private BigDecimal[] normalizeListingRates(ListingType type, PricingUnit pricingUnit, BigDecimal hourlyRate, BigDecimal dailyRate, BigDecimal monthlyRate) {
+        if (type == ListingType.GIVE) {
+            return new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO };
+        }
+
+        BigDecimal safeHourly = sanitizeRate(hourlyRate);
+        BigDecimal safeDaily = sanitizeRate(dailyRate);
+        BigDecimal safeMonthly = sanitizeRate(monthlyRate);
+
+        if (type != ListingType.LEND) {
+            return new BigDecimal[] { safeHourly, BigDecimal.ZERO, BigDecimal.ZERO };
+        }
+
+        PricingUnit unit = normalizePricingUnit(pricingUnit);
+        if (unit == PricingUnit.DAILY && safeDaily.compareTo(BigDecimal.ZERO) <= 0 && safeHourly.compareTo(BigDecimal.ZERO) > 0) {
+            safeDaily = safeHourly;
+        }
+        if (unit == PricingUnit.MONTHLY && safeMonthly.compareTo(BigDecimal.ZERO) <= 0 && safeHourly.compareTo(BigDecimal.ZERO) > 0) {
+            safeMonthly = safeHourly;
+        }
+
+        return new BigDecimal[] { safeHourly, safeDaily, safeMonthly };
+    }
+
+    private BigDecimal getRateForUnit(Listing listing, PricingUnit unit) {
+        if (listing == null) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.GIVE) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.SELL) return sanitizeRate(listing.getHourlyRate());
+
+        BigDecimal hourly = sanitizeRate(listing.getHourlyRate());
+        BigDecimal daily = sanitizeRate(listing.getDailyRate());
+        BigDecimal monthly = sanitizeRate(listing.getMonthlyRate());
+        PricingUnit pricingUnit = normalizePricingUnit(listing.getPricingUnit());
+
+        if (unit == PricingUnit.DAILY) {
+            if (daily.compareTo(BigDecimal.ZERO) > 0) return daily;
+            if (pricingUnit == PricingUnit.DAILY && hourly.compareTo(BigDecimal.ZERO) > 0) return hourly;
+            return BigDecimal.ZERO;
+        }
+        if (unit == PricingUnit.MONTHLY) {
+            if (monthly.compareTo(BigDecimal.ZERO) > 0) return monthly;
+            if (pricingUnit == PricingUnit.MONTHLY && hourly.compareTo(BigDecimal.ZERO) > 0) return hourly;
+            return BigDecimal.ZERO;
+        }
+        return hourly;
+    }
+
+    private BigDecimal getPrimaryRate(Listing listing) {
+        if (listing == null) return BigDecimal.ZERO;
+        if (listing.getType() == ListingType.GIVE || listing.getType() == ListingType.SELL) {
+            return sanitizeRate(listing.getHourlyRate());
+        }
+        return getRateForUnit(listing, normalizePricingUnit(listing.getPricingUnit()));
+    }
+
+    private int resolveChargeDuration(Listing listing, int durationValue, PricingUnit durationUnit, int durationHoursFallback) {
+        if (listing == null || listing.getType() == ListingType.GIVE || listing.getType() == ListingType.SELL) {
+            return 1;
+        }
+        int candidate = durationValue > 0 ? durationValue : durationHoursFallback;
+        return candidate > 0 ? candidate : 1;
+    }
+
+    private PricingUnit resolveChargeUnit(Listing listing, PricingUnit requestedUnit) {
+        if (listing == null) return PricingUnit.HOURLY;
+        if (listing.getType() == ListingType.GIVE || listing.getType() == ListingType.SELL) {
+            return PricingUnit.HOURLY;
+        }
+        PricingUnit listingUnit = normalizePricingUnit(listing.getPricingUnit());
+        return requestedUnit != null ? requestedUnit : listingUnit;
+    }
+
+    private BigDecimal calculatePrimaryRentalAmount(Listing listing, int durationValue, PricingUnit durationUnit, int durationHoursFallback) {
+        BigDecimal rate = getPrimaryRate(listing);
+        if (listing == null || listing.getType() == ListingType.GIVE || listing.getType() == ListingType.SELL) {
+            return rate;
+        }
+        int duration = resolveChargeDuration(listing, durationValue, durationUnit, durationHoursFallback);
+        return rate.multiply(BigDecimal.valueOf(duration));
     }
 
     private boolean isConfirmedStripeBorrowPayment(Listing listing, User borrower, BorrowRequest request, BigDecimal expectedAmount) {
@@ -213,7 +306,11 @@ public class ListingService {
             .filter(l -> search == null || (l.getTitle() != null && l.getTitle().toLowerCase().contains(search.toLowerCase())))
             .filter(l -> category == null || (l.getCategory() != null && l.getCategory().equalsIgnoreCase(category)))
             .filter(l -> type == null || (l.getType() != null && l.getType().name().equalsIgnoreCase(type)))
-            .filter(l -> minPrice == null || (l.getHourlyRate() != null && l.getHourlyRate().compareTo(BigDecimal.valueOf(minPrice)) >= 0))
+            .filter(l -> {
+                if (minPrice == null) return true;
+                BigDecimal rate = getPrimaryRate(l);
+                return rate.compareTo(BigDecimal.valueOf(minPrice)) >= 0;
+            })
             .toList();
 
         final boolean hasViewerLocation = viewerLat != null && viewerLng != null;
@@ -297,10 +394,8 @@ public class ListingService {
         String pickupZip = req.getPickupLocationId() == null ? safePickupZip(req.getPickupLocationZip()) : null;
         String pickupCustom = req.getPickupLocationId() == null ? formatPickupCustom(pickupStreet, pickupHouse, pickupCity, pickupZip, safePickupCustom(req.getPickupLocationCustom())) : null;
         boolean autoApprove = subscriptionService.isPremiumLender(owner);
-        BigDecimal hourlyRate = req.getHourlyRate();
-        if (req.getType() == ListingType.GIVE) {
-            hourlyRate = BigDecimal.ZERO;
-        }
+        PricingUnit pricingUnit = normalizePricingUnit(req.getPricingUnit());
+        BigDecimal[] rates = normalizeListingRates(req.getType(), pricingUnit, req.getHourlyRate(), req.getDailyRate(), req.getMonthlyRate());
         String streetAddress = safeText(req.getStreetAddress());
         String city = safeText(req.getCity());
         String postalCode = safeText(req.getPostalCode());
@@ -351,7 +446,10 @@ public class ListingService {
                 .type(req.getType())
                 .imageUrl(req.getImageUrl())
                 .gallery(req.getGallery())
-                .hourlyRate(hourlyRate)
+                .hourlyRate(rates[0])
+                .dailyRate(rates[1])
+                .monthlyRate(rates[2])
+                .pricingUnit(pricingUnit)
                 .autoApprove(autoApprove)
                 .insuranceRequired(req.isInsuranceRequired())
                 .status(AvailabilityStatus.AVAILABLE)
@@ -406,11 +504,12 @@ public class ListingService {
         l.setImageUrl(req.getImageUrl());
         l.setGallery(req.getGallery());
         l.setInsuranceRequired(req.isInsuranceRequired());
-        if (req.getType() == ListingType.GIVE) {
-            l.setHourlyRate(BigDecimal.ZERO);
-        } else {
-            l.setHourlyRate(req.getHourlyRate());
-        }
+        PricingUnit pricingUnit = normalizePricingUnit(req.getPricingUnit());
+        BigDecimal[] rates = normalizeListingRates(req.getType(), pricingUnit, req.getHourlyRate(), req.getDailyRate(), req.getMonthlyRate());
+        l.setHourlyRate(rates[0]);
+        l.setDailyRate(rates[1]);
+        l.setMonthlyRate(rates[2]);
+        l.setPricingUnit(pricingUnit);
         l.setAutoApprove(subscriptionService.isPremiumLender(current));
         String nextStreetAddress = safeText(req.getStreetAddress());
         String nextCity = safeText(req.getCity());
@@ -592,13 +691,10 @@ public class ListingService {
         
         // Calculate amount
         BigDecimal amount = BigDecimal.ZERO;
-        BigDecimal hourlyRate = l.getHourlyRate() != null ? l.getHourlyRate() : BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
-        boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
-        int duration = isTimeBased ? (request.getDurationHours() > 0 ? request.getDurationHours() : 1) : 1;
-        totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
+        totalCost = calculatePrimaryRentalAmount(l, request.getDurationValue(), request.getDurationUnit(), request.getDurationHours());
 
         String borrowerPath = request.getBorrowerPath() != null ? request.getBorrowerPath().toUpperCase() : "VERIFIED";
         boolean borrowerCanBorrowDirectly = borrowerSubscriptionService != null && borrowerSubscriptionService.canBorrowDirectly(borrower);
@@ -994,6 +1090,9 @@ public class ListingService {
             .distanceMiles(dist)
             .status(l.getStatus())
             .hourlyRate(l.getHourlyRate())
+            .dailyRate(l.getDailyRate())
+            .monthlyRate(l.getMonthlyRate())
+            .pricingUnit(normalizePricingUnit(l.getPricingUnit()))
             .location(LocationDTO.builder()
                 .x(l.getLocation() != null ? l.getLocation().getLat() : null)
                 .y(l.getLocation() != null ? l.getLocation().getLng() : null)
@@ -1400,10 +1499,9 @@ public class ListingService {
         User borrower = userRepository.findById(borrowerId)
                 .orElseThrow(() -> new RuntimeException("borrower_not_found"));
 
-        BigDecimal hourlyRate = l.getHourlyRate() != null ? l.getHourlyRate() : BigDecimal.ZERO;
-        boolean isTimeBased = l.getType() != ListingType.GIVE && l.getType() != ListingType.SELL;
-        int duration = isTimeBased ? (durationHours > 0 ? durationHours : 1) : 1;
-        BigDecimal totalCost = hourlyRate.multiply(BigDecimal.valueOf(duration));
+        PricingUnit durationUnit = resolveChargeUnit(l, null);
+        int duration = resolveChargeDuration(l, 0, durationUnit, durationHours);
+        BigDecimal totalCost = calculatePrimaryRentalAmount(l, duration, durationUnit, durationHours);
         BigDecimal serviceFee = BigDecimal.ZERO;
         BigDecimal depositAmount = BigDecimal.ZERO;
         String bp = borrowerPath != null ? borrowerPath.toUpperCase() : "VERIFIED";

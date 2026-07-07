@@ -10,7 +10,6 @@
   :root {
     --bg: #f7f9fc;
     --surface: #ffffff;
-    --surface-hover: #fafbfd;
     --border: #e6eaf0;
     --border-strong: #d3dae4;
     --text: #0f172a;
@@ -22,7 +21,7 @@
     --accent-bg: #f0fdfa;
     --success: #10b981;
     --success-bg: #ecfdf5;
-    --danger: #ef4444;
+    --success-border: #d1fae5;
     --warning: #f59e0b;
     --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
     --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
@@ -68,16 +67,8 @@
     align-items: center;
     gap: 8px;
   }
-  .logo-dot {
-    width: 8px; height: 8px;
-    background: var(--accent);
-    border-radius: 50%;
-  }
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  .logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+  .nav { display: flex; align-items: center; gap: 4px; }
   .nav-link {
     display: flex;
     align-items: center;
@@ -93,11 +84,7 @@
   .nav-link:hover { background: var(--bg); color: var(--text); }
   .nav-link.active { background: var(--accent-light); color: var(--accent); }
   .nav-link svg { width: 18px; height: 18px; }
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
+  .header-right { display: flex; align-items: center; gap: 16px; }
   .lang-btn {
     display: flex;
     align-items: center;
@@ -125,11 +112,7 @@
     transition: all 0.2s ease;
   }
   .user-menu:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
-  .user-avatar-sm {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
+  .user-avatar-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
   .user-name { font-size: 14px; font-weight: 500; color: var(--text); }
   .chevron { color: var(--text-subtle); width: 14px; height: 14px; }
 
@@ -262,11 +245,7 @@
     box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
   }
   .input::placeholder, .textarea::placeholder { color: var(--text-subtle); }
-  .textarea {
-    resize: vertical;
-    min-height: 90px;
-    line-height: 1.5;
-  }
+  .textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
   .select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
@@ -308,11 +287,7 @@
   .type-btn svg { width: 16px; height: 16px; }
 
   /* Two col row */
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
   /* Section label */
   .section-label {
@@ -324,27 +299,193 @@
     margin-bottom: 14px;
   }
 
-  /* Hourly + approval */
+  /* ===== PRICING SECTION ===== */
+  .pricing-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+    border: 1px solid var(--accent-light);
+  }
+  .pricing-card .card-header {
+    margin-bottom: 14px;
+  }
+  .pricing-card .step-num { color: var(--accent); }
+
+  .pricing-format-toggle {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    background: var(--bg);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .format-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .format-btn svg { width: 14px; height: 14px; }
+  .format-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+  .format-btn:hover:not(.active) { color: var(--text); }
+
+  .rate-input-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .rate-input-wrap .input {
+    padding: 14px 48px 14px 14px;
+    font-size: 18px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .rate-suffix {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-subtle);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .rate-suffix .currency {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .rate-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .rate-preview-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .rate-preview-icon svg { width: 16px; height: 16px; }
+  .rate-preview-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .rate-preview-label {
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-weight: 500;
+  }
+  .rate-preview-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .rate-preview-value span { color: var(--accent); }
+
+  /* Advanced rates */
+  .advanced-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .advanced-toggle:hover {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .advanced-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .advanced-toggle-label svg { width: 14px; height: 14px; color: var(--accent); }
+  .advanced-toggle-arrow {
+    color: var(--text-subtle);
+    width: 14px; height: 14px;
+    transition: transform 0.2s ease;
+  }
+  .advanced-toggle.open .advanced-toggle-arrow {
+    transform: rotate(180deg);
+  }
+  .advanced-rates {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .advanced-rates.show { display: block; }
+  .advanced-rate-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .advanced-rate-row:last-child { margin-bottom: 0; }
+  .advanced-rate-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .advanced-rate-label svg { width: 12px; height: 12px; }
+  .advanced-rate-input {
+    position: relative;
+  }
+  .advanced-rate-input .input {
+    padding: 8px 36px 8px 10px;
+    font-size: 13px;
+  }
+  .advanced-rate-input .rate-suffix {
+    right: 10px;
+    font-size: 12px;
+  }
+  .rate-hint {
+    font-size: 11px;
+    color: var(--text-subtle);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Approval toggle */
   .rate-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
   }
-  .input-with-suffix {
-    position: relative;
-  }
-  .input-with-suffix .input { padding-right: 28px; }
-  .input-suffix {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-subtle);
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  /* Toggle switch */
   .toggle-wrap {
     display: flex;
     align-items: center;
@@ -363,11 +504,7 @@
     color: var(--success);
   }
   .toggle-label svg { width: 16px; height: 16px; }
-  .toggle-sub {
-    font-size: 11px;
-    color: var(--text-subtle);
-    font-weight: 400;
-  }
+  .toggle-sub { font-size: 11px; color: var(--text-subtle); font-weight: 400; }
   .toggle {
     position: relative;
     width: 40px; height: 22px;
@@ -397,15 +534,8 @@
     gap: 12px;
     margin-bottom: 12px;
   }
-  .loc-header h3 {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-  .loc-header p {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
+  .loc-header h3 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .loc-header p { font-size: 12px; color: var(--text-muted); }
   .btn-location {
     display: flex;
     align-items: center;
@@ -434,10 +564,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
-  .upload-area:hover {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-  }
+  .upload-area:hover { border-color: var(--accent); background: var(--accent-bg); }
   .upload-icon {
     width: 40px; height: 40px;
     margin: 0 auto 10px;
@@ -449,15 +576,8 @@
     justify-content: center;
   }
   .upload-icon svg { width: 20px; height: 20px; }
-  .upload-title {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .upload-hint {
-    font-size: 12px;
-    color: var(--text-subtle);
-  }
+  .upload-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .upload-hint { font-size: 12px; color: var(--text-subtle); }
 
   /* Gallery */
   .gallery-grid {
@@ -479,11 +599,7 @@
     background: var(--bg);
     color: var(--text-subtle);
   }
-  .gallery-add:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-bg);
-  }
+  .gallery-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
   .gallery-add svg { width: 20px; height: 20px; }
   .gallery-add span { font-size: 11px; font-weight: 600; }
   .gallery-item {
@@ -493,10 +609,7 @@
     position: relative;
     background: var(--bg);
   }
-  .gallery-item img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
   .gallery-remove {
     position: absolute;
     top: 4px; right: 4px;
@@ -540,11 +653,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
-  .avail-btn.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
-  }
+  .avail-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
   .avail-btn svg { width: 14px; height: 14px; }
 
   /* Exchange location */
@@ -563,20 +672,9 @@
     background: var(--surface);
   }
   .exchange-opt:hover { border-color: var(--border-strong); }
-  .exchange-opt.active {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-  }
-  .exchange-opt h4 {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .exchange-opt p {
-    font-size: 11px;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
+  .exchange-opt.active { border-color: var(--accent); background: var(--accent-bg); }
+  .exchange-opt h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .exchange-opt p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
   .exchange-opt .tag {
     display: inline-block;
     margin-top: 6px;
@@ -660,11 +758,7 @@
     padding-top: 20px;
     border-top: 1px solid var(--border);
   }
-  .bottom-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .bottom-actions { display: flex; align-items: center; gap: 10px; }
   .btn-cancel {
     padding: 10px 18px;
     border: 1px solid var(--border);
@@ -722,10 +816,7 @@
     align-items: center;
     gap: 10px;
   }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast svg { width: 18px; height: 18px; color: var(--success); }
 
   /* Responsive */
@@ -744,6 +835,8 @@
     .bottom-actions { justify-content: stretch; }
     .bottom-actions > * { flex: 1; }
     .safety-note { justify-content: center; }
+    .pricing-format-toggle { grid-template-columns: repeat(3, 1fr); }
+    .format-btn { font-size: 11px; padding: 8px 4px; }
   }
 </style>
 </head>
@@ -757,7 +850,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span>Discover</span>
       </a>
-      <a href="#" class="nav-link">
+      <a href="#" class="nav-link active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Dashboard</span>
       </a>
@@ -772,8 +865,8 @@
         EN
       </button>
       <div class="user-menu">
-        <img src="https://image.qwenlm.ai/public_source/26619a1d-b784-4009-9f28-47e192b7ef0c/12730b25d-f9ed-4005-a53c-cd05cd32b3ab.png" alt="Linda Lender" class="user-avatar-sm" />
-        <span class="user-name">Linda Lender</span>
+        <img src="https://image.qwenlm.ai/public_source/26619a1d-b784-4009-9f28-47e192b7ef0c/12730b25d-f9ed-4005-a53c-cd05cd32b3ab.png" alt="Lender" class="user-avatar-sm" />
+        <span class="user-name">Lender</span>
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
@@ -838,6 +931,98 @@
         </div>
       </div>
 
+      <!-- ===== PRICING (NEW) ===== -->
+      <div class="card pricing-card">
+        <div class="card-header">
+          <div class="step-label">
+            <span class="step-num">Pricing</span>
+            <span class="step-title">Set your rates</span>
+          </div>
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+
+        <!-- Format toggle -->
+        <div class="pricing-format-toggle">
+          <button class="format-btn active" data-format="hourly" onclick="setFormat('hourly')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Hourly
+          </button>
+          <button class="format-btn" data-format="daily" onclick="setFormat('daily')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Daily
+          </button>
+          <button class="format-btn" data-format="monthly" onclick="setFormat('monthly')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="12" y2="18.01"/><line x1="16" y1="18" x2="16" y2="18.01"/></svg>
+            Monthly
+          </button>
+        </div>
+
+        <!-- Main rate input -->
+        <div class="rate-input-wrap">
+          <input type="number" class="input" id="mainRate" placeholder="0.00" min="0" step="0.01" oninput="updatePreview()" />
+          <div class="rate-suffix">
+            <span class="currency">€</span>
+            <span id="rateUnit">/hr</span>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="rate-preview">
+          <div class="rate-preview-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="rate-preview-text">
+            <div class="rate-preview-label">Renters will see</div>
+            <div class="rate-preview-value" id="previewText">€0.00 <span>per hour</span></div>
+          </div>
+        </div>
+
+        <!-- Advanced: set all rates -->
+        <div class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">
+          <div class="advanced-toggle-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            Set rates for all periods
+          </div>
+          <svg class="advanced-toggle-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+
+        <div class="advanced-rates" id="advancedRates">
+          <div class="advanced-rate-row">
+            <div class="advanced-rate-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Hourly rate
+            </div>
+            <div class="advanced-rate-input">
+              <input type="number" class="input" id="hourlyRate" placeholder="0.00" min="0" step="0.01" />
+              <div class="rate-suffix"><span class="currency">€</span>/hr</div>
+            </div>
+          </div>
+          <div class="advanced-rate-row">
+            <div class="advanced-rate-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Daily rate
+            </div>
+            <div class="advanced-rate-input">
+              <input type="number" class="input" id="dailyRate" placeholder="0.00" min="0" step="0.01" />
+              <div class="rate-suffix"><span class="currency">€</span>/day</div>
+            </div>
+          </div>
+          <div class="advanced-rate-row">
+            <div class="advanced-rate-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/></svg>
+              Monthly rate
+            </div>
+            <div class="advanced-rate-input">
+              <input type="number" class="input" id="monthlyRate" placeholder="0.00" min="0" step="0.01" />
+              <div class="rate-suffix"><span class="currency">€</span>/mo</div>
+            </div>
+          </div>
+          <div class="rate-hint">💡 Offering multiple periods can increase bookings by up to 40%</div>
+        </div>
+      </div>
+
       <!-- Details Settings -->
       <div class="card">
         <div class="section-label">Details Settings</div>
@@ -848,13 +1033,6 @@
         </div>
 
         <div class="rate-row">
-          <div class="field">
-            <label class="field-label">Hourly rate</label>
-            <div class="input-with-suffix">
-              <input type="number" class="input" placeholder="0" min="0" step="0.5" />
-              <span class="input-suffix">€</span>
-            </div>
-          </div>
           <div class="field">
             <label class="field-label">Approval settings</label>
             <div class="toggle-wrap">
@@ -932,6 +1110,14 @@
           <div class="exchange-opt" onclick="selectExchange(this)">
             <h4>Local bakery partner</h4>
             <p>Levignacq 60, Frankfurt</p>
+          </div>
+          <div class="exchange-opt" onclick="selectExchange(this)">
+            <h4>Public meetup spot</h4>
+            <p>Konstablerwache 6, Frankfurt</p>
+          </div>
+          <div class="exchange-opt" onclick="selectExchange(this)">
+            <h4>Other</h4>
+            <p>Enter a coarse location</p>
           </div>
         </div>
 
@@ -1037,6 +1223,38 @@
           </div>
         </div>
       </div>
+
+      <!-- Pricing summary card -->
+      <div class="card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-color: transparent;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div class="step-icon" style="background: rgba(255,255,255,0.15); color: white;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.7);text-transform:uppercase;">Listing preview</div>
+            <div style="font-size:14px;font-weight:600;">How renters see your price</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,0.08);border-radius:8px;">
+            <span style="font-size:13px;color:rgba(255,255,255,0.8);">Primary rate</span>
+            <span style="font-size:14px;font-weight:700;" id="summaryPrimary">€0.00/hr</span>
+          </div>
+          <div id="summaryExtras" style="display:none;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;">
+              <span style="color:rgba(255,255,255,0.7);">Daily rate</span>
+              <span style="font-weight:600;" id="summaryDaily">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.05);border-radius:8px;font-size:12px;">
+              <span style="color:rgba(255,255,255,0.7);">Monthly rate</span>
+              <span style="font-weight:600;" id="summaryMonthly">—</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px;">
+            💡 Set multiple rates to attract more renters
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1062,9 +1280,52 @@
 </div>
 
 <script>
+  let currentFormat = 'hourly';
+
   function setType(type) {
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     document.querySelector(`.type-btn[data-type="${type}"]`).classList.add('active');
+  }
+
+  function setFormat(format) {
+    currentFormat = format;
+    document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.format-btn[data-format="${format}"]`).classList.add('active');
+
+    const units = { hourly: '/hr', daily: '/day', monthly: '/mo' };
+    const labels = { hourly: 'per hour', daily: 'per day', monthly: 'per month' };
+    document.getElementById('rateUnit').textContent = units[format];
+
+    // Update preview
+    updatePreview();
+
+    // Sync main rate to the specific advanced field if open
+    const mainVal = document.getElementById('mainRate').value;
+    const fieldMap = { hourly: 'hourlyRate', daily: 'dailyRate', monthly: 'monthlyRate' };
+    const targetField = document.getElementById(fieldMap[format]);
+    if (targetField && mainVal) targetField.value = mainVal;
+  }
+
+  function updatePreview() {
+    const val = parseFloat(document.getElementById('mainRate').value) || 0;
+    const labels = { hourly: 'per hour', daily: 'per day', monthly: 'per month' };
+    document.getElementById('previewText').innerHTML = `€${val.toFixed(2)} <span>${labels[currentFormat]}</span>`;
+    document.getElementById('summaryPrimary').textContent = `€${val.toFixed(2)}/${currentFormat === 'hourly' ? 'hr' : currentFormat === 'daily' ? 'day' : 'mo'}`;
+
+    // Update extras summary
+    const dailyVal = document.getElementById('dailyRate').value;
+    const monthlyVal = document.getElementById('monthlyRate').value;
+    const hasExtras = dailyVal || monthlyVal;
+    document.getElementById('summaryExtras').style.display = hasExtras ? 'flex' : 'none';
+    document.getElementById('summaryDaily').textContent = dailyVal ? `€${parseFloat(dailyVal).toFixed(2)}/day` : '—';
+    document.getElementById('summaryMonthly').textContent = monthlyVal ? `€${parseFloat(monthlyVal).toFixed(2)}/mo` : '—';
+  }
+
+  function toggleAdvanced() {
+    const toggle = document.getElementById('advancedToggle');
+    const rates = document.getElementById('advancedRates');
+    toggle.classList.toggle('open');
+    rates.classList.toggle('show');
   }
 
   function setAvail(btn, mode) {
@@ -1136,6 +1397,19 @@
     galleryImages.splice(i, 1);
     renderGallery();
   }
+
+  // Sync advanced rates back to main preview
+  ['hourlyRate', 'dailyRate', 'monthlyRate'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const fieldMap = { hourlyRate: 'hourly', dailyRate: 'daily', monthlyRate: 'monthly' };
+      const format = fieldMap[id];
+      const val = document.getElementById(id).value;
+      if (val && format === currentFormat) {
+        document.getElementById('mainRate').value = val;
+      }
+      updatePreview();
+    });
+  });
 
   let toastTimer;
   function showToast(msg) {

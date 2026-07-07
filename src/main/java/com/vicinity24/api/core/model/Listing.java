@@ -3,6 +3,7 @@ package com.vicinity24.api.core.model;
 import com.vicinity24.api.core.model.embeddable.Location;
 import com.vicinity24.api.core.model.enums.AvailabilityStatus;
 import com.vicinity24.api.core.model.enums.ListingType;
+import com.vicinity24.api.core.model.enums.PricingUnit;
 import com.vicinity24.api.core.partner.model.Partner;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
@@ -47,6 +48,10 @@ public class Listing {
     @ElementCollection
     private List<String> gallery;
     private BigDecimal hourlyRate;
+    private BigDecimal dailyRate;
+    private BigDecimal monthlyRate;
+    @Enumerated(EnumType.STRING)
+    private PricingUnit pricingUnit;
     private boolean autoApprove;
     private boolean insuranceRequired;
     @Enumerated(EnumType.STRING)
