@@ -105,8 +105,12 @@ export class SettingsComponent implements OnInit {
   verificationError: string | null = null;
   verificationSuccess: string | null = null;
 
-  // Subscription
+  // PLATFORM SUBSCRIPTION ONLY:
+  // `subscription` below is the legacy platform/lender plan state.
+  // Keep it separate from `borrowingSubscription`, which belongs to the
+  // borrower flow started while borrowing an item.
   subscription: any | null = null;
+  borrowingSubscription: any | null = null;
   invoices: any[] = [];
   isLoadingSubscription = false;
   isLoadingInvoices = false;
@@ -253,6 +257,11 @@ export class SettingsComponent implements OnInit {
     const subscriptionEnabled = this.settingsConfig.isSectionEnabled('enable', 'subscription');
     if (this.paymentsEntryFromNewItem) return false;
     return !subscriptionEnabled && !this.hasLendListing;
+  }
+
+  get showBorrowingSubscriptionUnsubscribe(): boolean {
+    const status = String(this.borrowingSubscription?.status || '').trim().toLowerCase();
+    return status === 'active' || status === 'trialing' || status === 'trial_active';
   }
 
   get subscriptionPlanLabel(): string {
@@ -444,6 +453,7 @@ export class SettingsComponent implements OnInit {
       this.applyRequestedTab();
       if (!this.isAdminUser()) {
         this.loadSubscription();
+        this.loadBorrowingSubscription();
       }
       this.loadOverview();
       this.loadDevices();
@@ -983,6 +993,17 @@ export class SettingsComponent implements OnInit {
     }
   }
 
+  async loadBorrowingSubscription() {
+    if (!this.user) return;
+    try {
+      this.borrowingSubscription = await this.api.getCurrentBorrowingSubscription();
+    } catch {
+      this.borrowingSubscription = null;
+    } finally {
+      this.render();
+    }
+  }
+
   async loadInvoices() {
     if (!this.user) return;
     this.isLoadingInvoices = true;
@@ -1045,6 +1066,10 @@ export class SettingsComponent implements OnInit {
   openDeleteAccount() {
     this.deleteAccountError = null;
     this.router.navigate(['/settings/account/delete'], { queryParams: { from: this.router.url } });
+  }
+
+  openBorrowingSubscriptionUnsubscribe() {
+    this.router.navigate(['/settings/borrowing-subscription/unsubscribe'], { queryParams: { from: this.router.url } });
   }
 
   closeDeleteAccount() {

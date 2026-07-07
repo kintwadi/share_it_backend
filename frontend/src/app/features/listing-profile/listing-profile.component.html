@@ -42,7 +42,7 @@
             <div *ngIf="!loadingReviews && reviews.length > 0" class="reviews">
               <div *ngFor="let r of reviews" class="review">
                 <div class="review__top">
-                  <div class="review__name">{{ r.reviewerName || 'Member' }}</div>
+                  <div class="review__name">{{ r.reviewerName || r.authorName || 'Member' }}</div>
                   <div class="review__stars">
                     <lucide-icon *ngFor="let i of [1,2,3,4,5]" [img]="Star" [size]="14" [ngClass]="i <= (r.rating || 0) ? 'star star--on' : 'star'"></lucide-icon>
                   </div>

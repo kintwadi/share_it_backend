@@ -13,6 +13,9 @@ import { I18nService } from '../../core/services/i18n.service';
   styleUrl: './subscription-confirm.component.css'
 })
 export class SubscriptionConfirmComponent implements OnInit {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // This confirmation step belongs to the legacy platform/lender subscription flow.
+  // Borrower subscription confirmation happens through the borrowing journey instead.
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);

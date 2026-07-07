@@ -16,6 +16,10 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
   styleUrl: './subscription-checkout.component.css'
 })
 export class SubscriptionCheckoutComponent implements OnInit {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // This Stripe checkout screen is for the legacy platform/lender subscription flow.
+  // Backend checkout-session creation is intentionally disabled to avoid accidental
+  // real Stripe charges while the platform subscription feature is turned off.
   route = inject(ActivatedRoute);
   router = inject(Router);
   api = inject(ApiService);

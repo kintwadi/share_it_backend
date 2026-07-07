@@ -27,6 +27,10 @@ import java.util.Random;
 
 @Service
 public class SubscriptionService {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // This service manages the legacy platform/lender subscription model.
+    // Keep it separate from BorrowerSubscriptionService, which handles the
+    // borrower-facing verified borrowing subscription flow.
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionService.class);
 
@@ -100,6 +104,10 @@ public class SubscriptionService {
         return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.subscription", true);
     }
 
+    public boolean isBorrowingSubscriptionEnabled() {
+        return runtimeSettingsService == null || runtimeSettingsService.isEnabled("settings.enable.borrowing.subscription", true);
+    }
+
     private boolean isSubscriptionEnforced() {
         return isSubscriptionEnabled();
     }
@@ -108,14 +116,15 @@ public class SubscriptionService {
 
     @Transactional
     public void sendVerificationCode(User user, String planType, String language) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This email verification flow belongs to platform/lender plan onboarding.
         if (!isSubscriptionEnforced()) {
             throw new RuntimeException("subscription_disabled");
         }
         String requestedPlan = planType != null && !planType.isBlank() ? planType.trim().toLowerCase() : null;
         String requestedLanguage = language != null && !language.isBlank() ? language.trim().toLowerCase() : null;
         // Check if there's already an active verification code for this user
-        Optional<SubscriptionVerificationCode> existingCode = verificationCodeRepository.findActiveCodeForUser(
-            user, LocalDateTime.now());
+        Optional<SubscriptionVerificationCode> existingCode = findLatestActiveVerificationCode(user);
         
         if (existingCode.isPresent()) {
             String code = existingCode.get().getCode();
@@ -171,8 +180,35 @@ public class SubscriptionService {
         return space > 0 ? trimmed.substring(0, space) : trimmed;
     }
 
+    private Optional<SubscriptionVerificationCode> findLatestActiveVerificationCode(User user) {
+        List<SubscriptionVerificationCode> activeCodes = verificationCodeRepository.findActiveCodesForUser(user, LocalDateTime.now());
+        if (activeCodes.isEmpty()) {
+            return Optional.empty();
+        }
+        if (activeCodes.size() > 1) {
+            logger.warn("Found {} active subscription verification codes for user {}. Keeping the latest and deleting duplicates.",
+                    activeCodes.size(), user != null ? user.getId() : null);
+            verificationCodeRepository.deleteAll(activeCodes.subList(1, activeCodes.size()));
+        }
+        return Optional.of(activeCodes.get(0));
+    }
+
+    private Optional<SubscriptionVerificationCode> findLatestVerificationCodeByValue(User user, String code) {
+        List<SubscriptionVerificationCode> matches = verificationCodeRepository.findAllByUserAndCodeOrderByExpiryDateDesc(user, code);
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+        if (matches.size() > 1) {
+            logger.warn("Found {} subscription verification-code matches for user {} and code {}. Using the latest record.",
+                    matches.size(), user != null ? user.getId() : null, code);
+        }
+        return Optional.of(matches.get(0));
+    }
+
     @Transactional
     public void createStarterSubscription(User user) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This applies the free starter tier used by the legacy platform plan model.
         if (!isSubscriptionEnforced()) {
             throw new RuntimeException("subscription_disabled");
         }
@@ -205,10 +241,12 @@ public class SubscriptionService {
 
     @Transactional
     public void verifyEmailCode(User user, String code) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // Borrower subscription email verification is handled elsewhere.
         if (!isSubscriptionEnforced()) {
             throw new RuntimeException("subscription_disabled");
         }
-        Optional<SubscriptionVerificationCode> codeOpt = verificationCodeRepository.findByUserAndCode(user, code);
+        Optional<SubscriptionVerificationCode> codeOpt = findLatestVerificationCodeByValue(user, code);
         if (codeOpt.isEmpty()) {
             throw new RuntimeException("invalid_verification_code");
         }
@@ -239,6 +277,17 @@ public class SubscriptionService {
             return Optional.empty();
         }
         return subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user).map(sub -> {
+            reconcileSubscriptionPlanType(sub);
+            return toDTO(sub);
+        });
+    }
+
+    public Optional<SubscriptionDTO> getCurrentBorrowerSubscription(User user) {
+        Optional<Subscription> subscription = findLatestBorrowerSubscription(user);
+        if (subscription.isEmpty()) {
+            subscription = recoverBorrowerSubscriptionFromStripe(user);
+        }
+        return subscription.map(sub -> {
             reconcileSubscriptionPlanType(sub);
             return toDTO(sub);
         });
@@ -339,6 +388,36 @@ public class SubscriptionService {
         return false;
     }
 
+    public boolean canBorrowDirectly(User user) {
+        if (!isBorrowingSubscriptionEnabled()) {
+            return false;
+        }
+        return findLatestBorrowerSubscription(user)
+                .map(sub -> isBorrowingSubscriptionPlan(sub) && isActiveSubscriptionStatus(sub.getStatus()))
+                .orElse(false);
+    }
+
+    @Transactional
+    public void cancelBorrowerSubscription(User user) {
+        Subscription sub = findLatestBorrowerSubscription(user)
+                .orElseThrow(() -> new RuntimeException("borrower_subscription_not_found"));
+
+        String currentStatus = sub.getStatus() != null ? sub.getStatus().trim().toLowerCase() : "";
+        if ("canceled".equals(currentStatus) || "cancelled".equals(currentStatus)) {
+            return;
+        }
+
+        String stripeId = sub.getStripeSubscriptionId();
+        if (stripeId != null && !stripeId.isBlank()) {
+            reconcileSubscriptionPlanType(sub);
+            stripePayment.cancelSubscription(stripeId);
+        }
+
+        sub.setStatus("canceled");
+        subscriptionRepository.save(sub);
+        refreshUserBenefitsFromSubscriptions(user);
+    }
+
     public boolean canCancelSubscription(User user) {
         if (!isSubscriptionEnforced()) {
             return false;
@@ -373,15 +452,15 @@ public class SubscriptionService {
 
     @Transactional
     public void syncProSubscriptionFromStripe(User user, String stripeSubscriptionId, String stripeStatus, String planType) {
-        if (!isSubscriptionEnforced()) {
-            return;
-        }
         logger.info("Syncing Stripe subscription for user {}, id: {}, status: {}, plan: {}", 
                    user.getId(), stripeSubscriptionId, stripeStatus, planType);
         LocalDateTime now = LocalDateTime.now();
         String targetPlan = (planType != null && !planType.isBlank()) ? planType : null;
         if ((targetPlan == null || targetPlan.isBlank()) && stripeSubscriptionId != null && !stripeSubscriptionId.isBlank()) {
             targetPlan = resolvePlanTypeFromStripeSubscription(stripeSubscriptionId);
+        }
+        if (!isSubscriptionEnforced() && !(isBorrowingSubscriptionEnabled() && isBorrowingPlanType(targetPlan))) {
+            return;
         }
 
         Optional<Subscription> existing = subscriptionRepository.findFirstByUserOrderByCreatedAtDesc(user);
@@ -655,11 +734,101 @@ public class SubscriptionService {
                 .id(subscription.getId())
                 .planType(subscription.getPlanType())
                 .status(subscription.getStatus())
+                .active(isActiveSubscriptionStatus(subscription.getStatus()))
+                .borrowDirectly(isBorrowDirectSubscription(subscription))
                 .trialStart(subscription.getTrialStart())
                 .trialEnd(subscription.getTrialEnd())
                 .autoChargeAmountCents(subscription.getAutoChargeAmountCents())
                 .autoChargeDate(subscription.getAutoChargeDate())
                 .build();
+    }
+
+    public SubscriptionDTO toSubscriptionDTO(Subscription subscription) {
+        return toDTO(subscription);
+    }
+
+    private boolean isBorrowDirectSubscription(Subscription subscription) {
+        return isBorrowingSubscriptionPlan(subscription) && isActiveSubscriptionStatus(subscription != null ? subscription.getStatus() : null);
+    }
+
+    private Optional<Subscription> findLatestBorrowerSubscription(User user) {
+        if (user == null) return Optional.empty();
+        return subscriptionRepository.findByUser(user).stream()
+                .filter(this::isBorrowingSubscriptionPlan)
+                .max(java.util.Comparator.comparing(
+                        sub -> sub.getCreatedAt() != null ? sub.getCreatedAt() : LocalDateTime.MIN
+                ));
+    }
+
+    private boolean isBorrowingSubscriptionPlan(Subscription subscription) {
+        String planType = normalizePlanType(subscription != null ? subscription.getPlanType() : null);
+        return isBorrowingPlanType(planType);
+    }
+
+    private boolean isBorrowingPlanType(String planType) {
+        String normalizedPlanType = normalizePlanType(planType);
+        return "verified".equalsIgnoreCase(String.valueOf(normalizedPlanType))
+                || PLAN_PLUS.equalsIgnoreCase(String.valueOf(normalizedPlanType));
+    }
+
+    private boolean isActiveSubscriptionStatus(String status) {
+        String normalized = status != null ? status.trim().toLowerCase() : "";
+        return "active".equals(normalized) || "trialing".equals(normalized) || "trial_active".equals(normalized);
+    }
+
+    private Optional<Subscription> recoverBorrowerSubscriptionFromStripe(User user) {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank()) return Optional.empty();
+        String effectivePlusPriceId = runtimeSettingsService.getString("subscription.plus.stripe_price_id", plusStripePriceId);
+        if (effectivePlusPriceId == null || effectivePlusPriceId.isBlank()) return Optional.empty();
+        try {
+            com.stripe.model.Subscription stripeSubscription = stripePayment.findLatestSubscriptionByCustomerEmail(
+                    user.getEmail(),
+                    List.of(effectivePlusPriceId)
+            );
+            if (stripeSubscription == null || stripeSubscription.getId() == null || stripeSubscription.getId().isBlank()) {
+                return Optional.empty();
+            }
+            syncProSubscriptionFromStripe(user, stripeSubscription.getId(), stripeSubscription.getStatus(), PLAN_PLUS);
+            return findLatestBorrowerSubscription(user);
+        } catch (RuntimeException e) {
+            logger.warn("Failed to recover borrower subscription from Stripe for user {}", user.getId(), e);
+            return Optional.empty();
+        }
+    }
+
+    private void refreshUserBenefitsFromSubscriptions(User user) {
+        if (user == null) return;
+        List<String> activeStatuses = List.of("active", "trialing", "trial_active");
+        List<Subscription> activeSubscriptions = subscriptionRepository.findByUserAndStatusIn(user, activeStatuses);
+
+        boolean hasPro = activeSubscriptions.stream().anyMatch(sub -> {
+            String planType = normalizePlanType(sub.getPlanType());
+            return PLAN_PRO.equalsIgnoreCase(planType) || "premium_lender".equalsIgnoreCase(planType);
+        });
+        if (hasPro) {
+            upgradeUserToPro(user);
+            return;
+        }
+
+        java.util.Optional<String> verifiedPlan = activeSubscriptions.stream()
+                .map(Subscription::getPlanType)
+                .map(this::normalizePlanType)
+                .filter(plan -> "verified".equalsIgnoreCase(plan) || PLAN_PLUS.equalsIgnoreCase(plan))
+                .findFirst();
+        if (verifiedPlan.isPresent()) {
+            user.setTrustTier("verified");
+            user.setVerificationStatus(VerificationStatus.VERIFIED);
+            user.setInsuranceCoverageCents(0);
+            trustScoreService.updateTrustScoreForSubscription(user, verifiedPlan.get());
+            userRepository.save(user);
+            return;
+        }
+
+        downgradeUserToStandard(user);
+    }
+
+    public void refreshUserBenefits(User user) {
+        refreshUserBenefitsFromSubscriptions(user);
     }
 
     private void reconcileSubscriptionPlanType(Subscription sub) {

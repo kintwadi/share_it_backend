@@ -201,6 +201,15 @@
   box-shadow: inset 3px 0 0 var(--settings-accent);
 }
 
+.settings-sidebar__link--danger {
+  color: #b42318;
+}
+
+.settings-sidebar__link--danger:hover {
+  background: #fef3f2;
+  color: #912018;
+}
+
 .settings-content-card {
   background: var(--settings-surface);
   border: 1px solid var(--settings-border);

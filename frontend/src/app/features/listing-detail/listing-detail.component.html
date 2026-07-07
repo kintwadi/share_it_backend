@@ -1,4 +1,4 @@
-﻿<ng-container *ngIf="loading; else loadedTemplate">
+<ng-container *ngIf="loading; else loadedTemplate">
   <div class="listing-detail-loading">
     <lucide-icon [img]="Loader2" size="40" class="spin"></lucide-icon>
     <p>{{ i18n.t('listing.loading_details') }}</p>
@@ -461,7 +461,7 @@
                       <div class="action-row">
                         <button type="button" class="btn-primary btn-warning" (click)="handleMarkPickedUp()" [disabled]="actionLoading">
                           <lucide-icon *ngIf="actionLoading === 'PICKED_UP'" [img]="Loader2" [size]="16" class="spin"></lucide-icon>
-                          {{ i18n.t('dash.mark_as_picked_up') }}
+                          {{ i18n.t('dash.start_return_process') }}
                         </button>
                         <button type="button" class="btn-secondary btn-warning-outline" (click)="handleContact()">Message Owner</button>
                       </div>

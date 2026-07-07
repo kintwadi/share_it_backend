@@ -29,6 +29,11 @@
           <div>{{actionError}}</div>
         </div>
 
+        <div *ngIf="actionNotice" class="p-4 bg-emerald-50 text-emerald-700 text-sm rounded-xl border border-emerald-100 flex items-start gap-2">
+          <lucide-icon [img]="CheckCircle2" [size]="16" class="mt-0.5"></lucide-icon>
+          <div>{{actionNotice}}</div>
+        </div>
+
         <div *ngIf="bookingStep !== 'PATH_SELECTION'" class="booking-summary-card">
           <div class="booking-summary-card__row">
             <div>{{ i18n.t('listing.borrow.base') }}</div>
@@ -41,6 +46,15 @@
           <div *ngIf="serviceFee > 0" class="booking-summary-card__row">
             <div>{{ i18n.t('listing.borrow.service_fee') }}</div>
             <div class="booking-summary-card__value">{{ i18n.formatPrice(serviceFee) }}</div>
+          </div>
+          <div *ngIf="waivedServiceFee > 0" class="booking-summary-card__row">
+            <div>
+              <div>{{ i18n.t('listing.borrow.service_fee') }}</div>
+              <div class="text-xs text-emerald-600 font-medium">{{ i18n.t('listing.booking.service_fee_waived_notice') }}</div>
+            </div>
+            <div class="booking-summary-card__value">
+              <span class="line-through text-gray-400">{{ i18n.formatPrice(waivedServiceFee) }}</span>
+            </div>
           </div>
           <div *ngIf="depositAmount > 0" class="booking-summary-card__row">
             <div>{{ i18n.t('listing.borrow.deposit') }}</div>
@@ -68,6 +82,7 @@
                   *ngIf="borrowTierEnabled.verified"
                   type="button"
                   (click)="selectedPath='VERIFIED'"
+                  [disabled]="sendingBorrowerVerification"
                   class="payment-option payment-option--feature"
                   [class.payment-option--selected]="selectedPath === 'VERIFIED'"
                 >
@@ -98,6 +113,7 @@
                   *ngIf="borrowTierEnabled.deposit"
                   type="button"
                   (click)="selectedPath='DEPOSIT'"
+                  [disabled]="sendingBorrowerVerification"
                   class="payment-option payment-option--feature"
                   [class.payment-option--selected]="selectedPath === 'DEPOSIT'"
                 >
@@ -127,6 +143,7 @@
                   *ngIf="borrowTierEnabled.fee"
                   type="button"
                   (click)="selectedPath='FEE'"
+                  [disabled]="sendingBorrowerVerification"
                   class="payment-option payment-option--feature"
                   [class.payment-option--selected]="selectedPath === 'FEE'"
                 >
@@ -152,11 +169,17 @@
               <button
                 type="button"
                 (click)="continueFromPath()"
-                [disabled]="!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee"
+                [disabled]="sendingBorrowerVerification || (!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee)"
                 class="payment-selection-card__cta"
               >
-                {{ i18n.t('listing.booking.continue') }}
+                <lucide-icon *ngIf="sendingBorrowerVerification" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
+                {{ sendingBorrowerVerification ? i18n.t('verification.email.resend_loading') : i18n.t('listing.booking.continue') }}
               </button>
+
+              <div *ngIf="sendingBorrowerVerification" class="mt-3 text-sm text-gray-500 flex items-center justify-center gap-2">
+                <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                <span>{{ i18n.t('listing.booking.sending_verification_email') }}</span>
+              </div>
             </div>
 
             <div class="payment-selection-card__footer">
@@ -175,7 +198,7 @@
 
             <div class="payment-selection-card__body payment-selection-card__body--checkout">
               <button
-                *ngIf="!isFree && isTimeBased"
+                *ngIf="!isFree && isTimeBased && !shouldSkipBorrowingOptions"
                 type="button"
                 (click)="backToPath()"
                 class="checkout-inline-back"

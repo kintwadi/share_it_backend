@@ -98,6 +98,9 @@ export class ApiService {
   }
 
   async getCurrentSubscription(): Promise<any | null> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // This talks to /api/subscriptions and must not be confused with the
+    // borrower subscription endpoints under /api/borrower-subscription.
     if (!this.authStorage.getToken()) return null;
     try {
       return await firstValueFrom(this.api.get<any>('/subscriptions/me'));
@@ -571,14 +574,21 @@ export class ApiService {
   }
 
   async getSubscriptionConfig(): Promise<{ starter: boolean, plus: boolean, pro: boolean }> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Reads the legacy platform/lender plan flags, not borrower subscription flags.
     return firstValueFrom(this.api.get<any>('/subscriptions/config'));
   }
 
   async subscribeStarter(): Promise<void> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Free starter tier for the platform/lender subscription model.
     return firstValueFrom(this.api.post('/subscriptions/starter', {}));
   }
 
   async createSubscriptionCheckoutSession(planType: string, returnPath: string = '/dashboard'): Promise<{ url: string; sessionId: string }> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // The backend checkout session creation is intentionally disabled right now
+    // to avoid accidental real Stripe charges while platform subscriptions are off.
     return firstValueFrom(this.api.post<any>('/subscriptions/create-checkout-session', { 
       planType,
       returnPath
@@ -586,14 +596,51 @@ export class ApiService {
   }
 
   async syncSubscriptionFromSession(sessionId: string): Promise<any> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Syncs a returned platform/lender Stripe checkout session.
     return firstValueFrom(this.api.post<any>('/subscriptions/sync-session', { sessionId }));
   }
 
   async cancelSubscription(): Promise<any> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Cancels the platform/lender subscription, not the borrowing subscription.
     return firstValueFrom(this.api.post<any>('/subscriptions/cancel', {}));
   }
 
+  async getCurrentBorrowingSubscription(): Promise<any | null> {
+    if (!this.authStorage.getToken()) return null;
+    try {
+      return await firstValueFrom(this.api.get<any>('/borrower-subscription/me'));
+    } catch {
+      return null;
+    }
+  }
+
+  async sendBorrowingSubscriptionVerificationCode(language?: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/borrower-subscription/send-code', { language: language || null }));
+  }
+
+  async verifyBorrowingSubscriptionVerificationCode(code: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/borrower-subscription/verify-code', { code }));
+  }
+
+  async createBorrowingSubscriptionCheckoutSession(returnPath: string = '/dashboard?borrower_subscription=1'): Promise<{ url: string; sessionId: string }> {
+    return firstValueFrom(this.api.post<any>('/borrower-subscription/create-checkout-session', {
+      returnPath
+    }));
+  }
+
+  async syncBorrowingSubscriptionFromSession(sessionId: string): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/borrower-subscription/sync-session', { sessionId }));
+  }
+
+  async cancelBorrowingSubscription(): Promise<any> {
+    return firstValueFrom(this.api.post<any>('/borrower-subscription/unsubscribe', {}));
+  }
+
   async getSubscriptionInvoices(): Promise<any[]> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Borrower subscriptions do not use this invoice feed.
     try {
       const data = await firstValueFrom(this.api.get<any[]>('/subscriptions/invoices'));
       return Array.isArray(data) ? data : [];
@@ -603,10 +650,14 @@ export class ApiService {
   }
 
   async previewSubscriptionUpgrade(newPlan: string): Promise<any> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Used by the legacy platform/lender upgrade path.
     return firstValueFrom(this.api.post<any>('/subscriptions/upgrade/preview', { newPlan }));
   }
 
   async confirmSubscriptionUpgrade(newPlan: string): Promise<any> {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // Confirms a platform/lender plan upgrade.
     return firstValueFrom(this.api.post<any>('/subscriptions/upgrade/confirm', { newPlan }));
   }
 

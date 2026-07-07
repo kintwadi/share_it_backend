@@ -61,6 +61,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   myBorrows: Listing[] = [];
   history: BorrowHistoryItem[] = [];
   recommendations: Listing[] = [];
+  // PLATFORM SUBSCRIPTION ONLY:
+  // `currentSub` is the legacy platform/lender subscription state shown on the dashboard.
+  // Borrower subscription state is handled separately in the borrowing flow/settings.
   currentSub: { planType: string; status: string } | null = null;
   today = new Date();
 
@@ -132,14 +135,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.route.queryParams.subscribe(async params => {
         const sessionId = String(params['session_id'] || '');
+        const borrowerSubscription = String(params['borrower_subscription'] || '').toLowerCase();
         if (sessionId) {
           this.paymentSuccess = true;
           this.render();
           try {
-            await this.api.syncSubscriptionFromSession(sessionId);
+            if (borrowerSubscription === '1' || borrowerSubscription === 'true') {
+              await this.api.syncBorrowingSubscriptionFromSession(sessionId);
+            } else {
+              await this.api.syncSubscriptionFromSession(sessionId);
+            }
           } catch { }
           try {
-            const sub = await this.api.getCurrentSubscription();
+            const sub = (borrowerSubscription === '1' || borrowerSubscription === 'true')
+              ? await this.api.getCurrentBorrowingSubscription()
+              : await this.api.getCurrentSubscription();
             if (sub) {
               this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
             } else {
@@ -149,7 +159,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.currentSub = null;
           }
           try {
-            this.router.navigate([], { relativeTo: this.route, queryParams: { session_id: null }, queryParamsHandling: 'merge', replaceUrl: true });
+            this.router.navigate([], { relativeTo: this.route, queryParams: { session_id: null, borrower_subscription: null }, queryParamsHandling: 'merge', replaceUrl: true });
           } catch { }
           this.render();
           setTimeout(() => {

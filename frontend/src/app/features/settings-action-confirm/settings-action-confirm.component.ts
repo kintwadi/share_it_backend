@@ -7,6 +7,7 @@ import { I18nService } from '../../core/services/i18n.service';
 
 type SettingsConfirmAction =
   | 'cancel-subscription'
+  | 'unsubscribe-borrowing-subscription'
   | 'revoke-device'
   | 'disable-2fa'
   | 'delete-account'
@@ -60,6 +61,7 @@ export class SettingsActionConfirmComponent implements OnInit {
     this.backTo = from.startsWith('/') ? from : '/settings';
     this.action = ([
       'cancel-subscription',
+      'unsubscribe-borrowing-subscription',
       'revoke-device',
       'disable-2fa',
       'delete-account',
@@ -122,6 +124,14 @@ export class SettingsActionConfirmComponent implements OnInit {
       return;
     }
 
+    if (this.action === 'unsubscribe-borrowing-subscription') {
+      this.title = this.i18n.t('settings.borrowing_subscription.unsubscribe_title') || 'Unsubscribe from borrowing subscription?';
+      this.message = this.i18n.t('settings.borrowing_subscription.unsubscribe_msg') || 'This will stop your special borrowing subscription.';
+      this.confirmLabel = this.i18n.t('settings.borrowing_subscription.unsubscribe_cta') || this.i18n.t('common.confirm');
+      this.icon = 'warning';
+      return;
+    }
+
     if (this.action === 'revoke-device') {
       const label = String(this.device?.deviceName || this.device?.userAgent || this.device?.ipAddress || this.device?.id || '').trim();
       this.title = this.i18n.t('settings.security.revoke_title') || 'Revoke device?';
@@ -168,6 +178,12 @@ export class SettingsActionConfirmComponent implements OnInit {
       if (this.action === 'cancel-subscription') {
         await this.api.cancelSubscription();
         this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.subscription.cancel_success') } as any });
+        return;
+      }
+
+      if (this.action === 'unsubscribe-borrowing-subscription') {
+        await this.api.cancelBorrowingSubscription();
+        this.router.navigateByUrl(this.backTo, { state: { noticeSuccess: this.i18n.t('settings.borrowing_subscription.unsubscribe_success') } as any });
         return;
       }
 

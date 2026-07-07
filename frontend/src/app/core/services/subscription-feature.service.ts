@@ -6,6 +6,9 @@ import { SettingsConfigService } from './settings-config.service';
   providedIn: 'root'
 })
 export class SubscriptionFeatureService {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // These computed values describe the legacy platform/lender plan state.
+  // Borrower subscription checks belong to the borrower flow components/services.
   private settings = inject(SettingsConfigService);
   private session = inject(SessionService);
 

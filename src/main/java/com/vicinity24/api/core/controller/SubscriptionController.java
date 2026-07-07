@@ -29,6 +29,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/subscriptions")
 public class SubscriptionController {
+    // PLATFORM SUBSCRIPTION ONLY:
+    // This controller owns the legacy platform/lender subscription flow.
+    // It does NOT handle the borrower subscription flow used during borrowing.
+    // Borrower subscription logic lives under /api/borrower-subscription.
 
     private final SubscriptionService subscriptionService;
     private final UserService userService;
@@ -145,6 +149,10 @@ public class SubscriptionController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody(required = false) Map<String, String> payload
     ) {
+        // PLATFORM SUBSCRIPTION SAFETY SWITCH:
+        // The platform subscription feature is currently disabled in production.
+        // Keep the Stripe checkout creation code below for later reuse, but do not
+        // allow this endpoint to create a real Stripe checkout session right now.
         requireSubscriptionEnabled();
         try {
             if (principal == null) {
@@ -189,24 +197,49 @@ public class SubscriptionController {
             // Ensure returnPath starts with / if not empty
             if (!returnPath.startsWith("/")) returnPath = "/" + returnPath;
             
-            String successUrl = frontendBaseUrl + returnPath;
-            String cancelUrl = frontendBaseUrl + "/subscription/checkout";
-            Session session = stripePayment.createSubscriptionCheckoutSession(
-                    stripePriceId,
-                    trialDays,
-                    successUrl,
-                    cancelUrl,
-                    user.getEmail(),
-                    user.getId().toString()
-            );
-            return ResponseEntity.ok(Map.of(
-                    "sessionId", session.getId(),
-                    "url", session.getUrl()
-            ));
+            String successUrl = buildFrontendAppUrl(returnPath);
+            String cancelUrl = buildFrontendAppUrl("/subscription/checkout");
+
+            // INTENTIONALLY DISABLED:
+            // Do not create a real Stripe checkout session for platform subscriptions
+            // while the platform subscription feature remains disabled/offline.
+            //
+            // Session session = stripePayment.createSubscriptionCheckoutSession(
+            //         stripePriceId,
+            //         trialDays,
+            //         successUrl,
+            //         cancelUrl,
+            //         user.getEmail(),
+            //         user.getId().toString()
+            // );
+            // return ResponseEntity.ok(Map.of(
+            //         "sessionId", session.getId(),
+            //         "url", session.getUrl()
+            // ));
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "platform_subscription_checkout_disabled"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
 
+    }
+
+    private String buildFrontendAppUrl(String routePath) {
+        String base = frontendBaseUrl == null ? "" : frontendBaseUrl.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String path = routePath == null || routePath.isBlank() ? "/" : routePath.trim();
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (base.contains("/#/")) {
+            return base + path;
+        }
+        if (base.endsWith("/#")) {
+            return base + path;
+        }
+        return base + "/#" + path;
     }
 
     private synchronized String ensureStripePriceConfigured(String planType, String currentPriceId, String updatedBy) {
@@ -246,6 +279,9 @@ public class SubscriptionController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> body
     ) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This sync endpoint is for the legacy platform/lender Stripe checkout flow.
+        // Borrower subscription Stripe returns are handled by BorrowerSubscriptionService.
         requireSubscriptionEnabled();
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
@@ -285,6 +321,8 @@ public class SubscriptionController {
 
     @PostMapping("/cancel")
     public ResponseEntity<Map<String, String>> cancelSubscription(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This cancels the platform/lender subscription, not the borrower subscription.
         requireSubscriptionEnabled();
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
@@ -311,6 +349,8 @@ public class SubscriptionController {
 
     @GetMapping("/me")
     public ResponseEntity<SubscriptionDTO> getCurrentSubscription(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This endpoint returns the user's platform/lender subscription state.
         if (!isSubscriptionEnabled()) {
             return ResponseEntity.noContent().build();
         }
@@ -326,6 +366,8 @@ public class SubscriptionController {
     @GetMapping("/invoices")
     public ResponseEntity<List<SubscriptionInvoiceDTO>> getSubscriptionInvoices(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // Borrower subscriptions do not use this invoice endpoint.
         requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
@@ -339,6 +381,8 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionUpgradePreviewDTO> previewUpgrade(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> payload) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This preview is for the platform/lender upgrade path.
         requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");
@@ -354,6 +398,8 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionDTO> confirmUpgrade(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @RequestBody Map<String, String> payload) {
+        // PLATFORM SUBSCRIPTION ONLY:
+        // This confirm path upgrades the platform/lender plan only.
         requireSubscriptionEnabled();
         if (principal == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "unauthorized");

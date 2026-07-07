@@ -15,6 +15,9 @@ import { ButtonComponent } from '../../shared/components/button/button';
   styleUrl: './subscription.component.css',
 })
 export class SubscriptionComponent implements OnInit {
+  // PLATFORM SUBSCRIPTION ONLY:
+  // This screen is for the legacy platform/lender plan chooser.
+  // It is separate from the borrower subscription flow used during borrowing.
   router = inject(Router);
   route = inject(ActivatedRoute);
   api = inject(ApiService);
