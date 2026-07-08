@@ -296,6 +296,7 @@ public class ListingService {
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
             .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
+            .filter(this::isDiscoverableInFeed)
             .filter(l -> isAvailableForDiscovery(current, l))
             .filter(l -> {
                 if (l.getPartner() == null || l.getBorrower() == null) return true;
@@ -588,6 +589,8 @@ public class ListingService {
         for (var row : rows) {
             var l = byId.get(row.getId());
             if (l == null) continue;
+            if (!isDiscoverableInFeed(l)) continue;
+            if (!isAvailableForDiscovery(null, l)) continue;
             out.add(toDTO(l, null, borrowerLat, borrowerLng));
         }
         return out;
@@ -1404,6 +1407,13 @@ public class ListingService {
         if (l.getAvailableFrom() != null && l.getAvailableFrom().isAfter(now)) return false;
         if (l.getAvailableTo() != null && l.getAvailableTo().isBefore(now)) return false;
         return true;
+    }
+
+    private boolean isDiscoverableInFeed(Listing l) {
+        if (l == null) return false;
+        if (l.getBorrower() != null) return false;
+        AvailabilityStatus st = l.getStatus();
+        return st == AvailabilityStatus.AVAILABLE || st == AvailabilityStatus.PARTNER_ACTIVE;
     }
 
     private boolean canBypassAvailability(User current, Listing l) {
