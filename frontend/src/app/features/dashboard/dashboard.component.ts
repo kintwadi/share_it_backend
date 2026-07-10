@@ -44,6 +44,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly EyeOff = EyeOff;
   readonly Eye = Eye;
+  readonly Search = Search;
   readonly MapPin = MapPin;
   readonly ChevronRight = ChevronRight;
   readonly CheckCircle2 = CheckCircle2;
@@ -79,6 +80,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   upgradeSuccess = false;
   error: string | null = null;
   private listingsIntervalId: any = null;
+  incomingRequestsSearchQuery = '';
+  incomingRequestsTab: 'all' | 'lend' | 'give' | 'sell' = 'all';
+  lendingSearchQuery = '';
+  lendingTab: 'all' | 'available' | 'requests' | 'active' = 'all';
+  borrowingSearchQuery = '';
+  borrowingTab: 'all' | 'pending' | 'pickup' | 'return' = 'all';
 
   private render() {
     try {
@@ -211,9 +218,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isLoadingRecs = true;
       this.render();
     }
-    this.api.getListings().then(all => {
-      this.myListings = all.filter(l => l.ownerId === this.user?.id);
-      this.myBorrows = all.filter(l => l.borrowerId === this.user?.id);
+    Promise.all([
+      this.api.getMyListings(),
+      this.api.getMyBorrowedListings(),
+      this.api.getListings()
+    ]).then(([owned, borrowed, all]) => {
+      this.myListings = owned;
+      this.myBorrows = borrowed;
       this.recommendations = all
         .filter(l => l.ownerId !== this.user?.id && l.status === AvailabilityStatus.AVAILABLE)
         .slice(0, 4);
@@ -269,6 +280,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.myListings.filter(l => l.status === AvailabilityStatus.PENDING);
   }
 
+  get filteredPendingRequests() {
+    const query = this.normalizeDashboardSearch(this.incomingRequestsSearchQuery);
+    return this.pendingRequests.filter(item => {
+      if (this.incomingRequestsTab === 'lend' && item.type !== ListingType.LEND) return false;
+      if (this.incomingRequestsTab === 'give' && item.type !== ListingType.GIVE) return false;
+      if (this.incomingRequestsTab === 'sell' && item.type !== ListingType.SELL) return false;
+      if (!query) return true;
+      const borrowerName = String(item.borrower?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const category = String(item.category || '').toLowerCase();
+      return borrowerName.includes(query) || title.includes(query) || ref.includes(query) || category.includes(query);
+    });
+  }
+
   get activeBorrows() {
     return this.myBorrows.filter(i =>
       (i.status === AvailabilityStatus.PENDING ||
@@ -281,6 +307,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
       i.type !== ListingType.GIVE &&
       i.type !== ListingType.SELL
     );
+  }
+
+  get filteredLendingItems() {
+    const query = this.normalizeDashboardSearch(this.lendingSearchQuery);
+    return this.myListings.filter(item => {
+      if (this.lendingTab === 'available' && item.status !== AvailabilityStatus.AVAILABLE) return false;
+      if (this.lendingTab === 'requests' && item.status !== AvailabilityStatus.PENDING) return false;
+      if (this.lendingTab === 'active' && !this.listingIsActiveLoan(item)) return false;
+      if (!query) return true;
+      const borrowerName = String(item.borrower?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const pickup = this.pickupLocationText(item).toLowerCase();
+      const category = String(item.category || '').toLowerCase();
+      return title.includes(query) || ref.includes(query) || pickup.includes(query) || borrowerName.includes(query) || category.includes(query);
+    });
+  }
+
+  get filteredBorrowingItems() {
+    const query = this.normalizeDashboardSearch(this.borrowingSearchQuery);
+    return this.activeBorrows.filter(item => {
+      if (this.borrowingTab === 'pending' && item.status !== AvailabilityStatus.PENDING) return false;
+      if (this.borrowingTab === 'pickup' && item.status !== AvailabilityStatus.READY_FOR_PICKUP) return false;
+      if (this.borrowingTab === 'return' && item.status !== AvailabilityStatus.WAITING_FOR_RETURN && item.status !== AvailabilityStatus.BORROWED && item.status !== AvailabilityStatus.DISPUTED) return false;
+      if (!query) return true;
+      const ownerName = String(item.owner?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const pickup = this.pickupLocationText(item).toLowerCase();
+      return title.includes(query) || ref.includes(query) || ownerName.includes(query) || pickup.includes(query);
+    });
   }
 
   get borrowedHistory() {
@@ -415,6 +472,53 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const line1 = `${street} ${house}`.trim();
     const line2 = `${city} ${zip}`.trim();
     return (line1 && line2) ? `${line1}, ${line2}` : (line1 || line2);
+  }
+
+  lendingCounterLabel(tab: 'all' | 'available' | 'requests' | 'active'): number {
+    if (tab === 'available') return this.myListings.filter(item => item.status === AvailabilityStatus.AVAILABLE).length;
+    if (tab === 'requests') return this.myListings.filter(item => item.status === AvailabilityStatus.PENDING).length;
+    if (tab === 'active') return this.myListings.filter(item => this.listingIsActiveLoan(item)).length;
+    return this.myListings.length;
+  }
+
+  incomingRequestsCounterLabel(tab: 'all' | 'lend' | 'give' | 'sell'): number {
+    if (tab === 'lend') return this.pendingRequests.filter(item => item.type === ListingType.LEND).length;
+    if (tab === 'give') return this.pendingRequests.filter(item => item.type === ListingType.GIVE).length;
+    if (tab === 'sell') return this.pendingRequests.filter(item => item.type === ListingType.SELL).length;
+    return this.pendingRequests.length;
+  }
+
+  borrowingCounterLabel(tab: 'all' | 'pending' | 'pickup' | 'return'): number {
+    if (tab === 'pending') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.PENDING).length;
+    if (tab === 'pickup') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.READY_FOR_PICKUP).length;
+    if (tab === 'return') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED).length;
+    return this.activeBorrows.length;
+  }
+
+  lendingBorrowerLabel(item: Listing): string {
+    if (item.borrower?.name) return item.borrower.name;
+    if (item.status === AvailabilityStatus.PENDING) return 'Borrower requested';
+    return 'No borrower yet';
+  }
+
+  requestIntentLabel(item: Listing): string {
+    if (item.type === ListingType.GIVE) return 'Claim request';
+    if (item.type === ListingType.SELL) return 'Purchase request';
+    return 'Borrow request';
+  }
+
+  statusPillClass(item: Listing): string {
+    if (item.status === AvailabilityStatus.READY_FOR_PICKUP) return 'status-pill status-pill-warning';
+    if (item.status === AvailabilityStatus.AVAILABLE || item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE) return 'status-pill status-pill-success';
+    if (item.status === AvailabilityStatus.PENDING) return 'status-pill status-pill-info';
+    if (item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.WAITING_FOR_RETURN) return 'status-pill status-pill-warning';
+    if (item.status === AvailabilityStatus.DISPUTED || item.status === AvailabilityStatus.BLOCKED) return 'status-pill status-pill-danger';
+    if (item.status === AvailabilityStatus.HIDDEN) return 'status-pill status-pill-muted';
+    return 'status-pill status-pill-muted';
+  }
+
+  private normalizeDashboardSearch(value: string): string {
+    return String(value || '').trim().toLowerCase();
   }
 
   listingRowClass(item: Listing): string {
