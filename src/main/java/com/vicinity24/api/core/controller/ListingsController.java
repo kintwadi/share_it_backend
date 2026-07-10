@@ -67,6 +67,20 @@ public class ListingsController {
         return ResponseEntity.ok(listingService.recommended(current, size));
     }
 
+    @GetMapping("/mine")
+    public ResponseEntity<java.util.List<ListingDTO>> mine(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(listingService.findOwnedBy(current));
+    }
+
+    @GetMapping("/mine/borrows")
+    public ResponseEntity<java.util.List<ListingDTO>> myBorrows(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        User current = userService.getByEmail(principal.getUsername());
+        return ResponseEntity.ok(listingService.findBorrowedBy(current));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ListingDTO> get(@AuthenticationPrincipal org.springframework.security.core.userdetails.User principal, @PathVariable("id") UUID id) {
         User current = principal != null ? userService.getByEmail(principal.getUsername()) : null;

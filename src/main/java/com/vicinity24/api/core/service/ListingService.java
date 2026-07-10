@@ -363,6 +363,38 @@ public class ListingService {
         return toDTO(l, current);
     }
 
+    @Transactional(readOnly = true)
+    public List<ListingDTO> findOwnedBy(User current) {
+        if (current == null) return List.of();
+        return listingRepository.findByOwner(current).stream()
+                .sorted((a, b) -> {
+                    java.time.LocalDateTime aa = a.getCreatedAt();
+                    java.time.LocalDateTime bb = b.getCreatedAt();
+                    if (aa == null && bb == null) return 0;
+                    if (aa == null) return 1;
+                    if (bb == null) return -1;
+                    return bb.compareTo(aa);
+                })
+                .map(l -> toDTO(l, current))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ListingDTO> findBorrowedBy(User current) {
+        if (current == null) return List.of();
+        return listingRepository.findByBorrower(current).stream()
+                .sorted((a, b) -> {
+                    java.time.LocalDateTime aa = a.getCreatedAt();
+                    java.time.LocalDateTime bb = b.getCreatedAt();
+                    if (aa == null && bb == null) return 0;
+                    if (aa == null) return 1;
+                    if (bb == null) return -1;
+                    return bb.compareTo(aa);
+                })
+                .map(l -> toDTO(l, current))
+                .toList();
+    }
+
     @Transactional
     public ListingDTO create(User owner, CreateListingRequest req) {
         return create(owner, req, null, null);
