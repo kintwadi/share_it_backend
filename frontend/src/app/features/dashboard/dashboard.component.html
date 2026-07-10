@@ -35,7 +35,8 @@
       <div class="flex items-center gap-4 md:gap-5">
         <div class="relative shrink-0">
           <img
-            [src]="user.avatarUrl || 'https://picsum.photos/seed/' + user.id + '/120/120'"
+            [src]="userAvatarUrl(user, user.id, 120)"
+            (error)="onAvatarError($event, user.id, 120)"
             [alt]="user.name"
             class="h-20 w-20 rounded-full object-cover ring-4 ring-slate-100 md:h-24 md:w-24"
           />
@@ -173,7 +174,11 @@
               <tr *ngFor="let req of filteredPendingRequests">
                 <td>
                   <div class="table-owner-cell">
-                    <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/48'" class="table-owner-avatar" />
+                    <img
+                      [src]="userAvatarUrl(req.borrower, req.borrower?.id || req.id, 48)"
+                      (error)="onAvatarError($event, req.borrower?.id || req.id, 48)"
+                      class="table-owner-avatar"
+                    />
                     <div class="min-w-0">
                       <div class="truncate text-sm font-semibold text-slate-800">{{ req.borrower?.name || i18n.t('dash.unknown_borrower') }}</div>
                       <div class="text-[11px] text-slate-400">{{ req.borrower?.email || i18n.t('dash.no_email') }}</div>
@@ -550,7 +555,11 @@
                     </td>
                     <td>
                       <div class="table-owner-cell">
-                        <img [src]="item.owner?.avatarUrl || 'https://via.placeholder.com/32'" class="table-owner-avatar" />
+                        <img
+                          [src]="userAvatarUrl(item.owner, item.ownerId || item.id, 32)"
+                          (error)="onAvatarError($event, item.ownerId || item.id, 32)"
+                          class="table-owner-avatar"
+                        />
                         <div class="min-w-0">
                           <div class="truncate text-sm font-semibold text-slate-800">{{ item.owner?.name || '—' }}</div>
                           <div class="text-[11px] text-slate-400">{{ i18n.t('dash.owner_prefix') }}</div>

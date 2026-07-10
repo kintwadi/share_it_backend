@@ -9,6 +9,8 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
 import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../core/utils/listing-pricing';
 
+const DEFAULT_USER_AVATAR = 'assets/images/default-user-photo.png';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -505,6 +507,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (item.type === ListingType.GIVE) return this.i18n.t('dash.request_claim');
     if (item.type === ListingType.SELL) return this.i18n.t('dash.request_purchase');
     return this.i18n.t('dash.request_borrow');
+  }
+
+  userAvatarUrl(user: User | null | undefined, seed: string, size = 80): string {
+    const avatar = String(user?.avatarUrl || '').trim();
+    if (avatar) return avatar;
+    return DEFAULT_USER_AVATAR;
+  }
+
+  onAvatarError(event: Event, seed: string, size = 80) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    const fallback = DEFAULT_USER_AVATAR;
+    if (img.src !== fallback) {
+      img.src = fallback;
+    }
   }
 
   statusPillClass(item: Listing): string {
