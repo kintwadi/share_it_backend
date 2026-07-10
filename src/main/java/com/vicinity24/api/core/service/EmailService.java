@@ -85,7 +85,7 @@ public class EmailService {
         }
     }
 
-    public void sendReturnRatingEmail(String toEmail, String recipientName, String otherPartyName, String listingTitle, String ratingLink) {
+    public void sendReturnRatingEmail(String toEmail, String recipientName, String otherPartyName, String listingTitle, String listingReference, String ratingLink) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -94,7 +94,7 @@ public class EmailService {
             helper.setTo(toEmail);
             helper.setSubject("Rate your recent handover - Vicinity24");
 
-            String htmlContent = buildReturnRatingEmail(recipientName, otherPartyName, listingTitle, ratingLink);
+            String htmlContent = buildReturnRatingEmail(recipientName, otherPartyName, listingTitle, listingReference, ratingLink);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
@@ -507,10 +507,11 @@ public class EmailService {
             """.formatted(headerTitle, greeting, intro, code, validity, ignore, buildStandardFooter());
     }
 
-    private String buildReturnRatingEmail(String recipientName, String otherPartyName, String listingTitle, String ratingLink) {
+    private String buildReturnRatingEmail(String recipientName, String otherPartyName, String listingTitle, String listingReference, String ratingLink) {
         String safeRecipient = recipientName != null && !recipientName.isBlank() ? recipientName : "there";
         String safeOther = otherPartyName != null && !otherPartyName.isBlank() ? otherPartyName : "your neighbor";
         String safeTitle = listingTitle != null && !listingTitle.isBlank() ? listingTitle : "your listing";
+        String safeReference = listingReference != null && !listingReference.isBlank() ? listingReference.trim() : "n/a";
         return """
             <!DOCTYPE html>
             <html>
@@ -534,6 +535,8 @@ public class EmailService {
                         <p>Hi %s,</p>
                         <p>Your return for <strong>%s</strong> has been completed.</p>
                         <p>Please take a moment to rate <strong>%s</strong> based on your experience.</p>
+                        <p class="meta">Item reference: %s</p>
+                        <p class="meta">This secure link already identifies the completed handover, so you can leave your rating without signing in.</p>
                         <p><a class="btn" href="%s" target="_blank" rel="noopener noreferrer">Rate now</a></p>
                         <p class="meta">This link is personal to your account. If you did not complete this handover, you can ignore this email.</p>
                     </div>
@@ -541,7 +544,7 @@ public class EmailService {
                 </div>
             </body>
             </html>
-            """.formatted(safeRecipient, safeTitle, safeOther, ratingLink, buildStandardFooter());
+            """.formatted(safeRecipient, safeTitle, safeOther, safeReference, ratingLink, buildStandardFooter());
     }
 
     private String buildStandardFooter() {

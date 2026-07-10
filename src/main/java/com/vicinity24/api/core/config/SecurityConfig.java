@@ -97,6 +97,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/subscriptions/**", versionedApiPrefix + "/subscriptions/**").permitAll()
                 .requestMatchers("/api/borrower-subscription/**", versionedApiPrefix + "/borrower-subscription/**").permitAll()
                 .requestMatchers("/api/insurance/**", versionedApiPrefix + "/insurance/**").permitAll()
+                .requestMatchers("/api/reviews/invite/**", versionedApiPrefix + "/reviews/invite/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/mail-contact-request", versionedApiPrefix + "/mail-contact-request").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/listings/**", versionedApiPrefix + "/listings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/items/**", versionedApiPrefix + "/items/**").permitAll()
