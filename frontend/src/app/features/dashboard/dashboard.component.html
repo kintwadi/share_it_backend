@@ -131,29 +131,29 @@
       </div>
       <div>
         <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.incoming_requests') }}</h2>
-        <p class="text-sm text-slate-500">{{ pendingRequests.length }} pending</p>
+        <p class="text-sm text-slate-500">{{ pendingRequests.length }} {{ i18n.t('dash.pending_suffix') }}</p>
       </div>
     </div>
 
     <div class="dashboard-table-shell">
       <div class="dashboard-filters-bar">
         <div class="dashboard-tabs">
-          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'all'" (click)="incomingRequestsTab = 'all'">All ({{ incomingRequestsCounterLabel('all') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'lend'" (click)="incomingRequestsTab = 'lend'">Borrows ({{ incomingRequestsCounterLabel('lend') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'give'" (click)="incomingRequestsTab = 'give'">Claims ({{ incomingRequestsCounterLabel('give') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'sell'" (click)="incomingRequestsTab = 'sell'">Purchases ({{ incomingRequestsCounterLabel('sell') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'all'" (click)="incomingRequestsTab = 'all'">{{ i18n.t('dash.tab_all') }} ({{ incomingRequestsCounterLabel('all') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'lend'" (click)="incomingRequestsTab = 'lend'">{{ i18n.t('dash.tab_borrows') }} ({{ incomingRequestsCounterLabel('lend') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'give'" (click)="incomingRequestsTab = 'give'">{{ i18n.t('dash.tab_claims') }} ({{ incomingRequestsCounterLabel('give') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'sell'" (click)="incomingRequestsTab = 'sell'">{{ i18n.t('dash.tab_purchases') }} ({{ incomingRequestsCounterLabel('sell') }})</button>
         </div>
         <label class="dashboard-search-box">
           <lucide-icon [img]="Search" size="16"></lucide-icon>
-          <input [(ngModel)]="incomingRequestsSearchQuery" type="text" placeholder="Search by borrower, item, reference, or category" />
+          <input [(ngModel)]="incomingRequestsSearchQuery" type="text" [placeholder]="i18n.t('dash.search_requests_placeholder')" />
         </label>
       </div>
 
       <div class="dashboard-table-card">
         <div class="dashboard-table-header">
           <div>
-            <h3>Incoming requests overview</h3>
-            <div class="meta">Review borrower requests and take action without leaving the dashboard</div>
+            <h3>{{ i18n.t('dash.incoming_requests_overview') }}</h3>
+            <div class="meta">{{ i18n.t('dash.incoming_requests_overview_help') }}</div>
           </div>
         </div>
 
@@ -161,12 +161,12 @@
           <table class="dashboard-table">
             <thead>
               <tr>
-                <th>Borrower</th>
-                <th>Request</th>
-                <th>Item</th>
-                <th>Reference</th>
-                <th>Trust</th>
-                <th class="text-right">Actions</th>
+                <th>{{ i18n.t('dash.table_borrower') }}</th>
+                <th>{{ i18n.t('dash.table_request') }}</th>
+                <th>{{ i18n.t('dash.table_item') }}</th>
+                <th>{{ i18n.t('dash.table_reference') }}</th>
+                <th>{{ i18n.t('dash.table_trust') }}</th>
+                <th class="text-right">{{ i18n.t('dash.table_actions') }}</th>
               </tr>
             </thead>
             <tbody *ngIf="filteredPendingRequests.length > 0; else emptyIncomingRequestsState">
@@ -175,8 +175,8 @@
                   <div class="table-owner-cell">
                     <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/48'" class="table-owner-avatar" />
                     <div class="min-w-0">
-                      <div class="truncate text-sm font-semibold text-slate-800">{{ req.borrower?.name || 'Unknown borrower' }}</div>
-                      <div class="text-[11px] text-slate-400">{{ req.borrower?.email || 'No email' }}</div>
+                      <div class="truncate text-sm font-semibold text-slate-800">{{ req.borrower?.name || i18n.t('dash.unknown_borrower') }}</div>
+                      <div class="text-[11px] text-slate-400">{{ req.borrower?.email || i18n.t('dash.no_email') }}</div>
                     </div>
                   </div>
                 </td>
@@ -188,7 +188,7 @@
                     <img [src]="req.imageUrl" [alt]="req.title" class="table-item-thumb" />
                     <div class="min-w-0">
                       <div class="truncate text-sm font-black text-slate-900">{{ req.title }}</div>
-                      <div class="mt-1 text-xs text-slate-500">{{ req.category || 'Uncategorized' }}</div>
+                      <div class="mt-1 text-xs text-slate-500">{{ req.category || i18n.t('dash.uncategorized') }}</div>
                     </div>
                   </div>
                 </td>
@@ -196,7 +196,7 @@
                   <span class="table-ref-pill">{{ req.itemReference || '—' }}</span>
                 </td>
                 <td>
-                  <span class="table-ref-pill">{{ req.borrower?.trustScore ?? 0 }}% Trust</span>
+                  <span class="table-ref-pill">{{ req.borrower?.trustScore ?? 0 }}% {{ i18n.t('dash.table_trust') }}</span>
                 </td>
                 <td>
                   <div class="table-actions-cell justify-end">
@@ -204,19 +204,19 @@
                       type="button"
                       (click)="openUserPreview(req.borrower)"
                       class="table-btn table-btn-secondary"
-                      title="Preview User"
+                      [title]="i18n.t('dash.preview_user')"
                     >
                       <lucide-icon [img]="Eye" size="12"></lucide-icon>
-                      Preview
+                      {{ i18n.t('dash.preview') }}
                     </button>
                     <button
                       type="button"
                       (click)="handleMessageUser(req.borrower)"
                       class="table-btn table-btn-secondary"
-                      title="Message Borrower"
+                      [title]="i18n.t('dash.message_borrower')"
                     >
                       <lucide-icon [img]="MessageSquare" size="12"></lucide-icon>
-                      Message
+                      {{ i18n.t('dash.message') }}
                     </button>
                     <button
                       type="button"
@@ -226,7 +226,7 @@
                     >
                       <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
                       <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="12"></lucide-icon>
-                      Deny
+                      {{ i18n.t('dash.deny') }}
                     </button>
                     <button
                       type="button"
@@ -236,7 +236,7 @@
                     >
                       <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
                       <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="12"></lucide-icon>
-                      Approve
+                      {{ i18n.t('dash.approve') }}
                     </button>
                   </div>
                 </td>
@@ -251,8 +251,8 @@
           <td colspan="6">
             <div class="dashboard-empty-state">
               <lucide-icon [img]="BellRing" size="36"></lucide-icon>
-              <h4>No matching requests found</h4>
-              <p>Try a different filter or search term.</p>
+              <h4>{{ i18n.t('dash.no_matching_requests') }}</h4>
+              <p>{{ i18n.t('dash.try_different_filter') }}</p>
             </div>
           </td>
         </tr>
@@ -268,7 +268,7 @@
         </div>
         <div>
           <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.my_listings') }}</h2>
-          <p class="text-sm text-slate-500">{{ myListings.length }} total</p>
+          <p class="text-sm text-slate-500">{{ myListings.length }} {{ i18n.t('dash.total_suffix') }}</p>
         </div>
       </div>
 
@@ -286,22 +286,22 @@
     <div class="dashboard-table-shell">
       <div class="dashboard-filters-bar">
         <div class="dashboard-tabs">
-          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'all'" (click)="lendingTab = 'all'">All ({{ lendingCounterLabel('all') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'available'" (click)="lendingTab = 'available'">Available ({{ lendingCounterLabel('available') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'requests'" (click)="lendingTab = 'requests'">Requests ({{ lendingCounterLabel('requests') }})</button>
-          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'active'" (click)="lendingTab = 'active'">Active ({{ lendingCounterLabel('active') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'all'" (click)="lendingTab = 'all'">{{ i18n.t('dash.tab_all') }} ({{ lendingCounterLabel('all') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'available'" (click)="lendingTab = 'available'">{{ i18n.t('dash.tab_available') }} ({{ lendingCounterLabel('available') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'requests'" (click)="lendingTab = 'requests'">{{ i18n.t('dash.tab_requests') }} ({{ lendingCounterLabel('requests') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'active'" (click)="lendingTab = 'active'">{{ i18n.t('dash.tab_active') }} ({{ lendingCounterLabel('active') }})</button>
         </div>
         <label class="dashboard-search-box">
           <lucide-icon [img]="Search" size="16"></lucide-icon>
-          <input [(ngModel)]="lendingSearchQuery" type="text" placeholder="Search by item, borrower, reference, or location" />
+          <input [(ngModel)]="lendingSearchQuery" type="text" [placeholder]="i18n.t('dash.search_lending_placeholder')" />
         </label>
       </div>
 
       <div class="dashboard-table-card">
         <div class="dashboard-table-header">
           <div>
-            <h3>Lending overview</h3>
-            <div class="meta">Track availability, incoming requests, and active loans</div>
+            <h3>{{ i18n.t('dash.lending_overview') }}</h3>
+            <div class="meta">{{ i18n.t('dash.lending_overview_help') }}</div>
           </div>
         </div>
 
@@ -314,12 +314,12 @@
           <table class="dashboard-table">
             <thead>
               <tr>
-                <th>Item</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Borrower</th>
-                <th>Pickup location</th>
-                <th class="text-right">Actions</th>
+                <th>{{ i18n.t('dash.table_item') }}</th>
+                <th>{{ i18n.t('dash.table_reference') }}</th>
+                <th>{{ i18n.t('dash.table_status') }}</th>
+                <th>{{ i18n.t('dash.table_borrower') }}</th>
+                <th>{{ i18n.t('dash.table_pickup_location') }}</th>
+                <th class="text-right">{{ i18n.t('dash.table_actions') }}</th>
               </tr>
             </thead>
             <tbody *ngIf="filteredLendingItems.length > 0; else emptyLendingState">
@@ -342,7 +342,7 @@
                         <span class="text-slate-300">•</span>
                         <span *ngIf="listingHasVisiblePrice(item); else lendingFreePrice" class="font-bold text-brand-600">{{ listingPriceLabel(item) }}</span>
                         <ng-template #lendingFreePrice>
-                          <span class="font-bold text-pink-600">Free</span>
+                          <span class="font-bold text-pink-600">{{ i18n.t('dash.free') }}</span>
                         </ng-template>
                       </div>
                       <div *ngIf="item.autoApprove" class="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600">
@@ -375,20 +375,20 @@
                         type="button"
                         (click)="setOverviewItem(item)"
                         class="table-btn table-btn-secondary"
-                        title="View Overview"
+                        [title]="i18n.t('dash.view_overview')"
                       >
                         <lucide-icon [img]="FileCheck" size="12"></lucide-icon>
-                        Overview
+                        {{ i18n.t('dash.overview') }}
                       </button>
                       <button
                         *ngIf="!listingShowOverview(item)"
                         type="button"
                         (click)="handleEdit(item)"
                         class="table-btn table-btn-secondary"
-                        title="Edit Listing"
+                        [title]="i18n.t('dash.edit_listing')"
                       >
                         <lucide-icon [img]="Edit2" size="12"></lucide-icon>
-                        Edit
+                        {{ i18n.t('dash.edit') }}
                       </button>
                       <button
                         type="button"
@@ -396,10 +396,10 @@
                         [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
                         class="table-btn table-btn-secondary"
                         [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'opacity-50 cursor-not-allowed' : ''"
-                        [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
+                        [title]="listingIsHidden(item) ? i18n.t('dash.enable_listing') : i18n.t('dash.disable_listing')"
                       >
                         <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12"></lucide-icon>
-                        {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
+                        {{ listingIsHidden(item) ? i18n.t('dash.enable') : i18n.t('dash.disable') }}
                       </button>
                       <button
                         *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
@@ -440,7 +440,7 @@
                           class="table-btn table-btn-success"
                         >
                           <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
-                          Approve
+                          {{ i18n.t('dash.approve') }}
                         </button>
                         <button
                           type="button"
@@ -448,14 +448,14 @@
                           [disabled]="actionLoading === item.id"
                           class="table-btn table-btn-danger"
                         >
-                          Deny
+                          {{ i18n.t('dash.deny') }}
                         </button>
                       </ng-container>
                       <button
                         type="button"
                         (click)="handleDeleteClick(item)"
                         class="table-btn table-btn-danger"
-                        title="Delete Listing"
+                        [title]="i18n.t('dash.delete_listing')"
                       >
                         <lucide-icon [img]="Trash2" size="12"></lucide-icon>
                         {{ i18n.t('common.delete') }}
@@ -474,7 +474,7 @@
           <td colspan="6">
             <div class="dashboard-empty-state">
               <lucide-icon [img]="Package" size="36"></lucide-icon>
-              <h4>No lending items found</h4>
+              <h4>{{ i18n.t('dash.no_lending_items') }}</h4>
               <p>{{ i18n.t('dash.no_listings') }}</p>
             </div>
           </td>
@@ -492,29 +492,29 @@
           </div>
           <div>
             <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.active_borrows') }}</h2>
-            <p class="text-sm text-slate-500">{{ activeBorrows.length }} active</p>
+            <p class="text-sm text-slate-500">{{ activeBorrows.length }} {{ i18n.t('dash.active_suffix') }}</p>
           </div>
         </div>
 
         <div class="dashboard-table-shell">
           <div class="dashboard-filters-bar">
             <div class="dashboard-tabs">
-              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'all'" (click)="borrowingTab = 'all'">All ({{ borrowingCounterLabel('all') }})</button>
-              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pending'" (click)="borrowingTab = 'pending'">Pending ({{ borrowingCounterLabel('pending') }})</button>
-              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pickup'" (click)="borrowingTab = 'pickup'">Ready for pickup ({{ borrowingCounterLabel('pickup') }})</button>
-              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'return'" (click)="borrowingTab = 'return'">Return flow ({{ borrowingCounterLabel('return') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'all'" (click)="borrowingTab = 'all'">{{ i18n.t('dash.tab_all') }} ({{ borrowingCounterLabel('all') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pending'" (click)="borrowingTab = 'pending'">{{ i18n.t('dash.tab_pending') }} ({{ borrowingCounterLabel('pending') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pickup'" (click)="borrowingTab = 'pickup'">{{ i18n.t('dash.tab_ready_for_pickup') }} ({{ borrowingCounterLabel('pickup') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'return'" (click)="borrowingTab = 'return'">{{ i18n.t('dash.tab_return_flow') }} ({{ borrowingCounterLabel('return') }})</button>
             </div>
             <label class="dashboard-search-box">
               <lucide-icon [img]="Search" size="16"></lucide-icon>
-              <input [(ngModel)]="borrowingSearchQuery" type="text" placeholder="Search by item, owner, reference, or location" />
+              <input [(ngModel)]="borrowingSearchQuery" type="text" [placeholder]="i18n.t('dash.search_borrowing_placeholder')" />
             </label>
           </div>
 
           <div class="dashboard-table-card">
             <div class="dashboard-table-header">
               <div>
-                <h3>Borrowing overview</h3>
-                <div class="meta">Track active rentals, pickup readiness, and return actions</div>
+                <h3>{{ i18n.t('dash.borrowing_overview') }}</h3>
+                <div class="meta">{{ i18n.t('dash.borrowing_overview_help') }}</div>
               </div>
             </div>
 
@@ -527,12 +527,12 @@
               <table class="dashboard-table">
                 <thead>
                   <tr>
-                    <th>Item</th>
-                    <th>Owner</th>
-                    <th>Reference</th>
-                    <th>Status</th>
-                    <th>Pickup location</th>
-                    <th class="text-right">Actions</th>
+                    <th>{{ i18n.t('dash.table_item') }}</th>
+                    <th>{{ i18n.t('dash.table_owner') }}</th>
+                    <th>{{ i18n.t('dash.table_reference') }}</th>
+                    <th>{{ i18n.t('dash.table_status') }}</th>
+                    <th>{{ i18n.t('dash.table_pickup_location') }}</th>
+                    <th class="text-right">{{ i18n.t('dash.table_actions') }}</th>
                   </tr>
                 </thead>
                 <tbody *ngIf="filteredBorrowingItems.length > 0; else emptyBorrowingState">
@@ -619,8 +619,8 @@
               <td colspan="6">
                 <div class="dashboard-empty-state">
                   <lucide-icon [img]="Clock" size="36"></lucide-icon>
-                  <h4>No active borrows found</h4>
-                  <p>Try a different filter or search term.</p>
+                  <h4>{{ i18n.t('dash.no_active_borrows') }}</h4>
+                  <p>{{ i18n.t('dash.try_different_filter') }}</p>
                 </div>
               </td>
             </tr>
@@ -635,7 +635,7 @@
           </div>
           <div>
             <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ i18n.t('dash.borrowing_history') }}</h2>
-            <p class="text-sm text-slate-500">{{ borrowedHistory.length }} records</p>
+            <p class="text-sm text-slate-500">{{ borrowedHistory.length }} {{ i18n.t('dash.records_suffix') }}</p>
           </div>
         </div>
 

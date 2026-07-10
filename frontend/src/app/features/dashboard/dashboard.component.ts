@@ -497,14 +497,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   lendingBorrowerLabel(item: Listing): string {
     if (item.borrower?.name) return item.borrower.name;
-    if (item.status === AvailabilityStatus.PENDING) return 'Borrower requested';
-    return 'No borrower yet';
+    if (item.status === AvailabilityStatus.PENDING) return this.i18n.t('dash.borrower_requested');
+    return this.i18n.t('dash.no_borrower_yet');
   }
 
   requestIntentLabel(item: Listing): string {
-    if (item.type === ListingType.GIVE) return 'Claim request';
-    if (item.type === ListingType.SELL) return 'Purchase request';
-    return 'Borrow request';
+    if (item.type === ListingType.GIVE) return this.i18n.t('dash.request_claim');
+    if (item.type === ListingType.SELL) return this.i18n.t('dash.request_purchase');
+    return this.i18n.t('dash.request_borrow');
   }
 
   statusPillClass(item: Listing): string {
