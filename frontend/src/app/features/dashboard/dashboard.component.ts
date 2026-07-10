@@ -211,9 +211,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isLoadingRecs = true;
       this.render();
     }
-    this.api.getListings().then(all => {
-      this.myListings = all.filter(l => l.ownerId === this.user?.id);
-      this.myBorrows = all.filter(l => l.borrowerId === this.user?.id);
+    Promise.all([
+      this.api.getMyListings(),
+      this.api.getMyBorrowedListings(),
+      this.api.getListings()
+    ]).then(([owned, borrowed, all]) => {
+      this.myListings = owned;
+      this.myBorrows = borrowed;
       this.recommendations = all
         .filter(l => l.ownerId !== this.user?.id && l.status === AvailabilityStatus.AVAILABLE)
         .slice(0, 4);

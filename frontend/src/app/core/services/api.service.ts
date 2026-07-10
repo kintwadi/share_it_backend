@@ -135,7 +135,7 @@ export class ApiService {
     try {
       const user = await this.getCurrentUser();
       if (!user) return [];
-      const listings = await this.getListings();
+      const listings = await this.getMyBorrowedListings();
       const borrowed = listings.filter(l => l.borrowerId === user.id);
       const now = new Date();
       return borrowed.map((l, idx) => ({
@@ -164,6 +164,24 @@ export class ApiService {
     try {
       const page = await firstValueFrom(this.api.get<any>(`/listings/?${this.buildListingQuery(params)}`));
       return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getMyListings(): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>('/listings/mine'));
+      return Array.isArray(out) ? out : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getMyBorrowedListings(): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>('/listings/mine/borrows'));
+      return Array.isArray(out) ? out : [];
     } catch {
       return [];
     }
