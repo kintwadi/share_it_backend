@@ -163,6 +163,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'review.comment': 'Comment',
     'review.comment_placeholder': 'Write a short review…',
     'review.submit': 'Submit review',
+    'rate.invited_as': 'This review link was issued to',
 
     'messages.title': 'Messages',
     'messages.trust_score': 'Trust score',
@@ -1239,6 +1240,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'review.comment': 'Comentário',
     'review.comment_placeholder': 'Escreva uma avaliação curta…',
     'review.submit': 'Enviar avaliação',
+    'rate.invited_as': 'Este link de avaliação foi emitido para',
 
     'messages.title': 'Mensagens',
     'messages.trust_score': 'Índice de confiança',
@@ -2315,6 +2317,7 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
     'review.comment': 'Kommentar',
     'review.comment_placeholder': 'Schreibe eine kurze Bewertung…',
     'review.submit': 'Bewertung senden',
+    'rate.invited_as': 'Dieser Bewertungslink wurde ausgestellt für',
 
     'messages.title': 'Nachrichten',
     'messages.trust_score': 'Vertrauensscore',

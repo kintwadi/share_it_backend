@@ -8,6 +8,15 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script src="env.js"></script>
+    <script>
+      (function () {
+        var path = window.location.pathname || '/';
+        if (window.location.hash || path !== '/rate') return;
+        var search = window.location.search || '';
+        var target = '/#/rate' + search;
+        window.location.replace(target);
+      })();
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900">
     <app-root></app-root>
