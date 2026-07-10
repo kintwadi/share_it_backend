@@ -135,67 +135,128 @@
       </div>
     </div>
 
-    <div class="space-y-4">
-      <article *ngFor="let req of pendingRequests" class="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div class="flex min-w-0 items-start gap-4">
-            <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/48'" class="h-12 w-12 rounded-full object-cover ring-2 ring-slate-100" />
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <h3 class="text-base font-black text-slate-900">{{ req.borrower?.name }}</h3>
-                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
-                  {{ req.borrower?.trustScore }}% Trust
-                </span>
-              </div>
-              <p class="mt-1 text-sm text-slate-600">
-                {{ req.type === ListingType.GIVE ? 'wants to claim' : (req.type === ListingType.SELL ? 'wants to buy' : 'wants to borrow') }}
-              </p>
-              <p class="mt-2 inline-flex rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">
-                {{ req.title }}
-              </p>
-            </div>
-          </div>
+    <div class="dashboard-table-shell">
+      <div class="dashboard-filters-bar">
+        <div class="dashboard-tabs">
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'all'" (click)="incomingRequestsTab = 'all'">All ({{ incomingRequestsCounterLabel('all') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'lend'" (click)="incomingRequestsTab = 'lend'">Borrows ({{ incomingRequestsCounterLabel('lend') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'give'" (click)="incomingRequestsTab = 'give'">Claims ({{ incomingRequestsCounterLabel('give') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="incomingRequestsTab === 'sell'" (click)="incomingRequestsTab = 'sell'">Purchases ({{ incomingRequestsCounterLabel('sell') }})</button>
+        </div>
+        <label class="dashboard-search-box">
+          <lucide-icon [img]="Search" size="16"></lucide-icon>
+          <input [(ngModel)]="incomingRequestsSearchQuery" type="text" placeholder="Search by borrower, item, reference, or category" />
+        </label>
+      </div>
 
-          <div class="flex flex-wrap items-center gap-2 md:justify-end">
-            <button
-              type="button"
-              (click)="openUserPreview(req.borrower)"
-              class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-900"
-              title="Preview User"
-            >
-              <lucide-icon [img]="Eye" size="16"></lucide-icon>
-            </button>
-            <button
-              type="button"
-              (click)="handleMessageUser(req.borrower)"
-              class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-brand-200 hover:text-brand-700"
-              title="Message Borrower"
-            >
-              <lucide-icon [img]="MessageSquare" size="16"></lucide-icon>
-            </button>
-            <button
-              type="button"
-              (click)="handleDeny(req.id)"
-              [disabled]="actionLoading === req.id"
-              class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
-            >
-              <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="mr-2 animate-spin"></lucide-icon>
-              <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="14" class="mr-2"></lucide-icon>
-              Deny
-            </button>
-            <button
-              type="button"
-              (click)="handleApprove(req.id)"
-              [disabled]="actionLoading === req.id"
-              class="inline-flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
-            >
-              <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="14" class="mr-2 animate-spin"></lucide-icon>
-              <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="14" class="mr-2"></lucide-icon>
-              Approve
-            </button>
+      <div class="dashboard-table-card">
+        <div class="dashboard-table-header">
+          <div>
+            <h3>Incoming requests overview</h3>
+            <div class="meta">Review borrower requests and take action without leaving the dashboard</div>
           </div>
         </div>
-      </article>
+
+        <div class="dashboard-table-scroll">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Borrower</th>
+                <th>Request</th>
+                <th>Item</th>
+                <th>Reference</th>
+                <th>Trust</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody *ngIf="filteredPendingRequests.length > 0; else emptyIncomingRequestsState">
+              <tr *ngFor="let req of filteredPendingRequests">
+                <td>
+                  <div class="table-owner-cell">
+                    <img [src]="req.borrower?.avatarUrl || 'https://via.placeholder.com/48'" class="table-owner-avatar" />
+                    <div class="min-w-0">
+                      <div class="truncate text-sm font-semibold text-slate-800">{{ req.borrower?.name || 'Unknown borrower' }}</div>
+                      <div class="text-[11px] text-slate-400">{{ req.borrower?.email || 'No email' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-pill status-pill-info">{{ requestIntentLabel(req) }}</span>
+                </td>
+                <td>
+                  <div class="table-item-cell">
+                    <img [src]="req.imageUrl" [alt]="req.title" class="table-item-thumb" />
+                    <div class="min-w-0">
+                      <div class="truncate text-sm font-black text-slate-900">{{ req.title }}</div>
+                      <div class="mt-1 text-xs text-slate-500">{{ req.category || 'Uncategorized' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="table-ref-pill">{{ req.itemReference || '—' }}</span>
+                </td>
+                <td>
+                  <span class="table-ref-pill">{{ req.borrower?.trustScore ?? 0 }}% Trust</span>
+                </td>
+                <td>
+                  <div class="table-actions-cell justify-end">
+                    <button
+                      type="button"
+                      (click)="openUserPreview(req.borrower)"
+                      class="table-btn table-btn-secondary"
+                      title="Preview User"
+                    >
+                      <lucide-icon [img]="Eye" size="12"></lucide-icon>
+                      Preview
+                    </button>
+                    <button
+                      type="button"
+                      (click)="handleMessageUser(req.borrower)"
+                      class="table-btn table-btn-secondary"
+                      title="Message Borrower"
+                    >
+                      <lucide-icon [img]="MessageSquare" size="12"></lucide-icon>
+                      Message
+                    </button>
+                    <button
+                      type="button"
+                      (click)="handleDeny(req.id)"
+                      [disabled]="actionLoading === req.id"
+                      class="table-btn table-btn-danger"
+                    >
+                      <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                      <lucide-icon *ngIf="actionLoading !== req.id" [img]="XIcon" size="12"></lucide-icon>
+                      Deny
+                    </button>
+                    <button
+                      type="button"
+                      (click)="handleApprove(req.id)"
+                      [disabled]="actionLoading === req.id"
+                      class="table-btn table-btn-success"
+                    >
+                      <lucide-icon *ngIf="actionLoading === req.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                      <lucide-icon *ngIf="actionLoading !== req.id" [img]="Check" size="12"></lucide-icon>
+                      Approve
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ng-template #emptyIncomingRequestsState>
+        <tr>
+          <td colspan="6">
+            <div class="dashboard-empty-state">
+              <lucide-icon [img]="BellRing" size="36"></lucide-icon>
+              <h4>No matching requests found</h4>
+              <p>Try a different filter or search term.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
     </div>
   </section>
 
@@ -222,181 +283,209 @@
       </button>
     </div>
 
-    <div class="space-y-4">
-      <div *ngIf="isLoadingListings" class="rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
-        <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
-        <p class="text-sm">{{ i18n.t('dash.loading_listings') }}</p>
+    <div class="dashboard-table-shell">
+      <div class="dashboard-filters-bar">
+        <div class="dashboard-tabs">
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'all'" (click)="lendingTab = 'all'">All ({{ lendingCounterLabel('all') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'available'" (click)="lendingTab = 'available'">Available ({{ lendingCounterLabel('available') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'requests'" (click)="lendingTab = 'requests'">Requests ({{ lendingCounterLabel('requests') }})</button>
+          <button type="button" class="dashboard-tab" [class.active]="lendingTab === 'active'" (click)="lendingTab = 'active'">Active ({{ lendingCounterLabel('active') }})</button>
+        </div>
+        <label class="dashboard-search-box">
+          <lucide-icon [img]="Search" size="16"></lucide-icon>
+          <input [(ngModel)]="lendingSearchQuery" type="text" placeholder="Search by item, borrower, reference, or location" />
+        </label>
       </div>
 
-      <article *ngFor="let item of myListings" class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm transition-colors" [ngClass]="listingRowClass(item)">
-        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div class="flex min-w-0 flex-1 gap-4">
-            <div class="relative shrink-0">
-              <img
-                [src]="item.imageUrl"
-                [alt]="item.title"
-                class="h-20 w-20 rounded-2xl object-cover bg-slate-100 md:h-24 md:w-24"
-                [ngClass]="listingImageClass(item)"
-              />
-              <div *ngIf="listingIsHidden(item)" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/10">
-                <lucide-icon [img]="EyeOff" size="22" class="text-white"></lucide-icon>
-              </div>
-              <div *ngIf="listingIsBlocked(item)" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-red-900/20">
-                <lucide-icon [img]="Ban" size="22" class="text-white"></lucide-icon>
-              </div>
-              <div *ngIf="item.autoApprove" class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white ring-2 ring-white" [title]="i18n.t('dash.instant_book_enabled')">
-                <lucide-icon [img]="Zap" size="10"></lucide-icon>
-              </div>
-            </div>
-
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h3 class="truncate text-xl font-black tracking-tight" [ngClass]="listingTitleClass(item)">{{ item.title }}</h3>
-                  </div>
-                  <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                    <span>{{ item.category }}</span>
-                    <span class="text-slate-300">•</span>
-                    <span *ngIf="listingHasVisiblePrice(item); else freePrice" class="font-bold text-brand-600">{{ listingPriceLabel(item) }}</span>
-                    <ng-template #freePrice>
-                      <span class="inline-flex items-center gap-1 font-bold text-pink-600">
-                        <lucide-icon [img]="Gift" size="12"></lucide-icon>
-                        Free
-                      </span>
-                    </ng-template>
-                  </div>
-                  <p *ngIf="item.itemReference" class="mt-2 text-xs font-mono text-slate-400">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
-                  <p *ngIf="listingIsBlocked(item)" class="mt-2 flex items-center text-xs font-bold text-red-500">
-                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1"></lucide-icon>
-                    Flagged by Admin
-                  </p>
-                </div>
-
-                <div class="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
-                  <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em]" [ngClass]="listingBadgeClass(item)">
-                    <lucide-icon [img]="listingStatusIcon(item)" size="12"></lucide-icon>
-                    {{ listingStatusLabel(item) }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center" [ngClass]="listingActionsClass(item)">
-                <ng-container *ngIf="!listingIsBlocked(item)">
-                  <button
-                    *ngIf="listingShowOverview(item)"
-                    type="button"
-                    (click)="setOverviewItem(item)"
-                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
-                    title="View Overview"
-                  >
-                    <lucide-icon [img]="FileCheck" size="12" class="mr-1.5"></lucide-icon>
-                    Overview
-                  </button>
-
-                  <button
-                    *ngIf="!listingShowOverview(item)"
-                    type="button"
-                    (click)="handleEdit(item)"
-                    class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
-                    title="Edit Listing"
-                  >
-                    <lucide-icon [img]="Edit2" size="12" class="mr-1.5"></lucide-icon>
-                    Edit
-                  </button>
-
-                  <button
-                    type="button"
-                    (click)="handleToggleStatus(item)"
-                    [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
-                    class="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-xs font-bold transition-colors"
-                    [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
-                    [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
-                  >
-                    <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12" class="mr-1.5"></lucide-icon>
-                    {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
-                  </button>
-
-                  <button
-                    *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
-                    type="button"
-                    (click)="handleReturnClick(item)"
-                    [disabled]="!ownerCanStartReturn(item)"
-                    class="inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                    [ngClass]="ownerCanStartReturn(item) ? 'bg-slate-900 text-white hover:bg-black' : 'bg-slate-100 text-slate-500'"
-                  >
-                    {{ ownerReturnLabel(item) }}
-                  </button>
-
-                  <button
-                    *ngIf="ownerCanRequestAdminReturn(item)"
-                    type="button"
-                    (click)="handleRequestAdminReturn(item)"
-                    [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
-                    class="inline-flex items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                    [ngClass]="item.adminReturnRequestedAt ? 'bg-amber-100 text-amber-800' : 'border border-amber-200 bg-white text-amber-700 hover:bg-amber-50'"
-                  >
-                    <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
-                    {{ ownerAdminReturnLabel(item) }}
-                  </button>
-
-                  <button
-                    *ngIf="item.status === AvailabilityStatus.APPROVED && item.borrowerId"
-                    type="button"
-                    (click)="handleMarkReadyForPickup(item.id)"
-                    [disabled]="actionLoading === item.id"
-                    class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
-                    {{ i18n.t('dash.mark_ready_for_pickup') }}
-                  </button>
-
-                  <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
-                    <button
-                      type="button"
-                      (click)="handleApprove(item.id)"
-                      [disabled]="actionLoading === item.id"
-                      class="inline-flex items-center justify-center rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 animate-spin"></lucide-icon>
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      (click)="handleDeny(item.id)"
-                      [disabled]="actionLoading === item.id"
-                      class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Deny
-                    </button>
-                  </ng-container>
-
-                  <button
-                    type="button"
-                    (click)="handleDeleteClick(item)"
-                    class="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50 sm:ml-auto"
-                    title="Delete Listing"
-                  >
-                    <lucide-icon [img]="Trash2" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('common.delete') }}
-                  </button>
-                </ng-container>
-              </div>
-            </div>
+      <div class="dashboard-table-card">
+        <div class="dashboard-table-header">
+          <div>
+            <h3>Lending overview</h3>
+            <div class="meta">Track availability, incoming requests, and active loans</div>
           </div>
         </div>
-      </article>
 
-      <div *ngIf="!isLoadingListings && myListings.length === 0" class="rounded-[28px] border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
-        <lucide-icon [img]="Package" size="32" class="mx-auto mb-3 opacity-20"></lucide-icon>
-        <p class="text-sm">{{ i18n.t('dash.no_listings') }}</p>
+        <div *ngIf="isLoadingListings" class="dashboard-table-loading">
+          <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
+          <p class="text-sm">{{ i18n.t('dash.loading_listings') }}</p>
+        </div>
+
+        <div *ngIf="!isLoadingListings" class="dashboard-table-scroll">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Borrower</th>
+                <th>Pickup location</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody *ngIf="filteredLendingItems.length > 0; else emptyLendingState">
+              <tr *ngFor="let item of filteredLendingItems" [ngClass]="listingRowClass(item)">
+                <td>
+                  <div class="table-item-cell">
+                    <div class="relative">
+                      <img [src]="item.imageUrl" [alt]="item.title" class="table-item-thumb" [ngClass]="listingImageClass(item)" />
+                      <div *ngIf="listingIsHidden(item)" class="table-thumb-overlay">
+                        <lucide-icon [img]="EyeOff" size="18"></lucide-icon>
+                      </div>
+                      <div *ngIf="listingIsBlocked(item)" class="table-thumb-overlay table-thumb-overlay-danger">
+                        <lucide-icon [img]="Ban" size="18"></lucide-icon>
+                      </div>
+                    </div>
+                    <div class="min-w-0">
+                      <div class="truncate text-sm font-black" [ngClass]="listingTitleClass(item)">{{ item.title }}</div>
+                      <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span>{{ item.category }}</span>
+                        <span class="text-slate-300">•</span>
+                        <span *ngIf="listingHasVisiblePrice(item); else lendingFreePrice" class="font-bold text-brand-600">{{ listingPriceLabel(item) }}</span>
+                        <ng-template #lendingFreePrice>
+                          <span class="font-bold text-pink-600">Free</span>
+                        </ng-template>
+                      </div>
+                      <div *ngIf="item.autoApprove" class="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600">
+                        <lucide-icon [img]="Zap" size="10"></lucide-icon>
+                        {{ i18n.t('dash.instant_book_enabled') }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="table-ref-pill">{{ item.itemReference || '—' }}</span>
+                </td>
+                <td>
+                  <span [ngClass]="statusPillClass(item)">{{ listingStatusLabel(item) }}</span>
+                </td>
+                <td>
+                  <div class="text-sm font-semibold text-slate-800">{{ lendingBorrowerLabel(item) }}</div>
+                </td>
+                <td>
+                  <div class="table-location-cell">
+                    <lucide-icon [img]="MapPin" size="14"></lucide-icon>
+                    <span>{{ pickupLocationText(item) || '—' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-actions-cell justify-end">
+                    <ng-container *ngIf="!listingIsBlocked(item)">
+                      <button
+                        *ngIf="listingShowOverview(item)"
+                        type="button"
+                        (click)="setOverviewItem(item)"
+                        class="table-btn table-btn-secondary"
+                        title="View Overview"
+                      >
+                        <lucide-icon [img]="FileCheck" size="12"></lucide-icon>
+                        Overview
+                      </button>
+                      <button
+                        *ngIf="!listingShowOverview(item)"
+                        type="button"
+                        (click)="handleEdit(item)"
+                        class="table-btn table-btn-secondary"
+                        title="Edit Listing"
+                      >
+                        <lucide-icon [img]="Edit2" size="12"></lucide-icon>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        (click)="handleToggleStatus(item)"
+                        [disabled]="listingIsActiveLoan(item) || listingIsPending(item)"
+                        class="table-btn table-btn-secondary"
+                        [ngClass]="(listingIsActiveLoan(item) || listingIsPending(item)) ? 'opacity-50 cursor-not-allowed' : ''"
+                        [title]="listingIsHidden(item) ? 'Enable Listing' : 'Disable Listing'"
+                      >
+                        <lucide-icon [img]="listingIsHidden(item) ? Eye : EyeOff" size="12"></lucide-icon>
+                        {{ listingIsHidden(item) ? 'Enable' : 'Disable' }}
+                      </button>
+                      <button
+                        *ngIf="listingIsBorrowed(item) || item.status === AvailabilityStatus.DISPUTED"
+                        type="button"
+                        (click)="handleReturnClick(item)"
+                        [disabled]="!ownerCanStartReturn(item)"
+                        class="table-btn"
+                        [ngClass]="ownerCanStartReturn(item) ? 'table-btn-primary' : 'table-btn-muted'"
+                      >
+                        {{ ownerReturnLabel(item) }}
+                      </button>
+                      <button
+                        *ngIf="ownerCanRequestAdminReturn(item)"
+                        type="button"
+                        (click)="handleRequestAdminReturn(item)"
+                        [disabled]="actionLoading === ('admin-return-' + item.id) || !!item.adminReturnRequestedAt"
+                        class="table-btn"
+                        [ngClass]="item.adminReturnRequestedAt ? 'table-btn-warning' : 'table-btn-secondary'"
+                      >
+                        <lucide-icon *ngIf="actionLoading === ('admin-return-' + item.id)" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                        {{ ownerAdminReturnLabel(item) }}
+                      </button>
+                      <button
+                        *ngIf="item.status === AvailabilityStatus.APPROVED && item.borrowerId"
+                        type="button"
+                        (click)="handleMarkReadyForPickup(item.id)"
+                        [disabled]="actionLoading === item.id"
+                        class="table-btn table-btn-success"
+                      >
+                        <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                        {{ i18n.t('dash.mark_ready_for_pickup') }}
+                      </button>
+                      <ng-container *ngIf="listingIsPending(item) && !item.autoApprove">
+                        <button
+                          type="button"
+                          (click)="handleApprove(item.id)"
+                          [disabled]="actionLoading === item.id"
+                          class="table-btn table-btn-success"
+                        >
+                          <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          (click)="handleDeny(item.id)"
+                          [disabled]="actionLoading === item.id"
+                          class="table-btn table-btn-danger"
+                        >
+                          Deny
+                        </button>
+                      </ng-container>
+                      <button
+                        type="button"
+                        (click)="handleDeleteClick(item)"
+                        class="table-btn table-btn-danger"
+                        title="Delete Listing"
+                      >
+                        <lucide-icon [img]="Trash2" size="12"></lucide-icon>
+                        {{ i18n.t('common.delete') }}
+                      </button>
+                    </ng-container>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      <ng-template #emptyLendingState>
+        <tr>
+          <td colspan="6">
+            <div class="dashboard-empty-state">
+              <lucide-icon [img]="Package" size="36"></lucide-icon>
+              <h4>No lending items found</h4>
+              <p>{{ i18n.t('dash.no_listings') }}</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
     </div>
   </section>
 
   <div class="grid grid-cols-1 gap-8 xl:grid-cols-[1.15fr_0.85fr]">
     <div class="space-y-8">
-      <section *ngIf="activeBorrows.length > 0" class="space-y-4">
+      <section class="space-y-4">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
             <lucide-icon [img]="Clock" size="18"></lucide-icon>
@@ -407,92 +496,135 @@
           </div>
         </div>
 
-        <div class="space-y-4">
-          <div *ngIf="isLoadingBorrows" class="rounded-[28px] border border-slate-200 bg-white px-6 py-10 text-center text-slate-400 shadow-sm">
-            <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
-            <p class="text-sm">{{ i18n.t('dash.loading_active_borrows') }}</p>
+        <div class="dashboard-table-shell">
+          <div class="dashboard-filters-bar">
+            <div class="dashboard-tabs">
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'all'" (click)="borrowingTab = 'all'">All ({{ borrowingCounterLabel('all') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pending'" (click)="borrowingTab = 'pending'">Pending ({{ borrowingCounterLabel('pending') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'pickup'" (click)="borrowingTab = 'pickup'">Ready for pickup ({{ borrowingCounterLabel('pickup') }})</button>
+              <button type="button" class="dashboard-tab" [class.active]="borrowingTab === 'return'" (click)="borrowingTab = 'return'">Return flow ({{ borrowingCounterLabel('return') }})</button>
+            </div>
+            <label class="dashboard-search-box">
+              <lucide-icon [img]="Search" size="16"></lucide-icon>
+              <input [(ngModel)]="borrowingSearchQuery" type="text" placeholder="Search by item, owner, reference, or location" />
+            </label>
           </div>
 
-          <article
-            *ngFor="let item of activeBorrows"
-            (click)="navigateToListing(item.id)"
-            class="cursor-pointer rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:bg-slate-50"
-          >
-            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div class="flex min-w-0 flex-1 gap-4">
-                <img [src]="item.imageUrl" [alt]="item.title" class="h-20 w-20 rounded-2xl object-cover bg-slate-100" />
-                <div class="min-w-0 flex-1">
-                  <h3 class="truncate text-lg font-black tracking-tight text-slate-900">{{ item.title }}</h3>
-                  <p class="mt-1 text-sm text-slate-500">{{ i18n.t('dash.owner_prefix') }} {{ item.owner?.name }}</p>
-                  <p *ngIf="item.itemReference" class="mt-2 text-xs font-mono text-slate-400">{{ i18n.t('dash.item_ref_prefix') }} {{ item.itemReference }}</p>
-
-                  <div *ngIf="item.status === AvailabilityStatus.PENDING" class="mt-3 inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
-                    <lucide-icon [img]="BellRing" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('dash.request_pending') }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.DISPUTED" class="mt-3 inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
-                    <lucide-icon [img]="AlertTriangle" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('dash.disputed') }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE" class="mt-3 inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-600">
-                    <lucide-icon [img]="CheckCircle2" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('dash.approved') }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="mt-2 text-xs text-slate-500">
-                    {{ i18n.t('dash.borrower_wait_pickup_notice') }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
-                    <lucide-icon [img]="MapPin" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('dash.ready_for_pickup') }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP" class="mt-2 text-xs text-slate-600">
-                    {{ i18n.t('dash.pickup_location_prefix') }} {{ pickupLocationText(item) }}
-                  </div>
-                  <div *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED" class="mt-3 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-600">
-                    <lucide-icon [img]="Clock" size="12" class="mr-1.5"></lucide-icon>
-                    {{ i18n.t('dash.waiting_for_return') }}
-                  </div>
-                </div>
-              </div>
-
-              <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="flex shrink-0 flex-col gap-2 md:w-52">
-                <button
-                  *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED"
-                  type="button"
-                  (click)="$event.stopPropagation(); handleReturnClick(item)"
-                  [disabled]="borrowerHasSubmittedReturn(item)"
-                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {{ borrowerReturnLabel(item) }}
-                </button>
-                <button
-                  *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP"
-                  type="button"
-                  (click)="$event.stopPropagation(); handleMarkPickedUp(item.id)"
-                  [disabled]="actionLoading === item.id"
-                  class="rounded-xl bg-amber-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="mr-1.5 inline animate-spin"></lucide-icon>
-                  {{ i18n.t('dash.start_return_process') }}
-                </button>
-                <button
-                  type="button"
-                  (click)="$event.stopPropagation(); setOverviewItem(item)"
-                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
-                >
-                  {{ i18n.t('dash.overview') }}
-                </button>
-                <button
-                  type="button"
-                  (click)="$event.stopPropagation(); openReportModal(item)"
-                  class="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
-                >
-                  <lucide-icon [img]="Flag" size="12" class="mr-1.5 inline"></lucide-icon>
-                  {{ i18n.t('listing.report.title') }}
-                </button>
+          <div class="dashboard-table-card">
+            <div class="dashboard-table-header">
+              <div>
+                <h3>Borrowing overview</h3>
+                <div class="meta">Track active rentals, pickup readiness, and return actions</div>
               </div>
             </div>
-          </article>
+
+            <div *ngIf="isLoadingBorrows" class="dashboard-table-loading">
+              <lucide-icon [img]="Loader2" size="32" class="mx-auto mb-3 animate-spin"></lucide-icon>
+              <p class="text-sm">{{ i18n.t('dash.loading_active_borrows') }}</p>
+            </div>
+
+            <div *ngIf="!isLoadingBorrows" class="dashboard-table-scroll">
+              <table class="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Owner</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Pickup location</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody *ngIf="filteredBorrowingItems.length > 0; else emptyBorrowingState">
+                  <tr *ngFor="let item of filteredBorrowingItems" (click)="navigateToListing(item.id)" class="cursor-pointer hover:bg-slate-50">
+                    <td>
+                      <div class="table-item-cell">
+                        <img [src]="item.imageUrl" [alt]="item.title" class="table-item-thumb" />
+                        <div class="min-w-0">
+                          <div class="truncate text-sm font-black text-slate-900">{{ item.title }}</div>
+                          <div *ngIf="item.status === AvailabilityStatus.APPROVED" class="mt-1 text-xs text-slate-500">
+                            {{ i18n.t('dash.borrower_wait_pickup_notice') }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="table-owner-cell">
+                        <img [src]="item.owner?.avatarUrl || 'https://via.placeholder.com/32'" class="table-owner-avatar" />
+                        <div class="min-w-0">
+                          <div class="truncate text-sm font-semibold text-slate-800">{{ item.owner?.name || '—' }}</div>
+                          <div class="text-[11px] text-slate-400">{{ i18n.t('dash.owner_prefix') }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="table-ref-pill">{{ item.itemReference || '—' }}</span>
+                    </td>
+                    <td>
+                      <span [ngClass]="statusPillClass(item)">{{ listingStatusLabel(item) }}</span>
+                    </td>
+                    <td>
+                      <div class="table-location-cell">
+                        <lucide-icon [img]="MapPin" size="14"></lucide-icon>
+                        <span>{{ pickupLocationText(item) || '—' }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div *ngIf="item.status !== AvailabilityStatus.PENDING" class="table-actions-cell justify-end">
+                        <button
+                          *ngIf="item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED"
+                          type="button"
+                          (click)="$event.stopPropagation(); handleReturnClick(item)"
+                          [disabled]="borrowerHasSubmittedReturn(item)"
+                          class="table-btn table-btn-secondary"
+                          [ngClass]="borrowerHasSubmittedReturn(item) ? 'opacity-50 cursor-not-allowed' : ''"
+                        >
+                          {{ borrowerReturnLabel(item) }}
+                        </button>
+                        <button
+                          *ngIf="item.status === AvailabilityStatus.READY_FOR_PICKUP"
+                          type="button"
+                          (click)="$event.stopPropagation(); handleMarkPickedUp(item.id)"
+                          [disabled]="actionLoading === item.id"
+                          class="table-btn table-btn-primary"
+                        >
+                          <lucide-icon *ngIf="actionLoading === item.id" [img]="Loader2" size="12" class="animate-spin"></lucide-icon>
+                          {{ i18n.t('dash.start_return_process') }}
+                        </button>
+                        <button
+                          type="button"
+                          (click)="$event.stopPropagation(); setOverviewItem(item)"
+                          class="table-btn table-btn-secondary"
+                        >
+                          {{ i18n.t('dash.overview') }}
+                        </button>
+                        <button
+                          type="button"
+                          (click)="$event.stopPropagation(); openReportModal(item)"
+                          class="table-btn table-btn-danger"
+                        >
+                          <lucide-icon [img]="Flag" size="12"></lucide-icon>
+                          {{ i18n.t('listing.report.title') }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <ng-template #emptyBorrowingState>
+            <tr>
+              <td colspan="6">
+                <div class="dashboard-empty-state">
+                  <lucide-icon [img]="Clock" size="36"></lucide-icon>
+                  <h4>No active borrows found</h4>
+                  <p>Try a different filter or search term.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
         </div>
       </section>
 
