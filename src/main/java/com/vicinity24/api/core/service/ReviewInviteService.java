@@ -55,10 +55,6 @@ public class ReviewInviteService {
             return;
         }
 
-        if (reviewRepository.existsByAuthorAndTargetUserAndListing(reviewer, target, listing)) {
-            return;
-        }
-
         Optional<ReviewInvite> existing = reviewInviteRepository.findFirstByReturnSessionIdAndReviewerIdAndTargetUserId(returnSessionId, reviewer.getId(), target.getId());
         ReviewInvite invite = existing.orElseGet(() -> ReviewInvite.builder()
                 .id(UUID.randomUUID())

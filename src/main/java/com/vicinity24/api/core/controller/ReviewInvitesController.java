@@ -92,12 +92,6 @@ public class ReviewInvitesController {
         if (invite.getTargetUser() == null || invite.getListing() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "invite_invalid"));
         }
-        if (reviewRepository.existsByAuthorAndTargetUserAndListing(author, invite.getTargetUser(), invite.getListing())) {
-            invite.setUsedAt(LocalDateTime.now());
-            reviewInviteRepository.save(invite);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "already_reviewed"));
-        }
-
         int rating = payload.get("rating") instanceof Number n ? n.intValue() : 0;
         String comment = payload.get("comment") != null ? String.valueOf(payload.get("comment")) : "";
         if (rating < 1 || rating > 5) {
