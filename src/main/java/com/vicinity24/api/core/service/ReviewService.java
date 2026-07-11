@@ -7,6 +7,7 @@ import com.vicinity24.api.core.repository.ListingRepository;
 import com.vicinity24.api.core.repository.ReviewRepository;
 import com.vicinity24.api.core.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,11 +25,13 @@ public class ReviewService {
         this.listingRepository = listingRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Review> getForUser(UUID userId) {
         User u = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("user_not_found"));
         return reviewRepository.findByTargetUser(u);
     }
 
+    @Transactional
     public Review create(UUID targetUserId, UUID listingId, User author, int rating, String comment) {
         User target = userRepository.findById(targetUserId).orElseThrow(() -> new RuntimeException("user_not_found"));
         Listing listing = listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("listing_not_found"));
