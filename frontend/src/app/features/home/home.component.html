@@ -1,11 +1,273 @@
-<div class="space-y-10">
+<ng-container *ngIf="layoutMode.isStandard(); else modernHomeTemplate">
+  <section class="hero">
+    <div *ngIf="homeConfig.showHeroBadge !== false" class="hero-badge">
+      <lucide-icon [img]="Sparkles" [size]="14"></lucide-icon>
+      <span>{{ i18n.t('home.hero_badge') }}</span>
+    </div>
+
+    <h1 *ngIf="homeConfig.showHeroTitle !== false">{{ i18n.t('home.hero_title_1') }}</h1>
+    <p *ngIf="homeConfig.showHeroDesc !== false" class="hero-sub">{{ i18n.t('home.hero_desc') }}</p>
+
+    <div class="hero-search">
+      <input
+        class="hero-search-input"
+        type="text"
+        [placeholder]="i18n.t('home.search_placeholder')"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+      >
+      <div class="hero-search-divider"></div>
+      <div class="hero-search-loc">
+        <lucide-icon [img]="MapPin" [size]="16"></lucide-icon>
+        <input
+          type="text"
+          [placeholder]="i18n.t('home.location.placeholder_default')"
+          [(ngModel)]="locationQuery"
+          (ngModelChange)="onLocationInputChange($event)"
+        >
+      </div>
+      <button type="button" class="hero-search-btn" (click)="fetchData()">{{ i18n.t('home.filters_apply') }}</button>
+    </div>
+
+    <div *ngIf="locationResults.length > 0" class="discovery-location-results">
+      <button
+        type="button"
+        *ngFor="let r of locationResults"
+        (click)="onLocationSelect(r)"
+        class="discovery-location-results__item"
+      >
+        {{ r.displayName || (r.city + ', ' + (r.country || '')) }}
+      </button>
+    </div>
+
+    <div class="hero-filters">
+      <button type="button" class="hero-filter-btn" (click)="requestCurrentLocation()">
+        {{ locationLoading ? i18n.t('home.loading') : i18n.t('home.location.use_current') }}
+      </button>
+      <span class="hero-filter-label">{{ i18n.t('home.location.radius_label') }}</span>
+      <select class="hero-filter-select" [ngModel]="searchRadiusKm" (ngModelChange)="onRadiusChange($event)">
+        <option *ngFor="let radius of radiusOptions" [ngValue]="radius">{{ radius }} km</option>
+      </select>
+      <span class="hero-filter-label">{{ i18n.t('home.filters_sort_label') }}</span>
+      <select class="hero-filter-select" [ngModel]="sortMode" (ngModelChange)="onSortChange($event)">
+        <option value="best_match">{{ i18n.t('home.sort_best_match') }}</option>
+        <option value="nearest">{{ i18n.t('home.sort_nearest') }}</option>
+        <option value="newest">{{ i18n.t('home.sort_newest') }}</option>
+      </select>
+      <button *ngIf="locationQuery || isLocationEnabled" type="button" class="hero-filter-btn" (click)="clearLocationFilter()">
+        {{ i18n.t('home.location.clear') }}
+      </button>
+    </div>
+
+    <div class="hero-footer">
+      {{ i18n.t('home.location.osm_attrib') }}
+    </div>
+  </section>
+
+  <div class="results-bar">
+    <span class="results-count">
+      {{ i18n.t('home.showing') }} {{ listings.length === 0 ? 0 : ((currentPage - 1) * ITEMS_PER_PAGE + 1) }}–{{ (currentPage * ITEMS_PER_PAGE) > listings.length ? listings.length : (currentPage * ITEMS_PER_PAGE) }} {{ i18n.t('home.of') }} {{ listings.length }} {{ i18n.t('home.results') }}
+    </span>
+    <div class="view-toggle">
+      <button type="button" class="view-btn" [class.active]="viewMode === 'modern'" (click)="setViewMode('modern')">
+        <lucide-icon [img]="LayoutGrid" [size]="14"></lucide-icon>
+      </button>
+      <button type="button" class="view-btn" [class.active]="viewMode === 'list'" (click)="setViewMode('list')">
+        <lucide-icon [img]="ListIcon" [size]="14"></lucide-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="filter-panel">
+        <h2 class="filter-title">{{ i18n.t('home.filters_title') }}</h2>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.filters_search_label') }}</label>
+          <div class="filter-input-wrap">
+            <lucide-icon [img]="Search" [size]="14"></lucide-icon>
+            <input
+              class="filter-input"
+              type="text"
+              [placeholder]="i18n.t('home.search_placeholder')"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="onSearchChange()"
+            >
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.filters_location_label') }}</label>
+          <div class="filter-input-wrap">
+            <lucide-icon [img]="MapPin" [size]="14"></lucide-icon>
+            <input
+              class="filter-input"
+              type="text"
+              [placeholder]="i18n.t('home.location.placeholder_default')"
+              [(ngModel)]="locationQuery"
+              (ngModelChange)="onLocationInputChange($event)"
+            >
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.location.radius_label') }}</label>
+          <select class="filter-select" [ngModel]="searchRadiusKm" (ngModelChange)="onRadiusChange($event)">
+            <option *ngFor="let radius of radiusOptions" [ngValue]="radius">{{ radius }} km</option>
+          </select>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.filters_sort_label') }}</label>
+          <select class="filter-select" [ngModel]="sortMode" (ngModelChange)="onSortChange($event)">
+            <option value="best_match">{{ i18n.t('home.sort_best_match') }}</option>
+            <option value="nearest">{{ i18n.t('home.sort_nearest') }}</option>
+            <option value="newest">{{ i18n.t('home.sort_newest') }}</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="button" class="filter-action-btn" (click)="requestCurrentLocation()">
+            {{ locationLoading ? i18n.t('home.loading') : i18n.t('home.location.use_current') }}
+          </button>
+          <button type="button" class="filter-action-btn" (click)="clearLocationFilter()">
+            {{ i18n.t('home.location.clear') }}
+          </button>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.filters_type_label') }}</label>
+          <div class="filter-type-toggle">
+            <button type="button" class="filter-type-btn" [class.active]="filterType === 'ALL'" (click)="onFilterChange('ALL')">{{ i18n.t('home.filter_all') }}</button>
+            <button type="button" class="filter-type-btn" [class.active]="filterType === 'ITEMS'" (click)="onFilterChange('ITEMS')">{{ i18n.t('home.filter_goods') }}</button>
+            <button type="button" class="filter-type-btn" [class.active]="filterType === ListingType.SKILL" (click)="onFilterChange(ListingType.SKILL)">{{ i18n.t('home.filter_skills') }}</button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">{{ i18n.t('home.filters_category_label') }}</label>
+          <select class="filter-select" [(ngModel)]="selectedCategory" (change)="fetchData()">
+            <option *ngFor="let category of CATEGORIES" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+
+        <div class="filter-submit-row">
+          <button type="button" class="btn-apply" (click)="fetchData()">{{ i18n.t('home.filters_apply') }}</button>
+          <button type="button" class="btn-clear" (click)="clearFilters()">{{ i18n.t('home.filters_clear') }}</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="results">
+      <ng-container *ngIf="loading; else standardResults">
+        <div class="discovery-loading">{{ i18n.t('home.loading') }}</div>
+      </ng-container>
+
+      <ng-template #standardResults>
+        <ng-container *ngIf="paginatedListings.length > 0; else standardEmpty">
+          <ng-container *ngIf="viewMode === 'list'; else standardGrid">
+            <div
+              *ngFor="let listing of paginatedListings"
+              class="result-card"
+              (click)="navigateToListing(listing.id)"
+            >
+              <img class="result-img" [src]="listing.imageUrl || 'assets/images/placeholder-image.png'" [alt]="listing.title">
+              <div class="result-info">
+                <div class="result-name">{{ listing.title }}</div>
+                <div class="result-meta">{{ standardListingMetaPrimary(listing) }} <span>·</span> {{ standardListingTypeLabel(listing) }}</div>
+                <div *ngIf="standardListingLocation(listing)" class="result-location">
+                  <lucide-icon [img]="MapPin" [size]="12"></lucide-icon>
+                  <span>{{ standardListingLocation(listing) }}</span>
+                </div>
+              </div>
+              <div class="result-price-col">
+                <div class="result-price">
+                  <ng-container *ngIf="listingHasVisiblePrice(listing); else freePrice">
+                    {{ listingPriceValue(listing) }}
+                    <span *ngIf="standardListingPricePeriodLabel(listing)" class="result-price-unit">{{ standardListingPricePeriodLabel(listing) }}</span>
+                  </ng-container>
+                  <ng-template #freePrice>{{ i18n.t('home.free') }}</ng-template>
+                </div>
+                <div class="result-status">{{ standardListingStatus(listing) }}</div>
+              </div>
+              <div class="result-details">
+                <div class="result-detail-row">
+                  <span class="result-detail-label">{{ i18n.t('home.spec_category') }}</span>
+                  <span class="result-detail-value">{{ standardListingMetaPrimary(listing) }}</span>
+                </div>
+                <div class="result-detail-row">
+                  <span class="result-detail-label">{{ i18n.t('home.spec_type') }}</span>
+                  <span class="result-detail-value">{{ standardListingTypeLabel(listing) }}</span>
+                </div>
+                <div class="result-detail-row">
+                  <span class="result-detail-label">{{ i18n.t('home.spec_distance') }}</span>
+                  <span class="result-detail-value">{{ standardListingDistance(listing) }}</span>
+                </div>
+              </div>
+              <button type="button" class="result-view-btn" (click)="$event.stopPropagation(); navigateToListing(listing.id)">{{ i18n.t('home.view') }}</button>
+            </div>
+          </ng-container>
+
+          <ng-template #standardGrid>
+            <div class="discovery-grid">
+              <app-resource-card
+                *ngFor="let listing of paginatedListings"
+                [listing]="listing"
+                (cardClick)="navigateToListing(listing.id)"
+              ></app-resource-card>
+            </div>
+          </ng-template>
+        </ng-container>
+
+        <ng-template #standardEmpty>
+          <div class="discovery-empty">
+            <h3>{{ i18n.t('home.no_matches') }}</h3>
+            <p>{{ i18n.t('home.no_matches_desc') }}</p>
+            <button type="button" class="btn-apply" (click)="clearFilters()">{{ i18n.t('home.clear_filters') }}</button>
+          </div>
+        </ng-template>
+      </ng-template>
+    </div>
+  </div>
+
+  <div *ngIf="totalPages > 1 && listings.length > 0" class="pagination">
+    <button type="button" class="page-btn nav-arrow" (click)="handlePageChange(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+    <button
+      type="button"
+      *ngFor="let page of pagesArray"
+      class="page-btn"
+      [class.active]="currentPage === page"
+      (click)="handlePageChange(page)"
+    >
+      {{ page }}
+    </button>
+    <button type="button" class="page-btn nav-arrow" (click)="handlePageChange(currentPage + 1)" [disabled]="currentPage === totalPages">›</button>
+  </div>
+</ng-container>
+
+<ng-template #modernHomeTemplate>
+<div class="home-page space-y-10" [class.home-page--standard]="layoutMode.isStandard()">
+  <section *ngIf="layoutMode.isStandard()" class="home-standard-header">
+    <div>
+      <div class="home-standard-header__eyebrow">{{ i18n.t('app.brand') }}</div>
+      <h1 class="home-standard-header__title">{{ i18n.t('home.hero_title_1') }}</h1>
+      <p class="home-standard-header__subtitle">{{ i18n.t('home.hero_desc') }}</p>
+    </div>
+    <div class="home-standard-header__meta">
+      <div class="home-standard-header__meta-label">{{ i18n.t('home.results') }}</div>
+      <div class="home-standard-header__meta-value">{{ listings.length }}</div>
+    </div>
+  </section>
       
   <!-- Hero Section -->
-  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-600 to-emerald-800 text-white shadow-xl">
+  <div class="home-hero-card relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-600 to-emerald-800 text-white shadow-xl">
     <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl pointer-events-none"></div>
     
-    <div class="relative px-8 py-16 md:py-20 md:px-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
+    <div class="home-hero-panel relative px-8 py-16 md:py-20 md:px-16 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-10">
        <div class="max-w-2xl">
            <ng-container *ngIf="homeConfig.showHeroBadge !== false">
            <div class="inline-flex items-center px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium mb-4 backdrop-blur-sm border border-white/10">
@@ -32,7 +294,7 @@
            </div>
          
          <!-- Search Bar Embedded in Hero -->
-         <div class="bg-white p-2 rounded-full shadow-lg max-w-3xl w-full flex items-center transition-transform focus-within:scale-105 duration-300">
+         <div class="home-search-surface bg-white p-2 rounded-full shadow-lg max-w-3xl w-full flex items-center transition-transform focus-within:scale-105 duration-300">
             <div class="flex-[1.5] flex items-center border-r border-gray-200">
               <div class="pl-4 text-gray-400">
                 <lucide-icon [img]="Search" [size]="20"></lucide-icon>
@@ -142,7 +404,7 @@
   </div>
 
   <!-- Filters & Controls -->
-  <div class="sticky top-20 z-30 bg-slate-50/95 backdrop-blur py-4 -mx-4 px-4 md:mx-0 md:px-0">
+  <div class="home-controls sticky top-20 z-30 bg-slate-50/95 backdrop-blur py-4 -mx-4 px-4 md:mx-0 md:px-0">
     <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
       <div *ngIf="viewMode === 'modern'" class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">
         <button 
@@ -514,7 +776,7 @@
       </div>
   </ng-template>
 
-  <div *ngIf="currentUser && recommended.length > 0" class="pt-4">
+  <div *ngIf="currentUser && recommended.length > 0" class="home-recommended pt-4">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('home.recommended_title') }}</h2>
       <span class="text-xs text-gray-500">{{ i18n.t('home.recommended_subtitle') }}</span>
@@ -607,3 +869,4 @@
     </ng-template>
   </div>
 </div>
+</ng-template>

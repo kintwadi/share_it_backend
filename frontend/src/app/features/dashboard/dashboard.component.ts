@@ -8,6 +8,7 @@ import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
 import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../core/utils/listing-pricing';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 const DEFAULT_USER_AVATAR = 'assets/images/default-user-photo.png';
 
@@ -25,6 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   router = inject(Router);
   route = inject(ActivatedRoute);
   cdr = inject(ChangeDetectorRef);
+  layoutMode = inject(LayoutModeService);
 
   readonly Plus = Plus;
   readonly Loader2 = Loader2;

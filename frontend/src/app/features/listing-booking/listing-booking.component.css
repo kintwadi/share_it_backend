@@ -358,6 +358,535 @@
   display: none;
 }
 
+.booking-standard-card {
+  max-width: 800px;
+  margin: 20px auto 40px;
+  background: #ffffff;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.booking-standard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px;
+  border-bottom: 1px solid #ddd9d0;
+}
+
+.booking-standard-card-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.booking-standard-card-item {
+  font-size: 13px;
+  color: #8a8a8a;
+  font-style: italic;
+}
+
+.booking-standard-inner-card {
+  margin: 24px 28px;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.booking-standard-inner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #ddd9d0;
+  background: #f7f5f0;
+}
+
+.booking-standard-inner-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.booking-standard-inner-item {
+  font-size: 12px;
+  color: #8a8a8a;
+}
+
+.booking-standard-inner-body {
+  padding: 32px 24px;
+}
+
+.borrow-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e3a5f;
+  text-align: center;
+  margin: 0 0 28px;
+  letter-spacing: -0.3px;
+}
+
+.option-card {
+  width: 100%;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: #ffffff;
+  text-align: left;
+}
+
+.option-card:hover {
+  border-color: #2d5078;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.option-card.selected {
+  border-color: #3d6b4f;
+  background: #e8f0eb;
+  box-shadow: 0 0 0 1px #3d6b4f;
+}
+
+.option-card.recommended {
+  border-color: #3d6b4f;
+  background: #e8f0eb;
+}
+
+.recommended-badge {
+  position: absolute;
+  top: -1px;
+  right: 20px;
+  padding: 4px 12px;
+  background: #3d6b4f;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 0 0 3px 3px;
+}
+
+.option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.option-icon.trial {
+  background: rgba(61, 107, 79, 0.15);
+  color: #3d6b4f;
+}
+
+.option-icon.fee {
+  background: #f7f5f0;
+  color: #6b6b6b;
+  border: 1px solid #ddd9d0;
+}
+
+.option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.option-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+
+.option-desc {
+  font-size: 14px;
+  color: #6b6b6b;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.option-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.option-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c2c2c;
+}
+
+.option-feature lucide-icon {
+  color: #3d6b4f;
+  flex-shrink: 0;
+}
+
+.option-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #c8c3b8;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  background: #ffffff;
+}
+
+.option-card.selected .option-radio {
+  border-color: #3d6b4f;
+  background: #3d6b4f;
+}
+
+.option-radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.option-card.selected .option-radio-inner {
+  opacity: 1;
+}
+
+.continue-btn {
+  width: 100%;
+  padding: 16px;
+  background: #3d6b4f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+.continue-btn:hover:not(:disabled) {
+  background: #2e7d4f;
+}
+
+.privacy-note {
+  padding: 16px 24px;
+  border-top: 1px solid #ddd9d0;
+  text-align: center;
+  font-size: 12px;
+  color: #8a8a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.privacy-note lucide-icon {
+  color: #3d6b4f;
+}
+
+.booking-standard-inline-note {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b6b6b;
+}
+
+.standard-info-box {
+  margin: 20px 28px 0;
+  padding: 14px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.standard-info-box.success {
+  background: #eef7f1;
+  border: 1px solid #c5ddd0;
+  color: #2e7d4f;
+}
+
+.standard-info-box.warning {
+  background: #fdf8e8;
+  border: 1px solid #e8ddb5;
+  color: #8a6d2b;
+}
+
+.pricing-box {
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin: 20px 28px 24px;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+}
+
+.pricing-row + .pricing-row {
+  border-top: 1px solid #ddd9d0;
+}
+
+.pricing-label {
+  font-size: 14px;
+  color: #2c2c2c;
+  font-weight: 600;
+}
+
+.pricing-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.pricing-value.strikethrough {
+  text-decoration: line-through;
+  color: #8a8a8a;
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+.pricing-desc {
+  font-size: 12px;
+  color: #6b6b6b;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.pricing-desc strong {
+  color: #2e7d4f;
+  font-weight: 600;
+}
+
+.pricing-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0 4px;
+  border-top: 1px solid #c8c3b8;
+  margin-top: 4px;
+}
+
+.pricing-total-label {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.pricing-total-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.item-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 3px;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid #ddd9d0;
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 2px;
+}
+
+.item-category {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-bottom: 4px;
+}
+
+.item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3d6b4f;
+}
+
+.quantity-section {
+  margin-bottom: 20px;
+}
+
+.quantity-label {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 12px;
+}
+
+.quantity-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c8c3b8;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #1e3a5f;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.qty-btn:hover:not(:disabled) {
+  border-color: #1e3a5f;
+  background: #ede9e0;
+}
+
+.qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty-display {
+  text-align: center;
+}
+
+.qty-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e3a5f;
+  line-height: 1;
+}
+
+.qty-unit {
+  font-size: 12px;
+  color: #8a8a8a;
+  margin-top: 4px;
+}
+
+.checkout-btn {
+  width: 100%;
+  padding: 16px;
+  background: #1e3a5f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.checkout-btn:hover:not(:disabled) {
+  background: #2d5078;
+}
+
+.checkout-btn:disabled,
+.continue-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .booking-standard-card {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .booking-standard-card-header,
+  .booking-standard-inner-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .booking-standard-inner-card,
+  .pricing-box,
+  .standard-info-box {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .booking-standard-inner-body {
+    padding: 24px 16px;
+  }
+
+  .borrow-heading {
+    font-size: 20px;
+  }
+
+  .option-card {
+    flex-wrap: wrap;
+  }
+}
+
 .booking-summary-card__row--total {
   color: var(--payment-text);
   font-size: 16px;
@@ -800,4 +1329,38 @@
   .booking-option-price {
     font-size: 13px;
   }
+}
+
+.booking-page--standard {
+  background: #f7f5f0;
+}
+
+.booking-standard-header {
+  margin-bottom: 1rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid #c8c3b8;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.booking-standard-header__eyebrow {
+  color: #6b6b6b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.booking-standard-header__title {
+  margin: 0.35rem 0 0;
+  color: #1e3a5f;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.booking-standard-header__subtitle {
+  margin: 0.5rem 0 0;
+  color: #6b6b6b;
 }

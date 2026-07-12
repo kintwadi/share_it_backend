@@ -702,6 +702,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     'app.brand': 'v24pool',
     'nav.partner': 'Partner',
+    'layout.mode.modern': 'Modern',
+    'layout.mode.standard': 'Standard',
+    'layout.badge': '{mode} Layout',
+    'layout.toggle.to_modern': 'Switch to Modern',
+    'layout.toggle.to_standard': 'Switch to Standard',
+    'layout.hint.modern': 'Modern interface active',
+    'layout.hint.standard': 'Classic interface active',
 
     'new_item.title': 'Create a listing',
     'new_item.subtitle': 'Fill in the details below.',
@@ -1779,6 +1786,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     'app.brand': 'v24pool',
     'nav.partner': 'Parceiro',
+    'layout.mode.modern': 'Moderno',
+    'layout.mode.standard': 'Padrão',
+    'layout.badge': 'Layout {mode}',
+    'layout.toggle.to_modern': 'Mudar para Moderno',
+    'layout.toggle.to_standard': 'Mudar para Padrão',
+    'layout.hint.modern': 'Interface moderna ativa',
+    'layout.hint.standard': 'Interface clássica ativa',
 
     'new_item.title': 'Criar anúncio',
     'new_item.subtitle': 'Preencha os detalhes abaixo.',
@@ -2797,6 +2811,13 @@ const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
     'app.brand': 'v24pool',
     'nav.partner': 'Partner',
+    'layout.mode.modern': 'Modern',
+    'layout.mode.standard': 'Standard',
+    'layout.badge': '{mode}-Layout',
+    'layout.toggle.to_modern': 'Zu Modern wechseln',
+    'layout.toggle.to_standard': 'Zu Standard wechseln',
+    'layout.hint.modern': 'Moderne Oberfläche aktiv',
+    'layout.hint.standard': 'Klassische Oberfläche aktiv',
 
     'new_item.title': 'Anzeige erstellen',
     'new_item.subtitle': 'Bitte fülle die Details unten aus.',

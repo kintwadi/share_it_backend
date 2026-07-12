@@ -1,31 +1,36 @@
 <ng-container *ngIf="isOpen">
-  <div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="confirmation-modal-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" [class.confirmation-modal-overlay--standard]="layoutMode.isStandard()">
     <div class="absolute inset-0" (click)="onCancel()"></div>
-    <div class="relative bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-200">
-      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+    <div class="confirmation-modal-dialog relative bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-200" [class.confirmation-modal-dialog--standard]="layoutMode.isStandard()">
+      <div class="confirmation-modal-header p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50" [class.confirmation-modal-header--standard]="layoutMode.isStandard()">
         <div class="flex items-center gap-2">
           <lucide-icon
             [img]="variant === 'danger' || variant === 'warning' ? AlertTriangle : Info"
             [size]="18"
-            [ngClass]="variant === 'danger' ? 'text-red-600' : (variant === 'warning' ? 'text-amber-600' : 'text-brand-600')"
+            class="confirmation-modal-icon"
+            [ngClass]="[
+              layoutMode.isStandard() ? 'confirmation-modal-icon--standard' : '',
+              variant === 'danger' ? 'text-red-600 confirmation-modal-icon--danger' : (variant === 'warning' ? 'text-amber-600 confirmation-modal-icon--warning' : 'text-brand-600 confirmation-modal-icon--info')
+            ]"
           ></lucide-icon>
-          <h2 class="text-lg font-bold text-gray-900">{{ title }}</h2>
+          <h2 class="confirmation-modal-title text-lg font-bold text-gray-900" [class.confirmation-modal-title--standard]="layoutMode.isStandard()">{{ title }}</h2>
         </div>
-        <button (click)="onCancel()" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200">
+        <button (click)="onCancel()" class="confirmation-modal-close p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200" [class.confirmation-modal-close--standard]="layoutMode.isStandard()">
           <lucide-icon [img]="X" [size]="20"></lucide-icon>
         </button>
       </div>
 
-      <div class="p-6">
-        <div class="text-sm text-gray-700 leading-relaxed">{{ message }}</div>
-        <div class="mt-6 flex justify-end gap-2">
-          <button (click)="onCancel()" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
+      <div class="confirmation-modal-body p-6" [class.confirmation-modal-body--standard]="layoutMode.isStandard()">
+        <div class="confirmation-modal-message text-sm text-gray-700 leading-relaxed" [class.confirmation-modal-message--standard]="layoutMode.isStandard()">{{ message }}</div>
+        <div class="confirmation-modal-actions mt-6 flex justify-end gap-2" [class.confirmation-modal-actions--standard]="layoutMode.isStandard()">
+          <button (click)="onCancel()" class="confirmation-modal-btn confirmation-modal-btn--cancel px-4 py-2 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50" [class.confirmation-modal-btn--standard]="layoutMode.isStandard()">
             {{ cancelLabel }}
           </button>
           <button
             (click)="onConfirm()"
             [disabled]="confirmDisabled"
-            class="px-4 py-2 rounded-xl font-semibold text-white disabled:opacity-60"
+            class="confirmation-modal-btn confirmation-modal-btn--confirm px-4 py-2 rounded-xl font-semibold text-white disabled:opacity-60"
+            [class.confirmation-modal-btn--standard]="layoutMode.isStandard()"
             [ngClass]="variant === 'danger' ? 'bg-red-600 hover:bg-red-700' : (variant === 'warning' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-black')"
           >
             {{ confirmLabel }}
@@ -35,4 +40,3 @@
     </div>
   </div>
 </ng-container>
-

@@ -10,6 +10,7 @@ import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, Availa
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
 import { getListingPrimaryRate, getListingPricingUnit, getPricingUnitLong, getPricingUnitPlural, getPricingUnitShort } from '../../core/utils/listing-pricing';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 type PendingBorrowerBookingState = {
   listingId: string;
@@ -33,6 +34,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   private settingsConfig = inject(SettingsConfigService);
   private stripeClient = inject(StripeClientService);
   private cdr = inject(ChangeDetectorRef);
+  layoutMode = inject(LayoutModeService);
 
   readonly ArrowLeft = ArrowLeft;
   readonly ShieldCheck = ShieldCheck;

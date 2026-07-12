@@ -9,6 +9,7 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { AuthStorageService } from '../../core/services/auth-storage.service';
 import { SessionService } from '../../core/services/session.service';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-email-verification',
@@ -27,6 +28,7 @@ export class EmailVerificationComponent implements OnInit, OnDestroy {
   subscriptionFeature = inject(SubscriptionFeatureService);
   private authStorage = inject(AuthStorageService);
   private session = inject(SessionService);
+  layoutMode = inject(LayoutModeService);
 
   readonly Mail = Mail;
   readonly ArrowLeft = ArrowLeft;

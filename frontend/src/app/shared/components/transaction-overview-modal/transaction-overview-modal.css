@@ -1,1 +1,76 @@
+:host {
+  display: contents;
+}
 
+.transaction-overview-overlay--standard {
+  background: rgba(44, 44, 44, 0.48) !important;
+  backdrop-filter: blur(2px);
+}
+
+.transaction-overview-dialog--standard {
+  border-radius: 4px !important;
+  border: 1px solid #c8c3b8 !important;
+  box-shadow: 0 20px 44px rgba(30, 58, 95, 0.16) !important;
+}
+
+.transaction-overview-header--standard,
+.transaction-overview-footer--standard {
+  background: #f7f5f0 !important;
+  border-color: #ddd9d0 !important;
+}
+
+.transaction-overview-title--standard {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px !important;
+  color: #1e3a5f !important;
+}
+
+.transaction-overview-close--standard {
+  border-radius: 4px !important;
+  border-color: #ddd9d0 !important;
+  color: #6b6b6b !important;
+}
+
+.transaction-overview-hero--standard {
+  height: 220px !important;
+}
+
+.transaction-overview-content--standard {
+  padding: 22px !important;
+}
+
+.transaction-overview-status--standard {
+  border-radius: 4px !important;
+  border-color: #ddd9d0 !important;
+  background: #f7f5f0 !important;
+}
+
+.transaction-overview-location--standard {
+  border-radius: 4px !important;
+  border-color: #d8ddd2 !important;
+  background: #f3f7ef !important;
+}
+
+.transaction-overview-location__icon--standard {
+  border-radius: 4px !important;
+  border: 1px solid #d8ddd2;
+  box-shadow: none !important;
+}
+
+.transaction-overview-user--standard {
+  border-top-color: #ddd9d0 !important;
+}
+
+.transaction-overview-user__avatar--standard {
+  border-radius: 4px !important;
+  background: #f7f5f0 !important;
+  color: #6b6b6b !important;
+}
+
+.transaction-overview-footer__btn--standard {
+  border-radius: 4px !important;
+  border-color: #c8c3b8 !important;
+  color: #1e3a5f !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}

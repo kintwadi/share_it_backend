@@ -7,6 +7,7 @@ import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { User, Listing, AvailabilityStatus, ListingType, ReturnSessionResponse } from '../../core/models/types';
 import { getListingAdditionalRates, getListingPrimaryRate, getListingPricingUnit, getPricingUnitShort, isListingFree } from '../../core/utils/listing-pricing';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-listing-detail',
@@ -21,6 +22,7 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
   api = inject(ApiService);
   i18n = inject(I18nService);
   cdr = inject(ChangeDetectorRef);
+  layoutMode = inject(LayoutModeService);
 
   readonly MapPin = MapPin;
   readonly ShieldCheck = ShieldCheck;

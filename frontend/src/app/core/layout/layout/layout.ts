@@ -29,6 +29,7 @@ import { I18nService } from '../../services/i18n.service';
 import { UserPreferencesService } from '../../services/user-preferences.service';
 import { AuthStorageService } from '../../services/auth-storage.service';
 import { CookieConsentComponent } from '../../../shared/components/cookie-consent/cookie-consent.component';
+import { LayoutModeService } from '../../services/layout-mode.service';
 
 @Component({
   selector: 'app-layout',
@@ -60,6 +61,7 @@ export class Layout {
   private settingsConfig = inject(SettingsConfigService);
   private prefs = inject(UserPreferencesService);
   private authStorage = inject(AuthStorageService);
+  layoutMode = inject(LayoutModeService);
   i18n = inject(I18nService);
 
   isMenuOpen = signal(false);
@@ -239,6 +241,16 @@ export class Layout {
     const cur = this.language();
     const next = cur === 'en' ? 'pt' : cur === 'pt' ? 'de' : 'en';
     this.i18n.setLanguage(next);
+  }
+
+  toggleLayoutMode() {
+    this.layoutMode.toggleMode();
+    this.isProfileDropdownOpen.set(false);
+    this.isMenuOpen.set(false);
+  }
+
+  layoutModeToggleLabel(): string {
+    return this.i18n.t(this.layoutMode.isStandard() ? 'layout.toggle.to_modern' : 'layout.toggle.to_standard');
   }
 
   setCurrency(curr: any) {

@@ -6,7 +6,7 @@
 </ng-container>
 
 <ng-template #loadedTemplate>
-  <div class="listing-detail-page" *ngIf="listing; else notFoundTemplate">
+  <div class="listing-detail-page" [class.listing-detail-page--standard]="layoutMode.isStandard()" *ngIf="listing; else notFoundTemplate">
     <div *ngIf="shareNotice" class="banner banner-success">
       <lucide-icon [img]="CheckCircle2" size="20"></lucide-icon>
       <div class="banner-copy">
@@ -26,6 +26,12 @@
       <lucide-icon [img]="ArrowLeft" size="16"></lucide-icon>
       {{ i18n.t('listing.back_to_listings') }}
     </button>
+
+    <section *ngIf="layoutMode.isStandard()" class="listing-standard-header">
+      <div class="listing-standard-header__eyebrow">{{ listing.category }}</div>
+      <h1 class="listing-standard-header__title">{{ listing.title }}</h1>
+      <p class="listing-standard-header__subtitle">{{ listing.description }}</p>
+    </section>
 
     <div class="listing-layout">
       <section class="gallery-section">

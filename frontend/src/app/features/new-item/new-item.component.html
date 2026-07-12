@@ -1,4 +1,4 @@
-<div class="new-item-page">
+<div class="new-item-page" [class.new-item-page--standard]="layoutMode.isStandard()">
   <ng-container *ngIf="loading; else formTpl">
     <div class="loading-state">
       <lucide-icon [img]="Loader2" size="40" class="spin"></lucide-icon>
@@ -7,6 +7,11 @@
 
   <ng-template #formTpl>
     <main class="main">
+      <section *ngIf="layoutMode.isStandard()" class="new-item-standard-header">
+        <div class="new-item-standard-header__eyebrow">{{ editId ? i18n.t('new_item.edit_listing') : i18n.t('new_item.title') }}</div>
+        <h1 class="new-item-standard-header__title">{{ i18n.t('new_item.title') }}</h1>
+        <p class="new-item-standard-header__subtitle">{{ i18n.t('new_item.subtitle') }}</p>
+      </section>
       <div class="page-header">
         <div>
           <div *ngIf="editId" class="page-eyebrow">{{ i18n.t('new_item.edit_listing') }}</div>

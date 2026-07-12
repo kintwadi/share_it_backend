@@ -7,6 +7,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { StripeClientService } from '../../../core/services/stripe-client.service';
 import { Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
 import { I18nService } from '../../../core/services/i18n.service';
+import { LayoutModeService } from '../../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-payment-settings',
@@ -21,6 +22,7 @@ export class PaymentSettingsComponent {
   private stripeClient = inject(StripeClientService);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  layoutMode = inject(LayoutModeService);
 
   readonly Loader2 = Loader2;
   readonly CreditCard = CreditCard;
