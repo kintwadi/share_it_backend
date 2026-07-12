@@ -1,5 +1,162 @@
-<div class="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white py-10 px-4 md:px-6">
+<ng-container *ngIf="layoutMode.isStandard(); else modernVerificationTemplate">
+  <div class="back-bar">
+    <button type="button" (click)="goBack()" class="back-link">
+      <lucide-icon [img]="ArrowLeft" [size]="14"></lucide-icon>
+      {{ i18n.t('verification.email.back_to_plan') }}
+    </button>
+  </div>
+
+  <div class="steps">
+    <div class="step completed">
+      <lucide-icon [img]="CheckCircle2" [size]="18"></lucide-icon>
+      <span>{{ i18n.t('verification.email.almost_done') }}</span>
+    </div>
+    <div class="step active">
+      <lucide-icon [img]="Shield" [size]="18"></lucide-icon>
+      <span>{{ i18n.t('verification.email.flow_title') }}</span>
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="verify-heading">
+      <lucide-icon [img]="Mail" [size]="22"></lucide-icon>
+      <span>{{ i18n.t('verification.email.title') }}</span>
+    </div>
+    <p class="verify-desc">{{ verificationHelpText }}</p>
+
+    <div *ngIf="borrowerTrialNoticeText" class="info-box success">
+      {{ borrowerTrialNoticeText }}
+    </div>
+
+    <div *ngIf="loading" class="info-box warning">
+      <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+      <span>{{ verificationLoadingText }}</span>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <div class="info-box success">
+        {{ i18n.t('verification.email.almost_done') }}
+      </div>
+
+      <div class="info-box warning">
+        <lucide-icon [img]="Info" [size]="16"></lucide-icon>
+        <span>{{ i18n.t('verification.email.check_inbox') }}</span>
+      </div>
+
+      <div class="email-display">
+        <div class="email-icon">
+          <lucide-icon [img]="Mail" [size]="18"></lucide-icon>
+        </div>
+        <div class="email-info">
+          <div class="email-label">{{ i18n.t('verification.email.email_label') }}</div>
+          <div class="email-value">{{ userEmail || '-' }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="info-box warning">
+        <lucide-icon [img]="AlertTriangle" [size]="16"></lucide-icon>
+        <span>{{ error }}</span>
+      </div>
+
+      <div class="code-section">
+        <div class="code-label">
+          <span class="code-label-num">1</span>
+          <span>{{ i18n.t('verification.email.code_label') }}</span>
+        </div>
+
+        <div class="code-inputs">
+          <input
+            *ngFor="let d of digits; let idx = index; trackBy: trackByIndex"
+            #digitInput
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            [ngModel]="digits[idx]"
+            (ngModelChange)="onDigitChange(idx, $event)"
+            (keydown)="onDigitKeyDown(idx, $event)"
+            class="code-input"
+            [class.filled]="!!digits[idx]"
+          />
+        </div>
+
+        <div class="code-note">
+          <lucide-icon [img]="Info" [size]="14"></lucide-icon>
+          <span>{{ i18n.t('verification.email.code_validity') }}</span>
+        </div>
+      </div>
+
+      <div class="resend-section">
+        <div class="resend-question">
+          <lucide-icon [img]="Info" [size]="14"></lucide-icon>
+          <span>{{ i18n.t('verification.email.not_received') }}</span>
+        </div>
+        <div class="resend-actions">
+          <button
+            type="button"
+            (click)="sendCode()"
+            [disabled]="sending || resendSeconds > 0"
+            class="resend-link"
+          >
+            <lucide-icon [img]="RefreshCcw" [size]="14"></lucide-icon>
+            {{ sending ? i18n.t('verification.email.resend_loading') : i18n.t('verification.email.resend_cta') }}
+          </button>
+
+          <span *ngIf="resendSeconds > 0" class="text-xs text-[#8a8a8a]">
+            {{ i18n.t('verification.email.resend_in') }} {{ resendSeconds }}s
+          </span>
+
+          <span *ngIf="resendSeconds === 0 && sent" class="resend-status">
+            <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+            {{ i18n.t('verification.email.sent') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="privacy-box">
+        <div class="privacy-title">
+          <lucide-icon [img]="Shield" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('verification.email.privacy_title') }}</span>
+        </div>
+        <ul class="privacy-list">
+          <li>{{ i18n.t('verification.email.privacy_point_1') }}</li>
+          <li>{{ i18n.t('verification.email.privacy_point_2') }}</li>
+          <li>{{ i18n.t('verification.email.privacy_point_3') }}</li>
+        </ul>
+      </div>
+
+      <div class="button-row">
+        <button type="button" (click)="goBack()" class="btn-back">
+          <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+          {{ i18n.t('common.back') }}
+        </button>
+        <button
+          type="button"
+          (click)="verifyAndCheckout()"
+          [disabled]="digits.some(d => !d) || submitting"
+          class="btn-confirm"
+        >
+          <lucide-icon *ngIf="submitting" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+          <lucide-icon *ngIf="!submitting" [img]="CheckCircle2" [size]="16"></lucide-icon>
+          {{ submitting ? confirmLoadingText : i18n.t('verification.email.confirm_cta') }}
+        </button>
+      </div>
+
+      <div class="footer-note">
+        <lucide-icon [img]="Info" [size]="12"></lucide-icon>
+        <span>{{ verificationFooterHintText }}</span>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-template #modernVerificationTemplate>
+<div class="verification-page min-h-[70vh] bg-gradient-to-b from-slate-50 to-white py-10 px-4 md:px-6" [class.verification-page--standard]="layoutMode.isStandard()">
   <div class="max-w-3xl mx-auto">
+    <section *ngIf="layoutMode.isStandard()" class="verification-standard-header">
+      <div class="verification-standard-header__eyebrow">{{ i18n.t('verification.email.flow_title') }}</div>
+      <h1 class="verification-standard-header__title">{{ i18n.t('verification.email.title') }}</h1>
+      <p class="verification-standard-header__subtitle">{{ verificationHelpText }}</p>
+    </section>
     <button type="button" (click)="goBack()" class="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-800">
       <lucide-icon [img]="ArrowLeft" size="16" class="mr-1"></lucide-icon>
       {{ i18n.t('verification.email.back_to_plan') }}
@@ -150,3 +307,4 @@
     </div>
   </div>
 </div>
+</ng-template>

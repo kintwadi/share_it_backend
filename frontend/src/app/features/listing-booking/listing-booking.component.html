@@ -1,5 +1,12 @@
-<div class="min-h-screen bg-slate-50 py-8 px-4">
+<div class="booking-page min-h-screen bg-slate-50 py-8 px-4" [class.booking-page--standard]="layoutMode.isStandard()">
   <div class="max-w-3xl mx-auto">
+    <section *ngIf="layoutMode.isStandard() && !loading && listing" class="booking-standard-header">
+      <div class="booking-standard-header__eyebrow">{{ i18n.t('listing.booking.request_details') }}</div>
+      <h1 class="booking-standard-header__title">{{ listing.title }}</h1>
+      <p class="booking-standard-header__subtitle">
+        {{ bookingStep === 'PATH_SELECTION' ? i18n.t('listing.booking.borrowing_options') : (bookingStep === 'DURATION' ? i18n.t('listing.booking.request_details') : (bookingStep === 'INSURANCE' ? i18n.t('listing.booking.insurance') : i18n.t('listing.booking.checkout'))) }}
+      </p>
+    </section>
     <button type="button" (click)="back()" class="flex items-center text-gray-600 hover:text-gray-900 mb-4">
       <lucide-icon [img]="ArrowLeft" [size]="18" class="mr-2"></lucide-icon>
       {{ i18n.t('listing.back_to_listings') }}
@@ -15,7 +22,226 @@
       <div>{{error}}</div>
     </div>
 
-    <div *ngIf="!loading && listing" class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+    <ng-container *ngIf="!loading && listing && layoutMode.isStandard() && bookingStep === 'PATH_SELECTION' && !isPartnerListing">
+      <div class="booking-standard-card">
+        <div class="booking-standard-card-header">
+          <h1 class="booking-standard-card-title">{{ i18n.t('listing.booking.borrowing_options') }}</h1>
+          <span class="booking-standard-card-item">{{ listing.title }}</span>
+        </div>
+
+        <div class="booking-standard-inner-card">
+          <div class="booking-standard-inner-header">
+            <h2 class="booking-standard-inner-title">{{ i18n.t('listing.booking.borrowing_options') }}</h2>
+            <span class="booking-standard-inner-item">{{ listing.title }}</span>
+          </div>
+
+          <div class="booking-standard-inner-body">
+            <h3 class="borrow-heading">{{ i18n.t('listing.booking.how_like_to_borrow') }}</h3>
+
+            <button
+              *ngIf="borrowTierEnabled.verified"
+              type="button"
+              (click)="selectedPath='VERIFIED'"
+              [disabled]="sendingBorrowerVerification"
+              class="option-card recommended"
+              [class.selected]="selectedPath === 'VERIFIED'"
+            >
+              <div class="recommended-badge">{{ i18n.t('listing.booking.recommended') }}</div>
+              <div class="option-icon trial">
+                <lucide-icon [img]="Zap" [size]="20"></lucide-icon>
+              </div>
+              <div class="option-content">
+                <div class="option-title">{{ i18n.t('listing.booking.start_verified_trial') }}</div>
+                <div class="option-desc">{{ verifiedTrialCaption }}</div>
+                <ul class="option-features">
+                  <li class="option-feature">
+                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                    <span>{{ i18n.t('listing.booking.no_transaction_fee') }}</span>
+                  </li>
+                  <li class="option-feature">
+                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                    <span>{{ i18n.t('listing.booking.instant_borrowing') }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="option-radio">
+                <div class="option-radio-inner"></div>
+              </div>
+            </button>
+
+            <button
+              *ngIf="borrowTierEnabled.deposit"
+              type="button"
+              (click)="selectedPath='DEPOSIT'"
+              [disabled]="sendingBorrowerVerification"
+              class="option-card"
+              [class.selected]="selectedPath === 'DEPOSIT'"
+            >
+              <div class="option-icon fee">
+                <lucide-icon [img]="LockIcon" [size]="20"></lucide-icon>
+              </div>
+              <div class="option-content">
+                <div class="option-title">{{ i18n.t('listing.booking.refundable_deposit') }}</div>
+                <div class="option-desc">{{ i18n.t('listing.booking.deposit_held_until_return') }}</div>
+                <ul class="option-features">
+                  <li class="option-feature">
+                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                    <span>{{ i18n.t('listing.booking.refund_on_return') }}</span>
+                  </li>
+                  <li class="option-feature">
+                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                    <span>{{ i18n.t('listing.booking.instant_borrowing') }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="option-radio">
+                <div class="option-radio-inner"></div>
+              </div>
+            </button>
+
+            <button
+              *ngIf="borrowTierEnabled.fee"
+              type="button"
+              (click)="selectedPath='FEE'"
+              [disabled]="sendingBorrowerVerification"
+              class="option-card"
+              [class.selected]="selectedPath === 'FEE'"
+            >
+              <div class="option-icon fee">
+                <lucide-icon [img]="DollarSign" [size]="20"></lucide-icon>
+              </div>
+              <div class="option-content">
+                <div class="option-title">{{ i18n.t('listing.booking.one_time_fee') }}</div>
+                <div class="option-desc">{{ serviceFeePercentLabel }} {{ i18n.t('listing.booking.transaction_fee') }}</div>
+                <ul class="option-features">
+                  <li class="option-feature">
+                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                    <span>{{ i18n.t('listing.booking.no_subscription_required') }}</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="option-radio">
+                <div class="option-radio-inner"></div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              (click)="continueFromPath()"
+              [disabled]="sendingBorrowerVerification || (!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee)"
+              class="continue-btn"
+            >
+              <lucide-icon *ngIf="sendingBorrowerVerification" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
+              {{ sendingBorrowerVerification ? i18n.t('verification.email.resend_loading') : i18n.t('listing.booking.continue') }}
+            </button>
+
+            <div *ngIf="sendingBorrowerVerification" class="booking-standard-inline-note">
+              {{ borrowerSubscriptionLoadingNotice }}
+            </div>
+          </div>
+
+          <div class="privacy-note">
+            <lucide-icon [img]="ShieldCheck" [size]="14"></lucide-icon>
+            <span>{{ i18n.t('listing.booking.address_privacy_note') }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && listing && layoutMode.isStandard() && bookingStep === 'DURATION'">
+      <div class="booking-standard-card">
+        <div class="booking-standard-card-header">
+          <h1 class="booking-standard-card-title">{{ i18n.t('listing.booking.request_details') }}</h1>
+          <span class="booking-standard-card-item">{{ listing.title }}</span>
+        </div>
+
+        <div *ngIf="actionNotice" class="standard-info-box success">
+          <lucide-icon [img]="CheckCircle2" [size]="16"></lucide-icon>
+          <span>{{ actionNotice }}</span>
+        </div>
+
+        <div *ngIf="actionError" class="standard-info-box warning">
+          <lucide-icon [img]="AlertTriangle" [size]="16"></lucide-icon>
+          <span>{{ actionError }}</span>
+        </div>
+
+        <div class="pricing-box">
+          <div class="pricing-row">
+            <span class="pricing-label">{{ i18n.t('listing.borrow.base') }}</span>
+            <span class="pricing-value">{{ i18n.formatPrice(baseTotal) }}</span>
+          </div>
+          <div *ngIf="waivedServiceFee > 0" class="pricing-row" style="flex-direction: column; align-items: flex-start;">
+            <div class="w-full flex items-baseline justify-between gap-3">
+              <span class="pricing-label">{{ i18n.t('listing.borrow.service_fee') }}</span>
+              <span class="pricing-value strikethrough">{{ i18n.formatPrice(waivedServiceFee) }}</span>
+            </div>
+            <div class="pricing-desc"><strong>{{ waivedServiceFeeNotice }}</strong></div>
+          </div>
+          <div *ngIf="serviceFee > 0" class="pricing-row">
+            <span class="pricing-label">{{ i18n.t('listing.borrow.service_fee') }}</span>
+            <span class="pricing-value">{{ i18n.formatPrice(serviceFee) }}</span>
+          </div>
+          <div *ngIf="depositAmount > 0" class="pricing-row">
+            <span class="pricing-label">{{ i18n.t('listing.borrow.deposit') }}</span>
+            <span class="pricing-value">{{ i18n.formatPrice(depositAmount) }}</span>
+          </div>
+          <div *ngIf="requiresInsurance" class="pricing-row">
+            <span class="pricing-label">{{ i18n.t('listing.booking.insurance') }}</span>
+            <span class="pricing-value">{{ i18n.formatPrice(insuranceCost) }}</span>
+          </div>
+          <div class="pricing-total">
+            <span class="pricing-total-label">{{ i18n.t('listing.borrow.total') }}</span>
+            <span class="pricing-total-value">{{ i18n.formatPrice(finalTotalWithInsurance) }}</span>
+          </div>
+        </div>
+
+        <div class="booking-standard-inner-card">
+          <div class="booking-standard-inner-header">
+            <h2 class="booking-standard-inner-title">{{ i18n.t('listing.booking.request_details') }}</h2>
+            <span class="booking-standard-inner-item">{{ listing.title }}</span>
+          </div>
+
+          <div class="booking-standard-inner-body">
+            <div class="item-row">
+              <img [src]="listing.imageUrl" class="item-thumb" />
+              <div class="item-info">
+                <div class="item-name">{{ listing.title }}</div>
+                <div class="item-category">{{ listing.category }}</div>
+                <div class="item-price">{{ isFree ? i18n.t('listing.booking.free') : bookingRateLabel }}</div>
+              </div>
+            </div>
+
+            <div *ngIf="borrowerCanBorrowDirectly && listing.type === 'LEND'" class="standard-info-box success">
+              <lucide-icon [img]="CheckCircle2" [size]="16"></lucide-icon>
+              <span>{{ borrowerSubscriptionCheckoutNotice }}</span>
+            </div>
+
+            <div *ngIf="isTimeBased" class="quantity-section">
+              <div class="quantity-label">{{ i18n.t('listing.booking.how_long_needed') }}</div>
+              <div class="quantity-stepper">
+                <button type="button" class="qty-btn" (click)="decBookingDuration()" [disabled]="bookingDuration <= 1">
+                  <lucide-icon [img]="Minus" [size]="18"></lucide-icon>
+                </button>
+                <div class="qty-display">
+                  <div class="qty-value">{{ bookingDuration }}</div>
+                  <div class="qty-unit">{{ bookingDurationUnitLabel }}</div>
+                </div>
+                <button type="button" class="qty-btn" (click)="incBookingDuration()" [disabled]="bookingDuration >= bookingDurationMax">
+                  <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
+                </button>
+              </div>
+            </div>
+
+            <button type="button" (click)="proceedFromDuration()" [disabled]="borrowing" class="checkout-btn">
+              <lucide-icon *ngIf="borrowing" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
+              {{ i18n.t('listing.booking.proceed_to_checkout') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="!loading && listing && !(layoutMode.isStandard() && (bookingStep === 'PATH_SELECTION' && !isPartnerListing || bookingStep === 'DURATION'))" class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
       <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <div class="font-bold text-gray-900 text-lg">
           {{ bookingStep === 'PATH_SELECTION' ? i18n.t('listing.booking.borrowing_options') : (bookingStep === 'DURATION' ? i18n.t('listing.booking.request_details') : (bookingStep === 'INSURANCE' ? i18n.t('listing.booking.insurance') : i18n.t('listing.booking.checkout'))) }}

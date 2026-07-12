@@ -1,0 +1,228 @@
+<div class="standard-shell">
+  <header class="header">
+    <div class="header-inner">
+      <a *ngIf="isHeaderSectionEnabled('brand')" routerLink="/" class="header-logo">{{ i18n.t('app.brand') }}</a>
+      <nav class="header-nav desktop-nav">
+        <a
+          *ngIf="isHeaderSectionEnabled('discover') && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()"
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-item"
+        >
+          <lucide-icon [img]="Home" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.discover') }}</span>
+        </a>
+
+        <a
+          *ngIf="enterpriseEnabled() && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()"
+          routerLink="/connect/partner"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <lucide-icon [img]="Building2" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.enterprise') }}</span>
+        </a>
+
+        <a
+          *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('dashboard') && !(isPartnerContext() || isPartnerArea())"
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <lucide-icon [img]="LayoutDashboard" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.dashboard') }}</span>
+        </a>
+
+        <a
+          *ngIf="isAdmin() && !(isPartnerContext() || isPartnerArea())"
+          routerLink="/admin"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <lucide-icon [img]="Shield" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.admin') }}</span>
+        </a>
+
+        <a
+          *ngIf="currentUser() && (isPartnerContext() || isPartnerArea())"
+          routerLink="/partner/dashboard"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <lucide-icon [img]="Building2" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.partner') }}</span>
+        </a>
+
+        <a
+          *ngIf="currentUser() && (hasSubscription() || isAdmin()) && isHeaderSectionEnabled('messages') && !isPartnerScopedAdmin()"
+          routerLink="/mailbox"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <lucide-icon [img]="MessageSquare" [size]="16"></lucide-icon>
+          <span>{{ i18n.t('nav.messages') }}</span>
+        </a>
+      </nav>
+
+      <div class="header-actions desktop-nav">
+        <div *ngIf="isHeaderSectionEnabled('language')" class="dropdown">
+          <button type="button" class="nav-ghost" (click)="toggleLangDropdown()">
+            <lucide-icon [img]="Globe" [size]="16"></lucide-icon>
+            <span>{{ languageLabel(language()) }}</span>
+            <lucide-icon [img]="ChevronDown" [size]="14"></lucide-icon>
+          </button>
+          <div *ngIf="isLangDropdownOpen()" class="dropdown-menu">
+            <button *ngFor="let lang of ['en', 'pt', 'de']" type="button" (click)="setLanguage(lang)" class="dropdown-item">
+              {{ languageLabel(lang) }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="nav-ghost nav-ghost-layout"
+          (click)="toggleLayoutMode()"
+          [attr.aria-label]="layoutModeToggleLabel()"
+          [attr.title]="layoutModeToggleLabel()"
+        >
+          <span class="layout-toggle-icon" aria-hidden="true">
+            <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
+            <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
+          </span>
+        </button>
+
+        <a
+          *ngIf="currentUser() && !hasSubscription() && !isAdmin() && !isPartnerContext() && !isPartnerArea() && isHeaderSectionEnabled('subscribe')"
+          routerLink="/subscription"
+          class="subscribe-pill"
+        >
+          <lucide-icon [img]="Zap" [size]="14"></lucide-icon>
+          <span>{{ i18n.t('nav.subscribe') }}</span>
+        </a>
+
+        <div *ngIf="showNotificationsBell() && isHeaderSectionEnabled('notifications')" class="dropdown">
+          <button type="button" class="nav-ghost icon-button" (click)="toggleNotifDropdown()">
+            <lucide-icon [img]="Bell" [size]="16"></lucide-icon>
+            <span *ngIf="unreadCount() > 0" class="notification-dot"></span>
+          </button>
+          <div *ngIf="isNotifDropdownOpen()" class="dropdown-menu dropdown-menu-wide">
+            <div class="dropdown-title">{{ i18n.t('notif.title') }}</div>
+            <div *ngIf="notifications().length === 0" class="dropdown-empty">{{ i18n.t('notif.empty') }}</div>
+            <div *ngIf="notifications().length > 0">
+              <div *ngFor="let section of groupedNotifications()" class="notif-section">
+                <div class="notif-section-title">{{ section.title }}</div>
+                <button
+                  *ngFor="let n of section.items"
+                  type="button"
+                  class="notif-item"
+                  [class.notif-item-unread]="!n.isRead"
+                  (click)="openNotif(n)"
+                >
+                  <span class="notif-item-title">{{ n.title }}</span>
+                  <span class="notif-item-body">{{ n.message }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="currentUser(); else connectAction">
+          <div *ngIf="isHeaderSectionEnabled('profile')" class="dropdown">
+            <button type="button" class="profile-button" (click)="toggleProfileDropdown()">
+              <img [src]="currentUser()?.avatarUrl || 'assets/images/default-user-photo.png'" alt="" class="profile-avatar" />
+              <span class="profile-name">{{ currentUser()?.name }}</span>
+              <lucide-icon [img]="ChevronDown" [size]="14"></lucide-icon>
+            </button>
+            <div *ngIf="isProfileDropdownOpen()" class="dropdown-menu">
+              <a
+                *ngIf="isHeaderSectionEnabled('settings') && !(isPartnerContext() || isPartnerArea())"
+                routerLink="/settings"
+                class="dropdown-item link-item"
+              >
+                {{ i18n.t('nav.settings') }}
+              </a>
+              <button type="button" class="dropdown-item dropdown-item--layout-only" (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()">
+                <span class="layout-toggle-icon" aria-hidden="true">
+                  <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
+                  <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
+                </span>
+              </button>
+              <button type="button" class="dropdown-item danger" (click)="handleLogoutClick()">
+                {{ i18n.t('nav.logout') }}
+              </button>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #connectAction>
+          <a routerLink="/connect" class="connect-button">{{ i18n.t('nav.connect') }}</a>
+        </ng-template>
+      </div>
+
+      <button type="button" class="mobile-toggle" (click)="toggleMenu()">
+        <lucide-icon [img]="isMenuOpen() ? X : Menu" [size]="20"></lucide-icon>
+      </button>
+    </div>
+
+    <div *ngIf="isMenuOpen()" class="mobile-menu">
+      <a
+        *ngIf="!(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="mobile-item"
+        (click)="toggleMenu()"
+      >
+        {{ i18n.t('nav.discover') }}
+      </a>
+      <a *ngIf="enterpriseEnabled() && !(isPartnerContext() || isPartnerArea()) && !isPartnerScopedAdmin()" routerLink="/connect/partner" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.enterprise') }}
+      </a>
+      <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && !(isPartnerContext() || isPartnerArea())" routerLink="/dashboard" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.dashboard') }}
+      </a>
+      <a *ngIf="isAdmin() && !(isPartnerContext() || isPartnerArea())" routerLink="/admin" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.admin') }}
+      </a>
+      <a *ngIf="currentUser() && (isPartnerContext() || isPartnerArea())" routerLink="/partner/dashboard" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.partner') }}
+      </a>
+      <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && !isPartnerScopedAdmin()" routerLink="/mailbox" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.messages') }}
+      </a>
+      <button type="button" class="mobile-item mobile-item-layout mobile-item-layout--icon-only" (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()">
+        <span class="layout-toggle-icon" aria-hidden="true">
+          <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
+          <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
+        </span>
+      </button>
+      <a *ngIf="currentUser() && isHeaderSectionEnabled('settings') && !(isPartnerContext() || isPartnerArea())" routerLink="/settings" class="mobile-item" (click)="toggleMenu()">
+        {{ i18n.t('nav.settings') }}
+      </a>
+      <button *ngIf="currentUser()" type="button" class="mobile-item danger" (click)="handleLogoutClick(); toggleMenu()">
+        {{ i18n.t('nav.logout') }}
+      </button>
+      <a *ngIf="!currentUser()" routerLink="/connect" class="mobile-item cta" (click)="toggleMenu()">
+        {{ i18n.t('nav.connect') }}
+      </a>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <ng-content></ng-content>
+  </main>
+
+  <app-cookie-consent></app-cookie-consent>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a routerLink="/terms">{{ i18n.t('footer.terms') }}</a>
+        <a routerLink="/privacy">{{ i18n.t('footer.privacy') }}</a>
+        <a routerLink="/cookies">{{ i18n.t('footer.cookies') }}</a>
+      </div>
+      <div class="footer-copy">{{ i18n.t('footer.copyright') }}</div>
+    </div>
+  </footer>
+</div>

@@ -1,3 +1,506 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.new-item-page--standard {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-hover: #fbfaf7;
+  --border: #ddd9d0;
+  --border-strong: #c8c3b8;
+  --text: #2c2c2c;
+  --text-muted: #6b6b6b;
+  --text-subtle: #8a8a8a;
+  --accent: #1e3a5f;
+  --accent-hover: #152a45;
+  --accent-light: #e8f0eb;
+  --accent-bg: #f7f5f0;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.new-item-standard-header {
+  margin-bottom: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid #c8c3b8;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.new-item-standard-header__eyebrow {
+  color: #6b6b6b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.new-item-standard-header__title {
+  margin: 0.35rem 0 0;
+  color: #1e3a5f;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.new-item-standard-header__subtitle {
+  margin: 0.5rem 0 0;
+  color: #6b6b6b;
+}
+
+.new-item-page--standard .card,
+.new-item-page--standard .close-btn,
+.new-item-page--standard .btn-cancel {
+  border-radius: 6px;
+}
+
+body.layout-standard {
+  --std-bg: #f7f5f0;
+  --std-surface: #ffffff;
+  --std-surface-alt: #f3efe6;
+  --std-border: #ddd9d0;
+  --std-border-strong: #c8c3b8;
+  --std-text: #2c2c2c;
+  --std-text-muted: #6b6b6b;
+  --std-text-subtle: #8a8a8a;
+  --std-accent: #1e3a5f;
+  --std-accent-hover: #152a45;
+  --std-success: #2e7d4f;
+  --std-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) > *:first-child {
+  background: var(--std-bg);
+  color: var(--std-text);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  .bg-white,
+  .bg-gray-50,
+  .bg-slate-50,
+  .panel,
+  .card,
+  .modal-card,
+  .page-card,
+  .settings-card,
+  .summary-card,
+  .rounded-xl,
+  .rounded-2xl,
+  .shadow-sm,
+  .shadow-md
+) {
+  border-color: var(--std-border);
+  box-shadow: var(--std-shadow);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(.rounded-xl, .rounded-2xl, .panel, .card, .btn, .back) {
+  border-radius: 6px;
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  h1,
+  h2,
+  h3,
+  .title,
+  .panel__head,
+  .page-header h1,
+  .text-gray-900,
+  .font-extrabold.text-gray-900
+) {
+  color: var(--std-accent);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  p,
+  .subtitle,
+  .text-gray-600,
+  .text-gray-500,
+  .text-gray-400
+) {
+  color: var(--std-text-muted);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  textarea,
+  select
+) {
+  border-color: var(--std-border);
+  border-radius: 4px;
+  background: var(--std-surface);
+  color: var(--std-text);
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  .btn--primary,
+  .btn-primary,
+  .bg-brand-600,
+  .bg-gray-900,
+  .bg-blue-600,
+  .bg-emerald-600
+) {
+  background: var(--std-accent) !important;
+  border-color: var(--std-accent) !important;
+  color: #ffffff !important;
+}
+
+body.layout-standard :is(
+  app-connect-mfa,
+  app-connect-admin,
+  app-connect-partner,
+  app-mailbox,
+  app-mailbox-compose,
+  app-mailbox-delete,
+  app-messages,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-listing-return,
+  app-return,
+  app-accept-return,
+  app-new-item-payout-setup,
+  app-admin,
+  app-admin-action-confirm,
+  app-location-manager,
+  app-rate,
+  app-subscription,
+  app-subscription-required,
+  app-subscription-confirm,
+  app-subscription-checkout,
+  app-subscription-upgrade,
+  app-borrower-subscription,
+  app-transaction-overview,
+  app-user-preview,
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice,
+  app-partner-dashboard,
+  app-partner-add-listing,
+  app-partner-edit-listing,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings,
+  app-partner-submit-listing
+) :is(
+  .btn--secondary,
+  .btn-secondary,
+  .border-gray-200.bg-white,
+  .bg-slate-50,
+  .bg-gray-50
+) {
+  background: var(--std-surface) !important;
+  border-color: var(--std-border) !important;
+  color: var(--std-text) !important;
+}
+
+body.layout-standard :is(
+  app-mailbox,
+  app-messages,
+  app-admin,
+  app-location-manager,
+  app-partner-dashboard,
+  app-partner-requests,
+  app-partner-return-requests,
+  app-partner-settings
+) :is(table, thead, tbody, tr, th, td) {
+  border-color: var(--std-border);
+}
+
+body.layout-standard :is(
+  app-transaction-overview,
+  app-user-preview,
+  app-listing-delete,
+  app-listing-report,
+  app-listing-profile,
+  app-listing-review,
+  app-mailbox-delete,
+  app-settings-action-confirm,
+  app-admin-action-confirm
+) .panel {
+  border: 1px solid var(--std-border-strong);
+  background: var(--std-surface);
+  box-shadow: var(--std-shadow);
+}
+
+body.layout-standard :is(
+  app-terms,
+  app-privacy-policy,
+  app-cookie-notice
+) :is(article, .prose, .content, .bg-white) {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--std-surface);
+  border: 1px solid var(--std-border);
+  border-radius: 6px;
+  box-shadow: var(--std-shadow);
+}

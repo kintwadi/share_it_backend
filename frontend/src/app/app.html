@@ -1,3 +1,9 @@
-<app-layout>
+<app-standard-layout *ngIf="layoutMode.isStandard(); else modernLayout">
   <router-outlet></router-outlet>
-</app-layout>
+</app-standard-layout>
+
+<ng-template #modernLayout>
+  <app-layout>
+    <router-outlet></router-outlet>
+  </app-layout>
+</ng-template>

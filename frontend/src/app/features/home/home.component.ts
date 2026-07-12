@@ -13,6 +13,7 @@ import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 type HomeSortMode = 'best_match' | 'nearest' | 'newest';
 
@@ -30,6 +31,7 @@ export class HomeComponent implements OnInit {
   cdr = inject(ChangeDetectorRef);
   locationApi = inject(LocationApiService);
   platformGeolocation = inject(PlatformGeolocationService);
+  layoutMode = inject(LayoutModeService);
 
   readonly Search = Search;
   readonly Filter = Filter;
@@ -124,6 +126,40 @@ export class HomeComponent implements OnInit {
     return !isListingFree(listing) && getListingPrimaryRate(listing) > 0;
   }
 
+  standardListingMetaPrimary(listing: Listing): string {
+    return String((listing as any)?.partnerName || listing.category || '');
+  }
+
+  standardListingLocation(listing: Listing): string {
+    return String(listing.owner?.address || '');
+  }
+
+  standardListingDistance(listing: Listing): string {
+    if (typeof listing.distanceMiles === 'number' && Number.isFinite(listing.distanceMiles)) {
+      return `${listing.distanceMiles.toFixed(1)} mi`;
+    }
+    return '—';
+  }
+
+  standardListingStatus(listing: Listing): string {
+    const raw = String(listing.status || AvailabilityStatus.AVAILABLE).toLowerCase().replace(/_/g, ' ');
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  standardListingTypeLabel(listing: Listing): string {
+    const raw = String(listing.type || '').toLowerCase();
+    if (raw === 'give') return 'Give';
+    if (raw === 'sell') return 'Sell';
+    if (raw === 'skill') return 'Skill';
+    return 'Lend';
+  }
+
+  standardListingPricePeriodLabel(listing: Listing): string {
+    if (isListingFree(listing) || listing.type === ListingType.SELL) return '';
+    const unit = getListingPricingUnit(listing);
+    return `/ ${unit}`;
+  }
+
   setViewMode(mode: 'modern' | 'list') {
     this.viewMode = mode;
     try {
@@ -142,6 +178,9 @@ export class HomeComponent implements OnInit {
         this.sortMode = storedSort as HomeSortMode;
       }
     } catch { }
+    if (this.layoutMode.isStandard()) {
+      this.viewMode = 'list';
+    }
     this.render();
 
     this.api.getPublicConfig().then(cfg => {

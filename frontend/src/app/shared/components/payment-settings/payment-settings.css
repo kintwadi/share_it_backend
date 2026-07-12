@@ -1,1 +1,78 @@
+:host {
+  display: block;
+}
 
+.payment-settings--standard {
+  color: #2c2c2c;
+}
+
+.payment-settings--standard .rounded-xl {
+  border-radius: 4px !important;
+}
+
+.payment-settings--standard .border,
+.payment-settings--standard .border-gray-200,
+.payment-settings--standard .border-red-100 {
+  border-color: #ddd9d0 !important;
+}
+
+.payment-settings--standard .bg-gray-50,
+.payment-settings--standard .bg-indigo-50,
+.payment-settings--standard .bg-red-50,
+.payment-settings--standard .bg-white {
+  background: #ffffff !important;
+}
+
+.payment-settings--standard .text-gray-900,
+.payment-settings--standard .text-indigo-900 {
+  color: #1e3a5f !important;
+}
+
+.payment-settings--standard .text-gray-700,
+.payment-settings--standard .text-gray-600,
+.payment-settings--standard .text-gray-500,
+.payment-settings--standard .text-indigo-700,
+.payment-settings--standard .text-indigo-800 {
+  color: #6b6b6b !important;
+}
+
+.payment-settings--standard .bg-gray-900,
+.payment-settings--standard .bg-brand-600 {
+  background: #1e3a5f !important;
+}
+
+.payment-settings--standard .hover\:bg-black:hover,
+.payment-settings--standard .hover\:bg-brand-700:hover {
+  background: #152a45 !important;
+}
+
+.payment-settings--standard .bg-gray-100 {
+  background: #f7f5f0 !important;
+}
+
+.payment-settings--standard .p-4.border.rounded-xl.bg-white,
+.payment-settings--standard .p-4.border.rounded-xl.bg-gray-50,
+.payment-settings--standard .rounded-xl.border.border-gray-200.overflow-hidden {
+  border: 1px solid #c8c3b8 !important;
+  box-shadow: none !important;
+}
+
+.payment-settings--standard table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-settings--standard thead {
+  background: #f7f5f0 !important;
+}
+
+.payment-settings--standard th {
+  color: #8a8a8a !important;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.payment-settings--standard td {
+  color: #2c2c2c !important;
+}

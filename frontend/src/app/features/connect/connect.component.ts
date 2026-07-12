@@ -11,6 +11,7 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { SubscriptionFeatureService } from '../../core/services/subscription-feature.service';
 import { ButtonComponent } from '../../shared/components/button/button';
 import { PasswordRecoveryComponent } from '../../shared/components/password-recovery/password-recovery';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-connect',
@@ -38,6 +39,7 @@ export class ConnectComponent implements OnInit {
   session = inject(SessionService);
   settingsConfig = inject(SettingsConfigService);
   subscriptionFeature = inject(SubscriptionFeatureService);
+  layoutMode = inject(LayoutModeService);
   router = inject(Router);
   cdr = inject(ChangeDetectorRef);
 

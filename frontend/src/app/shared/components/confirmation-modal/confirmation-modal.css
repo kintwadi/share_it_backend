@@ -1,1 +1,97 @@
+:host {
+  display: contents;
+}
 
+.confirmation-modal-overlay--standard {
+  background: rgba(44, 44, 44, 0.48) !important;
+  backdrop-filter: blur(2px);
+}
+
+.confirmation-modal-dialog--standard {
+  border-radius: 4px !important;
+  border-color: #c8c3b8 !important;
+  box-shadow: 0 18px 42px rgba(30, 58, 95, 0.16) !important;
+}
+
+.confirmation-modal-header--standard {
+  background: #f7f5f0 !important;
+  border-bottom-color: #ddd9d0 !important;
+}
+
+.confirmation-modal-title--standard {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #1e3a5f !important;
+}
+
+.confirmation-modal-icon--standard {
+  padding: 6px;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.confirmation-modal-icon--info {
+  color: #1e3a5f !important;
+}
+
+.confirmation-modal-icon--warning {
+  color: #b88719 !important;
+}
+
+.confirmation-modal-icon--danger {
+  color: #b04040 !important;
+}
+
+.confirmation-modal-close--standard {
+  border-radius: 4px !important;
+  border: 1px solid #ddd9d0 !important;
+  background: #ffffff !important;
+  color: #6b6b6b !important;
+}
+
+.confirmation-modal-body--standard {
+  padding: 22px !important;
+}
+
+.confirmation-modal-message--standard {
+  color: #4f4f4f !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+
+.confirmation-modal-actions--standard {
+  margin-top: 18px !important;
+  padding-top: 18px;
+  border-top: 1px solid #ddd9d0;
+}
+
+.confirmation-modal-btn--standard {
+  min-height: 40px;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.confirmation-modal-btn--cancel.confirmation-modal-btn--standard {
+  border-color: #c8c3b8 !important;
+  background: #ffffff !important;
+  color: #1e3a5f !important;
+}
+
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.bg-gray-900,
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.hover\:bg-black:hover {
+  background: #1e3a5f !important;
+}
+
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.bg-red-600,
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.hover\:bg-red-700:hover {
+  background: #b04040 !important;
+}
+
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.bg-amber-600,
+.confirmation-modal-btn--confirm.confirmation-modal-btn--standard.hover\:bg-amber-700:hover {
+  background: #b88719 !important;
+  color: #ffffff !important;
+}
