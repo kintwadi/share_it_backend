@@ -504,3 +504,1177 @@ body.layout-standard :is(
   border-radius: 6px;
   box-shadow: var(--std-shadow);
 }
+
+/* Extracted standard-only component styles to keep Angular component CSS budgets under control. */
+app-settings .settings-standard-panel {
+  background: #ffffff;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+}
+
+app-settings .settings-standard-panel__section {
+  padding: 24px;
+}
+
+app-settings .settings-standard-subpanel {
+  border-top: 1px solid #ddd9d0;
+  padding-top: 24px;
+  margin-top: 24px;
+}
+
+app-settings .settings-standard-subpanel--payment {
+  padding-top: 0;
+}
+
+app-settings .settings-standard-two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+app-settings .settings-standard-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+app-settings .settings-standard-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+app-settings .settings-standard-card {
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  padding: 18px 20px;
+  background: #ffffff;
+}
+
+app-settings .settings-standard-card__title {
+  margin: 0 0 12px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-card__title--spaced {
+  margin-top: 18px;
+}
+
+app-settings .settings-standard-profile-hero {
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  padding: 20px;
+  background: #f7f5f0;
+  margin-bottom: 20px;
+}
+
+app-settings .settings-standard-profile-hero__identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+app-settings .settings-standard-profile-hero__name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-profile-hero__meta {
+  color: #6b6b6b;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+app-settings .settings-standard-profile-hero__badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+app-settings .settings-standard-avatar-wrap {
+  position: relative;
+}
+
+app-settings .settings-standard-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ddd9d0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+app-settings .settings-standard-avatar-action {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #c8c3b8;
+  background: #ffffff;
+  color: #1e3a5f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+app-settings .settings-standard-field {
+  margin-bottom: 16px;
+}
+
+app-settings .settings-standard-field:last-child {
+  margin-bottom: 0;
+}
+
+app-settings .settings-standard-field--narrow {
+  max-width: 240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+app-settings .settings-standard-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8a8a8a;
+  margin-bottom: 8px;
+}
+
+app-settings .settings-standard-label--center {
+  text-align: center;
+}
+
+app-settings .settings-standard-input,
+app-settings .settings-standard-select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #2c2c2c;
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+
+app-settings .settings-standard-input:focus,
+app-settings .settings-standard-select:focus {
+  border-color: #1e3a5f;
+}
+
+app-settings .settings-standard-input-wrap {
+  position: relative;
+}
+
+app-settings .settings-standard-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8a8a8a;
+}
+
+app-settings .settings-standard-input--icon {
+  padding-left: 36px;
+}
+
+app-settings .settings-standard-input--otp {
+  text-align: center;
+  letter-spacing: 0.35em;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+}
+
+app-settings .settings-standard-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+app-settings .settings-standard-select--compact {
+  max-width: 120px;
+}
+
+app-settings .settings-standard-help {
+  font-size: 12px;
+  color: #6b6b6b;
+  line-height: 1.5;
+}
+
+app-settings .settings-standard-help--strong {
+  color: #1e3a5f;
+  font-weight: 600;
+}
+
+app-settings .settings-standard-help--right {
+  text-align: right;
+  max-width: 360px;
+}
+
+app-settings .settings-standard-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  background: #f7f5f0;
+  margin-top: 12px;
+}
+
+app-settings .settings-standard-note--neutral {
+  justify-content: space-between;
+}
+
+app-settings .settings-standard-note--warning {
+  background: #fdf8e8;
+  border-color: #e8ddb5;
+}
+
+app-settings .settings-standard-note--danger {
+  align-items: flex-start;
+  justify-content: space-between;
+  background: #fdf0f0;
+  border-color: #e8c8c8;
+}
+
+app-settings .settings-standard-note__icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid #ddd9d0;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-note__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-note__text {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+app-settings .settings-standard-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+app-settings .settings-standard-alert--error {
+  background: #fdf0f0;
+  border-color: #e8c8c8;
+  color: #b04040;
+}
+
+app-settings .settings-standard-alert--success {
+  background: #eef7f1;
+  border-color: #c5ddd0;
+  color: #2e7d4f;
+}
+
+app-settings .settings-standard-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ddd9d0;
+}
+
+app-settings .settings-standard-toggle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+app-settings .settings-standard-toggle-row__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-toggle-row__help {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+app-settings .settings-standard-switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid #c8c3b8;
+  background: #e5e1d8;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+app-settings .settings-standard-switch span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+app-settings .settings-standard-switch.is-on {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+}
+
+app-settings .settings-standard-switch.is-on span {
+  transform: translateX(20px);
+}
+
+app-settings .settings-standard-switch--wide {
+  width: 56px;
+}
+
+app-settings .settings-standard-switch--wide span {
+  width: 20px;
+}
+
+app-settings .settings-standard-switch--wide.is-on span {
+  transform: translateX(30px);
+}
+
+app-settings .settings-standard-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+app-settings .settings-standard-action-row--left {
+  justify-content: flex-start;
+}
+
+app-settings .settings-standard-action-row--center {
+  justify-content: center;
+}
+
+app-settings .settings-standard-action-row--spread {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+app-settings .settings-standard-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 4px;
+  border: 1px solid #c8c3b8;
+  background: #ffffff;
+  color: #2c2c2c;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+app-settings .settings-standard-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+app-settings .settings-standard-btn--primary {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #ffffff;
+}
+
+app-settings .settings-standard-btn--secondary {
+  background: #ffffff;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-btn--danger {
+  background: #fdf0f0;
+  border-color: #e8c8c8;
+  color: #b04040;
+}
+
+app-settings .settings-standard-btn--inline {
+  align-self: flex-start;
+}
+
+app-settings .settings-standard-btn--xs {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+app-settings .settings-standard-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid #ddd9d0;
+  background: #f7f5f0;
+  color: #6b6b6b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+app-settings .settings-standard-pill--success {
+  background: #eef7f1;
+  border-color: #c5ddd0;
+  color: #2e7d4f;
+}
+
+app-settings .settings-standard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+app-settings .settings-standard-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c2c2c;
+}
+
+app-settings .settings-standard-list li lucide-icon {
+  color: #2e7d4f;
+  margin-top: 2px;
+}
+
+app-settings .settings-standard-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+}
+
+app-settings .settings-standard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+app-settings .settings-standard-table thead {
+  background: #f7f5f0;
+}
+
+app-settings .settings-standard-table th,
+app-settings .settings-standard-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #ddd9d0;
+  text-align: left;
+  font-size: 13px;
+}
+
+app-settings .settings-standard-table th {
+  font-size: 10px;
+  color: #8a8a8a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+app-settings .settings-standard-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+app-settings .settings-standard-table__actions {
+  text-align: right;
+}
+
+app-settings .settings-standard-device-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ddd9d0;
+}
+
+app-settings .settings-standard-device-row:last-of-type {
+  border-bottom: none;
+}
+
+app-settings .settings-standard-device-row__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-device-row__meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+app-settings .settings-standard-qr {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ddd9d0;
+}
+
+app-settings .settings-standard-qr__title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 14px;
+}
+
+app-settings .settings-standard-qr__image {
+  width: fit-content;
+  margin: 0 auto 16px;
+  padding: 8px;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+app-settings .settings-standard-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+app-settings .settings-standard-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #1e3a5f;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+app-settings .settings-standard-contact-item--static {
+  color: #2c2c2c;
+}
+
+app-settings .settings-standard-list-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+app-settings .settings-standard-list-block__item {
+  padding-top: 14px;
+  border-top: 1px solid #ddd9d0;
+}
+
+app-settings .settings-standard-list-block__item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+app-settings .settings-standard-list-block__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-settings .settings-standard-list-block__text {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b6b6b;
+}
+
+app-listing-booking .booking-standard-card {
+  max-width: 800px;
+  margin: 20px auto 40px;
+  background: #ffffff;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+app-listing-booking .booking-standard-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px;
+  border-bottom: 1px solid #ddd9d0;
+}
+
+app-listing-booking .booking-standard-card-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-listing-booking .booking-standard-card-item {
+  font-size: 13px;
+  color: #8a8a8a;
+  font-style: italic;
+}
+
+app-listing-booking .booking-standard-inner-card {
+  margin: 24px 28px;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+app-listing-booking .booking-standard-inner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #ddd9d0;
+  background: #f7f5f0;
+}
+
+app-listing-booking .booking-standard-inner-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-listing-booking .booking-standard-inner-item {
+  font-size: 12px;
+  color: #8a8a8a;
+}
+
+app-listing-booking .booking-standard-inner-body {
+  padding: 32px 24px;
+}
+
+app-listing-booking .borrow-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e3a5f;
+  text-align: center;
+  margin: 0 0 28px;
+  letter-spacing: -0.3px;
+}
+
+app-listing-booking .option-card {
+  width: 100%;
+  border: 1px solid #c8c3b8;
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: #ffffff;
+  text-align: left;
+}
+
+app-listing-booking .option-card:hover {
+  border-color: #2d5078;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+app-listing-booking .option-card.selected {
+  border-color: #3d6b4f;
+  background: #e8f0eb;
+  box-shadow: 0 0 0 1px #3d6b4f;
+}
+
+app-listing-booking .option-card.recommended {
+  border-color: #3d6b4f;
+  background: #e8f0eb;
+}
+
+app-listing-booking .recommended-badge {
+  position: absolute;
+  top: -1px;
+  right: 20px;
+  padding: 4px 12px;
+  background: #3d6b4f;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 0 0 3px 3px;
+}
+
+app-listing-booking .option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+app-listing-booking .option-icon.trial {
+  background: rgba(61, 107, 79, 0.15);
+  color: #3d6b4f;
+}
+
+app-listing-booking .option-icon.fee {
+  background: #f7f5f0;
+  color: #6b6b6b;
+  border: 1px solid #ddd9d0;
+}
+
+app-listing-booking .option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+app-listing-booking .option-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+
+app-listing-booking .option-desc {
+  font-size: 14px;
+  color: #6b6b6b;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+app-listing-booking .option-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+app-listing-booking .option-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c2c2c;
+}
+
+app-listing-booking .option-feature lucide-icon {
+  color: #3d6b4f;
+  flex-shrink: 0;
+}
+
+app-listing-booking .option-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #c8c3b8;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  background: #ffffff;
+}
+
+app-listing-booking .option-card.selected .option-radio {
+  border-color: #3d6b4f;
+  background: #3d6b4f;
+}
+
+app-listing-booking .option-radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+app-listing-booking .option-card.selected .option-radio-inner {
+  opacity: 1;
+}
+
+app-listing-booking .continue-btn {
+  width: 100%;
+  padding: 16px;
+  background: #3d6b4f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+  margin-top: 8px;
+}
+
+app-listing-booking .continue-btn:hover:not(:disabled) {
+  background: #2e7d4f;
+}
+
+app-listing-booking .privacy-note {
+  padding: 16px 24px;
+  border-top: 1px solid #ddd9d0;
+  text-align: center;
+  font-size: 12px;
+  color: #8a8a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+app-listing-booking .privacy-note lucide-icon {
+  color: #3d6b4f;
+}
+
+app-listing-booking .booking-standard-inline-note {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b6b6b;
+}
+
+app-listing-booking .standard-info-box {
+  margin: 20px 28px 0;
+  padding: 14px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+app-listing-booking .standard-info-box.success {
+  background: #eef7f1;
+  border: 1px solid #c5ddd0;
+  color: #2e7d4f;
+}
+
+app-listing-booking .standard-info-box.warning {
+  background: #fdf8e8;
+  border: 1px solid #e8ddb5;
+  color: #8a6d2b;
+}
+
+app-listing-booking .pricing-box {
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  padding: 20px 24px;
+  margin: 20px 28px 24px;
+}
+
+app-listing-booking .pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+}
+
+app-listing-booking .pricing-row + .pricing-row {
+  border-top: 1px solid #ddd9d0;
+}
+
+app-listing-booking .pricing-label {
+  font-size: 14px;
+  color: #2c2c2c;
+  font-weight: 600;
+}
+
+app-listing-booking .pricing-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+app-listing-booking .pricing-value.strikethrough {
+  text-decoration: line-through;
+  color: #8a8a8a;
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+app-listing-booking .pricing-desc {
+  font-size: 12px;
+  color: #6b6b6b;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+app-listing-booking .pricing-desc strong {
+  color: #2e7d4f;
+  font-weight: 600;
+}
+
+app-listing-booking .pricing-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0 4px;
+  border-top: 1px solid #c8c3b8;
+  margin-top: 4px;
+}
+
+app-listing-booking .pricing-total-label {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+app-listing-booking .pricing-total-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+app-listing-booking .item-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+app-listing-booking .item-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 3px;
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid #ddd9d0;
+  flex-shrink: 0;
+}
+
+app-listing-booking .item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+app-listing-booking .item-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 2px;
+}
+
+app-listing-booking .item-category {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-bottom: 4px;
+}
+
+app-listing-booking .item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3d6b4f;
+}
+
+app-listing-booking .quantity-section {
+  margin-bottom: 20px;
+}
+
+app-listing-booking .quantity-label {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e3a5f;
+  margin-bottom: 12px;
+}
+
+app-listing-booking .quantity-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f7f5f0;
+  border: 1px solid #ddd9d0;
+  border-radius: 4px;
+}
+
+app-listing-booking .qty-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c8c3b8;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #1e3a5f;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+app-listing-booking .qty-btn:hover:not(:disabled) {
+  border-color: #1e3a5f;
+  background: #ede9e0;
+}
+
+app-listing-booking .qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+app-listing-booking .qty-display {
+  text-align: center;
+}
+
+app-listing-booking .qty-value {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e3a5f;
+  line-height: 1;
+}
+
+app-listing-booking .qty-unit {
+  font-size: 12px;
+  color: #8a8a8a;
+  margin-top: 4px;
+}
+
+app-listing-booking .checkout-btn {
+  width: 100%;
+  padding: 16px;
+  background: #1e3a5f;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+}
+
+app-listing-booking .checkout-btn:hover:not(:disabled) {
+  background: #2d5078;
+}
+
+app-listing-booking .checkout-btn:disabled,
+app-listing-booking .continue-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  app-settings .settings-standard-two-col,
+  app-settings .settings-standard-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  app-settings .settings-standard-panel__section {
+    padding: 16px;
+  }
+
+  app-settings .settings-standard-profile-hero__identity,
+  app-settings .settings-standard-inline,
+  app-settings .settings-standard-device-row,
+  app-settings .settings-standard-toggle-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  app-settings .settings-standard-action-row,
+  app-settings .settings-standard-action-row--spread {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  app-settings .settings-standard-help--right {
+    text-align: left;
+    max-width: none;
+  }
+
+  app-listing-booking .booking-standard-card {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  app-listing-booking .booking-standard-card-header,
+  app-listing-booking .booking-standard-inner-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  app-listing-booking .booking-standard-inner-card,
+  app-listing-booking .pricing-box,
+  app-listing-booking .standard-info-box {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  app-listing-booking .booking-standard-inner-body {
+    padding: 24px 16px;
+  }
+
+  app-listing-booking .borrow-heading {
+    font-size: 20px;
+  }
+
+  app-listing-booking .option-card {
+    flex-wrap: wrap;
+  }
+}
