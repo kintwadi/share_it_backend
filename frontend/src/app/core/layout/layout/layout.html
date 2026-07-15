@@ -56,21 +56,6 @@
             </div>
           </div>
 
-          <button
-            type="button"
-            (click)="toggleLayoutMode()"
-            [attr.aria-label]="layoutModeToggleLabel()"
-            [attr.title]="layoutModeToggleLabel()"
-            class="inline-flex items-center justify-center h-10 w-10 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-all text-gray-700"
-          >
-            <span class="relative flex h-4 w-5 items-center justify-center">
-              <span class="absolute left-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                [ngClass]="layoutMode.isStandard() ? 'border-brand-700 bg-brand-50' : 'border-gray-300 bg-gray-100'"></span>
-              <span class="absolute right-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                [ngClass]="layoutMode.isStandard() ? 'border-gray-300 bg-gray-100' : 'border-brand-700 bg-brand-50'"></span>
-            </span>
-          </button>
-
           <!-- Notifications -->
           <a *ngIf="currentUser() && !hasSubscription() && !isAdmin() && !isPartnerContext() && !isPartnerArea() && isHeaderSectionEnabled('subscribe')" routerLink="/subscription" class="mr-2 px-4 py-2 bg-emerald-600 text-white rounded-full text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1">
             <lucide-icon [img]="Zap" [size]="14"></lucide-icon>
@@ -124,14 +109,6 @@
                 <button *ngIf="isHeaderSectionEnabled('settings') && !(isPartnerContext() || isPartnerArea())" routerLink="/settings" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
                   <lucide-icon [img]="Settings" [size]="16"></lucide-icon>
                   {{ i18n.t('nav.settings') }}
-                </button>
-                <button (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-center">
-                  <span class="relative flex h-4 w-5 items-center justify-center shrink-0">
-                    <span class="absolute left-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                      [ngClass]="layoutMode.isStandard() ? 'border-brand-700 bg-brand-50' : 'border-gray-300 bg-gray-100'"></span>
-                    <span class="absolute right-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                      [ngClass]="layoutMode.isStandard() ? 'border-gray-300 bg-gray-100' : 'border-brand-700 bg-brand-50'"></span>
-                  </span>
                 </button>
                 <div class="h-px bg-gray-100 my-1"></div>
                 <button (click)="handleLogoutClick()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
@@ -187,14 +164,6 @@
         <div class="h-px bg-gray-100 my-2"></div>
         <div class="h-px bg-gray-100 my-2"></div>
         <div class="space-y-2">
-          <button (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()" class="w-full px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50 flex items-center justify-center">
-            <span class="relative flex h-4 w-5 items-center justify-center shrink-0">
-              <span class="absolute left-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                [ngClass]="layoutMode.isStandard() ? 'border-brand-700 bg-brand-50' : 'border-gray-300 bg-gray-100'"></span>
-              <span class="absolute right-0 top-0 h-4 w-[9px] rounded-[2px] border transition-all"
-                [ngClass]="layoutMode.isStandard() ? 'border-gray-300 bg-gray-100' : 'border-brand-700 bg-brand-50'"></span>
-            </span>
-          </button>
           <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wide">{{ i18n.t('nav.account') }}</div>
           <a *ngIf="isHeaderSectionEnabled('settings') && !(isPartnerContext() || isPartnerArea())" routerLink="/settings" (click)="toggleMenu()" class="flex items-center px-4 py-3 rounded-xl text-base font-medium transition-colors text-gray-600 hover:bg-gray-50">
             <lucide-icon [img]="Settings" [size]="18" class="mr-3"></lucide-icon> {{ i18n.t('nav.settings') }}

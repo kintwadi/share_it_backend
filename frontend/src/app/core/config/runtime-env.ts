@@ -7,6 +7,15 @@ function normalize(value: unknown): string | null {
   return trimmed ? trimmed : null;
 }
 
+export function getRuntimeUiLayout(): 'modern' | 'standard' | null {
+  const configured = normalize(readRuntimeEnv()['UI_LAYOUT']);
+  if (!configured) return null;
+  const normalized = configured.toLowerCase();
+  if (normalized === 'standard') return 'standard';
+  if (normalized === 'modern') return 'modern';
+  return null;
+}
+
 function normalizeApiUrl(value: string): string {
   const trimmed = value.trim().replace(/\/+$/, '');
   if (!/^https?:\/\//i.test(trimmed)) {
