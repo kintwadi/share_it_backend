@@ -6,7 +6,7 @@ import { LucideAngularModule, Plus, Loader2, Package, Users, ShieldAlert, Search
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
-import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
+import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus, UserRole } from '../../core/models/types';
 import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../core/utils/listing-pricing';
 import { LayoutModeService } from '../../core/services/layout-mode.service';
 
@@ -71,6 +71,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // `currentSub` is the legacy platform/lender subscription state shown on the dashboard.
   // Borrower subscription state is handled separately in the borrowing flow/settings.
   currentSub: { planType: string; status: string } | null = null;
+  currentBorrowingSub: any | null = null;
   today = new Date();
 
   isLoadingListings = false;
@@ -139,6 +140,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
       this.fetchListings();
       this.fetchHistory();
+      this.loadBorrowingSubscription();
       this.api.getCurrentSubscription()
         .then(sub => {
           if (!sub) {
@@ -168,16 +170,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
             }
           } catch { }
           try {
-            const sub = (borrowerSubscription === '1' || borrowerSubscription === 'true')
-              ? await this.api.getCurrentBorrowingSubscription()
-              : await this.api.getCurrentSubscription();
-            if (sub) {
-              this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
+            if (borrowerSubscription === '1' || borrowerSubscription === 'true') {
+              this.currentBorrowingSub = await this.api.getCurrentBorrowingSubscription();
+            } else {
+              const sub = await this.api.getCurrentSubscription();
+              if (sub) {
+                this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
+              } else {
+                this.currentSub = null;
+              }
+            }
+          } catch {
+            if (borrowerSubscription === '1' || borrowerSubscription === 'true') {
+              this.currentBorrowingSub = null;
             } else {
               this.currentSub = null;
             }
-          } catch {
-            this.currentSub = null;
           }
           try {
             this.router.navigate([], { relativeTo: this.route, queryParams: { session_id: null, borrower_subscription: null }, queryParamsHandling: 'merge', replaceUrl: true });
@@ -311,6 +319,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
       i.type !== ListingType.GIVE &&
       i.type !== ListingType.SELL
     );
+  }
+
+  private loadBorrowingSubscription() {
+    this.api.getCurrentBorrowingSubscription()
+      .then(sub => {
+        this.currentBorrowingSub = sub;
+      })
+      .catch(() => {
+        this.currentBorrowingSub = null;
+      })
+      .finally(() => this.render());
+  }
+
+  get hasActiveBorrowingSubscription(): boolean {
+    const sub = this.currentBorrowingSub;
+    if (!sub) return false;
+    if (typeof sub?.borrowDirectly === 'boolean') return sub.borrowDirectly;
+    if (typeof sub?.active === 'boolean' && sub.active) return true;
+    const status = String(sub?.status || '').trim().toLowerCase();
+    return status === 'active' || status === 'trialing' || status === 'trial_active';
+  }
+
+  get showBorrowerSubscriptionCta(): boolean {
+    const role = this.user?.role;
+    return !!this.user && role !== UserRole.ADMIN && !this.hasActiveBorrowingSubscription;
+  }
+
+  goToBorrowerSubscription() {
+    this.router.navigate(['/borrower-subscription']);
   }
 
   get filteredLendingItems() {

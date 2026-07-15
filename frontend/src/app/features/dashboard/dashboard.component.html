@@ -177,6 +177,21 @@
       </div>
     </div>
 
+    <div *ngIf="showBorrowerSubscriptionCta" class="borrower-subscription-banner">
+      <div class="borrower-subscription-banner__content">
+        <div class="borrower-subscription-banner__title">
+          <lucide-icon [img]="Shield" size="18"></lucide-icon>
+          <span>Borrower subscription</span>
+        </div>
+        <p class="borrower-subscription-banner__text">
+          Subscribe to avoid service fee while borrowing an item.
+        </p>
+      </div>
+      <button type="button" class="borrower-subscription-banner__action" (click)="goToBorrowerSubscription()">
+        Subscribe
+      </button>
+    </div>
+
     <div class="tabs-bar">
       <div class="tabs">
         <button type="button" class="tab" [class.active]="borrowingTab === 'all'" (click)="borrowingTab = 'all'">{{ i18n.t('dash.tab_all') }} ({{ borrowingCounterLabel('all') }})</button>
@@ -815,6 +830,20 @@
             <p class="text-sm text-slate-500">{{ activeBorrows.length }} {{ i18n.t('dash.active_suffix') }}</p>
           </div>
         </div>
+
+        <section *ngIf="showBorrowerSubscriptionCta" class="dashboard-borrower-subscribe-card">
+          <div class="dashboard-borrower-subscribe-card__copy">
+            <div class="dashboard-borrower-subscribe-card__eyebrow">Borrower subscription</div>
+            <h2 class="dashboard-borrower-subscribe-card__title">Subscribe to avoid service fee while borrowing an item</h2>
+            <p class="dashboard-borrower-subscribe-card__text">
+              Start the borrower subscription from your dashboard and avoid service fees while borrowing eligible items.
+            </p>
+          </div>
+          <button type="button" class="dashboard-borrower-subscribe-card__action" (click)="goToBorrowerSubscription()">
+            <lucide-icon [img]="Shield" size="16"></lucide-icon>
+            <span>Subscribe</span>
+          </button>
+        </section>
 
         <div class="dashboard-table-shell">
           <div class="dashboard-filters-bar">
