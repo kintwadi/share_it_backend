@@ -79,19 +79,6 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="nav-ghost nav-ghost-layout"
-          (click)="toggleLayoutMode()"
-          [attr.aria-label]="layoutModeToggleLabel()"
-          [attr.title]="layoutModeToggleLabel()"
-        >
-          <span class="layout-toggle-icon" aria-hidden="true">
-            <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
-            <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
-          </span>
-        </button>
-
         <a
           *ngIf="currentUser() && !hasSubscription() && !isAdmin() && !isPartnerContext() && !isPartnerArea() && isHeaderSectionEnabled('subscribe')"
           routerLink="/subscription"
@@ -142,12 +129,6 @@
               >
                 {{ i18n.t('nav.settings') }}
               </a>
-              <button type="button" class="dropdown-item dropdown-item--layout-only" (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()">
-                <span class="layout-toggle-icon" aria-hidden="true">
-                  <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
-                  <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
-                </span>
-              </button>
               <button type="button" class="dropdown-item danger" (click)="handleLogoutClick()">
                 {{ i18n.t('nav.logout') }}
               </button>
@@ -191,12 +172,6 @@
       <a *ngIf="currentUser() && (hasSubscription() || isAdmin()) && !isPartnerScopedAdmin()" routerLink="/mailbox" class="mobile-item" (click)="toggleMenu()">
         {{ i18n.t('nav.messages') }}
       </a>
-      <button type="button" class="mobile-item mobile-item-layout mobile-item-layout--icon-only" (click)="toggleLayoutMode()" [attr.aria-label]="layoutModeToggleLabel()">
-        <span class="layout-toggle-icon" aria-hidden="true">
-          <span class="layout-toggle-icon__panel" [class.is-active]="!layoutMode.isStandard()"></span>
-          <span class="layout-toggle-icon__panel" [class.is-active]="layoutMode.isStandard()"></span>
-        </span>
-      </button>
       <a *ngIf="currentUser() && isHeaderSectionEnabled('settings') && !(isPartnerContext() || isPartnerArea())" routerLink="/settings" class="mobile-item" (click)="toggleMenu()">
         {{ i18n.t('nav.settings') }}
       </a>

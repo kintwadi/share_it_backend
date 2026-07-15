@@ -243,16 +243,6 @@ export class Layout {
     this.i18n.setLanguage(next);
   }
 
-  toggleLayoutMode() {
-    this.layoutMode.toggleMode();
-    this.isProfileDropdownOpen.set(false);
-    this.isMenuOpen.set(false);
-  }
-
-  layoutModeToggleLabel(): string {
-    return this.i18n.t(this.layoutMode.isStandard() ? 'layout.toggle.to_modern' : 'layout.toggle.to_standard');
-  }
-
   setCurrency(curr: any) {
     this.i18n.setCurrency(curr);
     this.isCurrDropdownOpen.set(false);
