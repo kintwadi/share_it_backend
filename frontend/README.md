@@ -16,19 +16,36 @@ Notes:
 
 ## Runtime config
 
-- Web uses the tracked file `frontend/public/env.js`.
+- Web generates `frontend/public/env.js` from environment variables before `npm start` and `npm run build`.
 - Android uses `frontend/.env.android`.
 
 ### Web
 
-Edit `frontend/public/env.js` directly:
+Supported web runtime variables:
+
+- `API_URL`
+- `UI_LAYOUT` with `MODERN` or `STANDARD`
+- `TENANT_HEADER_NAME`
+- `TENANT_ID`
+
+If a variable is not provided, the generator keeps the current `frontend/public/env.js` value or falls back to the default below:
 
 ```js
 window.__env = window.__env || {};
 window.__env.API_URL = "/api/v1";
+window.__env.UI_LAYOUT = "MODERN";
 window.__env.TENANT_HEADER_NAME = "X-Tenant-ID";
 window.__env.TENANT_ID = "";
 ```
+
+Examples:
+
+```bash
+cd frontend
+UI_LAYOUT=STANDARD npm run build
+```
+
+On Render, set `UI_LAYOUT=STANDARD` or `UI_LAYOUT=MODERN` in the service Environment tab before deploying.
 
 ### Android
 
@@ -47,7 +64,7 @@ ANDROID_TENANT_HEADER_NAME=X-Tenant-ID
 ANDROID_TENANT_ID=vicinity24_tenant_a
 ```
 
-`npm start` and `npm run build` no longer rewrite `frontend/public/env.js`.
+`npm start` and `npm run build` now regenerate `frontend/public/env.js` from the current environment before starting or building.
 
 ## Code scaffolding
 

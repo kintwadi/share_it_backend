@@ -31,6 +31,8 @@ npm start
 Open:
 - http://localhost:4200/
 
+Before `npm start` and `npm run build`, the app generates `frontend/public/env.js` from environment variables. Useful keys include `API_URL`, `UI_LAYOUT`, `TENANT_HEADER_NAME`, and `TENANT_ID`.
+
 ## Run Backend (Required for Live Endpoints)
 
 From the backend folder:
