@@ -135,11 +135,14 @@ npx cap sync @capacitor-community/electron
 
 ## Runtime API Configuration
 
-The current runtime configuration lives in `frontend/public/env.js`:
+The web runtime configuration is generated into `frontend/public/env.js` before `npm start` and `npm run build` from environment variables such as `API_URL`, `UI_LAYOUT`, `TENANT_HEADER_NAME`, and `TENANT_ID`.
+
+Current generated shape:
 
 ```js
 window.__env = window.__env || {};
 window.__env.API_URL = "/api/v1";
+window.__env.UI_LAYOUT = "MODERN";
 ```
 
 Important:
@@ -155,11 +158,12 @@ Examples:
 - iOS simulator local backend: `http://127.0.0.1:8081/api/v1`
 - Electron local backend: `http://localhost:8081/api/v1`
 - Production: `https://<YOUR_DOMAIN>/api/v1`
+- Standard layout deployment: `UI_LAYOUT=STANDARD`
 
 Recommended approach:
 
 - Keep the Angular app unchanged.
-- Keep web runtime config in the tracked file `frontend/public/env.js`.
+- Let web runtime config be generated into `frontend/public/env.js` from environment variables.
 - Keep Android runtime config in `frontend/.env.android` and let the Android build script apply it temporarily during `npm run build:android`.
 
 ## Scenario B: Minimally Invasive Native Geolocation
