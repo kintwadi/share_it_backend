@@ -39,41 +39,9 @@
             <h3 class="borrow-heading">{{ i18n.t('listing.booking.how_like_to_borrow') }}</h3>
 
             <button
-              *ngIf="borrowTierEnabled.verified"
-              type="button"
-              (click)="selectedPath='VERIFIED'"
-              [disabled]="sendingBorrowerVerification"
-              class="option-card recommended"
-              [class.selected]="selectedPath === 'VERIFIED'"
-            >
-              <div class="recommended-badge">{{ i18n.t('listing.booking.recommended') }}</div>
-              <div class="option-icon trial">
-                <lucide-icon [img]="Zap" [size]="20"></lucide-icon>
-              </div>
-              <div class="option-content">
-                <div class="option-title">{{ i18n.t('listing.booking.start_verified_trial') }}</div>
-                <div class="option-desc">{{ verifiedTrialCaption }}</div>
-                <ul class="option-features">
-                  <li class="option-feature">
-                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
-                    <span>{{ i18n.t('listing.booking.no_transaction_fee') }}</span>
-                  </li>
-                  <li class="option-feature">
-                    <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
-                    <span>{{ i18n.t('listing.booking.instant_borrowing') }}</span>
-                  </li>
-                </ul>
-              </div>
-              <div class="option-radio">
-                <div class="option-radio-inner"></div>
-              </div>
-            </button>
-
-            <button
               *ngIf="borrowTierEnabled.deposit"
               type="button"
               (click)="selectedPath='DEPOSIT'"
-              [disabled]="sendingBorrowerVerification"
               class="option-card"
               [class.selected]="selectedPath === 'DEPOSIT'"
             >
@@ -103,7 +71,6 @@
               *ngIf="borrowTierEnabled.fee"
               type="button"
               (click)="selectedPath='FEE'"
-              [disabled]="sendingBorrowerVerification"
               class="option-card"
               [class.selected]="selectedPath === 'FEE'"
             >
@@ -128,16 +95,11 @@
             <button
               type="button"
               (click)="continueFromPath()"
-              [disabled]="sendingBorrowerVerification || (!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee)"
+              [disabled]="!borrowTierEnabled.deposit && !borrowTierEnabled.fee"
               class="continue-btn"
             >
-              <lucide-icon *ngIf="sendingBorrowerVerification" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
-              {{ sendingBorrowerVerification ? i18n.t('verification.email.resend_loading') : i18n.t('listing.booking.continue') }}
+              {{ i18n.t('listing.booking.continue') }}
             </button>
-
-            <div *ngIf="sendingBorrowerVerification" class="booking-standard-inline-note">
-              {{ borrowerSubscriptionLoadingNotice }}
-            </div>
           </div>
 
           <div class="privacy-note">
@@ -305,41 +267,9 @@
 
               <div class="payment-selection-options">
                 <button
-                  *ngIf="borrowTierEnabled.verified"
-                  type="button"
-                  (click)="selectedPath='VERIFIED'"
-                  [disabled]="sendingBorrowerVerification"
-                  class="payment-option payment-option--feature"
-                  [class.payment-option--selected]="selectedPath === 'VERIFIED'"
-                >
-                  <span class="payment-option__badge">{{ i18n.t('listing.booking.recommended') }}</span>
-                  <div class="payment-option__icon">
-                    <lucide-icon [img]="Zap" [size]="20"></lucide-icon>
-                  </div>
-                  <div class="payment-option__content">
-                    <div class="payment-option__title">{{ i18n.t('listing.booking.start_verified_trial') }}</div>
-                    <div class="payment-option__subtitle">{{ verifiedTrialCaption }}</div>
-                    <ul class="booking-feature-list">
-                      <li class="booking-feature-list__item">
-                        <lucide-icon [img]="CheckCircle2" [size]="12"></lucide-icon>
-                        <span>{{ i18n.t('listing.booking.no_transaction_fee') }}</span>
-                      </li>
-                      <li class="booking-feature-list__item">
-                        <lucide-icon [img]="CheckCircle2" [size]="12"></lucide-icon>
-                        <span>{{ i18n.t('listing.booking.instant_borrowing') }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="payment-option__radio" [class.payment-option__radio--selected]="selectedPath === 'VERIFIED'">
-                    <div *ngIf="selectedPath === 'VERIFIED'" class="payment-option__radio-dot"></div>
-                  </div>
-                </button>
-
-                <button
                   *ngIf="borrowTierEnabled.deposit"
                   type="button"
                   (click)="selectedPath='DEPOSIT'"
-                  [disabled]="sendingBorrowerVerification"
                   class="payment-option payment-option--feature"
                   [class.payment-option--selected]="selectedPath === 'DEPOSIT'"
                 >
@@ -369,7 +299,6 @@
                   *ngIf="borrowTierEnabled.fee"
                   type="button"
                   (click)="selectedPath='FEE'"
-                  [disabled]="sendingBorrowerVerification"
                   class="payment-option payment-option--feature"
                   [class.payment-option--selected]="selectedPath === 'FEE'"
                 >
@@ -395,17 +324,11 @@
               <button
                 type="button"
                 (click)="continueFromPath()"
-                [disabled]="sendingBorrowerVerification || (!borrowTierEnabled.verified && !borrowTierEnabled.deposit && !borrowTierEnabled.fee)"
+                [disabled]="!borrowTierEnabled.deposit && !borrowTierEnabled.fee"
                 class="payment-selection-card__cta"
               >
-                <lucide-icon *ngIf="sendingBorrowerVerification" [img]="Loader2" [size]="18" class="animate-spin mr-2"></lucide-icon>
-                {{ sendingBorrowerVerification ? i18n.t('verification.email.resend_loading') : i18n.t('listing.booking.continue') }}
+                {{ i18n.t('listing.booking.continue') }}
               </button>
-
-              <div *ngIf="sendingBorrowerVerification" class="mt-3 text-sm text-gray-500 flex items-center justify-center gap-2">
-                <lucide-icon [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
-                <span>{{ borrowerSubscriptionLoadingNotice }}</span>
-              </div>
             </div>
 
             <div class="payment-selection-card__footer">

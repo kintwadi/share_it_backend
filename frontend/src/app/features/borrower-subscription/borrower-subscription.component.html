@@ -1,29 +1,76 @@
-<div *ngIf="loading" class="min-h-[60vh] flex items-center justify-center">
-  <div class="flex flex-col items-center gap-3 text-gray-500">
-    <lucide-icon [img]="Shield" [size]="32" class="text-brand-600"></lucide-icon>
-    <span class="text-sm font-medium">{{ i18n.t('borrowerSub.loading') }}</span>
+<div *ngIf="loading" class="borrower-subscription-page">
+  <div class="borrower-subscription-shell borrower-subscription-shell--loading">
+    <lucide-icon [img]="Loader2" [size]="30" class="animate-spin"></lucide-icon>
+    <span>{{ i18n.t('borrowerSub.loading') }}</span>
   </div>
 </div>
 
-<div *ngIf="!loading && user" class="max-w-2xl mx-auto">
-  <button type="button" (click)="goBack()" class="mb-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-800">
-    <lucide-icon [img]="ArrowLeft" [size]="16" class="mr-1"></lucide-icon>
-    {{ i18n.t('borrowerSub.back') }}
-  </button>
+<div *ngIf="!loading && user" class="borrower-subscription-page" [class.borrower-subscription-page--standard]="layoutMode.isStandard()">
+  <div class="borrower-subscription-shell">
+    <button type="button" (click)="goBack()" class="borrower-subscription-back">
+      <lucide-icon [img]="ArrowLeft" [size]="16"></lucide-icon>
+      <span>{{ i18n.t('borrowerSub.back_to_dashboard') }}</span>
+    </button>
 
-  <div class="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wide">
-    {{ i18n.t('borrowerSub.step_badge') }}
-  </div>
+    <section class="borrower-subscription-panel">
+      <div class="borrower-subscription-panel__header">
+        <div class="borrower-subscription-panel__badge">
+          <lucide-icon [img]="Shield" [size]="18"></lucide-icon>
+          <span>{{ i18n.t('borrowerSub.badge') }}</span>
+        </div>
+        <h1 class="borrower-subscription-panel__title">{{ pageTitle }}</h1>
+        <p class="borrower-subscription-panel__subtitle">{{ pageSubtitle }}</p>
+      </div>
 
-  <h1 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-    <lucide-icon [img]="Shield" [size]="24" class="text-brand-600"></lucide-icon>
-    {{ i18n.t('borrowerSub.title') }}
-  </h1>
-  <p class="text-sm text-gray-600 mb-8">
-    {{ i18n.t('borrowerSub.subtitle') }}
-  </p>
+      <div *ngIf="error" class="borrower-subscription-alert borrower-subscription-alert--error">
+        <lucide-icon [img]="AlertTriangle" [size]="16"></lucide-icon>
+        <span>{{ error }}</span>
+      </div>
 
-  <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm text-sm text-gray-700">
-    {{ i18n.t('borrowerSub.placeholder') }}
+      <div *ngIf="hasActiveSubscription" class="borrower-subscription-alert borrower-subscription-alert--success">
+        <lucide-icon [img]="CheckCircle2" [size]="16"></lucide-icon>
+        <span>{{ i18n.t('borrowerSub.active_notice') }}</span>
+      </div>
+
+      <div class="borrower-subscription-grid">
+        <article class="borrower-subscription-card">
+          <div class="borrower-subscription-card__label">{{ i18n.t('borrowerSub.plan_label') }}</div>
+          <div class="borrower-subscription-card__value">{{ planSummary }}</div>
+        </article>
+
+        <article class="borrower-subscription-card">
+          <div class="borrower-subscription-card__label">{{ i18n.t('borrowerSub.benefits_label') }}</div>
+          <ul class="borrower-subscription-list">
+            <li *ngFor="let item of benefitItems">{{ item }}</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="borrower-subscription-panel__actions">
+        <button
+          *ngIf="!hasActiveSubscription"
+          type="button"
+          class="borrower-subscription-btn borrower-subscription-btn--primary"
+          (click)="startSubscription()"
+          [disabled]="starting"
+        >
+          <lucide-icon *ngIf="starting" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+          <span>{{ starting ? i18n.t('borrowerSub.starting') : i18n.t('borrowerSub.subscribe') }}</span>
+        </button>
+
+        <button
+          *ngIf="hasActiveSubscription"
+          type="button"
+          class="borrower-subscription-btn borrower-subscription-btn--primary"
+          (click)="manageSubscription()"
+        >
+          {{ i18n.t('borrowerSub.manage') }}
+        </button>
+
+        <button type="button" class="borrower-subscription-btn borrower-subscription-btn--secondary" (click)="goBack()">
+          {{ i18n.t('borrowerSub.return_to_dashboard') }}
+        </button>
+      </div>
+    </section>
   </div>
 </div>
