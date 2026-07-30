@@ -6,7 +6,7 @@ import { LucideAngularModule, ArrowLeft, ShieldCheck, CheckCircle2, AlertTriangl
 import { Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
-import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, AvailabilityStatus, User } from '../../core/models/types';
+import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, AvailabilityStatus } from '../../core/models/types';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
 import { getListingPrimaryRate, getListingPricingUnit, getPricingUnitLong, getPricingUnitPlural, getPricingUnitShort } from '../../core/utils/listing-pricing';
@@ -55,7 +55,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   loading = true;
   error: string | null = null;
   currentUserEmail = '';
-  currentUser: User | null = null;
 
   private backTo = '/';
 
@@ -129,7 +128,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         this.router.navigate(['/connect']);
         return;
       }
-      this.currentUser = me;
       this.currentUserEmail = String(me.email || '');
 
       if (shouldResumeBorrowing) {
@@ -605,7 +603,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         borrowerPath: this.selectedPath
       });
       await this.purchaseInsuranceIfSelected();
-      await this.sendOwnerBorrowMessage(listing);
       this.navigateBackWithNotice(listing.autoApprove ? this.i18n.t('listing.success.booked') : this.i18n.t('listing.success.request_sent'));
     } catch (e: any) {
       this.cardError = e?.message || this.i18n.t('listing.error.payment_failed');
@@ -675,7 +672,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     try {
       if (listing.type === ListingType.GIVE) {
         await this.api.borrowListing(listing.id, { paymentMethod: 'GIFT', durationHours: 0, durationValue: 0 });
-        await this.sendOwnerBorrowMessage(listing);
         this.navigateBackWithNotice(listing.autoApprove ? this.i18n.t('listing.success.gift_claimed') : this.i18n.t('listing.success.gift_request'));
         return;
       }
@@ -707,7 +703,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
         return;
       }
       await this.purchaseInsuranceIfSelected();
-      await this.sendOwnerBorrowMessage(listing);
       this.navigateBackWithNotice(listing.autoApprove ? this.i18n.t('listing.success.booked') : this.i18n.t('listing.success.request_sent'));
     } catch (e: any) {
       this.actionError = e?.message || this.i18n.t('listing.error.process_failed');
@@ -764,36 +759,5 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     try {
       await this.api.purchaseInsurance(quoteId);
     } catch { }
-  }
-
-  private async sendOwnerBorrowMessage(listing: Listing) {
-    if (!listing || this.isPartnerListing) return;
-    const ownerId = String(listing.ownerId || '').trim();
-    if (!ownerId) return;
-    const currentUserId = String(this.currentUser?.id || '').trim();
-    if (currentUserId && ownerId === currentUserId) return;
-    const content = this.buildOwnerBorrowMessage(listing);
-    if (!content) return;
-    try {
-      await this.api.sendMessage(ownerId, content);
-    } catch { }
-  }
-
-  private buildOwnerBorrowMessage(listing: Listing): string {
-    const borrowerName = String(this.currentUser?.name || this.currentUserEmail || 'A user').trim();
-    const listingTitle = String(listing.title || 'your item').trim();
-    if (listing.type === ListingType.GIVE) {
-      return listing.autoApprove
-        ? `${borrowerName} claimed "${listingTitle}".`
-        : `${borrowerName} requested to claim "${listingTitle}".`;
-    }
-    if (listing.type === ListingType.SELL) {
-      return listing.autoApprove
-        ? `${borrowerName} purchased "${listingTitle}".`
-        : `${borrowerName} requested to purchase "${listingTitle}".`;
-    }
-    return listing.autoApprove
-      ? `${borrowerName} borrowed "${listingTitle}".`
-      : `${borrowerName} requested to borrow "${listingTitle}".`;
   }
 }

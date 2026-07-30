@@ -1580,9 +1580,18 @@ public class ListingService {
 
         l.setBorrower(borrower);
         if (l.isAutoApprove()) {
-             if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
-             else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-             else l.setStatus(AvailabilityStatus.BORROWED);
+             if (l.getType() == ListingType.GIVE) {
+                 l.setStatus(AvailabilityStatus.GIFTED);
+                 l.setItemReference(null);
+             } else if (l.getType() == ListingType.SELL) {
+                 l.setStatus(AvailabilityStatus.SOLD);
+                 l.setItemReference(null);
+             } else {
+                 l.setStatus(AvailabilityStatus.APPROVED);
+                 if (l.getItemReference() == null || l.getItemReference().isBlank()) {
+                     l.setItemReference(generateUniqueItemReference());
+                 }
+             }
         } else {
              l.setStatus(AvailabilityStatus.PENDING);
         }
