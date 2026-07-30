@@ -361,12 +361,12 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
     if (this.statusPollTimer) clearInterval(this.statusPollTimer);
     const listing = this.listing;
     if (!listing) return;
-    if (listing.status !== AvailabilityStatus.PENDING && listing.status !== AvailabilityStatus.APPROVED && listing.status !== AvailabilityStatus.PARTNER_BORROW_REQUESTED) return;
+    if (!this.shouldPollStatus(listing.status)) return;
 
     this.statusPollTimer = setInterval(async () => {
       const current = this.listing;
       if (!current) return;
-      if (current.status !== AvailabilityStatus.PENDING && current.status !== AvailabilityStatus.APPROVED && current.status !== AvailabilityStatus.PARTNER_BORROW_REQUESTED) {
+      if (!this.shouldPollStatus(current.status)) {
         if (this.statusPollTimer) clearInterval(this.statusPollTimer);
         this.statusPollTimer = null;
         return;
@@ -376,10 +376,25 @@ export class ListingDetailComponent implements OnInit, OnDestroy {
         if (updated && updated.status !== current.status) {
           this.listing = updated;
           if (updated.imageUrl) this.setActiveImage(updated.imageUrl);
+          await this.loadReturnState();
+          if (!this.shouldPollStatus(updated.status)) {
+            if (this.statusPollTimer) clearInterval(this.statusPollTimer);
+            this.statusPollTimer = null;
+          }
           this.render();
         }
       } catch { }
     }, 2000);
+  }
+
+  private shouldPollStatus(status: AvailabilityStatus | null | undefined): boolean {
+    return status === AvailabilityStatus.PENDING
+      || status === AvailabilityStatus.APPROVED
+      || status === AvailabilityStatus.READY_FOR_PICKUP
+      || status === AvailabilityStatus.WAITING_FOR_RETURN
+      || status === AvailabilityStatus.BORROWED
+      || status === AvailabilityStatus.DISPUTED
+      || status === AvailabilityStatus.PARTNER_BORROW_REQUESTED;
   }
 
   get isOwner(): boolean {

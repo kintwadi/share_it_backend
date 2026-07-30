@@ -1103,7 +1103,14 @@ public class ListingService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.APPROVED
+                        || st == AvailabilityStatus.READY_FOR_PICKUP
+                        || st == AvailabilityStatus.WAITING_FOR_RETURN
+                        || st == AvailabilityStatus.BORROWED
+                        || st == AvailabilityStatus.DISPUTED
+                        || st == AvailabilityStatus.PARTNER_ACTIVE
+                        || st == AvailabilityStatus.GIFTED
+                        || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);
