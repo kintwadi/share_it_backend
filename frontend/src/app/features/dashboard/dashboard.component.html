@@ -758,7 +758,7 @@
                         {{ ownerAdminReturnLabel(item) }}
                       </button>
                       <button
-                        *ngIf="item.status === AvailabilityStatus.APPROVED && (item.borrowerId || item.borrower?.id)"
+                        *ngIf="item.status === AvailabilityStatus.APPROVED"
                         type="button"
                         (click)="handleMarkReadyForPickup(item.id)"
                         [disabled]="actionLoading === item.id"
