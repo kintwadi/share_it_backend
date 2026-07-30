@@ -5,6 +5,8 @@ import { Category, Listing, ListingRecommendationRequest, ListingRecommendationR
 import { AuthStorageService } from './auth-storage.service';
 import { withTenantHeader } from '../config/runtime-env';
 
+const DEFAULT_USER_AVATAR = 'assets/images/default-user-photo.png';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -135,7 +137,7 @@ export class ApiService {
     try {
       const user = await this.getCurrentUser();
       if (!user) return [];
-      const listings = await this.getListings();
+      const listings = await this.getMyBorrowedListings();
       const borrowed = listings.filter(l => l.borrowerId === user.id);
       const now = new Date();
       return borrowed.map((l, idx) => ({
@@ -164,6 +166,24 @@ export class ApiService {
     try {
       const page = await firstValueFrom(this.api.get<any>(`/listings/?${this.buildListingQuery(params)}`));
       return page.content || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getMyListings(): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>('/listings/mine'));
+      return Array.isArray(out) ? out : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async getMyBorrowedListings(): Promise<Listing[]> {
+    try {
+      const out = await firstValueFrom(this.api.get<Listing[]>('/listings/mine/borrows'));
+      return Array.isArray(out) ? out : [];
     } catch {
       return [];
     }
@@ -299,7 +319,7 @@ export class ApiService {
   }
 
   async registerUser(name: string, email: string, password: string): Promise<any> {
-    const body = { name, email, password, phone: '', address: '', avatarUrl: '', lat: 0.0, lng: 0.0 };
+    const body = { name, email, password, phone: '', address: '', avatarUrl: DEFAULT_USER_AVATAR, lat: 0.0, lng: 0.0 };
     const reg = await firstValueFrom(this.api.post<any>('/auth/register', body));
     if (reg?.requiresEmailVerification) {
       return reg;

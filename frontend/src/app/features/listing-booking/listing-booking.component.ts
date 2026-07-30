@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild,
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, ShieldCheck, CheckCircle2, AlertTriangle, Loader2, Zap, Lock as LockIcon, DollarSign, ChevronLeft, Plus, Minus, CreditCard, Wallet } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ShieldCheck, CheckCircle2, AlertTriangle, Loader2, Lock as LockIcon, DollarSign, ChevronLeft, Plus, Minus, CreditCard, Wallet } from 'lucide-angular';
 import { Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -10,6 +10,7 @@ import { Listing, ListingType, InsuranceTypeInfo, InsuranceQuoteResponse, Availa
 import { SettingsConfigService } from '../../core/services/settings-config.service';
 import { StripeClientService } from '../../core/services/stripe-client.service';
 import { getListingPrimaryRate, getListingPricingUnit, getPricingUnitLong, getPricingUnitPlural, getPricingUnitShort } from '../../core/utils/listing-pricing';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 type PendingBorrowerBookingState = {
   listingId: string;
@@ -33,13 +34,13 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   private settingsConfig = inject(SettingsConfigService);
   private stripeClient = inject(StripeClientService);
   private cdr = inject(ChangeDetectorRef);
+  layoutMode = inject(LayoutModeService);
 
   readonly ArrowLeft = ArrowLeft;
   readonly ShieldCheck = ShieldCheck;
   readonly CheckCircle2 = CheckCircle2;
   readonly AlertTriangle = AlertTriangle;
   readonly Loader2 = Loader2;
-  readonly Zap = Zap;
   readonly LockIcon = LockIcon;
   readonly DollarSign = DollarSign;
   readonly ChevronLeft = ChevronLeft;
@@ -65,8 +66,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   borrowing = false;
   actionError: string | null = null;
   actionNotice: string | null = null;
-  sendingBorrowerVerification = false;
-
   stripe: Stripe | null = null;
   elements: StripeElements | null = null;
   card: StripeCardElement | null = null;
@@ -212,7 +211,7 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.selectedPath = this.borrowTierEnabled.verified ? 'VERIFIED' : (this.borrowTierEnabled.deposit ? 'DEPOSIT' : 'FEE');
+    this.selectedPath = this.borrowTierEnabled.deposit ? 'DEPOSIT' : 'FEE';
     this.bookingDuration = 1;
     this.paymentMethod = this.resolvePreferredPaymentMethod();
     this.selectedSavedPaymentMethodId = null;
@@ -409,31 +408,6 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
     return `${curr} ${formatted}`;
   }
 
-  get verifiedTrialCaption() {
-    const days = this.plusTrialDays;
-    const price = `${this.plusMonthlyLabel} / month`;
-    const lang = String(this.i18n.language() || 'en').toLowerCase();
-    if (lang.startsWith('pt')) {
-      return `Comeca com ${days} dias gratis. O cartao fica guardado agora, mas a subscricao so e cobrada em ${price} no fim do periodo de teste.`;
-    }
-    if (lang.startsWith('de')) {
-      return `Starte mit ${days} Tagen gratis. Deine Karte wird jetzt gespeichert, aber das Abo wird erst nach dem Testzeitraum mit ${price} belastet.`;
-    }
-    return `Start with ${days} free days. Your card is saved now, but the subscription is only charged at ${price} after the trial ends.`;
-  }
-
-  get borrowerSubscriptionLoadingNotice() {
-    const days = this.plusTrialDays;
-    const lang = String(this.i18n.language() || 'en').toLowerCase();
-    if (lang.startsWith('pt')) {
-      return `A preparar a verificacao do seu teste de ${days} dias. Depois de confirmar o codigo, a sua subscricao fica ativa e o cartao nao sera cobrado antes do fim do periodo de teste.`;
-    }
-    if (lang.startsWith('de')) {
-      return `Die Verifizierung fuer deinen ${days}-Tage-Test wird vorbereitet. Nach der Code-Bestaetigung wird dein Abo aktiviert und deine Karte erst nach dem Testzeitraum belastet.`;
-    }
-    return `Preparing your ${days}-day trial verification. After you confirm the code, your subscription starts and your card will not be charged until the trial ends.`;
-  }
-
   get borrowerSubscriptionResumeNotice() {
     const days = this.plusTrialDays;
     const lang = String(this.i18n.language() || 'en').toLowerCase();
@@ -481,46 +455,8 @@ export class ListingBookingComponent implements OnInit, OnDestroy {
   }
 
   async continueFromPath() {
-    if (this.sendingBorrowerVerification) {
-      return;
-    }
     if (this.selectedPath === 'VERIFIED' && !this.borrowerCanBorrowDirectly) {
-      console.log('[borrower-flow] continueFromPath:start', {
-        listingId: this.listing?.id,
-        selectedPath: this.selectedPath,
-        borrowerCanBorrowDirectly: this.borrowerCanBorrowDirectly,
-        currentUserEmail: this.currentUserEmail,
-        backTo: this.backTo
-      });
-      this.persistPendingBorrowerBookingState();
-      this.actionError = null;
-      this.actionNotice = null;
-      this.sendingBorrowerVerification = true;
-      this.render();
-      try {
-        await this.api.sendBorrowingSubscriptionVerificationCode(this.i18n.language());
-        console.log('[borrower-flow] continueFromPath:send-code:ok');
-        console.log('[borrower-flow] continueFromPath:navigate-verification');
-        await this.router.navigate(['/verification/email'], {
-          queryParams: {
-            plan: 'verified',
-            scope: 'borrower',
-            listingId: this.listing?.id,
-            from: this.backTo,
-            email: this.currentUserEmail,
-            trialDays: this.plusTrialDays,
-            sent: '1'
-          }
-        });
-        return;
-      } catch (e: any) {
-        console.error('[borrower-flow] continueFromPath:send-code:error', e);
-        this.actionError = e?.message || this.i18n.t('verification.email.send_failed');
-        this.render();
-        return;
-      } finally {
-        this.sendingBorrowerVerification = false;
-      }
+      this.selectedPath = this.borrowTierEnabled.deposit ? 'DEPOSIT' : 'FEE';
     }
     this.ensureValidPaymentMethod();
     this.bookingStep = 'DURATION';

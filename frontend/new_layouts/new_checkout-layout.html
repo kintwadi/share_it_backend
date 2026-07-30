@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>v24pool — Request Details</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.0/index.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f9fc;
+    --surface: #ffffff;
+    --border: #e6eaf0;
+    --border-strong: #d3dae4;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-subtle: #94a3b8;
+    --accent: #0d9488;
+    --accent-hover: #0f766e;
+    --accent-light: #ccfbf1;
+    --accent-bg: #f0fdfa;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --success-border: #d1fae5;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: rgba(255,255,255,0.85);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .nav-link:hover { background: var(--bg); color: var(--text); }
+  .nav-link.active { background: var(--accent-light); color: var(--accent); }
+  .nav-link svg { width: 18px; height: 18px; }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .lang-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .user-menu:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+  .user-avatar-sm {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .user-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .chevron { color: var(--text-subtle); width: 14px; height: 14px; }
+
+  /* Main */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Back button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 24px;
+    transition: color 0.2s ease;
+  }
+  .back-btn:hover { color: var(--text); }
+  .back-btn svg { width: 16px; height: 16px; }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
+  }
+  .card-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .camera-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .camera-link:hover { color: var(--accent); }
+  .camera-link svg { width: 14px; height: 14px; }
+
+  .card-body {
+    padding: 28px;
+  }
+
+  /* Price breakdown */
+  .price-breakdown {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+  .price-row:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+  .price-row .label {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .price-row .value {
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .price-row.total {
+    padding-top: 14px;
+    margin-top: 4px;
+    border-bottom: none;
+  }
+  .price-row.total .label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .price-row.total .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Back link inline */
+  .back-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 18px;
+    transition: color 0.2s ease;
+  }
+  .back-inline:hover { color: var(--text); }
+  .back-inline svg { width: 14px; height: 14px; }
+
+  /* Item card */
+  .item-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+  }
+  .item-thumb {
+    width: 72px; height: 72px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .item-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .item-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .item-category {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* Duration selector */
+  .duration-section {
+    margin-bottom: 24px;
+  }
+  .duration-label {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .duration-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .duration-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .duration-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .duration-btn:active {
+    transform: scale(0.95);
+  }
+  .duration-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .duration-btn:disabled:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface);
+  }
+  .duration-btn svg { width: 18px; height: 18px; }
+  .duration-value {
+    text-align: center;
+  }
+  .duration-number {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .duration-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* Checkout button */
+  .btn-checkout {
+    width: 100%;
+    padding: 16px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    letter-spacing: -0.01em;
+  }
+  .btn-checkout:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
+  }
+  .btn-checkout:active {
+    transform: translateY(0);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast svg { width: 18px; height: 18px; color: var(--success); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header-inner { padding: 0 16px; }
+    .main { padding: 20px 16px 60px; }
+    .card-body { padding: 20px; }
+    .card-header { padding: 16px 20px; }
+    .nav-link span { display: none; }
+    .user-name { display: none; }
+    .price-breakdown { padding: 16px 18px; }
+    .item-card { padding: 14px; }
+    .item-thumb { width: 64px; height: 64px; }
+    .duration-control { padding: 14px 16px; }
+    .duration-number { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">v24pool<span class="logo-dot"></span></div>
+    <nav class="nav">
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Discover</span>
+      </a>
+      <a href="#" class="nav-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Messages</span>
+      </a>
+    </nav>
+    <div class="header-right">
+      <button class="lang-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        EN
+      </button>
+      <div class="user-menu">
+        <img src="https://image.qwenlm.ai/public_source/26619a1d-b784-4009-9f28-47e192b7ef0c/12730b25d-f9ed-4005-a53c-cd05cd32b3ab.png" alt="Pedro" class="user-avatar-sm" />
+        <span class="user-name">Pedro</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <a href="#" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Listings
+  </a>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Request Details</h2>
+      <a href="#" class="camera-link" onclick="showToast('📷 Camera opened'); return false;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Photo Camera
+      </a>
+    </div>
+
+    <div class="card-body">
+      <!-- Price breakdown -->
+      <div class="price-breakdown">
+        <div class="price-row">
+          <span class="label">Base</span>
+          <span class="value" id="basePrice">€20.00</span>
+        </div>
+        <div class="price-row">
+          <span class="label">Service fee</span>
+          <span class="value" id="serviceFee">€2.99</span>
+        </div>
+        <div class="price-row total">
+          <span class="label">Total</span>
+          <span class="value" id="totalPrice">€22.99</span>
+        </div>
+      </div>
+
+      <!-- Back inline -->
+      <a href="#" class="back-inline" onclick="showToast('Going back...'); return false;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </a>
+
+      <!-- Item -->
+      <div class="item-card">
+        <img src="https://image.qwenlm.ai/public_source/26619a1d-b784-4009-9f28-47e192b7ef0c/1ad7ac20b-cc38-4afa-907e-ee4b3db297a0.png" alt="Photo Camera" class="item-thumb" />
+        <div class="item-info">
+          <div class="item-name">Photo Camera</div>
+          <div class="item-category">Tools</div>
+          <div class="item-price">€20.00/hr</div>
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="duration-section">
+        <div class="duration-label">How long do you need it?</div>
+        <div class="duration-control">
+          <button class="duration-btn" id="btnMinus" onclick="changeDuration(-1)" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div class="duration-value">
+            <div class="duration-number" id="durationValue">1</div>
+            <div class="duration-unit" id="durationUnit">hour</div>
+          </div>
+          <button class="duration-btn" id="btnPlus" onclick="changeDuration(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Checkout -->
+      <button class="btn-checkout" onclick="handleCheckout()">Proceed to Checkout</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Done</span>
+</div>
+
+<script>
+  const HOURLY_RATE = 20;
+  const SERVICE_FEE_BASE = 2.99;
+  let duration = 1;
+
+  function changeDuration(delta) {
+    const newDuration = duration + delta;
+    if (newDuration < 1 || newDuration > 24) return;
+    duration = newDuration;
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    document.getElementById('durationValue').textContent = duration;
+    document.getElementById('durationUnit').textContent = duration === 1 ? 'hour' : 'hours';
+    document.getElementById('btnMinus').disabled = duration <= 1;
+    document.getElementById('btnPlus').disabled = duration >= 24;
+
+    const base = HOURLY_RATE * duration;
+    const fee = SERVICE_FEE_BASE;
+    const total = base + fee;
+
+    document.getElementById('basePrice').textContent = `€${base.toFixed(2)}`;
+    document.getElementById('serviceFee').textContent = `€${fee.toFixed(2)}`;
+    document.getElementById('totalPrice').textContent = `€${total.toFixed(2)}`;
+  }
+
+  function handleCheckout() {
+    const total = (HOURLY_RATE * duration) + SERVICE_FEE_BASE;
+    showToast(`✓ Proceeding to checkout — €${total.toFixed(2)}`);
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+</script>
+
+</body>
+</html>
+

@@ -176,6 +176,12 @@ JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses
 
 Also make sure you set your environment variables in Render's Environment tab (Render does not automatically use your local `.env` file).
 
+For the Angular frontend on Render:
+
+1. Set `UI_LAYOUT=STANDARD` or `UI_LAYOUT=MODERN` in the frontend service Environment tab.
+2. The frontend build now generates `frontend/public/env.js` from Render environment variables during `npm run build`.
+3. Setting `UI_LAYOUT` only in Render works because the generated browser runtime file reads from the build environment; editing `frontend/public/env.js` manually is no longer required for deployment.
+
 For multi-tenant deployments on Render:
 
 1. Set `SETTING_USE_DEFAULT_DATABASE=true` if you want existing clients without `X-Tenant-ID` to continue working.

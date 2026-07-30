@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, MapPin, Calendar, Clock, Gift, Package, User as UserIcon } from 'lucide-angular';
 import { Listing, ListingType, User } from '../../../core/models/types';
 import { I18nService } from '../../../core/services/i18n.service';
+import { LayoutModeService } from '../../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-transaction-overview-modal',
@@ -25,6 +26,7 @@ export class TransactionOverviewModalComponent {
   readonly Package = Package;
   readonly UserIcon = UserIcon;
   i18n = inject(I18nService);
+  layoutMode = inject(LayoutModeService);
 
   get listing(): Listing | null {
     if (!this.item) return null;

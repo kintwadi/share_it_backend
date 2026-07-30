@@ -25,6 +25,7 @@ import com.vicinity24.api.core.repository.SubscriptionRepository;
 import com.vicinity24.api.core.repository.TransactionRepository;
 import com.vicinity24.api.core.repository.UserRepository;
 import com.vicinity24.api.core.service.EscrowService;
+import com.vicinity24.api.core.service.ReviewInviteService;
 import com.vicinity24.api.core.service.UserService;
 import com.stripe.model.Refund;
 import jakarta.transaction.Transactional;
@@ -53,6 +54,7 @@ public class AdminManagementService {
     private final ReturnSessionRepository returnSessionRepository;
     private final StripePayment stripePayment;
     private final EscrowService escrowService;
+    private final ReviewInviteService reviewInviteService;
     private final UserService userService;
     private final PartnerAdminRepository partnerAdminRepository;
     private final RandomGenerator codeRandom = new java.security.SecureRandom();
@@ -65,6 +67,7 @@ public class AdminManagementService {
             ReturnSessionRepository returnSessionRepository,
             StripePayment stripePayment,
             EscrowService escrowService,
+            ReviewInviteService reviewInviteService,
             UserService userService,
             PartnerAdminRepository partnerAdminRepository
     ) {
@@ -75,6 +78,7 @@ public class AdminManagementService {
         this.returnSessionRepository = returnSessionRepository;
         this.stripePayment = stripePayment;
         this.escrowService = escrowService;
+        this.reviewInviteService = reviewInviteService;
         this.userService = userService;
         this.partnerAdminRepository = partnerAdminRepository;
     }
@@ -525,6 +529,12 @@ public class AdminManagementService {
         listingRepository.save(l);
 
         escrowService.adminAttemptReleaseForListing(listingId);
+        if (session != null) {
+            try {
+                reviewInviteService.createAndSendForReturnSession(session);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @Transactional

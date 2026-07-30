@@ -1,13 +1,13 @@
-<div class="settings-page">
+<div class="settings-page" [class.settings-page--standard]="layoutMode.isStandard()">
   <div class="settings-main">
-    <button type="button" (click)="router.navigate(['/dashboard'])" class="settings-back-link">
+    <button *ngIf="!layoutMode.isStandard()" type="button" (click)="router.navigate(['/dashboard'])" class="settings-back-link">
       <lucide-icon [img]="ChevronRight" [size]="16" class="settings-back-link__icon"></lucide-icon>
       <span>{{ i18n.t('settings.back_to_dashboard') }}</span>
     </button>
 
-    <div class="settings-page-header">
+    <div class="settings-page-header" [class.page-header]="layoutMode.isStandard()">
       <div>
-        <div class="settings-page-header__kicker">{{ i18n.t('settings.header_kicker') }}</div>
+        <div *ngIf="!layoutMode.isStandard()" class="settings-page-header__kicker">{{ i18n.t('settings.header_kicker') }}</div>
         <h1>{{ i18n.t('settings.header_title') }}</h1>
         <p>{{ i18n.t('settings.header_subtitle') }}</p>
       </div>
@@ -20,7 +20,7 @@
       </button>
     </div>
 
-    <div class="settings-page-meta">
+    <div class="settings-page-meta" [class.page-toolbar]="layoutMode.isStandard()">
       <div class="settings-breadcrumb">
         <span>{{ i18n.t('settings.breadcrumb_root') }}</span>
         <span class="settings-breadcrumb__sep">/</span>
@@ -35,7 +35,7 @@
 
     <div class="settings-layout">
       <aside class="settings-sidebar" [class.is-open]="sidebarOpen">
-        <nav [attr.aria-label]="i18n.t('settings.sidebar_aria')">
+        <nav [attr.aria-label]="i18n.t('settings.sidebar_aria')" [class.sidebar-nav]="layoutMode.isStandard()">
           <ul class="settings-sidebar__list">
             <ng-container *ngFor="let tab of visibleTabs">
               <li>
@@ -43,7 +43,9 @@
                   type="button"
                   (click)="handleTabClick(tab.id)"
                   class="settings-sidebar__link"
+                  [class.sidebar-item]="layoutMode.isStandard()"
                   [class.is-active]="activeTab === tab.id"
+                  [class.active]="layoutMode.isStandard() && activeTab === tab.id"
                   [attr.aria-current]="activeTab === tab.id ? 'page' : null"
                 >
                   <lucide-icon [img]="getTabIcon(tab.id)" [size]="18"></lucide-icon>
@@ -55,6 +57,8 @@
                   type="button"
                   (click)="openBorrowingSubscriptionUnsubscribe()"
                   class="settings-sidebar__link settings-sidebar__link--danger"
+                  [class.sidebar-item]="layoutMode.isStandard()"
+                  [class.danger]="layoutMode.isStandard()"
                 >
                   <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
                   <span>{{ i18n.t('settings.borrowing_subscription.unsubscribe_sidebar') }}</span>
@@ -65,17 +69,150 @@
         </nav>
       </aside>
 
-      <div class="settings-content-card">
-        <div class="settings-content-header">
-          <h2>{{ i18n.t(currentTabLabelKey) }}</h2>
-          <p>{{ i18n.t(currentTabHelpKey) }}</p>
+      <div class="settings-content-card" [class.content]="layoutMode.isStandard()">
+        <div class="settings-content-header" [class.panel-header]="layoutMode.isStandard()">
+          <h2 [class.panel-title]="layoutMode.isStandard()">{{ i18n.t(currentTabLabelKey) }}</h2>
+          <p [class.panel-subtitle]="layoutMode.isStandard()">{{ i18n.t(currentTabHelpKey) }}</p>
         </div>
 
-        <div class="settings-content-body">
+        <div class="settings-content-body" [class.panel-body]="layoutMode.isStandard()">
           <div class="min-h-[600px] space-y-6">
         
         <!-- Overview Tab -->
         <ng-container *ngIf="activeTab === 'overview'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernOverviewTemplate">
+            <div class="overview-standard">
+              <div class="overview-section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.overview.summary_title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.overview.summary_help') }}</p>
+
+                <div class="summary-grid">
+                  <div class="summary-card plan">
+                    <div class="summary-label">{{ i18n.t('settings.overview.status_premium_label') }}</div>
+                    <div class="summary-value small">{{ subscriptionPlanLabel }}</div>
+                    <div class="summary-desc">{{ subscriptionStatusLabel }}</div>
+                  </div>
+                  <div class="summary-card">
+                    <div class="summary-label">{{ i18n.t('settings.overview.status_items_label') }}</div>
+                    <div class="summary-value">{{ overviewLoading ? '-' : overviewListingCount }}</div>
+                    <div class="summary-desc">{{ i18n.t('settings.overview.status_items_hint') }}</div>
+                  </div>
+                </div>
+
+                <div class="panel-footer-note panel-footer-note--plain">
+                  {{ i18n.t('settings.overview.summary_footer') }}
+                </div>
+              </div>
+
+              <div class="overview-section overview-section--divided">
+                <h3 class="overview-section-title">{{ i18n.t('settings.overview.actions_title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.overview.actions_help') }}</p>
+
+                <div class="quick-actions-grid">
+                  <button type="button" class="quick-action" (click)="handleTabClick('profile')">
+                    <div class="quick-action-label">{{ i18n.t('settings.overview.actions_profile_label') }}</div>
+                    <div class="quick-action-title">{{ i18n.t('settings.overview.actions_profile_title') }}</div>
+                    <div class="quick-action-desc">{{ i18n.t('settings.overview.actions_profile_hint') }}</div>
+                  </button>
+                  <button type="button" class="quick-action" (click)="handleTabClick('security')">
+                    <div class="quick-action-label">{{ i18n.t('settings.overview.actions_security_label') }}</div>
+                    <div class="quick-action-title">{{ i18n.t('settings.overview.actions_security_title') }}</div>
+                    <div class="quick-action-desc">{{ i18n.t('settings.overview.actions_security_hint') }}</div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="overview-section overview-section--divided">
+                <h3 class="overview-section-title">{{ i18n.t('settings.overview.timeline_title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.overview.timeline_help') }}</p>
+
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-dot-wrap"><div class="timeline-dot"></div></div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">{{ i18n.t('settings.overview.timeline_item1_title') }}</div>
+                      <div class="timeline-desc">{{ i18n.t('settings.overview.timeline_item1_description') }}</div>
+                    </div>
+                    <div class="timeline-date">
+                      <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                      <span>{{ i18n.t('settings.overview.timeline_item1_date') }}</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot-wrap"><div class="timeline-dot pending"></div></div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">{{ i18n.t('settings.overview.timeline_item2_title') }}</div>
+                      <div class="timeline-desc">{{ i18n.t('settings.overview.timeline_item2_description') }}</div>
+                    </div>
+                    <div class="timeline-date">
+                      <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                      <span>{{ i18n.t('settings.overview.timeline_item2_date') }}</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot-wrap"><div class="timeline-dot pending"></div></div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">{{ i18n.t('settings.overview.timeline_item3_title') }}</div>
+                      <div class="timeline-desc">{{ i18n.t('settings.overview.timeline_item3_description') }}</div>
+                    </div>
+                    <div class="timeline-date">
+                      <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                      <span>{{ i18n.t('settings.overview.timeline_item3_date') }}</span>
+                    </div>
+                  </div>
+
+                  <div class="timeline-item">
+                    <div class="timeline-dot-wrap"><div class="timeline-dot pending"></div></div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">{{ i18n.t('settings.overview.timeline_item4_title') }}</div>
+                      <div class="timeline-desc">{{ i18n.t('settings.overview.timeline_item4_description') }}</div>
+                    </div>
+                    <div class="timeline-date">
+                      <lucide-icon [img]="Clock" [size]="12"></lucide-icon>
+                      <span>{{ i18n.t('settings.overview.timeline_item4_date') }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="overview-section overview-section--divided">
+                <h3 class="overview-section-title">{{ i18n.t('settings.overview.security_title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.overview.security_help') }}</p>
+
+                <div class="security-grid">
+                  <div class="security-item">
+                    <lucide-icon [img]="user?.verificationStatus === 'VERIFIED' ? CheckCircle2 : AlertTriangle" [size]="18" class="security-icon" [class.ok]="user?.verificationStatus === 'VERIFIED'" [class.warn]="user?.verificationStatus !== 'VERIFIED'"></lucide-icon>
+                    <div>
+                      <div class="security-title">{{ i18n.t('settings.overview.security_email_title') }}</div>
+                      <div class="security-status">{{ user?.verificationStatus === 'VERIFIED' ? i18n.t('settings.overview.security_email_hint') : i18n.t('settings.security.email_not_verified') }}</div>
+                    </div>
+                  </div>
+                  <div class="security-item">
+                    <lucide-icon [img]="twoFactorEnabled ? CheckCircle2 : AlertTriangle" [size]="18" class="security-icon" [class.ok]="twoFactorEnabled" [class.warn]="!twoFactorEnabled"></lucide-icon>
+                    <div>
+                      <div class="security-title">{{ i18n.t('settings.overview.security_2fa_title') }}</div>
+                      <div class="security-status">{{ twoFactorEnabled ? i18n.t('settings.overview.security_2fa_hint') : i18n.t('settings.security.2fa_not_enabled') }}</div>
+                    </div>
+                  </div>
+                  <div class="security-item">
+                    <lucide-icon [img]="Shield" [size]="18" class="security-icon" [class.ok]="trustedDevicesCount > 0" [class.warn]="trustedDevicesCount === 0"></lucide-icon>
+                    <div>
+                      <div class="security-title">{{ i18n.t('settings.overview.security_devices_title') }}</div>
+                      <div class="security-status">{{ trustedDevicesSummary }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-footer-note">
+                  {{ i18n.t('settings.overview.security_footer') }}
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #modernOverviewTemplate>
           <div class="space-y-8">
             <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
               <div class="mb-4">
@@ -261,10 +398,179 @@
               </div>
             </section>
           </div>
+          </ng-template>
         </ng-container>
 
         <!-- Profile Tab -->
         <ng-container *ngIf="activeTab === 'profile'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernProfileTemplate">
+            <section class="settings-standard-panel">
+              <div class="settings-standard-panel__section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.profile.title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.profile.help') }}</p>
+
+                <div *ngIf="profileError" class="settings-standard-alert settings-standard-alert--error">
+                  <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                  <span>{{ profileError }}</span>
+                </div>
+
+                <div *ngIf="profileSuccess" class="settings-standard-alert settings-standard-alert--success">
+                  <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                  <span>{{ profileSuccess }}</span>
+                </div>
+
+                <div class="settings-standard-profile-hero">
+                  <input
+                    #avatarInput
+                    type="file"
+                    class="hidden"
+                    accept="image/*"
+                    (change)="onAvatarFileSelected($event)"
+                  />
+                  <div class="settings-standard-profile-hero__identity">
+                    <div class="settings-standard-avatar-wrap">
+                      <div class="settings-standard-avatar">
+                        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Profile" class="w-full h-full object-cover" />
+                        <lucide-icon *ngIf="!avatarUrl" [img]="UserIcon" [size]="40" class="text-[#8a8a8a]"></lucide-icon>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="triggerAvatarSelect(avatarInput)"
+                        [disabled]="isUploadingAvatar"
+                        class="settings-standard-avatar-action"
+                      >
+                        <lucide-icon [img]="Camera" [size]="14"></lucide-icon>
+                      </button>
+                    </div>
+                    <div>
+                      <div class="settings-standard-profile-hero__name">{{ user?.name || 'User' }}</div>
+                      <div class="settings-standard-profile-hero__meta">{{ user?.email }}</div>
+                      <div class="settings-standard-profile-hero__badges">
+                        <span *ngIf="isVerifiedSubscriber" class="settings-standard-pill settings-standard-pill--success">
+                          {{ i18n.t('settings.profile.verified_badge') }}
+                        </span>
+                        <span class="settings-standard-pill">
+                          {{ i18n.t('settings.profile.member_since') }} {{ user?.joinedDate ? (user?.joinedDate | date:'yyyy') : '' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-standard-two-col">
+                  <div class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.profile.title') }}</div>
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.profile.email_label') }}</label>
+                      <div class="settings-standard-inline">
+                        <input type="email" [value]="user?.email || ''" readonly class="settings-standard-input" />
+                        <span *ngIf="user?.verificationStatus === 'VERIFIED'" class="settings-standard-pill settings-standard-pill--success">
+                          {{ i18n.t('settings.profile.email_verified_badge') }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="settings-standard-grid-2">
+                      <div class="settings-standard-field">
+                        <label class="settings-standard-label">{{ i18n.t('settings.profile.name_label') }}</label>
+                        <div class="settings-standard-input-wrap">
+                          <lucide-icon [img]="UserIcon" [size]="16" class="settings-standard-input-icon"></lucide-icon>
+                          <input type="text" [(ngModel)]="name" [ngModelOptions]="{standalone: true}" class="settings-standard-input settings-standard-input--icon" />
+                        </div>
+                      </div>
+                      <div class="settings-standard-field">
+                        <label class="settings-standard-label">{{ i18n.t('settings.profile.display_name_label') }}</label>
+                        <input
+                          type="text"
+                          [(ngModel)]="displayName"
+                          [ngModelOptions]="{standalone: true}"
+                          [placeholder]="i18n.t('settings.profile.display_name_placeholder')"
+                          class="settings-standard-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.profile.phone_label') }}</label>
+                      <div class="settings-standard-inline">
+                        <select
+                          [(ngModel)]="selectedCountryCode"
+                          [ngModelOptions]="{standalone: true}"
+                          (ngModelChange)="onCountryCodeChange()"
+                          class="settings-standard-select settings-standard-select--compact"
+                          title="Country code"
+                        >
+                          <option *ngFor="let c of countries" [ngValue]="c.code">
+                            {{c.flag}} {{c.dial}}
+                          </option>
+                        </select>
+                        <input
+                          type="tel"
+                          [(ngModel)]="phone"
+                          [ngModelOptions]="{standalone: true}"
+                          (ngModelChange)="onPhoneChange($event)"
+                          inputmode="numeric"
+                          maxlength="20"
+                          [placeholder]="i18n.t('settings.profile.phone_placeholder')"
+                          class="settings-standard-input"
+                        />
+                      </div>
+                      <p class="settings-standard-help">{{ i18n.t('settings.profile.phone_help') }}</p>
+                    </div>
+
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.profile.language_label') }}</label>
+                      <div class="settings-standard-note">
+                        <div class="settings-standard-note__icon">
+                          <lucide-icon [img]="Globe" [size]="16"></lucide-icon>
+                        </div>
+                        <div>
+                          <div class="settings-standard-note__title">{{ i18n.language() === 'de' ? 'Deutsch' : i18n.language() === 'pt' ? 'Português' : 'English' }}</div>
+                          <div class="settings-standard-note__text">{{ i18n.t('settings.profile.language_hint') }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.profile.visibility_title') }}</div>
+                    <div class="settings-standard-toggle-row">
+                      <div>
+                        <div class="settings-standard-toggle-row__title">{{ i18n.t('settings.profile.visibility_profile_label') }}</div>
+                        <div class="settings-standard-toggle-row__help">{{ i18n.t('settings.profile.visibility_profile_help') }}</div>
+                      </div>
+                      <button type="button" role="switch" [attr.aria-checked]="profileVisibility" (click)="profileVisibility = !profileVisibility" class="settings-standard-switch" [class.is-on]="profileVisibility">
+                        <span></span>
+                      </button>
+                    </div>
+                    <div class="settings-standard-toggle-row">
+                      <div>
+                        <div class="settings-standard-toggle-row__title">{{ i18n.t('settings.profile.visibility_reviews_label') }}</div>
+                        <div class="settings-standard-toggle-row__help">{{ i18n.t('settings.profile.visibility_reviews_help') }}</div>
+                      </div>
+                      <button type="button" role="switch" [attr.aria-checked]="reviewsPublic" (click)="reviewsPublic = !reviewsPublic" class="settings-standard-switch" [class.is-on]="reviewsPublic">
+                        <span></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-standard-action-row">
+                  <button type="button" (click)="reloadPage()" class="settings-standard-btn settings-standard-btn--secondary">
+                    {{ i18n.t('settings.profile.cancel') }}
+                  </button>
+                  <button type="button" (click)="saveProfile()" [disabled]="isSavingProfile" class="settings-standard-btn settings-standard-btn--primary">
+                    <lucide-icon *ngIf="isSavingProfile" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                    <span>{{ i18n.t('settings.profile.save') }}</span>
+                  </button>
+                </div>
+
+                <div class="panel-footer-note">{{ i18n.t('settings.profile.gdpr_footer') }}</div>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #modernProfileTemplate>
           <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
             <div class="mb-4">
               <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.profile.title') }}</h2>
@@ -493,10 +799,101 @@
               {{ i18n.t('settings.profile.gdpr_footer') }}
             </div>
           </section>
+          </ng-template>
         </ng-container>
 
         <!-- Subscription Tab -->
         <ng-container *ngIf="activeTab === 'subscription'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernSubscriptionTemplate">
+            <section class="settings-standard-panel">
+              <div class="settings-standard-panel__section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.subscription.title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.subscription.help') }}</p>
+
+                <div class="settings-standard-two-col">
+                  <div class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.subscription.status_label') }}</div>
+                    <div class="summary-card plan">
+                      <div class="summary-label">{{ i18n.t('settings.subscription.status_label') }}</div>
+                      <div class="summary-value small">{{ subscriptionPlanLabel }}</div>
+                      <div class="summary-desc">{{ subscriptionStatusLabel }}</div>
+                    </div>
+
+                    <div class="settings-standard-stack">
+                      <button type="button" (click)="goToSubscriptionPlans()" class="settings-standard-btn settings-standard-btn--primary settings-standard-btn--inline">
+                        <lucide-icon [img]="Star" [size]="14"></lucide-icon>
+                        <span>{{ subscriptionUpgradeCta }}</span>
+                      </button>
+                      <p *ngIf="isTrialSubscription && trialCountdownText" class="settings-standard-help settings-standard-help--strong">{{ trialCountdownText }}</p>
+                      <p *ngIf="autoChargeText" class="settings-standard-help">{{ autoChargeText }}</p>
+                      <p *ngIf="!isTrialSubscription && !subscription" class="settings-standard-help">{{ i18n.t('settings.subscription.free_hint') }}</p>
+                    </div>
+
+                    <div class="settings-standard-card__title settings-standard-card__title--spaced">{{ i18n.t('settings.subscription.benefits_title') }}</div>
+                    <ul class="settings-standard-list" *ngIf="!subscription || normalizedSubscriptionPlanType === 'starter'">
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('lenderSub.basic_no_insurance') }}</span></li>
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('lenderSub.basic_standard_placement') }}</span></li>
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('lenderSub.basic_community_protection') }}</span></li>
+                    </ul>
+                    <ul class="settings-standard-list" *ngIf="subscription && normalizedSubscriptionPlanType !== 'starter'">
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ normalizedSubscriptionPlanType === 'plus' ? i18n.t('settings.subscription.benefit_insurance_plus') : i18n.t('settings.subscription.benefit_insurance') }}</span></li>
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('settings.subscription.benefit_visibility') }}</span></li>
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('settings.subscription.benefit_support') }}</span></li>
+                      <li><lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon><span>{{ i18n.t('settings.subscription.benefit_badge') }}</span></li>
+                    </ul>
+                  </div>
+
+                  <div class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.subscription.invoices_title') }}</div>
+                    <div class="settings-standard-table-wrap">
+                      <table class="settings-standard-table">
+                        <thead>
+                          <tr>
+                            <th>{{ i18n.t('settings.subscription.invoices_date') }}</th>
+                            <th>{{ i18n.t('settings.subscription.invoices_status') }}</th>
+                            <th>{{ i18n.t('settings.subscription.invoices_download') }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngIf="isLoadingInvoices">
+                            <td colspan="3">{{ i18n.t('settings.subscription.loading_invoices') }}</td>
+                          </tr>
+                          <tr *ngIf="!isLoadingInvoices && invoiceRows.length === 0">
+                            <td colspan="3">{{ !subscription || normalizedSubscriptionPlanType === 'starter' ? i18n.t('settings.subscription.invoices_empty_starter') : i18n.t('settings.subscription.invoices_empty') }}</td>
+                          </tr>
+                          <tr *ngFor="let row of invoiceRows">
+                            <td>{{ row.date | date:'shortDate' }}</td>
+                            <td>
+                              <span class="settings-standard-pill" [class.settings-standard-pill--success]="row.variant === 'success'">{{ i18n.t(row.statusKey) }}</span>
+                            </td>
+                            <td class="settings-standard-table__actions">
+                              <button type="button" class="settings-standard-btn settings-standard-btn--secondary settings-standard-btn--xs" (click)="openInvoice(row.pdfUrl)">
+                                {{ i18n.t('settings.subscription.invoices_download') || 'PDF' }}
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div *ngIf="subscription && normalizedSubscriptionPlanType !== 'starter'" class="settings-standard-note settings-standard-note--danger">
+                      <div>
+                        <div class="settings-standard-note__title">{{ i18n.t('settings.subscription.cancel_title') }}</div>
+                        <div class="settings-standard-note__text">{{ i18n.t('settings.subscription.cancel_confirm') }}</div>
+                      </div>
+                      <button type="button" (click)="openCancelSubscription()" [disabled]="isCanceledSubscription" class="settings-standard-btn settings-standard-btn--danger">
+                        {{ i18n.t('settings.subscription.cancel_cta') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-footer-note">{{ i18n.t('settings.subscription.gdpr_footer') }}</div>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #modernSubscriptionTemplate>
           <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
             <div class="mb-4">
               <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.subscription.title') }}</h2>
@@ -651,10 +1048,168 @@
               {{ i18n.t('settings.subscription.gdpr_footer') }}
             </div>
           </section>
+          </ng-template>
         </ng-container>
 
         <!-- Security Tab -->
         <ng-container *ngIf="activeTab === 'security'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernSecurityTemplate">
+            <section class="settings-standard-panel">
+              <div class="settings-standard-panel__section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.security.title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.security.help') }}</p>
+
+                <div class="settings-standard-subpanel">
+                  <div class="settings-standard-card__title">{{ i18n.t('settings.security.password_save') }}</div>
+                  <div *ngIf="passwordError" class="settings-standard-alert settings-standard-alert--error">
+                    <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                    <span>{{ passwordError }}</span>
+                  </div>
+                  <div *ngIf="passwordSuccess" class="settings-standard-alert settings-standard-alert--success">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    <span>{{ passwordSuccess }}</span>
+                  </div>
+                  <div class="settings-standard-field">
+                    <label class="settings-standard-label">{{ i18n.t('settings.security.password_current') }}</label>
+                    <input type="password" [(ngModel)]="oldPassword" name="oldPassword" class="settings-standard-input" />
+                  </div>
+                  <div class="settings-standard-grid-2">
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.security.password_new') }}</label>
+                      <input type="password" [(ngModel)]="newPassword" name="newPassword" class="settings-standard-input" />
+                    </div>
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.security.password_confirm') }}</label>
+                      <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" class="settings-standard-input" />
+                    </div>
+                  </div>
+                  <div class="settings-standard-action-row settings-standard-action-row--left">
+                    <button type="button" (click)="handlePasswordUpdate()" [disabled]="isChangingPassword" class="settings-standard-btn settings-standard-btn--primary">
+                      <lucide-icon *ngIf="isChangingPassword" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                      <span>{{ i18n.t('settings.security.password_save') }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="settings-standard-subpanel">
+                  <div class="settings-standard-toggle-row">
+                    <div>
+                      <div class="settings-standard-toggle-row__title">{{ i18n.t('settings.security.2fa_title') }}</div>
+                      <div class="settings-standard-toggle-row__help">{{ i18n.t('settings.security.2fa_help') }}</div>
+                    </div>
+                    <button type="button" (click)="handleToggle2FA(!twoFactorEnabled)" [attr.aria-pressed]="twoFactorVisualOn" class="settings-standard-switch settings-standard-switch--wide" [class.is-on]="twoFactorVisualOn">
+                      <span></span>
+                    </button>
+                  </div>
+
+                  <div *ngIf="twoFactorError" class="settings-standard-alert settings-standard-alert--error">
+                    <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                    <span>{{ twoFactorError }}</span>
+                  </div>
+                  <div *ngIf="securitySuccess" class="settings-standard-alert settings-standard-alert--success">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    <span>{{ securitySuccess }}</span>
+                  </div>
+
+                  <div *ngIf="twoFactorSetupOpen && !twoFactorEnabled && twoFactorQrCode" class="settings-standard-qr">
+                    <div class="settings-standard-qr__title">{{ i18n.t('settings.security.scan_qr') }}</div>
+                    <div class="settings-standard-qr__image">
+                      <img [src]="twoFactorQrCode" [alt]="i18n.t('settings.security.twofa_qr_alt') || '2FA QR Code'" class="w-48 h-48" />
+                    </div>
+                    <div class="settings-standard-field settings-standard-field--narrow">
+                      <label class="settings-standard-label settings-standard-label--center">{{ i18n.t('settings.security.verification_code') }}</label>
+                      <input
+                        type="text"
+                        maxlength="6"
+                        [(ngModel)]="twoFactorVerifyCode"
+                        (ngModelChange)="onTwoFactorVerifyCodeChange($event)"
+                        name="twoFactorVerifyCode"
+                        class="settings-standard-input settings-standard-input--otp"
+                        placeholder="000000"
+                      />
+                    </div>
+                    <div class="settings-standard-action-row settings-standard-action-row--center">
+                      <button type="button" (click)="verifyTwoFactorSetup()" [disabled]="twoFactorVerifyCode.length !== 6 || twoFactorLoading" class="settings-standard-btn settings-standard-btn--primary">
+                        {{ i18n.t('settings.security.verify_enable') }}
+                      </button>
+                      <button type="button" (click)="twoFactorSetupOpen = false; twoFactorQrCode = null; twoFactorVerifyCode = ''" class="settings-standard-btn settings-standard-btn--secondary">
+                        {{ i18n.t('settings.security.cancel_setup') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-standard-subpanel">
+                  <div class="settings-standard-card__title">{{ i18n.t('settings.security.devices_title') }}</div>
+                  <div class="settings-standard-help">{{ i18n.t('settings.security.devices_help') }}</div>
+                  <div *ngIf="devicesError" class="settings-standard-alert settings-standard-alert--error">
+                    <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                    <span>{{ devicesError }}</span>
+                  </div>
+                  <div *ngIf="devicesSuccess" class="settings-standard-alert settings-standard-alert--success">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    <span>{{ devicesSuccess }}</span>
+                  </div>
+                  <div *ngIf="isLoadingDevices" class="settings-standard-note">{{ i18n.t('settings.security.loading_devices') }}</div>
+                  <div *ngIf="!isLoadingDevices && devices.length === 0" class="settings-standard-note">{{ i18n.t('settings.security.no_devices') || 'No trusted devices found.' }}</div>
+                  <div *ngFor="let d of devices" class="settings-standard-device-row">
+                    <div>
+                      <div class="settings-standard-device-row__title">
+                        <span>{{ d.deviceName || d.name || i18n.t('settings.security.unknown_device') || 'Unknown Device' }}</span>
+                        <span *ngIf="d.trusted" class="settings-standard-pill settings-standard-pill--success">{{ i18n.t('settings.security.trusted') || 'Trusted' }}</span>
+                      </div>
+                      <div class="settings-standard-device-row__meta">{{ d.ipAddress }} • {{ formatMaybeDate(d.lastSeenAt || d.lastSeen || d.updatedAt || d.createdAt || d.lastActive) }}</div>
+                    </div>
+                    <button type="button" (click)="openRevokeDevice(d)" class="settings-standard-btn settings-standard-btn--secondary settings-standard-btn--xs">
+                      {{ i18n.t('settings.security.device_logout') || 'Log out' }}
+                    </button>
+                  </div>
+                  <div class="settings-standard-action-row settings-standard-action-row--spread">
+                    <button type="button" class="settings-standard-btn settings-standard-btn--danger">
+                      {{ i18n.t('settings.security.devices_logout_all') }}
+                    </button>
+                    <p class="settings-standard-help settings-standard-help--right">{{ i18n.t('settings.security.devices_warning') }}</p>
+                  </div>
+                  <div class="panel-footer-note">{{ i18n.t('settings.security.devices_footer') }}</div>
+                </div>
+
+                <div *ngIf="settingsConfig.isSectionEnabled('security', 'identity_verification')" class="settings-standard-subpanel">
+                  <div class="settings-standard-card__title">{{ i18n.t('settings.security.identity_verification') }}</div>
+                  <div class="settings-standard-help">{{ i18n.t('settings.security.identity_help') }}</div>
+                  <div class="settings-standard-note settings-standard-note--neutral">
+                    <div class="settings-standard-note__title">{{ i18n.t('settings.security.status') }}</div>
+                    <div class="settings-standard-note__text">{{ verificationStatusLabel }}</div>
+                  </div>
+                  <div *ngIf="verificationError" class="settings-standard-alert settings-standard-alert--error">
+                    <lucide-icon [img]="AlertTriangle" size="16"></lucide-icon>
+                    <span>{{ verificationError }}</span>
+                  </div>
+                  <div *ngIf="verificationSuccess" class="settings-standard-alert settings-standard-alert--success">
+                    <lucide-icon [img]="CheckCircle2" size="16"></lucide-icon>
+                    <span>{{ verificationSuccess }}</span>
+                  </div>
+                  <div *ngIf="(user?.verificationStatus || '') !== 'VERIFIED'" class="settings-standard-stack">
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.security.address') }}</label>
+                      <input [(ngModel)]="verificationAddress" [ngModelOptions]="{standalone: true}" class="settings-standard-input" [placeholder]="i18n.t('settings.security.address_placeholder')" />
+                    </div>
+                    <div class="settings-standard-field">
+                      <label class="settings-standard-label">{{ i18n.t('settings.security.phone') }}</label>
+                      <input [(ngModel)]="verificationPhone" [ngModelOptions]="{standalone: true}" class="settings-standard-input" [placeholder]="i18n.t('settings.security.phone_placeholder')" />
+                    </div>
+                    <div class="settings-standard-action-row settings-standard-action-row--left">
+                      <button type="button" (click)="submitVerificationRequest()" [disabled]="verificationSubmitting" class="settings-standard-btn settings-standard-btn--primary">
+                        <lucide-icon *ngIf="verificationSubmitting" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                        <span>{{ i18n.t('settings.security.submit_request') }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #modernSecurityTemplate>
           <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
             <div class="mb-4">
               <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.security.title') }}</h2>
@@ -862,6 +1417,7 @@
               </app-button>
             </div>
           </section>
+          </ng-template>
         </ng-container>
 
         <!-- Privacy Tab -->
@@ -1123,6 +1679,30 @@
 
         <!-- Payments Tab -->
         <ng-container *ngIf="activeTab === 'payments'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernPaymentsTemplate">
+            <section class="settings-standard-panel">
+              <div class="settings-standard-panel__section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.payments.title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.payments.help') }}</p>
+
+                <ng-container *ngIf="paymentsLocked; else paymentsEnabledStandard">
+                  <div class="settings-standard-note settings-standard-note--warning">
+                    <div class="settings-standard-note__title">{{ i18n.t('settings.payments.locked_title') }}</div>
+                    <div class="settings-standard-note__text">{{ i18n.t('settings.payments.locked_desc') }}</div>
+                  </div>
+                </ng-container>
+
+                <ng-template #paymentsEnabledStandard>
+                  <div class="settings-standard-subpanel settings-standard-subpanel--payment">
+                    <app-payment-settings></app-payment-settings>
+                  </div>
+                  <div class="panel-footer-note">{{ i18n.t('settings.payments.footer') }}</div>
+                </ng-template>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #modernPaymentsTemplate>
           <section class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
             <div class="mb-4">
               <h2 class="text-lg font-bold text-gray-900">{{ i18n.t('settings.payments.title') }}</h2>
@@ -1145,6 +1725,7 @@
               </div>
             </ng-template>
           </section>
+          </ng-template>
         </ng-container>
 
         <!-- Building Tab -->
@@ -1298,6 +1879,61 @@
 
         <!-- Support Tab -->
         <ng-container *ngIf="activeTab === 'support'">
+          <ng-container *ngIf="layoutMode.isStandard(); else modernSupportTemplate">
+            <section class="settings-standard-panel">
+              <div class="settings-standard-panel__section">
+                <h3 class="overview-section-title">{{ i18n.t('settings.support.title') }}</h3>
+                <p class="overview-section-subtitle">{{ i18n.t('settings.support.help') }}</p>
+
+                <div class="settings-standard-two-col">
+                  <div *ngIf="supportContactEnabled" class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.support.contact_title') }}</div>
+                    <div class="settings-standard-help">{{ i18n.t('settings.support.contact_help') }}</div>
+                    <div class="settings-standard-note">
+                      <div class="settings-standard-note__icon">
+                        <lucide-icon [img]="Mail" [size]="16"></lucide-icon>
+                      </div>
+                      <div>
+                        <div class="settings-standard-note__title">{{ i18n.t('settings.support.contact_cta') }}</div>
+                        <div class="settings-standard-note__text">{{ i18n.t('settings.support.contact_help') }}</div>
+                      </div>
+                    </div>
+                    <div class="settings-standard-contact-list">
+                      <a *ngIf="supportEmail" [href]="supportEmailHref" class="settings-standard-contact-item">
+                        <lucide-icon [img]="Mail" [size]="14"></lucide-icon>
+                        <span>{{ supportEmail }}</span>
+                      </a>
+                      <a *ngIf="supportPhone" [href]="supportPhoneHref" class="settings-standard-contact-item">
+                        <lucide-icon [img]="Phone" [size]="14"></lucide-icon>
+                        <span>{{ supportPhone }}</span>
+                      </a>
+                      <div *ngIf="supportAddress" class="settings-standard-contact-item settings-standard-contact-item--static">
+                        <lucide-icon [img]="MapPin" [size]="14"></lucide-icon>
+                        <span>{{ supportAddress }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="supportFaqEnabled" class="settings-standard-card">
+                    <div class="settings-standard-card__title">{{ i18n.t('settings.support.faq_title') }}</div>
+                    <div class="settings-standard-help">{{ i18n.t('settings.support.faq_help') }}</div>
+                    <div class="settings-standard-list-block">
+                      <div class="settings-standard-list-block__item">
+                        <div class="settings-standard-list-block__title">{{ i18n.t('settings.support.contact_title') }}</div>
+                        <div class="settings-standard-list-block__text">{{ i18n.t('settings.support.contact_help') }}</div>
+                      </div>
+                      <div class="settings-standard-list-block__item">
+                        <div class="settings-standard-list-block__title">{{ i18n.t('settings.support.help') }}</div>
+                        <div class="settings-standard-list-block__text">{{ i18n.t('settings.footer_gdpr_note') }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </ng-container>
+
+          <ng-template #modernSupportTemplate>
           <div class="mb-6">
             <h2 class="text-xl font-bold text-gray-900">{{ i18n.t('settings.support.title') }}</h2>
             <p class="text-sm text-gray-500 mt-1">{{ i18n.t('settings.support.help') }}</p>
@@ -1348,6 +1984,7 @@
               </div>
             </div>
           </div>
+          </ng-template>
         </ng-container>
 
           </div>

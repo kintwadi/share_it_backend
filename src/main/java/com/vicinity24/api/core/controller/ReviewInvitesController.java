@@ -11,6 +11,7 @@ import com.vicinity24.api.core.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,7 @@ public class ReviewInvitesController {
     }
 
     @GetMapping("/{token}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Object> getInvite(@PathVariable("token") String token) {
         ReviewInvite invite = reviewInviteRepository.findByToken(token).orElse(null);
         if (invite == null) {
@@ -51,7 +53,9 @@ public class ReviewInvitesController {
                 .token(invite.getToken())
                 .listingId(invite.getListing() != null && invite.getListing().getId() != null ? invite.getListing().getId().toString() : null)
                 .listingTitle(invite.getListing() != null ? invite.getListing().getTitle() : null)
+                .listingReference(invite.getListing() != null ? invite.getListing().getItemReference() : null)
                 .reviewerId(invite.getReviewer() != null && invite.getReviewer().getId() != null ? invite.getReviewer().getId().toString() : null)
+                .reviewerName(invite.getReviewer() != null ? (invite.getReviewer().getDisplayName() != null && !invite.getReviewer().getDisplayName().isBlank() ? invite.getReviewer().getDisplayName() : invite.getReviewer().getName()) : null)
                 .targetUserId(invite.getTargetUser() != null && invite.getTargetUser().getId() != null ? invite.getTargetUser().getId().toString() : null)
                 .targetUserName(invite.getTargetUser() != null ? (invite.getTargetUser().getDisplayName() != null && !invite.getTargetUser().getDisplayName().isBlank() ? invite.getTargetUser().getDisplayName() : invite.getTargetUser().getName()) : null)
                 .used(invite.getUsedAt() != null)
@@ -60,6 +64,7 @@ public class ReviewInvitesController {
     }
 
     @PostMapping("/{token}")
+    @Transactional
     public ResponseEntity<Object> submitInviteReview(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
             @PathVariable("token") String token,
@@ -87,12 +92,6 @@ public class ReviewInvitesController {
         if (invite.getTargetUser() == null || invite.getListing() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "invite_invalid"));
         }
-        if (reviewRepository.existsByAuthorAndTargetUserAndListing(author, invite.getTargetUser(), invite.getListing())) {
-            invite.setUsedAt(LocalDateTime.now());
-            reviewInviteRepository.save(invite);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "already_reviewed"));
-        }
-
         int rating = payload.get("rating") instanceof Number n ? n.intValue() : 0;
         String comment = payload.get("comment") != null ? String.valueOf(payload.get("comment")) : "";
         if (rating < 1 || rating > 5) {

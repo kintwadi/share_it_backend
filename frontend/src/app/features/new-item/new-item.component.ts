@@ -11,6 +11,7 @@ import { SubscriptionFeatureService } from '../../core/services/subscription-fea
 import { ListingType, Category, ExchangeLocation, ListingRecommendationResult, Listing, ListingPricingUnit } from '../../core/models/types';
 import { LocationApiService, LocationResponse } from '../../core/services/location-api.service';
 import { PlatformGeolocationService } from '../../core/services/platform-geolocation.service';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-new-item',
@@ -30,6 +31,7 @@ export class NewItemComponent implements OnInit {
   i18n = inject(I18nService);
   settingsConfig = inject(SettingsConfigService);
   subscriptionFeature = inject(SubscriptionFeatureService);
+  layoutMode = inject(LayoutModeService);
 
   readonly Package = Package;
   readonly Upload = Upload;

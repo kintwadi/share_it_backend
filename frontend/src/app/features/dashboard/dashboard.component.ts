@@ -6,8 +6,11 @@ import { LucideAngularModule, Plus, Loader2, Package, Users, ShieldAlert, Search
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { SettingsConfigService } from '../../core/services/settings-config.service';
-import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus } from '../../core/models/types';
+import { User, Listing, AvailabilityStatus, ListingType, BorrowHistoryItem, VerificationStatus, UserRole } from '../../core/models/types';
 import { getListingPrimaryRate, getListingPriceSuffix, isListingFree } from '../../core/utils/listing-pricing';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
+
+const DEFAULT_USER_AVATAR = 'assets/images/default-user-photo.png';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,6 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   router = inject(Router);
   route = inject(ActivatedRoute);
   cdr = inject(ChangeDetectorRef);
+  layoutMode = inject(LayoutModeService);
 
   readonly Plus = Plus;
   readonly Loader2 = Loader2;
@@ -44,6 +48,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly EyeOff = EyeOff;
   readonly Eye = Eye;
+  readonly Search = Search;
   readonly MapPin = MapPin;
   readonly ChevronRight = ChevronRight;
   readonly CheckCircle2 = CheckCircle2;
@@ -66,6 +71,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // `currentSub` is the legacy platform/lender subscription state shown on the dashboard.
   // Borrower subscription state is handled separately in the borrowing flow/settings.
   currentSub: { planType: string; status: string } | null = null;
+  currentBorrowingSub: any | null = null;
   today = new Date();
 
   isLoadingListings = false;
@@ -79,6 +85,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   upgradeSuccess = false;
   error: string | null = null;
   private listingsIntervalId: any = null;
+  incomingRequestsSearchQuery = '';
+  incomingRequestsTab: 'all' | 'lend' | 'give' | 'sell' = 'all';
+  lendingSearchQuery = '';
+  lendingTab: 'all' | 'available' | 'requests' | 'active' = 'all';
+  borrowingSearchQuery = '';
+  borrowingTab: 'all' | 'pending' | 'pickup' | 'return' = 'all';
 
   private render() {
     try {
@@ -128,6 +140,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
       this.fetchListings();
       this.fetchHistory();
+      this.loadBorrowingSubscription();
       this.api.getCurrentSubscription()
         .then(sub => {
           if (!sub) {
@@ -157,16 +170,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
             }
           } catch { }
           try {
-            const sub = (borrowerSubscription === '1' || borrowerSubscription === 'true')
-              ? await this.api.getCurrentBorrowingSubscription()
-              : await this.api.getCurrentSubscription();
-            if (sub) {
-              this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
+            if (borrowerSubscription === '1' || borrowerSubscription === 'true') {
+              this.currentBorrowingSub = await this.api.getCurrentBorrowingSubscription();
+            } else {
+              const sub = await this.api.getCurrentSubscription();
+              if (sub) {
+                this.currentSub = { planType: String((sub as any).planType || ''), status: String((sub as any).status || '') };
+              } else {
+                this.currentSub = null;
+              }
+            }
+          } catch {
+            if (borrowerSubscription === '1' || borrowerSubscription === 'true') {
+              this.currentBorrowingSub = null;
             } else {
               this.currentSub = null;
             }
-          } catch {
-            this.currentSub = null;
           }
           try {
             this.router.navigate([], { relativeTo: this.route, queryParams: { session_id: null, borrower_subscription: null }, queryParamsHandling: 'merge', replaceUrl: true });
@@ -211,9 +230,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.isLoadingRecs = true;
       this.render();
     }
-    this.api.getListings().then(all => {
-      this.myListings = all.filter(l => l.ownerId === this.user?.id);
-      this.myBorrows = all.filter(l => l.borrowerId === this.user?.id);
+    Promise.all([
+      this.api.getMyListings(),
+      this.api.getMyBorrowedListings(),
+      this.api.getListings()
+    ]).then(([owned, borrowed, all]) => {
+      this.myListings = owned;
+      this.myBorrows = borrowed;
       this.recommendations = all
         .filter(l => l.ownerId !== this.user?.id && l.status === AvailabilityStatus.AVAILABLE)
         .slice(0, 4);
@@ -269,6 +292,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.myListings.filter(l => l.status === AvailabilityStatus.PENDING);
   }
 
+  get filteredPendingRequests() {
+    const query = this.normalizeDashboardSearch(this.incomingRequestsSearchQuery);
+    return this.pendingRequests.filter(item => {
+      if (this.incomingRequestsTab === 'lend' && item.type !== ListingType.LEND) return false;
+      if (this.incomingRequestsTab === 'give' && item.type !== ListingType.GIVE) return false;
+      if (this.incomingRequestsTab === 'sell' && item.type !== ListingType.SELL) return false;
+      if (!query) return true;
+      const borrowerName = String(item.borrower?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const category = String(item.category || '').toLowerCase();
+      return borrowerName.includes(query) || title.includes(query) || ref.includes(query) || category.includes(query);
+    });
+  }
+
   get activeBorrows() {
     return this.myBorrows.filter(i =>
       (i.status === AvailabilityStatus.PENDING ||
@@ -281,6 +319,66 @@ export class DashboardComponent implements OnInit, OnDestroy {
       i.type !== ListingType.GIVE &&
       i.type !== ListingType.SELL
     );
+  }
+
+  private loadBorrowingSubscription() {
+    this.api.getCurrentBorrowingSubscription()
+      .then(sub => {
+        this.currentBorrowingSub = sub;
+      })
+      .catch(() => {
+        this.currentBorrowingSub = null;
+      })
+      .finally(() => this.render());
+  }
+
+  get hasActiveBorrowingSubscription(): boolean {
+    const sub = this.currentBorrowingSub;
+    if (!sub) return false;
+    if (typeof sub?.borrowDirectly === 'boolean') return sub.borrowDirectly;
+    if (typeof sub?.active === 'boolean' && sub.active) return true;
+    const status = String(sub?.status || '').trim().toLowerCase();
+    return status === 'active' || status === 'trialing' || status === 'trial_active';
+  }
+
+  get showBorrowerSubscriptionCta(): boolean {
+    const role = this.user?.role;
+    return !!this.user && role !== UserRole.ADMIN && !this.hasActiveBorrowingSubscription;
+  }
+
+  goToBorrowerSubscription() {
+    this.router.navigate(['/borrower-subscription']);
+  }
+
+  get filteredLendingItems() {
+    const query = this.normalizeDashboardSearch(this.lendingSearchQuery);
+    return this.myListings.filter(item => {
+      if (this.lendingTab === 'available' && item.status !== AvailabilityStatus.AVAILABLE) return false;
+      if (this.lendingTab === 'requests' && item.status !== AvailabilityStatus.PENDING) return false;
+      if (this.lendingTab === 'active' && !this.listingIsActiveLoan(item)) return false;
+      if (!query) return true;
+      const borrowerName = String(item.borrower?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const pickup = this.pickupLocationText(item).toLowerCase();
+      const category = String(item.category || '').toLowerCase();
+      return title.includes(query) || ref.includes(query) || pickup.includes(query) || borrowerName.includes(query) || category.includes(query);
+    });
+  }
+
+  get filteredBorrowingItems() {
+    const query = this.normalizeDashboardSearch(this.borrowingSearchQuery);
+    return this.activeBorrows.filter(item => {
+      if (this.borrowingTab === 'pending' && item.status !== AvailabilityStatus.PENDING) return false;
+      if (this.borrowingTab === 'pickup' && item.status !== AvailabilityStatus.READY_FOR_PICKUP) return false;
+      if (this.borrowingTab === 'return' && item.status !== AvailabilityStatus.WAITING_FOR_RETURN && item.status !== AvailabilityStatus.BORROWED && item.status !== AvailabilityStatus.DISPUTED) return false;
+      if (!query) return true;
+      const ownerName = String(item.owner?.name || '').toLowerCase();
+      const title = String(item.title || '').toLowerCase();
+      const ref = String(item.itemReference || '').toLowerCase();
+      const pickup = this.pickupLocationText(item).toLowerCase();
+      return title.includes(query) || ref.includes(query) || ownerName.includes(query) || pickup.includes(query);
+    });
   }
 
   get borrowedHistory() {
@@ -415,6 +513,68 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const line1 = `${street} ${house}`.trim();
     const line2 = `${city} ${zip}`.trim();
     return (line1 && line2) ? `${line1}, ${line2}` : (line1 || line2);
+  }
+
+  lendingCounterLabel(tab: 'all' | 'available' | 'requests' | 'active'): number {
+    if (tab === 'available') return this.myListings.filter(item => item.status === AvailabilityStatus.AVAILABLE).length;
+    if (tab === 'requests') return this.myListings.filter(item => item.status === AvailabilityStatus.PENDING).length;
+    if (tab === 'active') return this.myListings.filter(item => this.listingIsActiveLoan(item)).length;
+    return this.myListings.length;
+  }
+
+  incomingRequestsCounterLabel(tab: 'all' | 'lend' | 'give' | 'sell'): number {
+    if (tab === 'lend') return this.pendingRequests.filter(item => item.type === ListingType.LEND).length;
+    if (tab === 'give') return this.pendingRequests.filter(item => item.type === ListingType.GIVE).length;
+    if (tab === 'sell') return this.pendingRequests.filter(item => item.type === ListingType.SELL).length;
+    return this.pendingRequests.length;
+  }
+
+  borrowingCounterLabel(tab: 'all' | 'pending' | 'pickup' | 'return'): number {
+    if (tab === 'pending') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.PENDING).length;
+    if (tab === 'pickup') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.READY_FOR_PICKUP).length;
+    if (tab === 'return') return this.activeBorrows.filter(item => item.status === AvailabilityStatus.WAITING_FOR_RETURN || item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.DISPUTED).length;
+    return this.activeBorrows.length;
+  }
+
+  lendingBorrowerLabel(item: Listing): string {
+    if (item.borrower?.name) return item.borrower.name;
+    if (item.status === AvailabilityStatus.PENDING) return this.i18n.t('dash.borrower_requested');
+    return this.i18n.t('dash.no_borrower_yet');
+  }
+
+  requestIntentLabel(item: Listing): string {
+    if (item.type === ListingType.GIVE) return this.i18n.t('dash.request_claim');
+    if (item.type === ListingType.SELL) return this.i18n.t('dash.request_purchase');
+    return this.i18n.t('dash.request_borrow');
+  }
+
+  userAvatarUrl(user: User | null | undefined, seed: string, size = 80): string {
+    const avatar = String(user?.avatarUrl || '').trim();
+    if (avatar) return avatar;
+    return DEFAULT_USER_AVATAR;
+  }
+
+  onAvatarError(event: Event, seed: string, size = 80) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    const fallback = DEFAULT_USER_AVATAR;
+    if (img.src !== fallback) {
+      img.src = fallback;
+    }
+  }
+
+  statusPillClass(item: Listing): string {
+    if (item.status === AvailabilityStatus.READY_FOR_PICKUP) return 'status-pill status-pill-warning';
+    if (item.status === AvailabilityStatus.AVAILABLE || item.status === AvailabilityStatus.APPROVED || item.status === AvailabilityStatus.PARTNER_ACTIVE) return 'status-pill status-pill-success';
+    if (item.status === AvailabilityStatus.PENDING) return 'status-pill status-pill-info';
+    if (item.status === AvailabilityStatus.BORROWED || item.status === AvailabilityStatus.WAITING_FOR_RETURN) return 'status-pill status-pill-warning';
+    if (item.status === AvailabilityStatus.DISPUTED || item.status === AvailabilityStatus.BLOCKED) return 'status-pill status-pill-danger';
+    if (item.status === AvailabilityStatus.HIDDEN) return 'status-pill status-pill-muted';
+    return 'status-pill status-pill-muted';
+  }
+
+  private normalizeDashboardSearch(value: string): string {
+    return String(value || '').trim().toLowerCase();
   }
 
   listingRowClass(item: Listing): string {

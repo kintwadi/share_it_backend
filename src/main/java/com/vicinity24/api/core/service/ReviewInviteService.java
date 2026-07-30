@@ -55,10 +55,6 @@ public class ReviewInviteService {
             return;
         }
 
-        if (reviewRepository.existsByAuthorAndTargetUserAndListing(reviewer, target, listing)) {
-            return;
-        }
-
         Optional<ReviewInvite> existing = reviewInviteRepository.findFirstByReturnSessionIdAndReviewerIdAndTargetUserId(returnSessionId, reviewer.getId(), target.getId());
         ReviewInvite invite = existing.orElseGet(() -> ReviewInvite.builder()
                 .id(UUID.randomUUID())
@@ -90,12 +86,13 @@ public class ReviewInviteService {
             return;
         }
 
-        String link = frontendBaseUrl + "/rate?token=" + saved.getToken();
+        String link = buildFrontendAppUrl("/rate?token=" + saved.getToken());
         String listingTitle = listing.getTitle();
+        String listingReference = listing.getItemReference();
         String recipientName = reviewer.getDisplayName() != null && !reviewer.getDisplayName().isBlank() ? reviewer.getDisplayName() : reviewer.getName();
         String otherName = target.getDisplayName() != null && !target.getDisplayName().isBlank() ? target.getDisplayName() : target.getName();
 
-        emailService.sendReturnRatingEmail(reviewer.getEmail(), recipientName, otherName, listingTitle, link);
+        emailService.sendReturnRatingEmail(reviewer.getEmail(), recipientName, otherName, listingTitle, listingReference, link);
     }
 
     private String generateToken() {
@@ -106,5 +103,23 @@ public class ReviewInviteService {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    private String buildFrontendAppUrl(String routePath) {
+        String base = frontendBaseUrl == null ? "" : frontendBaseUrl.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String path = routePath == null || routePath.isBlank() ? "/" : routePath.trim();
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (base.contains("/#/")) {
+            return base + path;
+        }
+        if (base.endsWith("/#")) {
+            return base + path;
+        }
+        return base + "/#" + path;
     }
 }

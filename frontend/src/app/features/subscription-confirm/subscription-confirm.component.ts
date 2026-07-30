@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, ShieldCheck, CheckCircle2, ArrowLeft, Info, Shield, Loader2 } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 @Component({
   selector: 'app-subscription-confirm',
@@ -21,6 +22,7 @@ export class SubscriptionConfirmComponent implements OnInit {
   private api = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  layoutMode = inject(LayoutModeService);
 
   readonly ShieldCheck = ShieldCheck;
   readonly CheckCircle2 = CheckCircle2;

@@ -998,3 +998,57 @@ button:disabled {
     font-size: 10px;
   }
 }
+
+.listing-detail-page--standard {
+  background: #f7f5f0;
+  color: #2c2c2c;
+}
+
+.listing-standard-header {
+  margin-bottom: 1.25rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid #c8c3b8;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.listing-standard-header__eyebrow {
+  color: #6b6b6b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.listing-standard-header__title {
+  margin: 0.35rem 0 0;
+  color: #1e3a5f;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.listing-standard-header__subtitle {
+  margin: 0.5rem 0 0;
+  color: #6b6b6b;
+  max-width: 52rem;
+  line-height: 1.6;
+}
+
+.listing-detail-page--standard .back-btn,
+.listing-detail-page--standard .hero-wrap,
+.listing-detail-page--standard .desc-card,
+.listing-detail-page--standard .details-card,
+.listing-detail-page--standard .empty-card {
+  border-color: #c8c3b8;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.listing-detail-page--standard .shop-badge,
+.listing-detail-page--standard .price-option-chip,
+.listing-detail-page--standard .owner-card {
+  background: #f7f5f0;
+  border-color: #ddd9d0;
+}

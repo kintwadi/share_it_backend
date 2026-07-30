@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, AlertTriangle, Loader2, Shield, CreditCard, Smartphone } from 'lucide-angular';
 import { ApiService } from '../../core/services/api.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 type SettingsConfirmAction =
   | 'cancel-subscription'
@@ -26,6 +27,7 @@ export class SettingsActionConfirmComponent implements OnInit {
   private api = inject(ApiService);
   private cdr = inject(ChangeDetectorRef);
   i18n = inject(I18nService);
+  layoutMode = inject(LayoutModeService);
 
   readonly ArrowLeft = ArrowLeft;
   readonly AlertTriangle = AlertTriangle;

@@ -11,6 +11,7 @@ import { SettingsConfigService } from '../../core/services/settings-config.servi
 import { PaymentSettingsComponent } from '../../shared/components/payment-settings/payment-settings';
 import { UserPreferencesService } from '../../core/services/user-preferences.service';
 import { PHONE_COUNTRIES, isoToFlag } from '../../shared/data/phone-countries';
+import { LayoutModeService } from '../../core/services/layout-mode.service';
 
 type SettingsTabId =
   | 'overview'
@@ -45,6 +46,7 @@ export class SettingsComponent implements OnInit {
   route = inject(ActivatedRoute);
   settingsConfig = inject(SettingsConfigService);
   prefs = inject(UserPreferencesService);
+  layoutMode = inject(LayoutModeService);
 
   readonly Bell = Bell;
   readonly Shield = Shield;

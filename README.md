@@ -1,4 +1,4 @@
-﻿# Vicinity24
+# Vicinity24
 
 Monorepo containing:
 - Spring Boot backend (API + auth + admin + partner + payments)
@@ -29,6 +29,14 @@ npm start
 ```
 
 The dev server proxies `/api/*` + `/ws/*` to `http://localhost:8081` using [proxy.conf.json](file:///c:/Users/core101/Desktop/desk/shareit_back/frontend/proxy.conf.json).
+Before `npm start` and `npm run build`, the frontend generates `frontend/public/env.js` from environment variables such as `API_URL`, `UI_LAYOUT`, `TENANT_HEADER_NAME`, and `TENANT_ID`.
+
+Example:
+
+```bash
+cd frontend
+UI_LAYOUT=STANDARD npm run build
+```
 
 ## Runtime App Settings (Admin)
 
@@ -69,4 +77,3 @@ When `settings.enable.subscription=false`, the backend applies a fixed service f
 - Full configuration: [configuration-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/configuration-guide.md)
 - API overview: [api-contract.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/api-contract.md)
 - Frontend usage: [user-guide.md](file:///c:/Users/core101/Desktop/desk/shareit_back/DOC/user-guide.md)
-

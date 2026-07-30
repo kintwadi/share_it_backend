@@ -1,1 +1,2 @@
 com.vicinity24.api.bicycle.BicycleModuleAutoConfiguration
+com.vicinity24.api.linked.LinkedStoreModuleAutoConfiguration

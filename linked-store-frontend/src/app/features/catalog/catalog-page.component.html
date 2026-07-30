@@ -1,0 +1,321 @@
+<section class="catalog-shell">
+  <section class="filter-bar">
+    <div class="filter-bar__search-wrap">
+      <label class="filter-group filter-group--search">
+        <span>Search</span>
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Search SKU, product, brand, or feature..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </label>
+
+      <button type="button" class="clear-btn" (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    <div class="filter-bar__controls">
+      <label class="filter-group">
+        <span>Store</span>
+        <select [ngModel]="selectedStoreId()" (ngModelChange)="onStoreChange($event)">
+          <option [ngValue]="null">Select a store</option>
+          @for (store of stores(); track store.id) {
+            <option [ngValue]="store.id">{{ store.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Category</span>
+        <select [ngModel]="selectedCategoryId()" (ngModelChange)="onCategoryChange($event)">
+          <option [ngValue]="null">All categories</option>
+          @for (category of categoryOptions(); track category.id) {
+            <option [ngValue]="category.id">{{ categoryOptionLabel(category) }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Sort</span>
+        <select [ngModel]="selectedSort()" (ngModelChange)="onSortChange($event)">
+          @for (option of sortOptions; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="filter-group">
+        <span>Page Size</span>
+        <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [ngValue]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <section class="message-card error">{{ errorMessage() }}</section>
+  }
+
+  @if (loadingCatalog()) {
+    <section class="message-card">Loading linked-store catalog...</section>
+  } @else if (!selectedStoreId()) {
+    <section class="message-card">No store selected.</section>
+  } @else if (selectedProduct()) {
+    <section class="detail-page">
+      <div class="breadcrumb-bar">
+        <button type="button" class="back-link" (click)="closeProduct()">Back to catalog</button>
+        <nav class="breadcrumb">
+          <span>{{ selectedStoreName() }}</span>
+          <span class="sep">/</span>
+          <span>{{ selectedCategoryName() }}</span>
+          <span class="sep">/</span>
+          <span class="current">{{ selectedProduct()?.sku }}</span>
+        </nav>
+      </div>
+
+      <div class="detail-main">
+        <section class="image-panel">
+          <div class="main-image-wrap">
+            <img [src]="selectedProductImage()" [alt]="selectedProduct()?.name" />
+          </div>
+
+          <div class="thumbnails">
+            @for (image of displayImages(); track image; let imageIndex = $index) {
+              <button
+                type="button"
+                class="thumb"
+                [class.active]="imageIndex === selectedImageIndex()"
+                (click)="selectImage(imageIndex)"
+              >
+                <img [src]="image" [alt]="(selectedProduct()?.name || 'Product') + ' image ' + (imageIndex + 1)" />
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="details-panel">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <div class="product-category">{{ selectedCategoryName() }}</div>
+                <h1 class="product-name">{{ selectedProduct()?.name }}</h1>
+              </div>
+
+              <div class="product-actions">
+                <button type="button" class="btn btn-outline" (click)="copySelectedSku()">
+                  {{ skuCopied() ? 'SKU copied' : 'Copy SKU' }}
+                </button>
+                <button type="button" class="btn btn-primary" [disabled]="!selectedVariant()" (click)="copyQuoteSummary()">
+                  {{ quoteCopied() ? 'Quote copied' : 'Copy quote' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="status-row">
+              <span class="badge"
+                    [class.badge-success]="selectedInventoryState() === 'healthy'"
+                    [class.badge-warning]="selectedInventoryState() === 'low'"
+                    [class.badge-danger]="selectedInventoryState() === 'out'"
+                    [class.badge-info]="selectedInventoryState() === 'unknown'">
+                <span class="badge-dot"></span>{{ stockLabel(selectedVariantStock()) }}
+              </span>
+              <span class="badge badge-warning" *ngIf="lowStockVariantCount() > 0">
+                <span class="badge-dot"></span>{{ lowStockVariantCount() }} low-stock variants
+              </span>
+              <span class="badge badge-neutral">{{ selectedProduct()?.isActive ? 'Active' : 'Inactive' }}</span>
+            </div>
+
+            <div class="price-display">
+              <span class="price-label">Current Price</span>
+              <span class="price-value">
+                {{ (selectedVariant()?.price ?? selectedProduct()?.basePrice) | currency:selectedProduct()?.currency:'symbol':'1.2-2' }}
+              </span>
+            </div>
+
+            <div class="sku-row">
+              <span class="sku-label">SKU</span>
+              <span class="sku-value">{{ selectedVariant()?.sku ?? selectedProduct()?.sku }}</span>
+              <button type="button" class="copy-btn" [class.copied]="skuCopied()" (click)="copySelectedSku()">
+                {{ skuCopied() ? 'Copied' : 'Copy' }}
+              </button>
+            </div>
+
+            <div class="meta-grid">
+              @for (entry of selectedProductDetails().slice(0, 4); track entry.key) {
+                <div class="meta-item">
+                  <div class="meta-label">{{ entry.key }}</div>
+                  <div class="meta-value">{{ entry.value }}</div>
+                </div>
+              }
+            </div>
+
+            @if (selectedProduct()?.description) {
+              <div class="description">{{ selectedProduct()?.description }}</div>
+            }
+          </article>
+
+          <article class="card">
+            <div class="section-title">Quick Facts</div>
+            <div class="facts-grid">
+              @for (entry of selectedProductDetails().slice(0, 8); track entry.key) {
+                <div class="fact-item">
+                  <div class="fact-label">{{ entry.key }}</div>
+                  <div class="fact-value">{{ entry.value }}</div>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="variants-header">
+              <div class="section-title">Variants</div>
+              <span class="variant-count">
+                @if (loadingVariants()) {
+                  Loading...
+                } @else {
+                  {{ variants().length }} variants
+                }
+              </span>
+            </div>
+
+            @if (!loadingVariants() && !variants().length) {
+              <p class="empty-copy">No variants found for this product.</p>
+            }
+
+            <div class="variant-list">
+              @for (variant of variants(); track variant.id) {
+                <article
+                  class="variant-row"
+                  [class.selected]="selectedVariant()?.id === variant.id"
+                  (click)="selectVariant(variant.id)"
+                >
+                  <div>
+                    <div class="variant-sku">{{ variant.sku }}</div>
+                    @if (variantDetails(variant).length) {
+                      <div class="variant-meta">
+                        @for (entry of variantDetails(variant).slice(0, 4); track entry.key) {
+                          <span class="variant-tag">{{ entry.key }}: {{ entry.value }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <div class="variant-price">
+                    {{ (variant.price ?? selectedProduct()?.basePrice) | currency:selectedProduct()?.currency:'symbol':'1.2-2' }}
+                  </div>
+
+                  <div class="variant-stock">
+                    <span class="badge"
+                          [class.badge-success]="inventoryClass(variant.stock) === 'healthy'"
+                          [class.badge-warning]="inventoryClass(variant.stock) === 'low'"
+                          [class.badge-danger]="inventoryClass(variant.stock) === 'out'"
+                          [class.badge-info]="inventoryClass(variant.stock) === 'unknown'">
+                      <span class="badge-dot"></span>{{ stockLabel(variant.stock) }}
+                    </span>
+                  </div>
+
+                  <div class="variant-cost">
+                    {{ variantDetails(variant).slice(0, 1)[0]?.value || 'Ready' }}
+                  </div>
+
+                  <div class="variant-action">
+                    <button type="button" class="btn btn-outline" (click)="$event.stopPropagation(); selectVariant(variant.id)">
+                      Select
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          </article>
+        </section>
+      </div>
+    </section>
+  } @else {
+    <section class="page-header">
+      <h1 class="page-title">{{ selectedStoreName() }}</h1>
+      <p class="page-subtitle">
+        <strong>{{ filteredProducts().length }}</strong> products, page <strong>{{ currentPage() }}</strong> of <strong>{{ totalPages() }}</strong>
+      </p>
+    </section>
+
+    <section class="results-bar">
+      <div class="active-filters">
+        @for (filter of activeFilters(); track filter.key) {
+          <span class="active-filter-tag">
+            {{ filter.label }}
+            <button type="button" class="remove" (click)="removeFilter(filter.key)">x</button>
+          </span>
+        }
+      </div>
+
+      <div class="view-toggle">
+        <button type="button" class="view-btn" [class.active]="viewMode() === 'grid'" (click)="setView('grid')">Grid</button>
+        <button type="button" class="view-btn" [class.active]="viewMode() === 'list'" (click)="setView('list')">List</button>
+      </div>
+    </section>
+
+    @if (!filteredProducts().length) {
+      <section class="empty-state">
+        <h3>No products found</h3>
+        <p>Adjust the selected filters or clear the search to see more products.</p>
+      </section>
+    } @else {
+      <section class="product-grid" [class.list-view]="viewMode() === 'list'">
+        @for (product of pagedProducts(); track product.id) {
+          <article class="product-card" (click)="openProduct(product)" [class.product-card--active]="selectedProductId() === product.id">
+            <div class="card-image-wrap">
+              <img [src]="productImage(product)" [alt]="product.name" loading="lazy" />
+              <span class="status-badge" [class.inactive]="!product.isActive">
+                <span class="dot"></span>{{ product.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+
+            <div class="card-body">
+              <div class="card-info">
+                <div class="card-sku">{{ product.sku }}</div>
+                <div class="card-header-row">
+                  <h2 class="card-name">{{ product.name }}</h2>
+                  <div class="card-price">{{ product.basePrice | currency:product.currency:'symbol':'1.2-2' }}</div>
+                </div>
+
+                @if (product.description) {
+                  <p class="card-description">{{ product.description }}</p>
+                }
+
+                <div class="card-tags">
+                  @for (entry of productDetails(product).slice(0, 3); track entry.key) {
+                    <span class="tag">
+                      <span class="tag-label">{{ entry.key }}</span>
+                      <span class="tag-value">{{ entry.value }}</span>
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="pagination-wrap">
+        <nav class="pagination" aria-label="Product pagination">
+          <button type="button" class="page-btn" (click)="previousPage()" [disabled]="page() === 1">Previous</button>
+          @for (pageNumber of pages(); track pageNumber) {
+            <button
+              type="button"
+              class="page-num"
+              (click)="setPage(pageNumber)"
+              [class.active]="pageNumber === currentPage()"
+            >
+              {{ pageNumber }}
+            </button>
+          }
+          <button type="button" class="page-btn" (click)="nextPage()" [disabled]="page() === totalPages()">Next</button>
+        </nav>
+      </section>
+    }
+  }
+</section>

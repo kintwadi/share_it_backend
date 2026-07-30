@@ -1,3 +1,4 @@
+<div [class.payment-settings--standard]="layoutMode.isStandard()">
 <div *ngIf="loading" class="flex justify-center p-8">
   <lucide-icon [img]="Loader2" [size]="24" class="animate-spin text-brand-600"></lucide-icon>
 </div>
@@ -247,4 +248,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

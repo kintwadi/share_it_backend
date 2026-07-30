@@ -45,7 +45,11 @@
           {{ i18n.t('rate.question_generic') }}
         </ng-container>
       </div>
+      <div *ngIf="invite?.reviewerName" class="mt-2 text-xs text-gray-500">
+        {{ i18n.t('rate.invited_as') }} {{ invite.reviewerName }}
+      </div>
       <div *ngIf="invite?.listingTitle" class="mt-2 text-xs text-gray-500">{{ i18n.t('rate.listing_label') }} {{ invite.listingTitle }}</div>
+      <div *ngIf="invite?.listingReference" class="mt-1 text-xs text-gray-500">{{ i18n.t('dash.item_ref_prefix') }} {{ invite.listingReference }}</div>
 
       <div class="mt-6">
         <div class="text-xs font-bold text-gray-900 mb-2">{{ i18n.t('rate.rating_label') }}</div>

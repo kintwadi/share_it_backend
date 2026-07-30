@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,7 @@ export class RateComponent implements OnInit {
   router = inject(Router);
   api = inject(ApiService);
   i18n = inject(I18nService);
+  cdr = inject(ChangeDetectorRef);
 
   readonly Star = Star;
   readonly Loader2 = Loader2;
@@ -46,19 +47,26 @@ export class RateComponent implements OnInit {
     if (!this.token) {
       this.error = this.i18n.t('rate.error.missing_token');
       this.loading = false;
+      this.syncView();
       return;
     }
     try {
       this.loading = true;
+      this.error = null;
+      this.syncView();
       const res = await this.api.getReviewInvite(this.token);
       this.invite = res;
       if (res?.used) {
         this.submitted = true;
       }
     } catch (e: any) {
-      this.error = e instanceof Error ? e.message : this.i18n.t('rate.error.load_failed');
+      this.error =
+        String(e?.error?.error || '').trim() ||
+        (e instanceof Error ? e.message : '') ||
+        this.i18n.t('rate.error.load_failed');
     } finally {
       this.loading = false;
+      this.syncView();
     }
   }
 
@@ -70,17 +78,30 @@ export class RateComponent implements OnInit {
     if (!this.token) return;
     if (this.rating < 1 || this.rating > 5) {
       this.error = this.i18n.t('rate.error.rating_required');
+      this.syncView();
       return;
     }
     this.error = null;
     this.submitting = true;
+    this.syncView();
     try {
       await this.api.submitReviewInvite(this.token, this.rating, this.comment);
       this.submitted = true;
     } catch (e: any) {
-      this.error = e instanceof Error ? e.message : this.i18n.t('rate.error.submit_failed');
+      this.error =
+        String(e?.error?.error || '').trim() ||
+        (e instanceof Error ? e.message : '') ||
+        this.i18n.t('rate.error.submit_failed');
     } finally {
       this.submitting = false;
+      this.syncView();
+    }
+  }
+
+  private syncView() {
+    try {
+      this.cdr.detectChanges();
+    } catch {
     }
   }
 

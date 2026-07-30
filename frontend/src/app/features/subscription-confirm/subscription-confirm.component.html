@@ -1,3 +1,165 @@
+<ng-container *ngIf="layoutMode.isStandard(); else modernSubscriptionConfirmTemplate">
+<div class="subscription-confirm-standard">
+  <div class="subscription-confirm-standard__shell">
+    <button
+      type="button"
+      (click)="handleSecondary()"
+      class="subscription-confirm-standard__back"
+    >
+      <lucide-icon [img]="ArrowLeft" size="16"></lucide-icon>
+      {{ i18n.t('subscription.back_to_plans') }}
+    </button>
+
+    <div class="subscription-confirm-standard__panel">
+      <div class="subscription-confirm-standard__header">
+        <div class="subscription-confirm-standard__badge" [class.is-pro]="isPro">
+          <lucide-icon [img]="ShieldCheck" [size]="26"></lucide-icon>
+        </div>
+        <h1 class="subscription-confirm-standard__title">
+          {{ i18n.t(contentKeyPrefix + (isPaidPlan ? 'congrats' : 'confirmed')) }}
+        </h1>
+        <p class="subscription-confirm-standard__subtitle">
+          {{ i18n.t(contentKeyPrefix + 'selected') }}
+        </p>
+        <div class="subscription-confirm-standard__plan-pill">{{ planLabel }}</div>
+      </div>
+
+      <div *ngIf="error" class="subscription-confirm-standard__error">
+        {{ error }}
+      </div>
+
+      <ng-container *ngIf="isPaidPlan; else freePlanStandard">
+        <div class="subscription-confirm-standard__notice" [class.is-pro]="isPro">
+          <div class="subscription-confirm-standard__notice-title">{{ i18n.t(contentKeyPrefix + 'trial_title') }}</div>
+          <div class="subscription-confirm-standard__notice-text">{{ i18n.t(contentKeyPrefix + 'trial_text') }}</div>
+        </div>
+
+        <section class="subscription-confirm-standard__section">
+          <div class="subscription-confirm-standard__section-title">{{ i18n.t(contentKeyPrefix + 'benefits_title') }}</div>
+          <div class="subscription-confirm-standard__grid subscription-confirm-standard__grid--three">
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title">
+                <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit1_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'benefit1_text') }}</p>
+            </article>
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title">
+                <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit2_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'benefit2_text') }}</p>
+            </article>
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title">
+                <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit3_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'benefit3_text') }}</p>
+            </article>
+          </div>
+          <div class="subscription-confirm-standard__footnote">{{ i18n.t(contentKeyPrefix + 'stats_hint') }}</div>
+        </section>
+
+        <div class="subscription-confirm-standard__warning">
+          <div class="subscription-confirm-standard__warning-title">{{ i18n.t(contentKeyPrefix + 'warning_label') }}</div>
+          <div class="subscription-confirm-standard__warning-text">{{ i18n.t(contentKeyPrefix + 'warning_text') }}</div>
+        </div>
+
+        <div class="subscription-confirm-standard__actions">
+          <button
+            type="button"
+            (click)="handlePrimary()"
+            [disabled]="processing"
+            class="subscription-confirm-standard__btn subscription-confirm-standard__btn--primary"
+          >
+            <lucide-icon *ngIf="processing" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+            <lucide-icon *ngIf="!processing" [img]="CheckCircle2" [size]="16"></lucide-icon>
+            {{ i18n.t('lenderPost.primary_cta') }}
+          </button>
+          <button
+            type="button"
+            (click)="handleSecondary()"
+            class="subscription-confirm-standard__btn subscription-confirm-standard__btn--secondary"
+          >
+            {{ i18n.t('lenderPost.secondary_cta') }}
+          </button>
+        </div>
+
+        <div class="subscription-confirm-standard__privacy">
+          <lucide-icon [img]="Shield" [size]="13"></lucide-icon>
+          <span>{{ i18n.t('lenderPost.privacy_note') }}</span>
+        </div>
+      </ng-container>
+
+      <ng-template #freePlanStandard>
+        <section class="subscription-confirm-standard__section">
+          <div class="subscription-confirm-standard__section-title">{{ i18n.t(contentKeyPrefix + 'benefits_title') }}</div>
+          <div class="subscription-confirm-standard__grid subscription-confirm-standard__grid--two">
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title">
+                <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit1_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'benefit1_text') }}</p>
+            </article>
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title">
+                <lucide-icon [img]="CheckCircle2" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'benefit2_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'benefit2_text') }}</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="subscription-confirm-standard__section">
+          <div class="subscription-confirm-standard__section-title">{{ i18n.t(contentKeyPrefix + 'limits_title') }}</div>
+          <div class="subscription-confirm-standard__grid subscription-confirm-standard__grid--two">
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title subscription-confirm-standard__card-title--muted">
+                <lucide-icon [img]="Info" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'limit1_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'limit1_text') }}</p>
+            </article>
+            <article class="subscription-confirm-standard__card">
+              <div class="subscription-confirm-standard__card-title subscription-confirm-standard__card-title--muted">
+                <lucide-icon [img]="Info" [size]="14"></lucide-icon>
+                {{ i18n.t(contentKeyPrefix + 'limit2_title') }}
+              </div>
+              <p>{{ i18n.t(contentKeyPrefix + 'limit2_text') }}</p>
+            </article>
+          </div>
+        </section>
+
+        <div class="subscription-confirm-standard__actions">
+          <button
+            type="button"
+            (click)="handlePrimary()"
+            [disabled]="processing"
+            class="subscription-confirm-standard__btn subscription-confirm-standard__btn--primary"
+          >
+            <lucide-icon *ngIf="processing" [img]="Loader2" [size]="16" class="animate-spin"></lucide-icon>
+            <lucide-icon *ngIf="!processing" [img]="CheckCircle2" [size]="16"></lucide-icon>
+            {{ i18n.t(contentKeyPrefix + 'primary_cta') }}
+          </button>
+          <button
+            type="button"
+            (click)="handleSecondary()"
+            class="subscription-confirm-standard__btn subscription-confirm-standard__btn--secondary"
+          >
+            {{ i18n.t(contentKeyPrefix + 'secondary_cta') }}
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+</ng-container>
+
+<ng-template #modernSubscriptionConfirmTemplate>
 <div class="min-h-[70vh] bg-gradient-to-b from-slate-50 to-white">
   <div class="max-w-4xl mx-auto">
     <button
@@ -161,3 +323,4 @@
     </div>
   </div>
 </div>
+</ng-template>

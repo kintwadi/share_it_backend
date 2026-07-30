@@ -296,6 +296,7 @@ public class ListingService {
         List<Listing> filtered = all.stream()
             .filter(l -> l.getStatus() == null || (l.getStatus() != AvailabilityStatus.BLOCKED && l.getStatus() != AvailabilityStatus.HIDDEN))
             .filter(l -> !(l.getPartner() != null && l.getStatus() == AvailabilityStatus.PARTNER_INACTIVE))
+            .filter(this::isDiscoverableInFeed)
             .filter(l -> isAvailableForDiscovery(current, l))
             .filter(l -> {
                 if (l.getPartner() == null || l.getBorrower() == null) return true;
@@ -360,6 +361,38 @@ public class ListingService {
             }
         }
         return toDTO(l, current);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ListingDTO> findOwnedBy(User current) {
+        if (current == null) return List.of();
+        return listingRepository.findByOwner(current).stream()
+                .sorted((a, b) -> {
+                    java.time.LocalDateTime aa = a.getCreatedAt();
+                    java.time.LocalDateTime bb = b.getCreatedAt();
+                    if (aa == null && bb == null) return 0;
+                    if (aa == null) return 1;
+                    if (bb == null) return -1;
+                    return bb.compareTo(aa);
+                })
+                .map(l -> toDTO(l, current))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ListingDTO> findBorrowedBy(User current) {
+        if (current == null) return List.of();
+        return listingRepository.findByBorrower(current).stream()
+                .sorted((a, b) -> {
+                    java.time.LocalDateTime aa = a.getCreatedAt();
+                    java.time.LocalDateTime bb = b.getCreatedAt();
+                    if (aa == null && bb == null) return 0;
+                    if (aa == null) return 1;
+                    if (bb == null) return -1;
+                    return bb.compareTo(aa);
+                })
+                .map(l -> toDTO(l, current))
+                .toList();
     }
 
     @Transactional
@@ -588,6 +621,8 @@ public class ListingService {
         for (var row : rows) {
             var l = byId.get(row.getId());
             if (l == null) continue;
+            if (!isDiscoverableInFeed(l)) continue;
+            if (!isAvailableForDiscovery(null, l)) continue;
             out.add(toDTO(l, null, borrowerLat, borrowerLng));
         }
         return out;
@@ -1068,7 +1103,14 @@ public class ListingService {
                 canSeeExactPickup = true;
             } else if (l.getBorrower() != null && current.getId().equals(l.getBorrower().getId())) {
                 AvailabilityStatus st = l.getStatus();
-                canSeeExactPickup = st == AvailabilityStatus.APPROVED || st == AvailabilityStatus.PARTNER_ACTIVE || st == AvailabilityStatus.BORROWED || st == AvailabilityStatus.GIFTED || st == AvailabilityStatus.SOLD;
+                canSeeExactPickup = st == AvailabilityStatus.APPROVED
+                        || st == AvailabilityStatus.READY_FOR_PICKUP
+                        || st == AvailabilityStatus.WAITING_FOR_RETURN
+                        || st == AvailabilityStatus.BORROWED
+                        || st == AvailabilityStatus.DISPUTED
+                        || st == AvailabilityStatus.PARTNER_ACTIVE
+                        || st == AvailabilityStatus.GIFTED
+                        || st == AvailabilityStatus.SOLD;
             }
         }
         String publicPickup = formatPickupCustom(null, null, l.getPickupLocationCity(), l.getPickupLocationZip(), null);
@@ -1406,6 +1448,13 @@ public class ListingService {
         return true;
     }
 
+    private boolean isDiscoverableInFeed(Listing l) {
+        if (l == null) return false;
+        if (l.getBorrower() != null) return false;
+        AvailabilityStatus st = l.getStatus();
+        return st == AvailabilityStatus.AVAILABLE || st == AvailabilityStatus.PARTNER_ACTIVE;
+    }
+
     private boolean canBypassAvailability(User current, Listing l) {
         if (current == null || current.getId() == null || l == null) return false;
         if (current.getRole() == UserRole.ADMIN) return true;
@@ -1531,9 +1580,18 @@ public class ListingService {
 
         l.setBorrower(borrower);
         if (l.isAutoApprove()) {
-             if (l.getType() == ListingType.GIVE) l.setStatus(AvailabilityStatus.GIFTED);
-             else if (l.getType() == ListingType.SELL) l.setStatus(AvailabilityStatus.SOLD);
-             else l.setStatus(AvailabilityStatus.BORROWED);
+             if (l.getType() == ListingType.GIVE) {
+                 l.setStatus(AvailabilityStatus.GIFTED);
+                 l.setItemReference(null);
+             } else if (l.getType() == ListingType.SELL) {
+                 l.setStatus(AvailabilityStatus.SOLD);
+                 l.setItemReference(null);
+             } else {
+                 l.setStatus(AvailabilityStatus.APPROVED);
+                 if (l.getItemReference() == null || l.getItemReference().isBlank()) {
+                     l.setItemReference(generateUniqueItemReference());
+                 }
+             }
         } else {
              l.setStatus(AvailabilityStatus.PENDING);
         }
