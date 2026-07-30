@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Detail — Barista Pro Coffee Station</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #111827;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #059669;
+    --success-bg: #ecfdf5;
+    --success-border: #a7f3d0;
+    --warning: #d97706;
+    --warning-bg: #fffbeb;
+    --warning-border: #fde68a;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
+    --info: #0284c7;
+    --info-bg: #f0f9ff;
+    --radius: 8px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Top Filter Bar */
+  .filter-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .filter-bar label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-bar input,
+  .filter-bar select {
+    padding: 7px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s;
+    min-width: 160px;
+  }
+
+  .filter-bar input:focus,
+  .filter-bar select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+
+  .filter-bar input.search-input {
+    min-width: 240px;
+  }
+
+  .filter-spacer { flex: 1; }
+
+  /* Breadcrumb */
+  .breadcrumb-bar {
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+  }
+
+  .breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .breadcrumb .sep { color: var(--text-muted); }
+
+  .breadcrumb .current { color: var(--text); font-weight: 500; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .back-link:hover { text-decoration: underline; }
+
+  /* Main Content */
+  .main {
+    padding: 0 24px 40px;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Image Panel */
+  .image-panel {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+  }
+
+  .main-image-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #f9fafb;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .main-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumbnails {
+    display: flex;
+    gap: 8px;
+  }
+
+  .thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s;
+    background: #f9fafb;
+  }
+
+  .thumb:hover { border-color: var(--border-strong); }
+  .thumb.active { border-color: var(--primary); }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Details Panel */
+  .details-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .product-category {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .product-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+  }
+
+  .product-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .btn-primary:hover { background: var(--primary-hover); }
+
+  .btn-outline {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .btn-outline:hover { background: #f9fafb; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .btn-ghost:hover { background: #f3f4f6; }
+
+  /* Status Badges */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .badge-success {
+    background: var(--success-bg);
+    color: var(--success);
+    border-color: var(--success-border);
+  }
+
+  .badge-warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border-color: var(--warning-border);
+  }
+
+  .badge-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-color: var(--danger-border);
+  }
+
+  .badge-info {
+    background: var(--info-bg);
+    color: var(--info);
+    border-color: #bae6fd;
+  }
+
+  .badge-neutral {
+    background: #f3f4f6;
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Price */
+  .price-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .price-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+
+  .price-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* SKU Row */
+  .sku-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+  }
+
+  .sku-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .sku-value {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .copy-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .copy-btn.copied {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+  }
+
+  /* Product Meta Grid */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .meta-item {
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .meta-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .meta-value.mono {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+
+  /* Description */
+  .description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Quick Facts */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .facts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .fact-item {
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+
+  .fact-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .fact-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Variants */
+  .variants-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .variant-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .variant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .variant-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .variant-row:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .variant-row.selected {
+    border-color: var(--primary);
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+
+  .variant-sku {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .variant-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 3px;
+    flex-wrap: wrap;
+  }
+
+  .variant-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .variant-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .variant-stock {
+    text-align: right;
+    min-width: 80px;
+  }
+
+  .variant-stock .badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .variant-cost {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .variant-action {
+    text-align: right;
+  }
+
+  .variant-action .btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.25s ease;
+    z-index: 1000;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .main {
+      grid-template-columns: 1fr;
+    }
+    .image-panel {
+      position: static;
+    }
+    .facts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .filter-bar {
+      flex-wrap: wrap;
+      padding: 12px 16px;
+    }
+    .main {
+      padding: 0 16px 40px;
+    }
+    .meta-grid {
+      grid-template-columns: 1fr;
+    }
+    .variant-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .variant-price, .variant-stock, .variant-cost, .variant-action {
+      text-align: left;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <label>Search</label>
+    <input type="text" class="search-input" placeholder="Search SKU, product, brand, or feature…" id="searchInput">
+  </div>
+  <div class="filter-group">
+    <label>Store</label>
+    <select id="storeSelect">
+      <option>Urban Home Living</option>
+      <option>Downtown Flagship</option>
+      <option>Warehouse Outlet</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Category</label>
+    <select id="categorySelect">
+      <option>All categories</option>
+      <option>Kitchen Appliances</option>
+      <option>Home Electronics</option>
+      <option>Furniture</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Bar</label>
+    <select>
+      <option>Default</option>
+      <option>Seasonal</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Pay Bar</label>
+    <select>
+      <option>€</option>
+      <option>$</option>
+      <option>£</option>
+    </select>
+  </div>
+  <div class="filter-spacer"></div>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+  <a href="#" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to list
+  </a>
+  <nav class="breadcrumb">
+    <a href="#">Urban Home Living</a>
+    <span class="sep">/</span>
+    <a href="#">Kitchen Appliances</a>
+    <span class="sep">/</span>
+    <span class="current">HOME-KIT-BARISTA</span>
+  </nav>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Image Panel -->
+  <div class="image-panel">
+    <div class="main-image-wrap">
+      <img id="mainImage" src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1b782b008-ade3-4843-bef9-92c981cdb86c.png" alt="Barista Pro Coffee Station">
+    </div>
+    <div class="thumbnails">
+      <div class="thumb active" data-src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1b782b008-ade3-4843-bef9-92c981cdb86c.png" onclick="switchImage(this)">
+        <img src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1b782b008-ade3-4843-bef9-92c981cdb86c.png" alt="Main">
+      </div>
+      <div class="thumb" data-src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1a69e705e-b03f-4ad0-9933-5888f5573570.png" onclick="switchImage(this)">
+        <img src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1a69e705e-b03f-4ad0-9933-5888f5573570.png" alt="Packaging">
+      </div>
+      <div class="thumb" data-src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1705b1832-f20e-4788-a694-261894efbef3.png" onclick="switchImage(this)">
+        <img src="https://image.qwenlm.ai/public_source/eb62a5b6-3025-474f-9651-b95889d63bac/1705b1832-f20e-4788-a694-261894efbef3.png" alt="Detail">
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Panel -->
+  <div class="details-panel">
+
+    <!-- Product Header Card -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="product-category">Kitchen Appliances</div>
+          <h1 class="product-name">Barista Pro Coffee Station</h1>
+        </div>
+        <div class="product-actions">
+          <button class="btn btn-outline" onclick="editProduct()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button class="btn btn-primary" onclick="addToOrder()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Add to Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="status-row">
+        <span class="badge badge-success"><span class="badge-dot"></span>In Stock (1)</span>
+        <span class="badge badge-warning"><span class="badge-dot"></span>Not Collected</span>
+        <span class="badge badge-neutral">Active</span>
+      </div>
+
+      <!-- Price -->
+      <div class="price-display">
+        <span class="price-label">Current Price</span>
+        <span class="price-value">€649.00</span>
+      </div>
+
+      <!-- SKU -->
+      <div class="sku-row">
+        <span class="sku-label">SKU</span>
+        <span class="sku-value" id="skuValue">HOME-KIT-BARISTA</span>
+        <button class="copy-btn" id="copySkuBtn" onclick="copySku()">Copy</button>
+      </div>
+
+      <!-- Meta Grid -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Barcode</div>
+          <div class="meta-value mono">89</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Cost</div>
+          <div class="meta-value">€0</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Avg. Cost</div>
+          <div class="meta-value">€289</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Stock to Order</div>
+          <div class="meta-value">15</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="description">
+        All-in-one espresso station with integrated grinder, steam wand, and configurable drink presets. Matte Black finish. 220V, EU plug.
+      </div>
+    </div>
+
+    <!-- Quick Facts -->
+    <div class="card">
+      <div class="section-title">Quick Facts</div>
+      <div class="facts-grid">
+        <div class="fact-item">
+          <div class="fact-label">SKU</div>
+          <div class="fact-value mono" style="font-size:12px;">HOME-KIT-BARISTA</div>
+        </div>
+        <div class="fact-item">
+          <div class="fact-label">Cost</div>
+          <div class="fact-value">€0</div>
+        </div>
+        <div class="fact-item">
+          <div class="fact-label">Gross Margin</div>
+          <div class="fact-value">28</div>
+        </div>
+        <div class="fact-item">
+          <div class="fact-label">Taxability</div>
+          <div class="fact-value">21</div>
+        </div>
+        <div class="fact-item">
+          <div class="fact-label">Customer Limit</div>
+          <div class="fact-value">4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variants -->
+    <div class="card">
+      <div class="variants-header">
+        <div class="section-title" style="margin-bottom:0;">Variants</div>
+        <span class="variant-count">8 variants</span>
+      </div>
+
+      <div class="variant-list" id="variantList">
+        <!-- Variants injected by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const variants = [
+    { sku: 'HOME-KIT-BARISTA-MBK-EU-GT', color: 'Matte Black', barcode: '89', cost: '€289', price: '€649.00', stock: 1, stockLabel: 'In Stock', stockType: 'success' },
+    { sku: 'HOME-KIT-BARISTA-MBK-EU-PR', color: 'Matte Black', barcode: '91', cost: '€289', price: '€728.00', stock: 0, stockLabel: 'Out of Stock', stockType: 'danger' },
+    { sku: 'HOME-KIT-BARISTA-MBK-US-GT', color: 'Matte Black', barcode: '92', cost: '€289', price: '€649.00', stock: 3, stockLabel: 'In Stock', stockType: 'success' },
+    { sku: 'HOME-KIT-BARISTA-MBK-US-PR', color: 'Matte Black', barcode: '93', cost: '€289', price: '€728.00', stock: 0, stockLabel: 'Out of Stock', stockType: 'danger' },
+    { sku: 'HOME-KIT-BARISTA-GWH-EU-GT', color: 'Gloss White', barcode: '94', cost: '€289', price: '€689.00', stock: 2, stockLabel: 'In Stock', stockType: 'success' },
+    { sku: 'HOME-KIT-BARISTA-GWH-EU-PR', color: 'Gloss White', barcode: '95', cost: '€289', price: '€759.00', stock: 0, stockLabel: 'Out of Stock', stockType: 'danger' },
+    { sku: 'HOME-KIT-BARISTA-GWH-US-GT', color: 'Gloss White', barcode: '96', cost: '€289', price: '€689.00', stock: 1, stockLabel: 'Low Stock', stockType: 'warning' },
+    { sku: 'HOME-KIT-BARISTA-GWH-US-PR', color: 'Gloss White', barcode: '97', cost: '€289', price: '€759.00', stock: 0, stockLabel: 'Out of Stock', stockType: 'danger' },
+  ];
+
+  let selectedVariant = 0;
+
+  function renderVariants() {
+    const list = document.getElementById('variantList');
+    list.innerHTML = variants.map((v, i) => `
+      <div class="variant-row ${i === selectedVariant ? 'selected' : ''}" onclick="selectVariant(${i})">
+        <div>
+          <div class="variant-sku">${v.sku}</div>
+          <div class="variant-meta">
+            <span class="variant-tag">Color: ${v.color}</span>
+            <span class="variant-tag">Barcode: ${v.barcode}</span>
+            <span class="variant-tag">Cost: ${v.cost}</span>
+          </div>
+        </div>
+        <div class="variant-price">${v.price}</div>
+        <div class="variant-stock">
+          <span class="badge badge-${v.stockType}"><span class="badge-dot"></span>${v.stockLabel} (${v.stock})</span>
+        </div>
+        <div class="variant-cost">${v.cost}</div>
+        <div class="variant-action">
+          <button class="btn btn-outline" onclick="event.stopPropagation(); copyVariantSku(${i})">Copy SKU</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function selectVariant(index) {
+    selectedVariant = index;
+    renderVariants();
+    const v = variants[index];
+    document.getElementById('skuValue').textContent = v.sku;
+    showToast(`Selected: ${v.sku}`);
+  }
+
+  function copyVariantSku(index) {
+    const v = variants[index];
+    navigator.clipboard.writeText(v.sku).then(() => {
+      showToast(`Copied: ${v.sku}`);
+    });
+  }
+
+  function switchImage(el) {
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('mainImage').src = el.dataset.src;
+  }
+
+  function copySku() {
+    const sku = document.getElementById('skuValue').textContent;
+    navigator.clipboard.writeText(sku).then(() => {
+      const btn = document.getElementById('copySkuBtn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  function editProduct() {
+    showToast('Edit mode — coming soon');
+  }
+
+  function addToOrder() {
+    const v = variants[selectedVariant];
+    showToast(`Added ${v.sku} to order`);
+  }
+
+  // Search filter
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('.variant-row').forEach((row, i) => {
+      const v = variants[i];
+      const match = v.sku.toLowerCase().includes(q) || v.color.toLowerCase().includes(q);
+      row.style.display = match ? '' : 'none';
+    });
+  });
+
+  renderVariants();
+</script>
+</body>
+</html>

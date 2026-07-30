@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 @Slf4j
 public class TenantDatabaseBootstrap implements ApplicationRunner {
@@ -132,6 +132,7 @@ public class TenantDatabaseBootstrap implements ApplicationRunner {
     }
 
     private void initializeSchema(String tenantId, DataSource tenantDataSource) {
+        ensureRequiredSchemas(tenantId, tenantDataSource);
         LocalContainerEntityManagerFactoryBean entityManagerFactory = new LocalContainerEntityManagerFactoryBean();
         entityManagerFactory.setDataSource(tenantDataSource);
         entityManagerFactory.setPackagesToScan(ENTITY_SCAN_PACKAGE);
@@ -147,6 +148,16 @@ public class TenantDatabaseBootstrap implements ApplicationRunner {
             log.info("Tenant {} schema is ready", tenantId);
         } finally {
             entityManagerFactory.destroy();
+        }
+    }
+
+    private void ensureRequiredSchemas(String tenantId, DataSource tenantDataSource) {
+        try (var connection = tenantDataSource.getConnection();
+             var statement = connection.createStatement()) {
+            statement.execute("CREATE SCHEMA IF NOT EXISTS bicycle");
+            log.info("Tenant {} ensured required schemas", tenantId);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to ensure schemas for tenant '" + tenantId + "'", ex);
         }
     }
 
